@@ -65,6 +65,7 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
         thetas[i] = orth_est$theta
     }
     theta = mean(thetas, na.rm = TRUE)
+    se <- NULL
   }
 
   if ( dml_procedure == "dml2") {
