@@ -2,10 +2,25 @@
 % Please edit documentation in R/helper_functions.R
 \name{extract_test_pred}
 \alias{extract_test_pred}
-\title{Helper functions}
+\alias{format.perc}
+\title{Helper Functions}
 \usage{
 extract_test_pred(x)
+
+\method{format}{perc}(probs, digits)
+}
+\arguments{
+\item{x}{some object.}
+
+\item{probs}{probability.}
+
+\item{digits}{number of digits.}
 }
 \description{
-Helper functions
+Functions needed in package code.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{format}: Formating required in confint.
+}}
+
