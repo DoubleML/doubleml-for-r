@@ -12,5 +12,5 @@ LazyData: true
 Imports: hdm, mlr, stats, sandwich, checkmate
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2019-07-25 12:32:27 UTC; PuD
-Built: R 3.6.1; ; 2019-07-25 12:32:29 UTC; windows
+Packaged: 2019-07-26 13:53:22 UTC; PuD
+Built: R 3.6.1; ; 2019-07-26 13:53:24 UTC; windows

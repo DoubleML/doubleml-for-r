@@ -9,11 +9,11 @@ orth_plr_dml2(u_hat, v_hat, v_hatd, inf_model)
 \arguments{
 \item{u_hat}{Residuals from \eqn{y-g(x)}.}
 
-\item{v_hat}{Residuals from \eqn{d-m(x)}. .}
+\item{v_hat}{Residuals from \eqn{d-m(x)}.}
+
+\item{v_hatd}{Product of \code{v_hat} with \code{d}.}
 
 \item{inf_model}{Method to estimate structural parameter.}
-
-\item{v_hat}{Product of \code{v_hat} with \code{d}.}
 }
 \value{
 List with estimate (\code{theta}) and standard error (\code{se}).

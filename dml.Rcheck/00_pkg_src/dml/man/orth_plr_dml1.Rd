@@ -11,9 +11,9 @@ orth_plr_dml1(u_hat, v_hat, v_hatd, inf_model)
 
 \item{v_hat}{Residuals from \eqn{d-m(x)}. .}
 
-\item{inf_model}{Method to estimate structural parameter.}
+\item{v_hatd}{Product of \code{v_hat} with \code{d}.}
 
-\item{v_hat}{Product of \code{v_hat} with \code{d}.}
+\item{inf_model}{Method to estimate structural parameter.}
 }
 \value{
 List with estimate (\code{theta}) and standard error (\code{se}).

@@ -16,3 +16,8 @@ Imports:
     sandwich,
     checkmate
 RoxygenNote: 6.1.1
+Suggests: 
+    testthat,
+    patrick,
+    clusterGeneration,
+    mvtnorm

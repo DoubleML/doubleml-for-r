@@ -3,16 +3,17 @@
 #' @param data Data frame.
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
-#' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}, default 2-fold cross-fitting.
+#' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
 #' @param ... further options passed to underlying functions.
 #' @return Result object with estimated coefficient and standard errors.
+#' @export
 
 dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = list(),
-  params_g = list()),
+                    params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "DML2018", ...) {
 
@@ -26,8 +27,6 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   n <- nrow(data)
   n_iters <- resampling$iters
   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
-
-  thetas <- rep(NA, n_iters)
 
   # nuisance g
   g_indx <-  grepl(d, names(data)) == FALSE
@@ -52,6 +51,9 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
 
   # DML 1
   if ( dml_procedure == "dml1") {
+    thetas <- rep(NA, n_iters)
+    se <- NA
+
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
         m_hat = m_hat_list[[i]]
@@ -101,7 +103,9 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   #   # ...
   # }
     # tbd: add standard errors
-    return(list( theta = theta, se = se))
+
+  res <- list( theta = theta, se = se)
+  return(res)
 }
 
 
@@ -111,9 +115,10 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
 #'
 #' @param v_hat Residuals from \eqn{d-m(x)}. .
 #' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hat Product of \code{v_hat} with \code{d}.
+#' @param v_hatd Product of \code{v_hat} with \code{d}.
 #' @param inf_model Method to estimate structural parameter.
 #' @return List with estimate (\code{theta}) and standard error (\code{se}).
+#' @export
 
 # Function for orthogonal estimation of plr with dml1
   # inf_model: How to estimate parameter
@@ -122,7 +127,7 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   # tbd: add standard error estimation
 orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-  theta <- se <- NULL
+  theta <- se <- NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
@@ -147,12 +152,12 @@ orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 #'
 #' Function to estimate the structural parameter in a partially linear regression model (PLR) with DML2 algorithm.
 #'
-#' @param v_hat Residuals from \eqn{d-m(x)}. .
+#' @param v_hat Residuals from \eqn{d-m(x)}.
 #' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hat Product of \code{v_hat} with \code{d}.
+#' @param v_hatd Product of \code{v_hat} with \code{d}.
 #' @param inf_model Method to estimate structural parameter.
 #' @return List with estimate (\code{theta}) and standard error (\code{se}).
-
+#' @export
 
 # Function for orthogonal estimation of plr with dml1
   # inf_model: How to estimate parameter
@@ -161,7 +166,7 @@ orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
   # tbd: add standard error estimation
 orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-  theta <- se <- NULL
+  theta <- se <- NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
@@ -183,5 +188,106 @@ orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 }
 
 
+
+#' Wrapper Function for Double Machine Learning Inference
+#'
+#' Implements double machine learning inference with \code{k}-fold cross-fitting (default).
+#' @param data Data frame.
+#' @param y Name of outcome variable. The variable must be included in \code{data}.
+#' @param d Name of treatment variables for which inference should be performed.
+#' @param z Name of instrument variable.
+#' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).
+#' @param k Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
+#' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}, default 2-fold cross-fitting.
+#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
+#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
+#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
+#' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
+#' @param ... further options passed to underlying functions.
+#' @return Result object of class \code{InfTask} with estimated coefficient and standard errors.
+#' @export
+
+# Preliminary implementation of Inference task (basic input + output, ignore OOP first)
+
+InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling = NULL, mlmethod,
+                          dml_procedure = "dml2", params = list(), inf_model = "DML2018",
+                          ...){
+
+  if (is.null(resampling)) {
+    resampling <-  mlr::makeResampleDesc("CV", iters = k)
+  }
+
+  # tbd: Thoroughly implement repeated CV (check that predictions are extracted correctly, ...)
+  # rdesc <- mlr_resamplings$get("repeated_cv", param_vals = list(repeats = CV_reps,
+  #                                                               folds = k))
+  #
+  # task <- list(data, y, d, z, resampling, mlmethod, params, dml_procedure,
+                    # inf_model, ...)
+  # class(task) <- model
+
+  # tbd: implementation of object orientation -> from here jump to plr, ...
+
+  res <- dml_plr(data = data, y = y, d = d, z = z,
+                  resampling = resampling, mlmethod = mlmethod,
+                  dml_procedure = dml_procedure, params = params,
+                  inf_model = inf_model, ...)
+
+  class(res) <- "InfTask"
+
+  return(res)
+
+}
+
+#' Methods for Inference Task
+#'
+#' Methods for S3 class \code{InfTask}
+#'
+#' @param object Object of class \code{InfTask}.
+#' @param parm a specification of which parameters are to be given confidence intervals among the variables for which inference was done, either a vector of numbers or a vector of names. If missing, all parameters are considered.
+#' @param level confidence level required.
+#' @param joint logical, if \code{TRUE} joint confidence intervals are calculated.
+#' @param ... arguments passed to print function and other methods.
+#' @export
+confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
+  cf <- stats::coef(object)
+  ses <- object$se
+  pnames <- names(cf)
+
+  if (missing(parm))
+    parm <- pnames else if (is.numeric(parm))
+      parm <- pnames[parm]
+
+  # pnames <- names(ses)
+  # if (is.matrix(cf))
+  #   cf <- setNames(as.vector(cf), pnames)
+  # if (missing(parm))
+  #   parm <- pnames
+  # else if (is.numeric(parm))
+  #   parm <- pnames[parm]
+
+  a <- (1 - level)/2
+  a <- c(a, 1 - a)
+  fac <- stats::qnorm(a)
+  pct <- format.perc(a, 3)
+  ci <- array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm,
+                                                                   pct))
+  ci[] <- cf[parm] + ses %o% fac
+
+  return(ci)
+}
+
+#' Methods for Inference Task
+#'
+#' Methods for S3 class \code{InfTask}
+#'
+#' @param x Object of class \code{InfTask}.
+print.InfTask <- function(x) return(list(theta = x$theta , se = x$se))
+
+#' Methods for Inference Task
+#'
+#' Methods for S3 class \code{InfTask}
+#'
+#' @param x Object of class \code{InfTask}.
+coef.InfTask <- function(x) return(x$theta)
 
 
