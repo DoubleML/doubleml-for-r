@@ -28,8 +28,6 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   n_iters <- resampling$iters
   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
 
-  thetas <- rep(NA, n_iters)
-
   # nuisance g
   g_indx <-  grepl(d, names(data)) == FALSE
   task_g <- mlr::makeRegrTask(data = data[ , g_indx], target = y)
@@ -53,6 +51,9 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
 
   # DML 1
   if ( dml_procedure == "dml1") {
+    thetas <- rep(NA, n_iters)
+    se <- NA
+
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
         m_hat = m_hat_list[[i]]
@@ -126,7 +127,7 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   # tbd: add standard error estimation
 orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-  theta <- se <- NULL
+  theta <- se <- NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
@@ -165,7 +166,7 @@ orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
   # tbd: add standard error estimation
 orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-  theta <- se <- NULL
+  theta <- se <- NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)

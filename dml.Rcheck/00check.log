@@ -33,7 +33,34 @@
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking dependencies in R code ... OK
-* checking S3 generic/method consistency ... OK
+* checking S3 generic/method consistency ... WARNING
+format:
+  function(x, ...)
+format.perc:
+  function(probs, digits)
+
+print:
+  function(x, ...)
+print.InfTask:
+  function(x)
+
+coef:
+  function(object, ...)
+coef.InfTask:
+  function(x)
+
+confint:
+  function(object, parm, level, ...)
+confint.InfTask:
+  function(object, parm, level, joint)
+
+See section 'Generic functions and methods' in the 'Writing R
+Extensions' manual.
+
+Found the following apparent S3 methods exported but not registered:
+  coef.InfTask confint.InfTask format.perc print.InfTask
+See section 'Registering S3 methods' in the 'Writing R Extensions'
+manual.
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
 * checking R code for possible problems ... OK
@@ -43,27 +70,23 @@
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in documentation object 'extract_test_pred'
-  'x'
-
-Undocumented arguments in documentation object 'orth_plr_dml1'
-  'v_hatd'
-Duplicated \argument entries in documentation object 'orth_plr_dml1':
-  'v_hat'
-
-Undocumented arguments in documentation object 'orth_plr_dml2'
-  'v_hatd'
-Duplicated \argument entries in documentation object 'orth_plr_dml2':
-  'v_hat'
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter 'Writing R documentation files' in the 'Writing R
-Extensions' manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... NONE
+* checking for unstated dependencies in 'tests' ... WARNING
+'::' or ':::' imports not declared from:
+  'clusterGeneration' 'dplyr' 'ggplot2' 'mvtnorm' 'patrick' 'testthat'
+  'tidyr'
+'library' or 'require' calls not declared from:
+  'patrick' 'testthat'
+* checking tests ... ERROR
+  Running 'testthat_regression_tests.R'
+Running the tests in 'tests/testthat_regression_tests.R' failed.
+Complete output:
+  > 
+  > library("testthat")
+  Error in library("testthat") : there is no package called 'testthat'
+  Execution halted
 * DONE
-Status: 1 WARNING
+Status: 1 ERROR, 2 WARNINGs
