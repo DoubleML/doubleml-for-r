@@ -45,6 +45,14 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   m_hat_list <- mlr::getRRPredictionList(r_m)
   m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
 
+
+  if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
+      (rin$desc$iters != r_m$pred$instance$desc$iters) ||
+      !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
+      !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
+    stop('Resampling instances not equal')
+  }
+
   test_index_list <- rin$test.inds
 
   D <- data[ , d]
