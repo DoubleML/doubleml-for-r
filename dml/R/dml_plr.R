@@ -4,6 +4,7 @@
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
 #' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.
+#' @param ResampleInstance (Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code {ResampleInstance} will override the information in \code{resampling}.
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
@@ -12,7 +13,7 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = list(),
+dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "DML2018", ...) {
@@ -25,8 +26,23 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
   # tbd: parameter passing
 
   n <- nrow(data)
-  n_iters <- resampling$iters
-  rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
+
+  if (is.null(ResampleInstance)) {
+    n_iters <- resampling$iters
+    rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
+    }
+
+  else {
+
+    if (!is.null(resampling)) {
+      message("Options in 'resampling' are overriden by options specified for 'ResampleInstance'")
+    }
+
+    rin <- ResampleInstance
+    resampling <- rin$desc
+    n_iters <- resampling$iters
+
+    }
 
 
   # nuisance g
@@ -76,7 +92,7 @@ dml_plr <- function(data, y, d, resampling, mlmethod, params = list(params_m = l
         thetas[i] = orth_est$theta
     }
     theta = mean(thetas, na.rm = TRUE)
-    se <- NULL
+    se <- NA
   }
 
   if ( dml_procedure == "dml2") {
