@@ -118,7 +118,7 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
       vhat <- this_test_data$d - predict(m0, newdata = this_test_data, type = "response")
       uhat <- this_test_data$y - predict(g0, newdata = this_test_data, type = "response")
 
-      # this_thetas_vec[i] <- 1/(mean(vhat * this_test_data$d)) * mean(vhat * uhat)
+      this_thetas_vec[i] <- 1/(mean(vhat * this_test_data$d)) * mean(vhat * uhat)
       this_thetas_vec[i] <- 1/(mean(vhat * uhat)) * mean(vhat * this_test_data$d)
 
     }
