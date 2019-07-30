@@ -1,9 +1,9 @@
-context("Regression tests for dml estimates for partial linear regression model")
+context("Regression tests for dml estimates for partial linear regression model, 'IV-type'")
 
 test_cases = expand.grid(model = c('plr'),
                     learner = c('regr.lm', 'regr.ranger'),
                     dml_procedure = c('dml1', 'dml2'),
-                    inf_model = c('IV-type', 'DML2018'),
+                    inf_model = c('IV-type'),
                     stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -13,11 +13,49 @@ patrick::with_parameters_test_that("Regression tests for dlm estimates for parti
   file_name <- paste0("rds/", test_name, ".rds")
 
   learner_pars <- get_default_mlmethod(learner)
+
+  set.seed(i_setting)
   cf <- mlr::makeResampleDesc("CV", iters = 5)
   mlr::configureMlr(show.learner.output = FALSE, show.info = FALSE)
 
   all_thetas <- vector('numeric', length=n_settings)
   for (i_setting in 1:n_settings) {
+    set.seed(1234)
+    plr_hat <- dml_plr(data_plm[[i_setting]], y = "y", d = "d",
+                       resampling = cf, mlmethod = learner_pars$mlmethod,
+                       params = learner_pars$params,
+                       dml_procedure = dml_procedure, inf_model = inf_model)
+    all_thetas[i_setting] <- plr_hat$theta
+  }
+
+  expect_known_value(all_thetas, file_name, tolerance = 1e-4)
+}
+)
+
+
+context("Regression tests for dml estimates for partial linear regression model, 'DML2018'")
+
+test_cases = expand.grid(model = c('plr'),
+                    learner = c('regr.lm', 'regr.ranger'),
+                    dml_procedure = c('dml1', 'dml2'),
+                    inf_model = c('DML2018'),
+                    stringsAsFactors = FALSE)
+test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
+
+patrick::with_parameters_test_that("Regression tests for dlm estimates for partial linear regression model:",
+                                   .cases = test_cases, {
+
+  file_name <- paste0("rds/", test_name, ".rds")
+
+  learner_pars <- get_default_mlmethod(learner)
+
+  set.seed(1234)
+  cf <- mlr::makeResampleDesc("CV", iters = 5)
+  mlr::configureMlr(show.learner.output = FALSE, show.info = FALSE)
+
+  all_thetas <- vector('numeric', length=n_settings)
+  for (i_setting in 1:n_settings) {
+    set.seed(i_setting)
     plr_hat <- dml_plr(data_plm[[i_setting]], y = "y", d = "d",
                        resampling = cf, mlmethod = learner_pars$mlmethod,
                        params = learner_pars$params,
@@ -38,6 +76,8 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
   inf_model = 'IV-type'
 
   learner_pars <- get_default_mlmethod(learner)
+
+  set.seed(1234)
   cf <- mlr::makeResampleDesc("CV", iters = 5)
   mlr::configureMlr(show.learner.output = FALSE, show.info = FALSE)
 
@@ -58,8 +98,10 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
     set.seed(i_setting)
     rin <- mlr::makeResampleInstance(cf, size = nrow(this_data))
 
-    f1 <- as.formula(paste("d ~ -1 + ", paste(names(this_data)[grep("X", names(this_data))], collapse = " + ")))
-    f2 <- as.formula(paste("y ~ -1 + ", paste(names(this_data)[grep("X", names(this_data))], collapse = " + ")))
+    # f1 <- as.formula(paste("d ~ -1 + ", paste(names(this_data)[grep("X", names(this_data))], collapse = " + ")))
+    # f2 <- as.formula(paste("y ~ -1 + ", paste(names(this_data)[grep("X", names(this_data))], collapse = " + ")))
+    f1 <- as.formula(paste("d ~ 1 + ", paste(names(this_data)[grep("X", names(this_data))], collapse = " + ")))
+    f2 <- as.formula(paste("y ~ 1 + ", paste(names(this_data)[grep("X", names(this_data))], collapse = " + ")))
 
     n_iters <- cf$iters
     this_thetas_vec <- vector('numeric', length=n_iters)
@@ -73,10 +115,11 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
       m0 <- lm(f1, this_train_data)
       g0 <- lm(f2, this_train_data)
 
-      vhat <- this_test_data$d - predict(m0, newdata = this_test_data)
-      uhat <- this_test_data$y - predict(g0, newdata = this_test_data)
+      vhat <- this_test_data$d - predict(m0, newdata = this_test_data, type = "response")
+      uhat <- this_test_data$y - predict(g0, newdata = this_test_data, type = "response")
 
-      this_thetas_vec[i] <- 1/(mean(vhat * this_test_data$d)) * mean(vhat * uhat)
+      # this_thetas_vec[i] <- 1/(mean(vhat * this_test_data$d)) * mean(vhat * uhat)
+      this_thetas_vec[i] <- 1/(mean(vhat * uhat)) * mean(vhat * this_test_data$d)
 
     }
     all_thetas_manual[i_setting] <- mean(this_thetas_vec)

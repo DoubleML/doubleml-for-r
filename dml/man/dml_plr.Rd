@@ -4,9 +4,9 @@
 \alias{dml_plr}
 \title{Double Machine Learning for Partially Linear Regression.}
 \usage{
-dml_plr(data, y, d, resampling, mlmethod, params = list(params_m =
-  list(), params_g = list()), dml_procedure = "dml2",
-  inf_model = "DML2018", ...)
+dml_plr(data, y, d, resampling, ResampleInstance = NULL, mlmethod,
+  params = list(params_m = list(), params_g = list()),
+  dml_procedure = "dml2", inf_model = "DML2018", ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -16,6 +16,8 @@ dml_plr(data, y, d, resampling, mlmethod, params = list(params_m =
 \item{d}{Name of treatment variables for which inference should be performed.}
 
 \item{resampling}{Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.}
+
+\item{ResampleInstance}{(Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code {ResampleInstance} will override the information in \code{resampling}.}
 
 \item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.}
 
