@@ -120,6 +120,7 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
 
       this_thetas_vec[i] <- mean(vhat * uhat) / mean(vhat * this_test_data$d)
 
+
     }
     all_thetas_manual[i_setting] <- mean(this_thetas_vec)
   }

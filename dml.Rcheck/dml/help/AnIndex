@@ -1,9 +1,0 @@
-coef.InfTask	coef.InfTask
-confint.InfTask	confint.InfTask
-dml_plr	dml_plr
-extract_test_pred	extract_test_pred
-format.perc	extract_test_pred
-InferenceTask	InferenceTask
-orth_plr_dml1	orth_plr_dml1
-orth_plr_dml2	orth_plr_dml2
-print.InfTask	print.InfTask
