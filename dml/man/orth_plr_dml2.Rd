@@ -16,7 +16,7 @@ orth_plr_dml2(u_hat, v_hat, v_hatd, inf_model)
 \item{inf_model}{Method to estimate structural parameter.}
 }
 \value{
-List with estimate (\code{theta}) and standard error (\code{se}).
+List with estimate (\code{theta}) and variance (\code{var}).
 }
 \description{
 Function to estimate the structural parameter in a partially linear regression model (PLR) with DML2 algorithm.

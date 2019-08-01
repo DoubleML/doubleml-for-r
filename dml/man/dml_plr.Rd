@@ -6,7 +6,7 @@
 \usage{
 dml_plr(data, y, d, resampling = NULL, ResampleInstance = NULL,
   mlmethod, params = list(params_m = list(), params_g = list()),
-  dml_procedure = "dml2", inf_model = "IV-type", ...)
+  dml_procedure = "dml2", inf_model = "IV-type", se_type = "ls", ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -26,6 +26,8 @@ dml_plr(data, y, d, resampling = NULL, ResampleInstance = NULL,
 \item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
 
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
+
+\item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
 
 \item{...}{further options passed to underlying functions.}
 }

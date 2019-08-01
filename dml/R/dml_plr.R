@@ -9,6 +9,7 @@
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
+#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
 #' @param ... further options passed to underlying functions.
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
@@ -16,7 +17,7 @@
 dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "IV-type", ...) {
+                    inf_model = "IV-type", se_type = "ls", ...) {
 
   # function not yet fully implemented (test)
   checkmate::check_class(resampling, "ResampleDesc")
@@ -26,6 +27,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   # tbd: parameter passing
 
   n <- nrow(data)
+  theta <- se <- NA
 
   if (is.null(ResampleInstance)) {
     n_iters <- resampling$iters
@@ -44,6 +46,9 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
     }
 
+  if (se_type != "ls") {
+    se_type <- inf_model
+  }
 
   # nuisance g
   g_indx <-  grepl(d, names(data)) == FALSE
@@ -77,22 +82,22 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   # DML 1
   if ( dml_procedure == "dml1") {
     thetas <- rep(NA, n_iters)
-    se <- NA
-
+    
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
-        m_hat = m_hat_list[[i]]
-        g_hat = g_hat_list[[i]]
+        m_hat <- m_hat_list[[i]]
+        g_hat <- g_hat_list[[i]]
 
         v_hat <- D[test_index] - m_hat
         u_hat <- Y[test_index] - g_hat
         v_hatd <- v_hat*D[test_index]
 
         orth_est <- orth_plr_dml1(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model) #, se_type)
-        thetas[i] = orth_est$theta
+        thetas[i] <- orth_est$theta
     }
-    theta = mean(thetas, na.rm = TRUE)
-    se <- NA
+    theta <- mean(thetas, na.rm = TRUE)
+    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
+               inf_model = inf_model, se_type = se_type))
   }
 
   if ( dml_procedure == "dml2") {
@@ -120,7 +125,9 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
     orth_est <- orth_plr_dml2(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model)
     theta <- orth_est$theta
-    se <- orth_est$se
+  #  se <- sqrt(orth_est$var)
+    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
+               inf_model = inf_model, se_type = se_type))
   }
 
 
@@ -129,7 +136,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   #   # ...
   # }
     # tbd: add standard errors
-
+  names(theta) <- names(se) <- d
   res <- list( theta = theta, se = se)
   return(res)
 }
@@ -143,7 +150,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 #' @param u_hat Residuals from \eqn{y-g(x)}.
 #' @param v_hatd Product of \code{v_hat} with \code{d}.
 #' @param inf_model Method to estimate structural parameter.
-#' @return List with estimate (\code{theta}) and standard error (\code{se}).
+#' @return List with estimate (\code{theta}) and variance (\code{var}).
 #' @export
 
 # Function for orthogonal estimation of plr with dml1
@@ -153,7 +160,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   # tbd: add standard error estimation
 orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-  theta <- se <- NA
+  theta <- var <- NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
@@ -169,7 +176,7 @@ orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
     stop("Inference framework for orthogonal estimation unknown")
   }
 
-  res <- list(theta = theta, se = se)
+  res <- list(theta = theta, var = var)
   return(res)
 }
 
@@ -182,7 +189,8 @@ orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 #' @param u_hat Residuals from \eqn{y-g(x)}.
 #' @param v_hatd Product of \code{v_hat} with \code{d}.
 #' @param inf_model Method to estimate structural parameter.
-#' @return List with estimate (\code{theta}) and standard error (\code{se}).
+#' 
+#' @return List with estimate (\code{theta}) and variance (\code{var}).
 #' @export
 
 # Function for orthogonal estimation of plr with dml1
@@ -192,12 +200,11 @@ orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
   # tbd: add standard error estimation
 orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-  theta <- se <- NA
+  theta <- var <- NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
     theta <- stats::coef(res_fit)
-    se <- sqrt(sandwich::vcovHC(res_fit))
   }
 
    else if (inf_model == 'IV-type') {
@@ -209,8 +216,64 @@ orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
     stop("Inference framework for orthogonal estimation unknown")
   }
 
-  res <- list(theta = theta, se = se)
+  res <- list(theta = theta, var = var)
   return(res)
 }
+
+
+#' Variance estimation for DML estimator in the partially linear regression model
+#'
+#' Variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
+#'
+#' @param theta final dml estimator for the partially linear model.
+#' @param d treatment variable.
+#' @param v_hat Residuals from \eqn{d-m(x)}.
+#' @param u_hat Residuals from \eqn{y-g(x)}.
+#' @param v_hatd Product of \code{v_hat} with \code{d}.
+#' @param inf_model Method to estimate structural parameter.
+#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
+#' @return Variance estimator (\code{var}).
+var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
+  
+  var <- NA
+  
+  if (se_type == inf_model){ 
+    
+    if (inf_model == "DML2018") {
+  
+    var <- 1/length(u_hat) * 1/mean(v_hatd)^2  * mean( ( (u_hat - d*theta)*v_hat)^2)
+    }
+    
+     else if (inf_model == 'IV-type') {
+     var <-  1/length(u_hat) * 1/mean(v_hat^2)^2  * mean( ( (u_hat - v_hat*theta)*v_hat)^2)
+    }
+  
+  }
+   
+  # Q: only for "dml2"?
+  if (se_type == "ls" & inf_model == "DML2018") {
+      res_fit <- stats::lm(u_hat ~ 0 + v_hat)
+      var <- sandwich::vcovHC(res_fit)
+  }
+  
+  return(c(var))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
