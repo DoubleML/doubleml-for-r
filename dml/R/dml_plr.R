@@ -75,13 +75,14 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   }
 
   test_index_list <- rin$test.inds
+  n_k <- vapply(test_index_list, length, double(1))
 
   D <- data[ , d]
   Y <- data[ , y]
 
   # DML 1
   if ( dml_procedure == "dml1") {
-    thetas <- rep(NA, n_iters)
+    thetas <- vars <- rep(NA, n_iters)
     
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
@@ -94,10 +95,11 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
         orth_est <- orth_plr_dml1(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
+        vars[i] <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
+               inf_model = inf_model, se_type = se_type)
     }
     theta <- mean(thetas, na.rm = TRUE)
-    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
-               inf_model = inf_model, se_type = se_type))
+    se <- sqrt(mean(vars, na.rm=T))
   }
 
   if ( dml_procedure == "dml2") {
