@@ -13,6 +13,7 @@
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
+#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.
 #' @param ... further options passed to underlying functions.
 #' @return Result object of class \code{InfTask} with estimated coefficient and standard errors.
 #' @export
@@ -22,7 +23,7 @@
 InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling = NULL,
                           ResampleInstance = NULL, mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
-                          params_g = list()), inf_model = "IV-type", ...){
+                          params_g = list()), inf_model = "IV-type", se_type = "ls", ...){
 
   if (is.null(ResampleInstance)) {
 
@@ -45,7 +46,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
   res <- dml_plr(data = data, y = y, d = d, z = z,
                   resampling = resampling, ResampleInstance = ResampleInstance, mlmethod = mlmethod,
                   dml_procedure = dml_procedure, params = params,
-                  inf_model = inf_model, ...)
+                  inf_model = inf_model, se_type = se_type, ...)
 
   class(res) <- "InfTask"
 
