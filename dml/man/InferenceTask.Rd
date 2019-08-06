@@ -7,7 +7,8 @@
 InferenceTask(data, y, d, z = NULL, model = "plr", k = 2,
   resampling = NULL, ResampleInstance = NULL, mlmethod,
   dml_procedure = "dml2", params = list(params_m = list(), params_g =
-  list()), inf_model = "IV-type", se_type = "ls", ...)
+  list()), inf_model = "IV-type", se_type = "ls", bootstrap = "none",
+  nRep = 500, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -35,6 +36,10 @@ InferenceTask(data, y, d, z = NULL, model = "plr", k = 2,
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 
 \item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
+
+\item{bootstrap}{Choice for implementation of multplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.}
+
+\item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 
 \item{...}{further options passed to underlying functions.}
 }

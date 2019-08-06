@@ -10,6 +10,8 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
 #' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
+#' @param bootstrap Choice for implementation of multplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.
+#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
@@ -17,7 +19,8 @@
 dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "IV-type", se_type = "ls", ...) {
+                    inf_model = "IV-type", se_type = "ls",
+                    bootstrap = "none",  nRep = 500, ...) {
 
   # function not yet fully implemented (test)
   checkmate::check_class(resampling, "ResampleDesc")
@@ -27,7 +30,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   # tbd: parameter passing
 
   n <- nrow(data)
-  theta <- se <- NA
+  theta <- se <- boot_se <- NA
 
   if (is.null(ResampleInstance)) {
     n_iters <- resampling$iters
@@ -130,6 +133,9 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   #  se <- sqrt(orth_est$var)
     se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
                inf_model = inf_model, se_type = se_type))
+    # boot_se <- multiplier_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
+                              # v_hatd = v_hatd, inf_model = inf_model, se = se, 
+                              # bootstrap = bootstrap, nRep = nRep)
   }
 
 
@@ -138,8 +144,8 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   #   # ...
   # }
     # tbd: add standard errors
-  names(theta) <- names(se) <- d
-  res <- list( theta = theta, se = se)
+  names(theta) <- names(se) <- names(boot_se) <- d
+  res <- list( theta = theta, se = se, boot_se = boot_se)
   return(res)
 }
 
@@ -243,11 +249,11 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
     
     if (inf_model == "DML2018") {
   
-    var <- 1/length(u_hat) * 1/mean(v_hatd)^2  * mean( ( (u_hat - d*theta)*v_hat)^2)
+    var <- 1/length(u_hat) * 1/(mean(v_hat*v_hat))^2  * mean( ( (u_hat - v_hat*theta)*v_hat)^2)
     }
     
      else if (inf_model == 'IV-type') {
-     var <-  1/length(u_hat) * 1/mean(v_hat^2)^2  * mean( ( (u_hat - v_hat*theta)*v_hat)^2)
+     var <-  1/length(u_hat) * (1/mean(v_hatd))^2  * mean( ( (u_hat - d*theta)*v_hat)^2)
     }
   
   }
@@ -258,12 +264,9 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
       var <- sandwich::vcovHC(res_fit)
   }
   
+  
   return(c(var))
 }
-
-
-
-
 
 
 
