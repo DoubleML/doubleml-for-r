@@ -17,7 +17,7 @@ var_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type)
 
 \item{v_hatd}{Product of \code{v_hat} with \code{d}.}
 
-\item{inf_model}{Method to estimate structural parameter.}
+\item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 
 \item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
 }

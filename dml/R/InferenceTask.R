@@ -7,16 +7,7 @@
 #' @param z Name of instrument variable.
 #' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).
 #' @param k Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
-#' @param resampling (Optional) resampling scheme for cross-fitting of class \code{"ResampleDesc"}, default 2-fold cross-fitting.
-#' @param ResampleInstance (Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
-#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
-#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.
-#' @param bootstrap Choice for implementation of multplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.
-#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
-#' @param ... further options passed to underlying functions.
+#' @inheritParams dml_plr
 #' @return Result object of class \code{InfTask} with estimated coefficient and standard errors.
 #' @export
 
@@ -50,7 +41,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
                   resampling = resampling, ResampleInstance = ResampleInstance, mlmethod = mlmethod,
                   dml_procedure = dml_procedure, params = params,
                   inf_model = inf_model, se_type = se_type,
-                  bootstrap == bootstrap, nRep = nRep, ...)
+                  bootstrap = bootstrap, nRep = nRep, ...)
 
   class(res) <- "InfTask"
 
@@ -70,7 +61,14 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
 #' @export
 confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
   cf <- stats::coef(object)
-  ses <- object$se
+  
+  if (is.na(object$boot_se)) {
+    ses <- object$se}
+  
+  if (!is.na(object$boot_se)){
+    ses <- object$boot_se
+  }
+  
   pnames <- names(cf)
 
   if (missing(parm))

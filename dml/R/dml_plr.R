@@ -10,7 +10,7 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
 #' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
-#' @param bootstrap Choice for implementation of multplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.
+#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
 #' @return Result object with estimated coefficient and standard errors.
@@ -31,6 +31,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
   n <- nrow(data)
   theta <- se <- boot_se <- NA
+  boot_theta <- rep(NA, nRep)
 
   if (is.null(ResampleInstance)) {
     n_iters <- resampling$iters
@@ -85,7 +86,8 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
   # DML 1
   if ( dml_procedure == "dml1") {
-    thetas <- vars <- rep(NA, n_iters)
+    thetas <- vars <- boot_vars <-  rep(NA, n_iters)
+    boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
     
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
@@ -96,14 +98,31 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
         u_hat <- Y[test_index] - g_hat
         v_hatd <- v_hat*D[test_index]
 
-        orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model) #, se_type)
+        orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
+                                inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
-        vars[i] <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
-               inf_model = inf_model, se_type = se_type)
+        vars[i] <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], 
+                                      u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
+                                      inf_model = inf_model, se_type = se_type)
+        
+        if (bootstrap != "none") {
+      
+        boot <- bootstrap_plr(theta = orth_est$theta, d = D[test_index], 
+                              u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd,
+                              inf_model = inf_model, se = se,
+                              bootstrap = bootstrap, nRep = nRep)
+        
+        boot_vars[i] <- n_k[i]/n * boot$boot_var 
+        
+        boot_thetas[i,] <- boot$boot_theta
+        
+       }
     }
     
     theta <- mean(thetas, na.rm = TRUE)
-    se <- sqrt(mean(vars, na.rm=T))
+    se <- sqrt(mean(vars, na.rm = TRUE))
+    boot_se <- sqrt(mean(boot_vars, na.rm = TRUE))
+    boot_theta <- apply(boot_thetas, 2, function(x) max(abs(x))) # conservative
   }
 
   if ( dml_procedure == "dml2") {
@@ -130,18 +149,26 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     }
 
     orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model)
+    
     theta <- orth_est$theta
   #  se <- sqrt(orth_est$var)
+    
     se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
                inf_model = inf_model, se_type = se_type))
-    # boot_se <- multiplier_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
-                              # v_hatd = v_hatd, inf_model = inf_model, se = se, 
-                              # bootstrap = bootstrap, nRep = nRep)
+    
+    if (bootstrap != "none") {
+      
+      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
+                              v_hatd = v_hatd, inf_model = inf_model, se = se,
+                              bootstrap = bootstrap, nRep = nRep)
+      boot_se <- sqrt(boot$boot_var)
+      boot_theta <- boot$boot_theta
+    }
   }
 
 
   names(theta) <- names(se) <- names(boot_se) <- d
-  res <- list( theta = theta, se = se, boot_se = boot_se)
+  res <- list( theta = theta, se = se, boot_se = boot_se, boot_theta = boot_theta)
   return(res)
 }
 
@@ -151,11 +178,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 #'
 #' Function to estimate the structural parameter in a partially linear regression model (PLR).
 #'
-#' @param v_hat Residuals from \eqn{d-m(x)}.
-#' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hatd Product \code{v_hat * d}.
-#' @param inf_model Method to estimate structural parameter.
-#' 
+#' @inheritParams var_plr
 #' @return List with estimate (\code{theta}).
 #' @export
 orth_plr_dml <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
@@ -184,14 +207,12 @@ orth_plr_dml <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 #' Variance estimation for DML estimator in the partially linear regression model
 #'
 #' Variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
-#'
+#' @inheritParams dml_plr
 #' @param theta final dml estimator for the partially linear model.
 #' @param d treatment variable.
 #' @param v_hat Residuals from \eqn{d-m(x)}.
 #' @param u_hat Residuals from \eqn{y-g(x)}.
 #' @param v_hatd Product of \code{v_hat} with \code{d}.
-#' @param inf_model Method to estimate structural parameter.
-#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
 #' @return Variance estimator (\code{var}).
 var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
   
@@ -219,6 +240,56 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
   
   return(c(var))
 }
+
+
+
+#' Bootstrap Implementation for Partially Linear Regression Model 
+#'
+#' Bootstrapped variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
+#'
+#' @inheritParams var_plr
+#' @inheritParams dml_plr
+#' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
+bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap, nRep) {
+  
+  boot_var <- NA
+  
+ if (inf_model == "DML2018") {
+  
+    score <- (u_hat - v_hat*theta)*v_hat
+  }
+    
+  else if (inf_model == 'IV-type') {
+    score <- (u_hat - d*theta)*v_hat
+  }
+  
+  n <- length(d)
+  pertub <- rep(NA, nRep)
+  
+  for (i in seq(nRep)) {
+    
+    if (bootstrap == "Bayes") {
+        weights <- rexp(n, rate = 1) - 1
+    }
+    
+      if (bootstrap == "normal") {
+        weights <- rnorm(n)
+      }
+    
+      if (bootstrap == "wild") {
+        weights <- rnorm(n)/sqrt(2) + (rnorm(n)^2 - 1)/2
+      }
+      
+     pertub[i] <-  mean(weights * score)
+    
+  }
+  
+  boot_var <- var(pertub)
+  
+  res = list(boot_var = boot_var, boot_theta = pertub)
+  return(c(res))
+}
+
 
 
 
