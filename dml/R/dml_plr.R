@@ -96,11 +96,12 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
         u_hat <- Y[test_index] - g_hat
         v_hatd <- v_hat*D[test_index]
 
-        orth_est <- orth_plr_dml1(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model) #, se_type)
+        orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
         vars[i] <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
                inf_model = inf_model, se_type = se_type)
     }
+    
     theta <- mean(thetas, na.rm = TRUE)
     se <- sqrt(mean(vars, na.rm=T))
   }
@@ -128,7 +129,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
     }
 
-    orth_est <- orth_plr_dml2(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model)
+    orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model)
     theta <- orth_est$theta
   #  se <- sqrt(orth_est$var)
     se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
@@ -139,76 +140,27 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   }
 
 
-  # tbd: add function to calculate standard error with dml1 ...
-  # if (is.null(se)){
-  #   # ...
-  # }
-    # tbd: add standard errors
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( theta = theta, se = se, boot_se = boot_se)
   return(res)
 }
 
 
-#' Orthogonalized Estimation of Coefficient in PLR
-#'
-#' Function to estimate the structural parameter in a partially linear regression model (PLR) with DML1 algorithm.
-#'
-#' @param v_hat Residuals from \eqn{d-m(x)}. .
-#' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hatd Product of \code{v_hat} with \code{d}.
-#' @param inf_model Method to estimate structural parameter.
-#' @return List with estimate (\code{theta}) and variance (\code{var}).
-#' @export
-
-# Function for orthogonal estimation of plr with dml1
-  # inf_model: How to estimate parameter
-    # -> (Victor's tutorial / DML2018 code from paper) -> tbd: option name?
-    # -> 1:1 implementation from paper formula -> tbd: option name?
-  # tbd: add standard error estimation
-orth_plr_dml1 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
-
-  theta <- var <- NA
-
-  if (inf_model == "DML2018") {
-    res_fit <- stats::lm(u_hat ~ 0 + v_hat)
-    theta <- stats::coef(res_fit)
-  }
-
-   else if (inf_model == 'IV-type') {
-     theta <- mean(v_hat*u_hat)/mean(v_hatd)
-    # se <- 1/(mean(u_hat)^2) * mean((v_hat - theta*u_hat)*u_hat)^2
-  }
-
-  else {
-    stop("Inference framework for orthogonal estimation unknown")
-  }
-
-  res <- list(theta = theta, var = var)
-  return(res)
-}
-
 
 #' Orthogonalized Estimation of Coefficient in PLR
 #'
-#' Function to estimate the structural parameter in a partially linear regression model (PLR) with DML2 algorithm.
+#' Function to estimate the structural parameter in a partially linear regression model (PLR).
 #'
 #' @param v_hat Residuals from \eqn{d-m(x)}.
 #' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hatd Product of \code{v_hat} with \code{d}.
+#' @param v_hatd Product \code{v_hat * d}.
 #' @param inf_model Method to estimate structural parameter.
 #' 
-#' @return List with estimate (\code{theta}) and variance (\code{var}).
+#' @return List with estimate (\code{theta}).
 #' @export
+orth_plr_dml <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 
-# Function for orthogonal estimation of plr with dml1
-  # inf_model: How to estimate parameter
-    # -> (Victor's tutorial / DML2018 code from paper) -> tbd: option name?
-    # -> 1:1 implementation from paper formula -> tbd: option name?
-  # tbd: add standard error estimation
-orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
-
-  theta <- var <- NA
+  theta <-  NA
 
   if (inf_model == "DML2018") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
@@ -224,7 +176,7 @@ orth_plr_dml2 <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
     stop("Inference framework for orthogonal estimation unknown")
   }
 
-  res <- list(theta = theta, var = var)
+  res <- list(theta = theta)
   return(res)
 }
 
