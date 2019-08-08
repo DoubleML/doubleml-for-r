@@ -37,12 +37,29 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
 
   # tbd: implementation of object orientation -> from here jump to plr, ...
 
-  res <- dml_plr(data = data, y = y, d = d, z = z,
+  p1 <- length(d)
+  
+  theta <- se <- boot_se <- rep(NA, p1)
+  boot_theta <- matrix(NA, nrow = p1, ncol = nRep)
+  
+  for (j in seq(p1)) {
+    d_j <- d[j]
+  
+    res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
                   resampling = resampling, ResampleInstance = ResampleInstance, mlmethod = mlmethod,
                   dml_procedure = dml_procedure, params = params,
                   inf_model = inf_model, se_type = se_type,
                   bootstrap = bootstrap, nRep = nRep, ...)
-
+    
+    theta[j] <- res_j$theta
+    se[j] <- res_j$se
+    boot_se[j] <- res_j$boot_se
+    boot_theta[j,] <- res_j$boot_theta
+  }
+  
+  names(theta) <- names(se) <- names(boot_se) <- d
+  res <- list( theta = theta, se = se, boot_se = boot_se, boot_theta = boot_theta)
+  
   class(res) <- "InfTask"
 
   return(res)
