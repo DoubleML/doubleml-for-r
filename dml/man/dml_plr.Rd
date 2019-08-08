@@ -7,7 +7,7 @@
 dml_plr(data, y, d, resampling = NULL, ResampleInstance = NULL,
   mlmethod, params = list(params_m = list(), params_g = list()),
   dml_procedure = "dml2", inf_model = "IV-type", se_type = "ls",
-  bootstrap = "none", nRep = 500, ...)
+  bootstrap = "normal", nRep = 500, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -30,7 +30,7 @@ dml_plr(data, y, d, resampling = NULL, ResampleInstance = NULL,
 
 \item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
 
-\item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.}
+\item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.}
 
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 

@@ -17,7 +17,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
                           ResampleInstance = NULL, mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
-                          bootstrap = "none", nRep = 500, ...){
+                          bootstrap = "normal", nRep = 500, ...){
 
   if (is.null(ResampleInstance)) {
 
@@ -62,12 +62,13 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
 confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
   cf <- stats::coef(object)
   
-  if (is.na(object$boot_se)) {
-    ses <- object$se}
+  # if (is.na(object$boot_se)) {
+    ses <- object$se
+    # }
   
-  if (!is.na(object$boot_se)){
-    ses <- object$boot_se
-  }
+  # if (!is.na(object$boot_se)){
+  #   ses <- object$boot_se
+  # }
   
   pnames <- names(cf)
 
@@ -82,15 +83,32 @@ confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
   #   parm <- pnames
   # else if (is.numeric(parm))
   #   parm <- pnames[parm]
-
-  a <- (1 - level)/2
-  a <- c(a, 1 - a)
-  fac <- stats::qnorm(a)
-  pct <- format.perc(a, 3)
-  ci <- array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm,
-                                                                   pct))
-  ci[] <- cf[parm] + ses %o% fac
-
+ 
+  if (joint == FALSE) {
+    a <- (1 - level)/2
+    a <- c(a, 1 - a)
+    fac <- stats::qnorm(a)
+    pct <- format.perc(a, 3)
+    ci <- array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm,
+                                                                     pct))
+    ci[] <- cf[parm] + ses %o% fac
+    
+  }
+  
+  if (joint == TRUE) {
+    
+    a <- (1 - level) 
+    ab <- c(a/2, 1 - a/2)
+    pct <- format.perc(ab, 3) 
+    ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
+    
+    sim <- apply(abs(object$boot_theta), 2, max)
+      
+    hatc <- quantile(sim, probs = 1 - a)
+    
+    ci[, 1] <- cf[parm] - hatc * ses
+    ci[, 2] <- cf[parm] + hatc * ses
+   }
   return(ci)
 }
 
@@ -99,7 +117,14 @@ confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
 #' Methods for S3 class \code{InfTask}
 #'
 #' @param x Object of class \code{InfTask}.
-print.InfTask <- function(x) return(list(theta = x$theta , se = x$se))
+print.InfTask <- function(x) {
+  
+  if (is.na(x$boot_se)) {
+   return(list(theta = x$theta , se = x$se))}
+  if (!is.na(x$boot_se)) {
+    return(list(theta = x$theta, se = x$se, boot_se = x$boot_se))
+  }
+}
 
 #' Methods for Inference Task
 #'

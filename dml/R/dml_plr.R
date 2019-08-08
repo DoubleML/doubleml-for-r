@@ -10,7 +10,7 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
 #' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
-#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.
+#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
 #' @return Result object with estimated coefficient and standard errors.
@@ -20,7 +20,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
                     params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "IV-type", se_type = "ls",
-                    bootstrap = "none",  nRep = 500, ...) {
+                    bootstrap = "normal",  nRep = 500, ...) {
 
   # function not yet fully implemented (test)
   checkmate::check_class(resampling, "ResampleDesc")
@@ -31,7 +31,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
   n <- nrow(data)
   theta <- se <- boot_se <- NA
-  boot_theta <- rep(NA, nRep)
+  boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
   if (is.null(ResampleInstance)) {
     n_iters <- resampling$iters
@@ -88,6 +88,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   if ( dml_procedure == "dml1") {
     thetas <- vars <- boot_vars <-  rep(NA, n_iters)
     boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
+    se_i <- NA
     
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
@@ -101,7 +102,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
         orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
                                 inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
-        vars[i] <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], 
+        vars[i] <- se_i <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], 
                                       u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
                                       inf_model = inf_model, se_type = se_type)
         
@@ -109,10 +110,10 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
       
         boot <- bootstrap_plr(theta = orth_est$theta, d = D[test_index], 
                               u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd,
-                              inf_model = inf_model, se = se,
+                              inf_model = inf_model, se = sqrt(se_i),
                               bootstrap = bootstrap, nRep = nRep)
         
-        boot_vars[i] <- n_k[i]/n * boot$boot_var 
+       # boot_vars[i] <- n_k[i]/n * boot$boot_var 
         
         boot_thetas[i,] <- boot$boot_theta
         
@@ -121,8 +122,8 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     
     theta <- mean(thetas, na.rm = TRUE)
     se <- sqrt(mean(vars, na.rm = TRUE))
-    boot_se <- sqrt(mean(boot_vars, na.rm = TRUE))
-    boot_theta <- apply(boot_thetas, 2, function(x) max(abs(x))) # conservative
+   # boot_se <- sqrt(mean(boot_vars, na.rm = TRUE))
+    boot_theta <- matrix(apply(abs(boot_thetas), 2, max), nrow = 1, ncol = nRep) # conservative
   }
 
   if ( dml_procedure == "dml2") {
@@ -161,7 +162,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
       boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
                               v_hatd = v_hatd, inf_model = inf_model, se = se,
                               bootstrap = bootstrap, nRep = nRep)
-      boot_se <- sqrt(boot$boot_var)
+  #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
     }
   }
@@ -245,7 +246,7 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
 
 #' Bootstrap Implementation for Partially Linear Regression Model 
 #'
-#' Bootstrapped variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
+#' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a partially linear regression model (PLR) with double machine learning.
 #'
 #' @inheritParams var_plr
 #' @inheritParams dml_plr
@@ -255,16 +256,19 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
   boot_var <- NA
   
  if (inf_model == "DML2018") {
-  
+
     score <- (u_hat - v_hat*theta)*v_hat
-  }
+    J <-  mean(v_hat*v_hat)
     
+  }
+
   else if (inf_model == 'IV-type') {
     score <- (u_hat - d*theta)*v_hat
+    J <- mean(v_hatd)
   }
   
   n <- length(d)
-  pertub <- rep(NA, nRep)
+  pertub <- matrix(NA, nrow = 1, ncol = nRep)
   
   for (i in seq(nRep)) {
     
@@ -280,13 +284,17 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
         weights <- rnorm(n)/sqrt(2) + (rnorm(n)^2 - 1)/2
       }
       
-     pertub[i] <-  mean(weights * score)
+      # pertub[i] <-  sum(weights * score)
+     # pertub[i] <-  mean(weights * theta)
+     pertub[1,i] <- mean(weights * 1/se * 1/J * score ) 
     
   }
   
-  boot_var <- var(pertub)
+  # boot_var <- var(pertub)
   
-  res = list(boot_var = boot_var, boot_theta = pertub)
+  # res = list(boot_var = boot_var, boot_theta = pertub)
+  
+  res = list(boot_theta = pertub)
   return(c(res))
 }
 

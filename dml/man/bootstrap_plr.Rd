@@ -20,7 +20,7 @@ bootstrap_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap,
 
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 
-\item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"none"} (by default), \code{"Bayes"}, \code{"normal"}, \code{"wild"}.}
+\item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.}
 
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 }
@@ -28,5 +28,5 @@ bootstrap_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap,
 List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
 }
 \description{
-Bootstrapped variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
+Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a partially linear regression model (PLR) with double machine learning.
 }
