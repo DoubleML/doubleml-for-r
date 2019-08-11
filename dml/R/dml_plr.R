@@ -5,8 +5,6 @@
 #' @param d Name of treatment variables for which inference should be performed.
 #' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.
 #' @param ResampleInstance (Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
 #' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
@@ -30,7 +28,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   # tbd: parameter passing
 
   n <- nrow(data)
-  theta <- se <- boot_se <- NA
+  theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
   if (is.null(ResampleInstance)) {
@@ -122,6 +120,9 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     
     theta <- mean(thetas, na.rm = TRUE)
     se <- sqrt(mean(vars, na.rm = TRUE))
+    
+    t <- theta/se
+    pval <- 2 * pnorm(-abs(t))
    # boot_se <- sqrt(mean(boot_vars, na.rm = TRUE))
     boot_theta <- matrix(apply(abs(boot_thetas), 2, max), nrow = 1, ncol = nRep) # conservative
   }
@@ -157,6 +158,10 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
                inf_model = inf_model, se_type = se_type))
     
+    t <- theta/se 
+    
+    pval <-  2 * pnorm(-abs(t))
+    
     if (bootstrap != "none") {
       
       boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
@@ -169,7 +174,8 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
 
   names(theta) <- names(se) <- names(boot_se) <- d
-  res <- list( theta = theta, se = se, boot_se = boot_se, boot_theta = boot_theta)
+  res <- list( theta = theta, se = se, t = t, pval = pval,
+               boot_se = boot_se, boot_theta = boot_theta)
   return(res)
 }
 

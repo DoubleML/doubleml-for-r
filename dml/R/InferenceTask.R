@@ -7,6 +7,8 @@
 #' @param z Name of instrument variable.
 #' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).
 #' @param k Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
+#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
+#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m. If multiple target coefficients are provided the names of the lists with hyperparameters and the target coefficients must match.
 #' @inheritParams dml_plr
 #' @return Result object of class \code{InfTask} with estimated coefficient and standard errors.
 #' @export
@@ -39,26 +41,49 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
 
   p1 <- length(d)
   
-  theta <- se <- boot_se <- rep(NA, p1)
+  coefficients <- se <- t <- pval <- boot_se <- rep(NA, p1)
   boot_theta <- matrix(NA, nrow = p1, ncol = nRep)
+  # 
+  # if ( length(mlmethod$mlmethod_m) == 1 & p1 > 1) {
+  #   mlmethod$mlmethod_m <- rep(mlmethod$mlmethod_m, p1)
+  #   message("Only one mlmethod_m provided, assumed to be identical for all coefficients")
+  # }
+  # 
+  if ( length(params$params_m) == 1 & p1 > 1) {
+    params$params_m <- rep(params$params_m, p1)
+    message("Only one set of parameters params_m provided, assumed to be identical for all coefficients")
+  }
+  
+  if ( length(params$params_m) == p1 & is.null(names(params$params_m)) ) {
+    names(params$params_m) <- d
+  }
+  # 
+  #   if ( length(mlmethod$mlmethod_m) == p1 & is.null(names(mlmethod$mlmethod_m))) {
+  #   names(mlmethod$mlmethod_m) <- d
+  # }
+  # 
   
   for (j in seq(p1)) {
     d_j <- d[j]
   
     res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
-                  resampling = resampling, ResampleInstance = ResampleInstance, mlmethod = mlmethod,
-                  dml_procedure = dml_procedure, params = params,
+                  resampling = resampling, ResampleInstance = ResampleInstance, 
+                  mlmethod = mlmethod, 
+                  params = list(params_m = params$params_m[[j]], params_g = params$params_g),
                   inf_model = inf_model, se_type = se_type,
                   bootstrap = bootstrap, nRep = nRep, ...)
     
-    theta[j] <- res_j$theta
+    coefficients[j] <- res_j$theta
     se[j] <- res_j$se
+    t[j] <- res_j$t
+    pval[j] <- res_j$pval
     boot_se[j] <- res_j$boot_se
     boot_theta[j,] <- res_j$boot_theta
   }
   
-  names(theta) <- names(se) <- names(boot_se) <- d
-  res <- list( theta = theta, se = se, boot_se = boot_se, boot_theta = boot_theta)
+  names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- rownames(boot_theta) <- d
+  res <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
+               boot_se = boot_se, boot_theta = boot_theta)
   
   class(res) <- "InfTask"
 
@@ -136,10 +161,11 @@ confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
 #' @param x Object of class \code{InfTask}.
 print.InfTask <- function(x) {
   
-  if (is.na(x$boot_se)) {
-   return(list(theta = x$theta , se = x$se))}
-  if (!is.na(x$boot_se)) {
-    return(list(theta = x$theta, se = x$se, boot_se = x$boot_se))
+  if (all(is.na(x$boot_se))) {
+   return(list(coefficients = x$coefficients , se = x$se))}
+  
+  if (!all(is.na(x$boot_se))) {
+    return(list(coefficients = x$coefficients, se = x$se, boot_se = x$boot_se))
   }
 }
 
@@ -147,7 +173,50 @@ print.InfTask <- function(x) {
 #'
 #' Methods for S3 class \code{InfTask}
 #'
-#' @param x Object of class \code{InfTask}.
-coef.InfTask <- function(x) return(x$theta)
+#' @inheritParams print.InfTask
+coef.InfTask <- function(x) return(x$coefficients)
+
+
+#' Summarizing Inference Task
+#' 
+#' Summary method for class \code{InfTask}. 
+#' 
+#' @inheritParams confint.InfTask
+summary.InfTask <- function(object, ...) {
+  ans <- NULL
+  k <- length(object$coefficients)
+  table <- matrix(NA, ncol = 4, nrow = k)
+  rownames(table) <- names(object$coefficients)
+  colnames(table) <- c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
+  table[, 1] <- object$coefficients
+  table[, 2] <- object$se
+  table[, 3] <- object$t
+  table[, 4] <- object$pval
+  ans$coefficients <- table
+  ans$object <- object
+  class(ans) <- "summary.InfTask"
+  return(ans)
+}
+
+
+#' @param x an object of class \code{summary.InfTask}, usually a result of a call or \code{summary.InfTask}
+#' @param digits the number of significant digits to use when printing.
+#' @method print summary.rlassoEffects
+#' @rdname summary.InfTask
+#' @export
+print.summary.InfTask <- function(x, digits = max(3L, getOption("digits") - 
+                                                          3L), ...) {
+  if (length(coef(x$object))) {
+    k <- dim(x$coefficients)[1]
+    table <- x$coefficients
+    print("Estimates and significance testing of the effect of target variables")
+    printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE)
+    cat("\n")
+  } else {
+    cat("No coefficients\n")
+  }
+  cat("\n")
+  invisible(table)
+}
 
 
