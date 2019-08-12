@@ -3,6 +3,7 @@
 #' @param data Data frame.
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
+#' @inheritParams InferenceTask
 #' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.
 #' @param ResampleInstance (Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
@@ -122,7 +123,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     se <- sqrt(mean(vars, na.rm = TRUE))
     
     t <- theta/se
-    pval <- 2 * pnorm(-abs(t))
+    pval <- 2 * stats::pnorm(-abs(t))
    # boot_se <- sqrt(mean(boot_vars, na.rm = TRUE))
     boot_theta <- matrix(apply(abs(boot_thetas), 2, max), nrow = 1, ncol = nRep) # conservative
   }
@@ -160,7 +161,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     
     t <- theta/se 
     
-    pval <-  2 * pnorm(-abs(t))
+    pval <-  2 * stats::pnorm(-abs(t))
     
     if (bootstrap != "none") {
       
@@ -281,26 +282,20 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
   for (i in seq(nRep)) {
     
     if (bootstrap == "Bayes") {
-        weights <- rexp(n, rate = 1) - 1
+        weights <- stats::rexp(n, rate = 1) - 1
     }
     
       if (bootstrap == "normal") {
-        weights <- rnorm(n)
+        weights <- stats::rnorm(n)
       }
     
       if (bootstrap == "wild") {
-        weights <- rnorm(n)/sqrt(2) + (rnorm(n)^2 - 1)/2
+        weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
       
-      # pertub[i] <-  sum(weights * score)
-     # pertub[i] <-  mean(weights * theta)
      pertub[1,i] <- mean(weights * 1/se * 1/J * score ) 
     
   }
-  
-  # boot_var <- var(pertub)
-  
-  # res = list(boot_var = boot_var, boot_theta = pertub)
   
   res = list(boot_theta = pertub)
   return(c(res))

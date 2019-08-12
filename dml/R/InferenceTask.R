@@ -112,8 +112,9 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
 #' @param level confidence level required.
 #' @param joint logical, if \code{TRUE} joint confidence intervals are calculated.
 #' @param ... arguments passed to print function and other methods.
+#' @rdname confint.InfTask
 #' @export
-confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
+confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE, ...){
   cf <- stats::coef(object)
   
   # if (is.na(object$boot_se)) {
@@ -158,7 +159,7 @@ confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
     
     sim <- apply(abs(object$boot_theta), 2, max)
       
-    hatc <- quantile(sim, probs = 1 - a)
+    hatc <- stats::quantile(sim, probs = 1 - a)
     
     ci[, 1] <- cf[parm] - hatc * ses
     ci[, 2] <- cf[parm] + hatc * ses
@@ -171,7 +172,10 @@ confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE){
 #' Methods for S3 class \code{InfTask}
 #'
 #' @param x Object of class \code{InfTask}.
-print.InfTask <- function(x) {
+#' @param ... arguments passed to print function and other methods.
+#' @rdname print.InfTask
+#' @export 
+print.InfTask <- function(x, ...) {
   
   if (all(is.na(x$boot_se))) {
    return(list(coefficients = x$coefficients , se = x$se))}
@@ -185,8 +189,11 @@ print.InfTask <- function(x) {
 #'
 #' Methods for S3 class \code{InfTask}
 #'
+#' @param object an object of class \code{InfTask}.
 #' @inheritParams print.InfTask
-coef.InfTask <- function(x) return(x$coefficients)
+#' @rdname coef.InfTask
+#' @export
+coef.InfTask <- function(object, ...) return(object$coefficients)
 
 
 #' Summarizing Inference Task
@@ -194,6 +201,8 @@ coef.InfTask <- function(x) return(x$coefficients)
 #' Summary method for class \code{InfTask}. 
 #' 
 #' @inheritParams confint.InfTask
+#' @rdname confint.InfTask
+#' @export 
 summary.InfTask <- function(object, ...) {
   ans <- NULL
   k <- length(object$coefficients)
@@ -210,19 +219,23 @@ summary.InfTask <- function(object, ...) {
   return(ans)
 }
 
-
+#' Summarizing Inference Task
+#' 
+#' Summary method for class \code{InfTask}. 
+#' 
 #' @param x an object of class \code{summary.InfTask}, usually a result of a call or \code{summary.InfTask}
 #' @param digits the number of significant digits to use when printing.
+#' @param ... arguments passed to print function and other methods.
 #' @method print summary.InfTask
 #' @rdname summary.InfTask
 #' @export
 print.summary.InfTask <- function(x, digits = max(3L, getOption("digits") - 
                                                           3L), ...) {
-  if (length(coef(x$object))) {
+  if (length(coef.InfTask(x$object))) {
     k <- dim(x$coefficients)[1]
     table <- x$coefficients
     print("Estimates and significance testing of the effect of target variables")
-    printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE)
+    stats::printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE)
     cat("\n")
   } else {
     cat("No coefficients\n")

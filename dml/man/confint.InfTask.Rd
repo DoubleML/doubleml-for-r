@@ -2,9 +2,13 @@
 % Please edit documentation in R/InferenceTask.R
 \name{confint.InfTask}
 \alias{confint.InfTask}
+\alias{summary.InfTask}
 \title{Methods for Inference Task}
 \usage{
-\method{confint}{InfTask}(object, parm, level = 0.95, joint = FALSE)
+\method{confint}{InfTask}(object, parm, level = 0.95, joint = FALSE,
+  ...)
+
+\method{summary}{InfTask}(object, ...)
 }
 \arguments{
 \item{object}{Object of class \code{InfTask}.}
@@ -19,4 +23,6 @@
 }
 \description{
 Methods for S3 class \code{InfTask}
+
+Summary method for class \code{InfTask}.
 }

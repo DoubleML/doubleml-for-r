@@ -4,10 +4,12 @@
 \alias{coef.InfTask}
 \title{Methods for Inference Task}
 \usage{
-\method{coef}{InfTask}(x)
+\method{coef}{InfTask}(object, ...)
 }
 \arguments{
-\item{x}{Object of class \code{InfTask}.}
+\item{object}{an object of class \code{InfTask}.}
+
+\item{...}{arguments passed to print function and other methods.}
 }
 \description{
 Methods for S3 class \code{InfTask}

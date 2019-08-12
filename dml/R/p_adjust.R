@@ -50,7 +50,7 @@ p_adjust.InfTask <- function(x, method = "RW", ...) {
   #n <- x$samplesize
   B <- ncol(x$boot_theta)
   k <- length(x$coefficients)
-  cf <- coef(x)
+  cf <- x$coefficients
   se <- x$se 
   n <- x$samplesize
   

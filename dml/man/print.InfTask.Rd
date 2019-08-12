@@ -4,10 +4,12 @@
 \alias{print.InfTask}
 \title{Methods for Inference Task}
 \usage{
-\method{print}{InfTask}(x)
+\method{print}{InfTask}(x, ...)
 }
 \arguments{
 \item{x}{Object of class \code{InfTask}.}
+
+\item{...}{arguments passed to print function and other methods.}
 }
 \description{
 Methods for S3 class \code{InfTask}
