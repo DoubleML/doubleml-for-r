@@ -4,11 +4,14 @@
 \alias{helpers}
 \alias{extract_test_pred}
 \alias{format.perc}
+\alias{se_repeated}
 \title{Helper Functions}
 \usage{
 extract_test_pred(x)
 
 \method{format}{perc}(probs, digits)
+
+se_repeated(se_s, coefficients, theta_s, aggreg_median)
 }
 \arguments{
 \item{x}{some object.}
@@ -16,6 +19,12 @@ extract_test_pred(x)
 \item{probs}{probability.}
 
 \item{digits}{number of digits.}
+
+\item{se_s}{Standard errors from repeated cross-fitting.}
+
+\item{coefficients}{Final estimators aggregated over all repetitions.}
+
+\item{theta_s}{Estimators from all repetitions.}
 }
 \description{
 Functions needed in package code.

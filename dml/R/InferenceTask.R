@@ -7,6 +7,8 @@
 #' @param z Name of instrument variable.
 #' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).
 #' @param k Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
+#' #' @param S number of repetitions (default \code{S=1}. 
+#' @param aggreg_median logical indicating how target estimators and standard errors should be aggregated for repeated cross-fitting. By default (\code{TRUE}), the median over all estimators as taken as the final estimator. If \code{FALSE}, the mean is calculated over all estimators. 
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m. If multiple target coefficients are provided the names of the lists with hyperparameters and the target coefficients must match.
 #' @inheritParams dml_plr
@@ -15,20 +17,31 @@
 
 # Preliminary implementation of Inference task (basic input + output, ignore OOP first)
 
-InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling = NULL,
+InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = NULL,
                           ResampleInstance = NULL, mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
-                          bootstrap = "normal", nRep = 500, ...){
+                          bootstrap = "normal", nRep = 500, aggreg_median = TRUE,
+                          ...){
 
+  
   if (is.null(ResampleInstance)) {
 
     if (is.null(resampling)) {
     resampling <-  mlr::makeResampleDesc("CV", iters = k)
     }
-
   }
 
+    
+  if(S > 1 & !is.null(ResampleInstance)) {
+    
+    message("ResampleInstance is not passed for repeated cross-fitting!")
+    resampling <- ResampleInstance$desc
+    n_iters <- resampling$iters
+    
+    ResampleInstance <- NULL
+    }
+  
   # tbd: Thoroughly implement repeated CV (check that predictions are extracted correctly, ...)
   # rdesc <- mlr_resamplings$get("repeated_cv", param_vals = list(repeats = CV_reps,
   #                                                               folds = k))
@@ -42,8 +55,14 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
   p1 <- length(d)
   n <- nrow(data)
   
+  res <- rep(list(list()), S)
+  theta_s <- se_s <- matrix(NA, nrow = p1, ncol = S)
+   
   coefficients <- se <- t <- pval <- boot_se <- rep(NA, p1)
-  boot_theta <- matrix(NA, nrow = p1, ncol = nRep)
+  boot_theta_s <- matrix(NA, nrow = p1, ncol = nRep)
+  boot_theta <- matrix(NA, nrow = p1, ncol = nRep * S)
+  boot_list <- rep(list(), S)
+  
   # 
   # if ( length(mlmethod$mlmethod_m) == 1 & p1 > 1) {
   #   mlmethod$mlmethod_m <- rep(mlmethod$mlmethod_m, p1)
@@ -75,30 +94,66 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
   # }
   # 
   
-  for (j in seq(p1)) {
-    d_j <- d[j]
-  
-    res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
-                  resampling = resampling, ResampleInstance = ResampleInstance, 
-                  mlmethod = mlmethod, 
-                  params = list(params_m = params$params_m[[j]], params_g = params$params_g[j]),
-                  inf_model = inf_model, se_type = se_type,
-                  bootstrap = bootstrap, nRep = nRep, ...)
+  for (s in seq(S)){
     
-    coefficients[j] <- res_j$theta
-    se[j] <- res_j$se
-    t[j] <- res_j$t
-    pval[j] <- res_j$pval
-    boot_se[j] <- res_j$boot_se
-    boot_theta[j,] <- res_j$boot_theta
+
+    for (j in seq(p1)) {
+      d_j <- d[j]
+    
+      res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
+                    resampling = resampling, ResampleInstance = ResampleInstance, 
+                    mlmethod = mlmethod, 
+                    params = list(params_m = params$params_m[[j]], params_g = params$params_g[j]),
+                    inf_model = inf_model, se_type = se_type,
+                    bootstrap = bootstrap, nRep = nRep, ...)
+      
+      coefficients[j] <- res_j$theta
+      se[j] <- res_j$se
+      t[j] <- res_j$t
+      pval[j] <- res_j$pval
+      boot_se[j] <- res_j$boot_se
+      boot_theta_s[j,] <- res_j$boot_theta
+    
+    }
+    
+  names(coefficients) <- names(se) <- names(t) <- names(pval) <- 
+    names(boot_se) <- rownames(boot_theta_s) <- d
+
+  res[[s]] <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
+               boot_se = boot_se, boot_theta = boot_theta_s, samplesize = n)
+  
   }
   
+  
+theta_s <- vapply(res, function(x) x$coefficients, double(p1))
+  se_s <- vapply(res, function(x) x$se, double(p1))
+  
+  if (aggreg_median) {
+    
+    coefficients <- apply(theta_s, 1, median) 
+    
+  }
+  
+  if (!aggreg_median) {
+    
+    coefficients <- rowMeans(theta_s)
+    
+  }
+  
+  se <- apply(se_s, 1, function(x) se_repeated(x, coefficients, theta_s, aggreg_median))
+  t <- coefficients/se
+  pval <- 2 * stats::pnorm(-abs(t))
+  
+  boot_list <- lapply(res, function(x) x$boot_theta)
+  boot_theta <- matrix(unlist(boot_list), ncol = nRep * S)
+    
   names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- rownames(boot_theta) <- d
   res <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta, samplesize = n)
+               boot_se = boot_se, boot_theta = boot_theta, samplesize = n,
+               theta_s = theta_s, se_s = se_s)
   
   class(res) <- "InfTask"
-
+  
   return(res)
 
 }
