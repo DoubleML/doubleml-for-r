@@ -20,6 +20,8 @@ bootstrap_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap,
 
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 
+\item{se}{Estimated standard error from DML procedure.}
+
 \item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.}
 
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}

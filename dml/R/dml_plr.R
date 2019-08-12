@@ -256,6 +256,8 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
 #'
 #' @inheritParams var_plr
 #' @inheritParams dml_plr
+#' @inheritParams InferenceTask
+#' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
 bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap, nRep) {
   

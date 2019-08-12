@@ -7,8 +7,8 @@
 \usage{
 \method{summary}{InfTask}(object, ...)
 
-\method{print}{summary.rlassoEffects}(x, digits = max(3L,
-  getOption("digits") - 3L), ...)
+\method{print}{summary.InfTask}(x, digits = max(3L, getOption("digits") -
+  3L), ...)
 }
 \arguments{
 \item{object}{Object of class \code{InfTask}.}

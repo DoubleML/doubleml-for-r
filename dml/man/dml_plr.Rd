@@ -20,10 +20,6 @@ dml_plr(data, y, d, resampling = NULL, ResampleInstance = NULL,
 
 \item{ResampleInstance}{(Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.}
 
-\item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.}
-
-\item{params}{Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.}
-
 \item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
 
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}

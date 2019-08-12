@@ -40,6 +40,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
   # tbd: implementation of object orientation -> from here jump to plr, ...
 
   p1 <- length(d)
+  n <- nrow(data)
   
   coefficients <- se <- t <- pval <- boot_se <- rep(NA, p1)
   boot_theta <- matrix(NA, nrow = p1, ncol = nRep)
@@ -50,13 +51,24 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
   # }
   # 
   if ( length(params$params_m) == 1 & p1 > 1) {
+    
     params$params_m <- rep(params$params_m, p1)
     message("Only one set of parameters params_m provided, assumed to be identical for all coefficients")
   }
   
+  if ( length(params$params_g) == 1 & p1 > 1) {
+    
+    params$params_g <- rep(params$params_g, p1)
+    message("Only one set of parameters params_g provided, assumed to be identical for all coefficients")
+  
+    }
+  
   if ( length(params$params_m) == p1 & is.null(names(params$params_m)) ) {
     names(params$params_m) <- d
   }
+  
+  stopifnot(length(params$params_m) == p1)
+      
   # 
   #   if ( length(mlmethod$mlmethod_m) == p1 & is.null(names(mlmethod$mlmethod_m))) {
   #   names(mlmethod$mlmethod_m) <- d
@@ -69,7 +81,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
     res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
                   resampling = resampling, ResampleInstance = ResampleInstance, 
                   mlmethod = mlmethod, 
-                  params = list(params_m = params$params_m[[j]], params_g = params$params_g),
+                  params = list(params_m = params$params_m[[j]], params_g = params$params_g[j]),
                   inf_model = inf_model, se_type = se_type,
                   bootstrap = bootstrap, nRep = nRep, ...)
     
@@ -83,7 +95,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, resampling
   
   names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- rownames(boot_theta) <- d
   res <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta)
+               boot_se = boot_se, boot_theta = boot_theta, samplesize = n)
   
   class(res) <- "InfTask"
 
@@ -201,7 +213,7 @@ summary.InfTask <- function(object, ...) {
 
 #' @param x an object of class \code{summary.InfTask}, usually a result of a call or \code{summary.InfTask}
 #' @param digits the number of significant digits to use when printing.
-#' @method print summary.rlassoEffects
+#' @method print summary.InfTask
 #' @rdname summary.InfTask
 #' @export
 print.summary.InfTask <- function(x, digits = max(3L, getOption("digits") - 
