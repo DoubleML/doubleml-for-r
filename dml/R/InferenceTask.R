@@ -69,6 +69,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
   #   message("Only one mlmethod_m provided, assumed to be identical for all coefficients")
   # }
   # 
+  
   if ( length(params$params_m) == 1 & p1 > 1) {
     
     params$params_m <- rep(params$params_m, p1)
@@ -77,7 +78,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
   
   if ( length(params$params_g) == 1 & p1 > 1) {
     
-    params$params_g <- rep(params$params_g, p1)
+    params$params_g <- rep(list(params$params_g), p1) 
     message("Only one set of parameters params_g provided, assumed to be identical for all coefficients")
   
     }
@@ -86,7 +87,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
     names(params$params_m) <- d
   }
   
-  stopifnot(length(params$params_m) == p1)
+ # stopifnot(length(params$params_m) == p1)
       
   # 
   #   if ( length(mlmethod$mlmethod_m) == p1 & is.null(names(mlmethod$mlmethod_m))) {
@@ -103,7 +104,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
       res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
                     resampling = resampling, ResampleInstance = ResampleInstance, 
                     mlmethod = mlmethod, 
-                    params = list(params_m = params$params_m[[j]], params_g = params$params_g[j]),
+                    params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
                     inf_model = inf_model, se_type = se_type,
                     bootstrap = bootstrap, nRep = nRep, ...)
       
