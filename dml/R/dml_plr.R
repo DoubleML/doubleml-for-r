@@ -89,75 +89,69 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
     se_i <- NA
     
+    v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+    
     for (i in 1:n_iters) {
         test_index = test_index_list[[i]]
         m_hat <- m_hat_list[[i]]
         g_hat <- g_hat_list[[i]]
 
-        v_hat <- D[test_index] - m_hat
-        u_hat <- Y[test_index] - g_hat
-        v_hatd <- v_hat*D[test_index]
+        d_k[, i] <- D[test_index]
+        v_hat[, i] <- D[test_index] - m_hat
+        u_hat[, i]  <- Y[test_index] - g_hat
+        v_hatd[, i]  <- v_hat[, i]*D[test_index]
 
-        orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
-                                inf_model = inf_model) #, se_type)
+        orth_est <- orth_plr_dml(u_hat = u_hat[, i] , v_hat = v_hat[, i] ,
+                                 v_hatd = v_hatd[, i], 
+                                 inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
-        vars[i] <- se_i <- n_k[i]/n * var_plr(theta = orth_est$theta, d = D[test_index], 
-                                      u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
-                                      inf_model = inf_model, se_type = se_type)
-        
-        if (bootstrap != "none") {
-      
-        boot <- bootstrap_plr(theta = orth_est$theta, d = D[test_index], 
-                              u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd,
-                              inf_model = inf_model, se = sqrt(se_i),
-                              bootstrap = bootstrap, nRep = nRep)
-        
-       # boot_vars[i] <- n_k[i]/n * boot$boot_var 
-        
-        boot_thetas[i,] <- boot$boot_theta
-        
-       }
+    
     }
     
     theta <- mean(thetas, na.rm = TRUE)
-    se <- sqrt(mean(vars, na.rm = TRUE))
     
-    t <- theta/se
-    pval <- 2 * stats::pnorm(-abs(t))
-   # boot_se <- sqrt(mean(boot_vars, na.rm = TRUE))
-    boot_theta <- matrix(apply(abs(boot_thetas), 2, max), nrow = 1, ncol = nRep) # conservative
+    se <- sqrt(var_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat,
+                        v_hatd = v_hatd, inf_model = inf_model, se_type = se_type,
+                        dml_procedure = dml_procedure))
+    
+    
+    t <- theta/se 
+    
+    pval <-  2 * stats::pnorm(-abs(t))
+    
+    if (bootstrap != "none") {
+      
+      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
+                              v_hatd = v_hatd, inf_model = inf_model, se = se,
+                              bootstrap = bootstrap, nRep = nRep)
+  #    boot_se <- sqrt(boot$boot_var)
+      boot_theta <- boot$boot_theta
+    }
+    
   }
-
+  
   if ( dml_procedure == "dml2") {
 
-    # tbd: what if sample cannot be split in equal sized folds
-    # maxlen <- vapply(test_index_list, length, double(1)) # test predictions for each fold k
-
-    # v_hat_mat <- matrix(NA, nrow = maxlen, ncol = n_iters)
-    # u_hat_mat <- matrix(NA, nrow = maxlen, ncol = n_iters)
-    # v_hatd_mat <- matrix(NA, nrow = maxlen, ncol = n_iters)
-
-    v_hat <- u_hat <- v_hatd <- rep(NA, n)
-
+    v_hat <- u_hat <- v_hatd <- matrix(NA, nrow = n, ncol = 1)
+    
     for (i in 1:n_iters){
 
        test_index = test_index_list[[i]]
        m_hat = m_hat_list[[i]]
        g_hat = g_hat_list[[i]]
 
-       v_hat[test_index] <- D[test_index] - m_hat
-       u_hat[test_index] <- Y[test_index] - g_hat
-       v_hatd[test_index] <- v_hat[test_index]*D[test_index]
+       v_hat[test_index, 1] <- D[test_index] - m_hat
+       u_hat[test_index, 1] <- Y[test_index] - g_hat
+       v_hatd[test_index, 1] <- v_hat[test_index]*D[test_index]
 
     }
 
     orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model)
     
     theta <- orth_est$theta
-  #  se <- sqrt(orth_est$var)
-    
-    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, 
-               inf_model = inf_model, se_type = se_type))
+    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
+                        v_hatd = v_hatd, inf_model = inf_model, se_type = se_type, 
+                        dml_procedure = dml_procedure))
     
     t <- theta/se 
     
@@ -222,7 +216,7 @@ orth_plr_dml <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 #' @param u_hat Residuals from \eqn{y-g(x)}.
 #' @param v_hatd Product of \code{v_hat} with \code{d}.
 #' @return Variance estimator (\code{var}).
-var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
+var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_procedure) {
   
   var <- NA
   
@@ -230,17 +224,17 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type) {
     
     if (inf_model == "DML2018") {
   
-    var <- 1/length(u_hat) * 1/(mean(v_hat*v_hat))^2  * mean( ( (u_hat - v_hat*theta)*v_hat)^2)
+    var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat^2))^2  * colMeans( ( (u_hat - v_hat*theta)*v_hat)^2) )
     }
     
      else if (inf_model == 'IV-type') {
-     var <-  1/length(u_hat) * (1/mean(v_hatd))^2  * mean( ( (u_hat - d*theta)*v_hat)^2)
+     var <- mean( 1/length(u_hat) * (1/colMeans(v_hatd))^2  * colMeans( ( (u_hat - d*theta)*v_hat)^2) )
     }
   
   }
    
   # Q: only for "dml2"?
-  if (se_type == "ls" & inf_model == "DML2018") {
+  if (se_type == "ls" & inf_model == "DML2018" & dml_procedure == "dml2") {
       res_fit <- stats::lm(u_hat ~ 0 + v_hat)
       var <- sandwich::vcovHC(res_fit)
   }
@@ -267,13 +261,13 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
  if (inf_model == "DML2018") {
 
     score <- (u_hat - v_hat*theta)*v_hat
-    J <-  mean(v_hat*v_hat)
+    J <-  colMeans(v_hat*v_hat)
     
   }
 
   else if (inf_model == 'IV-type') {
     score <- (u_hat - d*theta)*v_hat
-    J <- mean(v_hatd)
+    J <- colMeans(v_hatd)
   }
   
   n <- length(d)
@@ -293,7 +287,7 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
         weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
       
-     pertub[1,i] <- mean(weights * 1/se * 1/J * score ) 
+     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score ))
     
   }
   

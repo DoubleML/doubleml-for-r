@@ -25,6 +25,8 @@ se_repeated(se_s, coefficients, theta_s, aggreg_median)
 \item{coefficients}{Final estimators aggregated over all repetitions.}
 
 \item{theta_s}{Estimators from all repetitions.}
+
+\item{aggreg_median}{logical indicating how target estimators and standard errors should be aggregated for repeated cross-fitting. By default (\code{TRUE}), the median over all estimators as taken as the final estimator. If \code{FALSE}, the mean is calculated over all estimators.}
 }
 \description{
 Functions needed in package code.

@@ -4,7 +4,7 @@
 \alias{var_plr}
 \title{Variance estimation for DML estimator in the partially linear regression model}
 \usage{
-var_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type)
+var_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_procedure)
 }
 \arguments{
 \item{theta}{final dml estimator for the partially linear model.}
@@ -20,6 +20,8 @@ var_plr(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type)
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 
 \item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
+
+\item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
 }
 \value{
 Variance estimator (\code{var}).
