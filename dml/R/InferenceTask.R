@@ -35,23 +35,13 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
     
   if(S > 1 & !is.null(ResampleInstance)) {
     
-    message("ResampleInstance is not passed for repeated cross-fitting!")
+    message("ResampleInstance is not passed for repeated cross-fitting! Resampling is based on ResampleIncstance$desc.")
     resampling <- ResampleInstance$desc
     n_iters <- resampling$iters
     
     ResampleInstance <- NULL
     }
   
-  # tbd: Thoroughly implement repeated CV (check that predictions are extracted correctly, ...)
-  # rdesc <- mlr_resamplings$get("repeated_cv", param_vals = list(repeats = CV_reps,
-  #                                                               folds = k))
-  #
-  # task <- list(data, y, d, z, resampling, mlmethod, params, dml_procedure,
-                    # inf_model, ...)
-  # class(task) <- model
-
-  # tbd: implementation of object orientation -> from here jump to plr, ...
-
   p1 <- length(d)
   n <- nrow(data)
   
@@ -87,6 +77,11 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
     names(params$params_m) <- d
   }
   
+    if ( length(params$params_g) == p1 & is.null(names(params$params_g)) ) {
+    names(params$params_g) <- d
+  }
+  
+  
  # stopifnot(length(params$params_m) == p1)
       
   # 
@@ -101,6 +96,12 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
     for (j in seq(p1)) {
       d_j <- d[j]
     
+      # task <- list(data, y, d, z, resampling, mlmethod, params, dml_procedure,
+                    # inf_model, ...)
+      # class(task) <- model
+
+      # tbd: implementation of object orientation -> from here jump to plr, ...
+      
       res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
                     resampling = resampling, ResampleInstance = ResampleInstance, 
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
@@ -129,19 +130,21 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
 theta_s <- vapply(res, function(x) x$coefficients, double(p1))
   se_s <- vapply(res, function(x) x$se, double(p1))
   
-  if (aggreg_median) {
+  if (S > 1) {
+    if (aggreg_median) {
+      
+      coefficients <- apply(theta_s, 1, median) 
+      
+    }
     
-    coefficients <- apply(theta_s, 1, median) 
+    if (!aggreg_median) {
+      
+      coefficients <- rowMeans(theta_s)
+      
+    }
     
+    se <- apply(se_s, 1, function(x) se_repeated(x, coefficients, theta_s, aggreg_median))
   }
-  
-  if (!aggreg_median) {
-    
-    coefficients <- rowMeans(theta_s)
-    
-  }
-  
-  se <- apply(se_s, 1, function(x) se_repeated(x, coefficients, theta_s, aggreg_median))
   t <- coefficients/se
   pval <- 2 * stats::pnorm(-abs(t))
   

@@ -224,11 +224,13 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_proc
     
     if (inf_model == "DML2018") {
   
-    var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat^2))^2  * colMeans( ( (u_hat - v_hat*theta)*v_hat)^2) )
+    var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat^2, na.rm = TRUE))^2  *
+            colMeans( ( (u_hat - v_hat*theta)*v_hat)^2), na.rm = TRUE)
     }
     
      else if (inf_model == 'IV-type') {
-     var <- mean( 1/length(u_hat) * (1/colMeans(v_hatd))^2  * colMeans( ( (u_hat - d*theta)*v_hat)^2) )
+     var <- mean( 1/length(u_hat) * (1/colMeans(v_hatd, na.rm = TRUE))^2  * 
+            colMeans( ( (u_hat - d*theta)*v_hat)^2, na.rm = TRUE) )
     }
   
   }
@@ -261,13 +263,13 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
  if (inf_model == "DML2018") {
 
     score <- (u_hat - v_hat*theta)*v_hat
-    J <-  colMeans(v_hat*v_hat)
+    J <-  colMeans(v_hat*v_hat, na.rm = TRUE)
     
   }
 
   else if (inf_model == 'IV-type') {
     score <- (u_hat - d*theta)*v_hat
-    J <- colMeans(v_hatd)
+    J <- colMeans(v_hatd, na.rm = TRUE)
   }
   
   n <- length(d)
@@ -287,7 +289,7 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
         weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
       
-     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score ))
+     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score, na.rm = TRUE))
     
   }
   
