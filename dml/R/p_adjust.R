@@ -1,23 +1,23 @@
-#'Multiple Testing Adjustment of p-values for S3 objects \code{InfTask}
+#'Multiple Testing Adjustment of p-values for S3 objects \code{DML}
 #'
 #'Multiple hypotheses testing adjustment of p-values for double machine learning.
 #'
 #'Multiple testing adjustment is performed for S3 objects of class
-#'\code{InfTask}. Implemented methods for multiple testing
+#'\code{DML}. Implemented methods for multiple testing
 #'adjustment are Romano-Wolf stepdown '\code{RW}' (default) and the adjustment
 #'methods available in the \code{p.adjust} function of the \code{stats} package,
 #'including the Bonferroni, Bonferroni-Holm, and Benjamini-Hochberg corrections,
 #'see \code{\link{p.adjust.methods}}.
 #'
-#'Objects of class \code{InfTask} are constructed by
-#'\code{\link{InferenceTask}}.
+#'Objects of class \code{DML} are constructed by
+#'\code{\link{DML}}.
 #'
-#'@param x an object of S3 class \code{InfTask}.
+#'@param x an object of S3 class \code{DML}.
 #'@param method the method of p-value adjustment for multiple testing.
 #'  Romano-Wolf stepdown ('\code{RW}') is chosen by default.
 #'@param ... further arguments passed on to methods.
 #'@rdname p_adjust
-#'@aliases p_adjust.InfTask 
+#'@aliases p_adjust.DML 
 #'@return A matrix with the estimated coefficients and the p-values that are
 #'  adjusted according to the specified method.
 #'@references J.P. Romano, M. Wolf (2005). Exact and approximate stepdown
@@ -37,13 +37,13 @@ p_adjust = function(x, ...){
 #' @describeIn p_adjust 
 #' @export
 #'
-p_adjust.InfTask <- function(x, method = "RW", ...) {
+p_adjust.DML <- function(x, method = "RW", ...) {
   
-  checkmate::checkClass(x, "InfTask")
+  checkmate::checkClass(x, "DML")
   checkmate::checkChoice(method, c("RW", stats::p.adjust.methods))
 
   if ( all(is.na(x$boot_theta)) ) {
-    message("Note: Multiplier bootstrap is not active in InferenceTask and cannot be used
+    message("Note: Multiplier bootstrap is not active in DML and cannot be used
     for p-value adjustment.")
   }
   

@@ -23,7 +23,7 @@ format.perc <- function (probs, digits) {
 #' @param se_s Standard errors from repeated cross-fitting.
 #' @param coefficients Final estimators aggregated over all repetitions. 
 #' @param theta_s Estimators from all repetitions.
-#' @inheritParams InferenceTask
+#' @inheritParams DML
 #' @rdname helpers 
 se_repeated <- function(se_s, coefficients, theta_s, aggreg_median) {
   
@@ -40,3 +40,4 @@ se_repeated <- function(se_s, coefficients, theta_s, aggreg_median) {
 
 
 
+  

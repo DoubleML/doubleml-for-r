@@ -3,7 +3,7 @@
 #' @param data Data frame.
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
-#' @inheritParams InferenceTask
+#' @inheritParams DML
 #' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.
 #' @param ResampleInstance (Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
@@ -50,6 +50,10 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     }
 
   if (se_type != "ls") {
+    se_type <- inf_model
+  }
+  
+  if (se_type == "ls" & dml_procedure == "dml1"){
     se_type <- inf_model
   }
 
@@ -169,8 +173,10 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
 
   names(theta) <- names(se) <- names(boot_se) <- d
-  res <- list( theta = theta, se = se, t = t, pval = pval,
+  res <- list( coefficients = theta, se = se, t = t, pval = pval,
                boot_se = boot_se, boot_theta = boot_theta)
+  
+  class(res) <- "DML"
   return(res)
 }
 
@@ -253,7 +259,7 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_proc
 #'
 #' @inheritParams var_plr
 #' @inheritParams dml_plr
-#' @inheritParams InferenceTask
+#' @inheritParams DML
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
 bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap, nRep) {

@@ -2,15 +2,15 @@
 % Please edit documentation in R/p_adjust.R
 \name{p_adjust}
 \alias{p_adjust}
-\alias{p_adjust.InfTask}
-\title{Multiple Testing Adjustment of p-values for S3 objects \code{InfTask}}
+\alias{p_adjust.DML}
+\title{Multiple Testing Adjustment of p-values for S3 objects \code{DML}}
 \usage{
 p_adjust(x, ...)
 
-\method{p_adjust}{InfTask}(x, method = "RW", ...)
+\method{p_adjust}{DML}(x, method = "RW", ...)
 }
 \arguments{
-\item{x}{an object of S3 class \code{InfTask}.}
+\item{x}{an object of S3 class \code{DML}.}
 
 \item{...}{further arguments passed on to methods.}
 
@@ -26,18 +26,18 @@ Multiple hypotheses testing adjustment of p-values for double machine learning.
 }
 \details{
 Multiple testing adjustment is performed for S3 objects of class
-\code{InfTask}. Implemented methods for multiple testing
+\code{DML}. Implemented methods for multiple testing
 adjustment are Romano-Wolf stepdown '\code{RW}' (default) and the adjustment
 methods available in the \code{p.adjust} function of the \code{stats} package,
 including the Bonferroni, Bonferroni-Holm, and Benjamini-Hochberg corrections,
 see \code{\link{p.adjust.methods}}.
 
-Objects of class \code{InfTask} are constructed by
-\code{\link{InferenceTask}}.
+Objects of class \code{DML} are constructed by
+\code{\link{DML}}.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{InfTask}: 
+\item \code{DML}: 
 }}
 
 \references{

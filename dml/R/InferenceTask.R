@@ -12,12 +12,12 @@
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m. If multiple target coefficients are provided the names of the lists with hyperparameters and the target coefficients must match.
 #' @inheritParams dml_plr
-#' @return Result object of class \code{InfTask} with estimated coefficient and standard errors.
+#' @return Result object of class \code{DML} with estimated coefficient and standard errors.
 #' @export
 
 # Preliminary implementation of Inference task (basic input + output, ignore OOP first)
 
-InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = NULL,
+DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = NULL,
                           ResampleInstance = NULL, mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
@@ -109,7 +109,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
                     inf_model = inf_model, se_type = se_type,
                     bootstrap = bootstrap, nRep = nRep, ...)
       
-      coefficients[j] <- res_j$theta
+      coefficients[j] <- res_j$coefficients
       se[j] <- res_j$se
       t[j] <- res_j$t
       pval[j] <- res_j$pval
@@ -127,7 +127,7 @@ InferenceTask <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, res
   }
   
   
-theta_s <- vapply(res, function(x) x$coefficients, double(p1))
+  theta_s <- vapply(res, function(x) x$coefficients, double(p1))
   se_s <- vapply(res, function(x) x$se, double(p1))
   
   if (S > 1) {
@@ -145,6 +145,7 @@ theta_s <- vapply(res, function(x) x$coefficients, double(p1))
     
     se <- apply(se_s, 1, function(x) se_repeated(x, coefficients, theta_s, aggreg_median))
   }
+  
   t <- coefficients/se
   pval <- 2 * stats::pnorm(-abs(t))
   
@@ -156,7 +157,7 @@ theta_s <- vapply(res, function(x) x$coefficients, double(p1))
                boot_se = boot_se, boot_theta = boot_theta, samplesize = n,
                theta_s = theta_s, se_s = se_s)
   
-  class(res) <- "InfTask"
+  class(res) <- "DML"
   
   return(res)
 
@@ -164,16 +165,16 @@ theta_s <- vapply(res, function(x) x$coefficients, double(p1))
 
 #' Methods for Inference Task
 #'
-#' Methods for S3 class \code{InfTask}
+#' Methods for S3 class \code{DML}
 #'
-#' @param object Object of class \code{InfTask}.
+#' @param object Object of class \code{DML}.
 #' @param parm a specification of which parameters are to be given confidence intervals among the variables for which inference was done, either a vector of numbers or a vector of names. If missing, all parameters are considered.
 #' @param level confidence level required.
 #' @param joint logical, if \code{TRUE} joint confidence intervals are calculated.
 #' @param ... arguments passed to print function and other methods.
-#' @rdname confint.InfTask
+#' @rdname confint.DML
 #' @export
-confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE, ...){
+confint.DML <- function(object, parm, level = 0.95, joint = FALSE, ...){
   cf <- stats::coef(object)
   
   # if (is.na(object$boot_se)) {
@@ -228,13 +229,13 @@ confint.InfTask <- function(object, parm, level = 0.95, joint = FALSE, ...){
 
 #' Methods for Inference Task
 #'
-#' Methods for S3 class \code{InfTask}
+#' Methods for S3 class \code{DML}
 #'
-#' @param x Object of class \code{InfTask}.
+#' @param x Object of class \code{DML}.
 #' @param ... arguments passed to print function and other methods.
-#' @rdname print.InfTask
+#' @rdname print.DML
 #' @export 
-print.InfTask <- function(x, ...) {
+print.DML <- function(x, ...) {
   
   if (all(is.na(x$boot_se))) {
    return(list(coefficients = x$coefficients , se = x$se))}
@@ -246,23 +247,23 @@ print.InfTask <- function(x, ...) {
 
 #' Methods for Inference Task
 #'
-#' Methods for S3 class \code{InfTask}
+#' Methods for S3 class \code{DML}
 #'
-#' @param object an object of class \code{InfTask}.
-#' @inheritParams print.InfTask
-#' @rdname coef.InfTask
+#' @param object an object of class \code{DML}.
+#' @inheritParams print.DML
+#' @rdname coef.DML
 #' @export
-coef.InfTask <- function(object, ...) return(object$coefficients)
+coef.DML <- function(object, ...) return(object$coefficients)
 
 
 #' Summarizing Inference Task
 #' 
-#' Summary method for class \code{InfTask}. 
+#' Summary method for class \code{DML}. 
 #' 
-#' @inheritParams confint.InfTask
-#' @rdname confint.InfTask
+#' @inheritParams confint.DML
+#' @rdname confint.DML
 #' @export 
-summary.InfTask <- function(object, ...) {
+summary.DML <- function(object, ...) {
   ans <- NULL
   k <- length(object$coefficients)
   table <- matrix(NA, ncol = 4, nrow = k)
@@ -274,23 +275,23 @@ summary.InfTask <- function(object, ...) {
   table[, 4] <- object$pval
   ans$coefficients <- table
   ans$object <- object
-  class(ans) <- "summary.InfTask"
+  class(ans) <- "summary.DML"
   return(ans)
 }
 
 #' Summarizing Inference Task
 #' 
-#' Summary method for class \code{InfTask}. 
+#' Summary method for class \code{DML}. 
 #' 
-#' @param x an object of class \code{summary.InfTask}, usually a result of a call or \code{summary.InfTask}
+#' @param x an object of class \code{summary.DML}, usually a result of a call or \code{summary.DML}
 #' @param digits the number of significant digits to use when printing.
 #' @param ... arguments passed to print function and other methods.
-#' @method print summary.InfTask
-#' @rdname summary.InfTask
+#' @method print summary.DML
+#' @rdname summary.DML
 #' @export
-print.summary.InfTask <- function(x, digits = max(3L, getOption("digits") - 
+print.summary.DML <- function(x, digits = max(3L, getOption("digits") - 
                                                           3L), ...) {
-  if (length(coef.InfTask(x$object))) {
+  if (length(coef.DML(x$object))) {
     k <- dim(x$coefficients)[1]
     table <- x$coefficients
     print("Estimates and significance testing of the effect of target variables")
