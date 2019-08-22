@@ -1,5 +1,3 @@
-# True effect
-theta_0 <- 4
 
 # Number of folds
 K <- 10
@@ -23,12 +21,14 @@ for (i_setting in 1:n_settings) {
 # #              betamax = 4, gammamax = 2)
 #   DGP <- DGP2(theta = theta_0, N = n, p = 20)
 #   data_plm[[i_setting]] <- DGP # DGP$data
-   data_plm[[i_setting]] <- DGP2(theta = theta_0, N=settings[[i_setting]]$n,
-     p = settings[[i_setting]]$p)
+   data_plm[[i_setting]] <- DGP <- DGP4(settings[[i_setting]]$n,
+                                        settings[[i_setting]]$p, 
+                                        betamax = 9, decay = 0.99, 
+                                        threshold = 0.75, noisevar = 3)$data
 }
 
 
-get_default_mlmethod <- function(learner) {
+get_default_mlmethod_plr <- function(learner) {
   if (learner == 'regr.lm') {
     mlmethod <- list(mlmethod_m = learner,
                      mlmethod_g = learner)
@@ -42,6 +42,17 @@ get_default_mlmethod <- function(learner) {
 
     params <- list(params_g = list(num.trees = 100),
                    params_m = list(num.trees = 120))
+
+  }
+  
+  else if (learner == 'regr.glmnet') {
+    mlmethod <- list(mlmethod_m = learner,
+                     mlmethod_g = learner)
+
+    params <- list( params_m = list(lambda = 0.01583237,
+                                    s = 0.01583237),
+                    params_g = list(lambda = 0.09463488,
+                                     s = 0.09463488))
 
   }
 
