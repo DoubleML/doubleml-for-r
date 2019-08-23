@@ -20,4 +20,6 @@ Suggests:
     testthat,
     patrick,
     clusterGeneration,
-    mvtnorm
+    mvtnorm,
+    dplyr,
+    glmnet

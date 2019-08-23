@@ -7,7 +7,7 @@
 #' @param z Name of instrument variable.
 #' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).
 #' @param k Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
-#' #' @param S number of repetitions (default \code{S=1}. 
+#' @param S number of repetitions (default \code{S=1}. 
 #' @param aggreg_median logical indicating how target estimators and standard errors should be aggregated for repeated cross-fitting. By default (\code{TRUE}), the median over all estimators as taken as the final estimator. If \code{FALSE}, the mean is calculated over all estimators. 
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m. If multiple target coefficients are provided the names of the lists with hyperparameters and the target coefficients must match.

@@ -21,8 +21,9 @@ DML(data, y, d, z = NULL, model = "plr", k = 2, S = 1,
 
 \item{model}{Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).}
 
-\item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
-#' @param S number of repetitions (default \code{S=1}.}
+\item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
+
+\item{S}{number of repetitions (default \code{S=1}.}
 
 \item{resampling}{Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.}
 
