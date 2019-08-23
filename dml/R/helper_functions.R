@@ -28,7 +28,7 @@ format.perc <- function (probs, digits) {
 se_repeated <- function(se_s, coefficients, theta_s, aggreg_median) {
   
   if (aggreg_median) {
-      se <- sqrt(median(se_s^2  - (theta_s - coefficients)^2))
+      se <- sqrt(stats::median(se_s^2  - (theta_s - coefficients)^2))
   }
   
   if (!aggreg_median) {

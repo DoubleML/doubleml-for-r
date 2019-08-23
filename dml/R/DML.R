@@ -133,7 +133,7 @@ DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = 
   if (S > 1) {
     if (aggreg_median) {
       
-      coefficients <- apply(theta_s, 1, median) 
+      coefficients <- apply(theta_s, 1, stats::median) 
       
     }
     

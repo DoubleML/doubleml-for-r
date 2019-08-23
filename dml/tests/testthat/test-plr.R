@@ -146,7 +146,7 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
     all_thetas_manual[i_setting] <- mean(this_thetas_vec)
   }
 
-  expect_equal(all_thetas, all_thetas_manual, tolerance = 1e-3)
+  expect_equal(all_thetas, all_thetas_manual, tolerance = 1e-4)
 }
 )
 

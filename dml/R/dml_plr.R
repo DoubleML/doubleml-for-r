@@ -58,7 +58,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   }
 
   # nuisance g
-  g_indx <-  grepl(d, names(data)) == FALSE
+  g_indx <- names(data) != d 
   task_g <- mlr::makeRegrTask(data = data[ , g_indx], target = y)
   ml_g <- mlr::makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
   r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
@@ -66,7 +66,7 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
   g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
 
   # nuisance m
-  m_indx <-  grepl(y, names(data)) == FALSE
+  m_indx <- names(data) != y
   task_m  <- mlr::makeRegrTask(data = data[ , m_indx], target = d)
   ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
   r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
