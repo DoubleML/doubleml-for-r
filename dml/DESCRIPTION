@@ -11,12 +11,12 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     hdm,
-    mlr,
+    mlr (>= 2.14.0),
     stats,
     sandwich,
     checkmate,
     mlr3 (>= 0.1.2.9000),
-    mlr3learners
+    mlr3learners (>= 0.1.2)
 RoxygenNote: 6.1.1
 Suggests: 
     testthat,

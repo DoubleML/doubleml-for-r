@@ -18,29 +18,32 @@
 # Preliminary implementation of Inference task (basic input + output, ignore OOP first)
 
 DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = NULL,
-                          ResampleInstance = NULL, mlmethod,
+                          mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
                           bootstrap = "normal", nRep = 500, aggreg_median = TRUE,
                           ...){
 
   
-  if (is.null(ResampleInstance)) {
-
-    if (is.null(resampling)) {
-    resampling <-  mlr::makeResampleDesc("CV", iters = k)
-    }
+  # if (is.null(ResampleInstance)) {
+  # 
+  #   if (is.null(resampling)) {
+  #   resampling <-  mlr::makeResampleDesc("CV", iters = k)
+  #   }
+  # }
+  if (is.null(resampling)) {
+    resampling <- mlr3::ResamplingCV$new()
+    resampling$param_set$values$folds = k
   }
-
     
-  if(S > 1 & !is.null(ResampleInstance)) {
-    
-    message("ResampleInstance is not passed for repeated cross-fitting! Resampling is based on ResampleIncstance$desc.")
-    resampling <- ResampleInstance$desc
-    n_iters <- resampling$iters
-    
-    ResampleInstance <- NULL
-    }
+  # if(S > 1 & !is.null(ResampleInstance)) {
+  #   
+  #   message("ResampleInstance is not passed for repeated cross-fitting! Resampling is based on ResampleIncstance$desc.")
+  #   resampling <- ResampleInstance$desc
+  #   n_iters <- resampling$iters
+  #   
+  #   ResampleInstance <- NULL
+  #   }
   
   p1 <- length(d)
   n <- nrow(data)

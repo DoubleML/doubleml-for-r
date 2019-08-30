@@ -61,10 +61,10 @@ dml_plr <- function(data, y, d, resampling = NULL, mlmethod, params = list(param
   # nuisance g
   g_indx <- names(data) != d 
   data_g <- data[ , g_indx, drop = FALSE]
-  task_g <- mlr3::TaskRegr$new(id = "nuis_g", backend = data_g, target = y)
+  task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
   
   if (is.null(resampling)) {
-    resampling <- ResamplingCV$new()
+    resampling <- mlr3::ResamplingCV$new()
     resampling$param_set$values$folds = k
   }
   
@@ -94,7 +94,7 @@ dml_plr <- function(data, y, d, resampling = NULL, mlmethod, params = list(param
   # nuisance m
   m_indx <- names(data) != y
   data_m <- data[, m_indx, drop = FALSE]
-  task_m <- mlr3::TaskRegr$new(id = "nuis_m", backend = data_m, target = d)
+  task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
   ml_m <- mlr3::lrn(mlmethod$mlmethod_m)
 
   # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)

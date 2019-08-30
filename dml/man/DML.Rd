@@ -5,10 +5,10 @@
 \title{Wrapper Function for Double Machine Learning with Cross-Fitting}
 \usage{
 DML(data, y, d, z = NULL, model = "plr", k = 2, S = 1,
-  resampling = NULL, ResampleInstance = NULL, mlmethod,
-  dml_procedure = "dml2", params = list(params_m = list(), params_g =
-  list()), inf_model = "IV-type", se_type = "ls",
-  bootstrap = "normal", nRep = 500, aggreg_median = TRUE, ...)
+  resampling = NULL, mlmethod, dml_procedure = "dml2",
+  params = list(params_m = list(), params_g = list()),
+  inf_model = "IV-type", se_type = "ls", bootstrap = "normal",
+  nRep = 500, aggreg_median = TRUE, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -25,9 +25,7 @@ DML(data, y, d, z = NULL, model = "plr", k = 2, S = 1,
 
 \item{S}{number of repetitions (default \code{S=1}.}
 
-\item{resampling}{Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.}
-
-\item{ResampleInstance}{(Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.}
+\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
 \item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.}
 
