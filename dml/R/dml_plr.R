@@ -4,8 +4,7 @@
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
 #' @inheritParams DML
-#' @param resampling Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.
-#' @param ResampleInstance (Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.
+#' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
 #' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
@@ -15,41 +14,43 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlmethod, params = list(params_m = list(),
+dml_plr <- function(data, y, d, resampling = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "IV-type", se_type = "ls",
                     bootstrap = "normal",  nRep = 500, ...) {
 
   # function not yet fully implemented (test)
-  checkmate::check_class(resampling, "ResampleDesc")
+  if (!is.null(resampling)) {
+    checkmate::check_class(resampling, "ResamplingCV")
+  }
+  # tbd. if (is.null(resampling))
   checkmate::checkDataFrame(data)
 
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
   # tbd: parameter passing
-
   n <- nrow(data)
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
+  
+  # if (is.null(ResampleInstance)) {
+  #   n_iters <- resampling$iters
+  #   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
+  #   }
+  # 
+  # else {
+  # 
+  #   if (!is.null(resampling)) {
+  #     message("Options in 'resampling' are overwritten by options specified for 'ResampleInstance'")
+  #   }
+  # 
+  #   rin <- ResampleInstance
+  #   resampling <- rin$desc
+  #   n_iters <- resampling$iters
+  # 
+  #   }
 
-  if (is.null(ResampleInstance)) {
-    n_iters <- resampling$iters
-    rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
-    }
-
-  else {
-
-    if (!is.null(resampling)) {
-      message("Options in 'resampling' are overwritten by options specified for 'ResampleInstance'")
-    }
-
-    rin <- ResampleInstance
-    resampling <- rin$desc
-    n_iters <- resampling$iters
-
-    }
-
-  if (se_type != "ls") {
+   if (se_type != "ls") {
     se_type <- inf_model
   }
   
@@ -59,30 +60,77 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
 
   # nuisance g
   g_indx <- names(data) != d 
-  task_g <- mlr::makeRegrTask(data = data[ , g_indx], target = y)
-  ml_g <- mlr::makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
-  r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  g_hat_list <- mlr::getRRPredictionList(r_g)
-  g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
+  data_g <- data[ , g_indx, drop = FALSE]
+  task_g <- mlr3::TaskRegr$new(id = "nuis_g", backend = data_g, target = y)
+  
+  if (is.null(resampling)) {
+    resampling <- ResamplingCV$new()
+    resampling$param_set$values$folds = k
+  }
+  
+  # tbd: handling of resampling 
+  if (!resampling$is_instantiated) {
+    resampling <- resampling$instantiate(task_g)
+  } # tbd: else 
+  
+  n_iters <- resampling$iters
+  train_ids <- lapply(1:n_iters, function(x) resampling$train_set(x))
+  test_ids <- lapply(1:n_iters, function(x) resampling$test_set(x))
 
+  # tbd: handling learners from mlr3 base and mlr3learners package
+  # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
+  ml_g <- mlr3::lrn(mlmethod$mlmethod_g)
+ # ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
+    
+   # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
+  r_g <- mlr3::resample(task_g, ml_g, resampling, store_models = TRUE)
+  
+  # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
+  g_hat_list <- r_g$data$prediction
+  # g_hat_list <- mlr::getRRPredictionList(r_g)
+  #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
+  g_hat_list <- lapply(g_hat_list, function(x) x$response)
+  
   # nuisance m
   m_indx <- names(data) != y
-  task_m  <- mlr::makeRegrTask(data = data[ , m_indx], target = d)
-  ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  m_hat_list <- mlr::getRRPredictionList(r_m)
-  m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
+  data_m <- data[, m_indx, drop = FALSE]
+  task_m <- mlr3::TaskRegr$new(id = "nuis_m", backend = data_m, target = d)
+  ml_m <- mlr3::lrn(mlmethod$mlmethod_m)
+
+  # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
+  resampling_m <- mlr3::rsmp("custom")
+  resampling_m$instantiate(task_m, train_ids, test_ids)
+  
+  train_ids_m <- lapply(1:n_iters, function(x) resampling_m$train_set(x))
+  test_ids_m <- lapply(1:n_iters, function(x) resampling_m$test_set(x))
+
+  
+  r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+  
+ # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
+  m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
+  # m_hat_list <- mlr::getRRPredictionList(r_m)
+  m_hat_list <- lapply(m_hat_list, function(x) x$response)
+  # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
 
 
-  if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
-      (rin$desc$iters != r_m$pred$instance$desc$iters) ||
-      !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
-      !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
+  # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
+  #     (rin$desc$iters != r_m$pred$instance$desc$iters) ||
+  #     !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
+  #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
+  #   stop('Resampling instances not equal')
+  # }
+  if ( (resampling$iters != resampling_m$iters) ||
+       (resampling$iters != n_iters) ||
+       (resampling_m$iters != n_iters) ||
+         (!identical(train_ids, train_ids_m)) ||
+         (!identical(test_ids, test_ids_m))) {
     stop('Resampling instances not equal')
   }
 
-  test_index_list <- rin$test.inds
-  n_k <- vapply(test_index_list, length, double(1))
+  # test_index_list <- rin$test.inds
+ #  n_k <- vapply(test_index_list, length, double(1))
+  n_k <- vapply(test_ids, length, double(1L))
 
   D <- data[ , d]
   Y <- data[ , y]
@@ -96,7 +144,9 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
     
     for (i in 1:n_iters) {
-        test_index = test_index_list[[i]]
+        # test_index = test_index_list[[i]]
+        test_index = test_ids[[i]]
+
         m_hat <- m_hat_list[[i]]
         g_hat <- g_hat_list[[i]]
 
@@ -140,7 +190,9 @@ dml_plr <- function(data, y, d, resampling = NULL, ResampleInstance = NULL, mlme
     
     for (i in 1:n_iters){
 
-       test_index = test_index_list[[i]]
+       # test_index = test_index_list[[i]]
+       test_index = test_ids[[i]]
+
        m_hat = m_hat_list[[i]]
        g_hat = g_hat_list[[i]]
 

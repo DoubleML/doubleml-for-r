@@ -16,7 +16,7 @@ dml_plr(data, y, d, resampling = NULL, ResampleInstance = NULL,
 
 \item{d}{Name of treatment variables for which inference should be performed.}
 
-\item{resampling}{Resampling scheme for cross-fitting of class \code{"ResampleDesc"}.}
+\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
 \item{ResampleInstance}{(Optional) \code{ResampleInstance} that can be passed through in order to obtain replicable sample splits. By default, \code{ResampleInstance} is set \code{NULL} and \code{resampling} is instantiated internally. Note that \code{ResampleInstance} will override the information in \code{resampling}.}
 
