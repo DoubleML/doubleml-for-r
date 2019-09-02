@@ -118,7 +118,7 @@ DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = 
       # tbd: implementation of object orientation -> from here jump to plr, ...
       
       res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
-                    resampling = resampling, ResampleInstance = ResampleInstance, 
+                    resampling = resampling,  
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
                     params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
                     inf_model = inf_model, se_type = se_type,

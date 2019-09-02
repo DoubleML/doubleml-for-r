@@ -14,7 +14,7 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_plr <- function(data, y, d, resampling = NULL, mlmethod, params = list(params_m = list(),
+dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "IV-type", se_type = "ls",

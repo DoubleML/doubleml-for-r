@@ -4,10 +4,10 @@
 \alias{dml_plr}
 \title{Double Machine Learning for Partially Linear Regression.}
 \usage{
-dml_plr(data, y, d, resampling = NULL, mlmethod, params = list(params_m
-  = list(), params_g = list()), dml_procedure = "dml2",
-  inf_model = "IV-type", se_type = "ls", bootstrap = "normal",
-  nRep = 500, ...)
+dml_plr(data, y, d, k = 2, resampling = NULL, mlmethod,
+  params = list(params_m = list(), params_g = list()),
+  dml_procedure = "dml2", inf_model = "IV-type", se_type = "ls",
+  bootstrap = "normal", nRep = 500, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -15,6 +15,8 @@ dml_plr(data, y, d, resampling = NULL, mlmethod, params = list(params_m
 \item{y}{Name of outcome variable. The variable must be included in \code{data}.}
 
 \item{d}{Name of treatment variables for which inference should be performed.}
+
+\item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
 
 \item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
