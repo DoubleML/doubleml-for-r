@@ -80,7 +80,7 @@ dml_plr <- function(data, y, d, resampling = NULL, mlmethod, params = list(param
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
   ml_g <- mlr3::lrn(mlmethod$mlmethod_g)
- # ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
+  ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
     
    # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
   r_g <- mlr3::resample(task_g, ml_g, resampling, store_models = TRUE)
@@ -96,6 +96,7 @@ dml_plr <- function(data, y, d, resampling = NULL, mlmethod, params = list(param
   data_m <- data[, m_indx, drop = FALSE]
   task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
   ml_m <- mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m$param_set$values <- params$params_m # tbd: check if parameter passing really works
 
   # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
   resampling_m <- mlr3::rsmp("custom")

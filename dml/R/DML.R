@@ -85,6 +85,18 @@ DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = 
   }
   
   
+  if ( length(params$params_g) == 0)  {
+  
+  params$params_g <- rep(list(params$params_g), p1) 
+  
+  }
+  
+  if ( length(params$params_m) == 0)  {
+  
+  params$params_m <- rep(list(params$params_m), p1) 
+  
+  }  
+  
  # stopifnot(length(params$params_m) == p1)
       
   # 

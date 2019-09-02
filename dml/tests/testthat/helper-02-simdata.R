@@ -45,14 +45,24 @@ get_default_mlmethod_plr <- function(learner) {
 
   }
   
-  else if (learner == 'regr.glmnet') {
+  # else if (learner == 'regr.glmnet') {
+  #   mlmethod <- list(mlmethod_m = learner,
+  #                    mlmethod_g = learner)
+  # 
+  #   params <- list( params_m = list(lambda = 0.01583237,
+  #                                   s = 0.01583237),
+  #                   params_g = list(lambda = 0.09463488,
+  #                                    s = 0.09463488))
+  # 
+  # }
+   else if (learner == 'regr.glmnet') {
     mlmethod <- list(mlmethod_m = learner,
                      mlmethod_g = learner)
 
-    params <- list( params_m = list(lambda = 0.01583237,
-                                    s = 0.01583237),
-                    params_g = list(lambda = 0.09463488,
-                                     s = 0.09463488))
+    params <- list( params_m = list(s = "lambda.min", 
+                                    family = "gaussian"),
+                    params_g = list(s = "lambda.min",
+                      family = "gaussian"))
 
   }
 
