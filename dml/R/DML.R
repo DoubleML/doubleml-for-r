@@ -4,20 +4,19 @@
 #' @param data Data frame.
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
-#' @param z Name of instrument variable.
-#' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).
+#' @param model Inference model to be implemented, e.g. partially linear regression (\code{plr}), partially linear instrumental variable regression (\code{plriv}) (default).
 #' @param k Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).
 #' @param S number of repetitions (default \code{S=1}. 
 #' @param aggreg_median logical indicating how target estimators and standard errors should be aggregated for repeated cross-fitting. By default (\code{TRUE}), the median over all estimators as taken as the final estimator. If \code{FALSE}, the mean is calculated over all estimators. 
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m. If multiple target coefficients are provided the names of the lists with hyperparameters and the target coefficients must match.
+#' @param params If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match.
+#' @param mlmethod If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.
 #' @inheritParams dml_plr
 #' @return Result object of class \code{DML} with estimated coefficient and standard errors.
 #' @export
 
 # Preliminary implementation of Inference task (basic input + output, ignore OOP first)
 
-DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = NULL,
+DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
                           mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
@@ -82,7 +81,7 @@ DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = 
   
     if ( length(params$params_g) == p1 & is.null(names(params$params_g)) ) {
     names(params$params_g) <- d
-  }
+    }
   
   
   if ( length(params$params_g) == 0)  {
@@ -109,15 +108,14 @@ DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = 
     
 
     for (j in seq(p1)) {
-      d_j <- d[j]
-    
+      
       # task <- list(data, y, d, z, resampling, mlmethod, params, dml_procedure,
                     # inf_model, ...)
       # class(task) <- model
 
       # tbd: implementation of object orientation -> from here jump to plr, ...
       
-      res_j <- dml_plr(data = data, y = y, d = d_j, z = z,
+      res_j <- dml_plr(data = data, y = y, d = d[j], z = z,
                     resampling = resampling,  
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
                     params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
@@ -130,7 +128,7 @@ DML <- function(data, y, d, z = NULL, model = "plr", k = 2, S = 1, resampling = 
       pval[j] <- res_j$pval
       boot_se[j] <- res_j$boot_se
       boot_theta_s[j,] <- res_j$boot_theta
-    
+      
     }
     
   names(coefficients) <- names(se) <- names(t) <- names(pval) <- 

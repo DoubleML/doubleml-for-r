@@ -4,11 +4,10 @@
 \alias{DML}
 \title{Wrapper Function for Double Machine Learning with Cross-Fitting}
 \usage{
-DML(data, y, d, z = NULL, model = "plr", k = 2, S = 1,
-  resampling = NULL, mlmethod, dml_procedure = "dml2",
-  params = list(params_m = list(), params_g = list()),
-  inf_model = "IV-type", se_type = "ls", bootstrap = "normal",
-  nRep = 500, aggreg_median = TRUE, ...)
+DML(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
+  mlmethod, dml_procedure = "dml2", params = list(params_m = list(),
+  params_g = list()), inf_model = "IV-type", se_type = "ls",
+  bootstrap = "normal", nRep = 500, aggreg_median = TRUE, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -17,9 +16,7 @@ DML(data, y, d, z = NULL, model = "plr", k = 2, S = 1,
 
 \item{d}{Name of treatment variables for which inference should be performed.}
 
-\item{z}{Name of instrument variable.}
-
-\item{model}{Inference model to be implemented, e.g. partially linear regression (\code{plr}) (default).}
+\item{model}{Inference model to be implemented, e.g. partially linear regression (\code{plr}), partially linear instrumental variable regression (\code{plriv}) (default).}
 
 \item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
 
@@ -27,11 +24,11 @@ DML(data, y, d, z = NULL, model = "plr", k = 2, S = 1,
 
 \item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
-\item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.}
+\item{mlmethod}{If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.}
 
 \item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
 
-\item{params}{Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m. If multiple target coefficients are provided the names of the lists with hyperparameters and the target coefficients must match.}
+\item{params}{If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match.}
 
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 

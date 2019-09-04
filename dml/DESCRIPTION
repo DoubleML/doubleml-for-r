@@ -15,7 +15,8 @@ Imports:
     sandwich,
     checkmate,
     mlr3 (>= 0.1.2.9000),
-    mlr3learners (>= 0.1.2)
+    mlr3learners (>= 0.1.2),
+    AER
 RoxygenNote: 6.1.1
 Suggests: 
     testthat,

@@ -3,25 +3,31 @@
 #' @param data Data frame.
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
 #' @param d Name of treatment variables for which inference should be performed.
+#' @param z Name of instrumental variables. 
 #' @inheritParams DML
 #' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). 
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
-#' @param inf_model Inference model for final estimation, default \code{"IV-type"} (...)
-#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
+#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of z on X (nuisance part m). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part r). 
+#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g, \code{params_m} for nuisance m, and \code{params_r} for nuisance r. 
+#' @param inf_model Inference model for final estimation, default \code{"partialling-out"} (...)
+#' @param se_type Method to estimate standard errors. Default \code{"partialling-out"}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = list(params_m = list(),
-                    params_g = list()),
+dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, 
+                      params = list(params_m = list(), params_r = list(),
+                                    params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "IV-type", se_type = "ls",
+                    inf_model = "partialling-out", se_type = "partialling-out",
                     bootstrap = "normal",  nRep = 500, ...) {
 
+  if (is.null(z)){
+    stop("No instrument in z specified.")
+  }
+  
   # function not yet fully implemented (test)
   if (!is.null(resampling)) {
     checkmate::check_class(resampling, "ResamplingCV")
@@ -52,16 +58,17 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   # 
   #   }
 
-   if (se_type != "ls") {
-    se_type <- inf_model
+  if (se_type != "partialling-out" & se_type != "ivreg") {
+    stop("Value for se_type is not valid.")
   }
   
-  if (se_type == "ls" & dml_procedure == "dml1"){
-    se_type <- inf_model
+  if (inf_model != "partialling-out" & inf_model != "ivreg") {
+    stop("Value for inf_model is not valid.")
   }
+ 
 
-  # nuisance g
-  g_indx <- names(data) != d 
+  # nuisance g: E[Y|X]
+  g_indx <- names(data) != d & names(data) != z
   data_g <- data[ , g_indx, drop = FALSE]
   task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
   
@@ -93,10 +100,10 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
   g_hat_list <- lapply(g_hat_list, function(x) x$response)
   
-  # nuisance m
-  m_indx <- names(data) != y
+  # nuisance m: E[Z|X]
+  m_indx <- names(data) != y & names(data) != d
   data_m <- data[, m_indx, drop = FALSE]
-  task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
+  task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
   ml_m <- mlr3::lrn(mlmethod$mlmethod_m)
   ml_m$param_set$values <- params$params_m # tbd: check if parameter passing really works
 
@@ -107,7 +114,6 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   train_ids_m <- lapply(1:n_iters, function(x) resampling_m$train_set(x))
   test_ids_m <- lapply(1:n_iters, function(x) resampling_m$test_set(x))
 
-  
   r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   
  # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
@@ -117,6 +123,28 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
 
 
+  # nuisance r: E[D|X]
+  r_indx <- names(data) != y & names(data) != z
+  data_r <- data[, r_indx, drop = FALSE]
+  task_r <- mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
+  ml_r <- mlr3::lrn(mlmethod$mlmethod_r)
+  ml_r$param_set$values <- params$params_r # tbd: check if parameter passing really works
+
+  # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
+  resampling_r <- mlr3::rsmp("custom")
+  resampling_r$instantiate(task_r, train_ids, test_ids)
+  
+  train_ids_r <- lapply(1:n_iters, function(x) resampling_r$train_set(x))
+  test_ids_r <- lapply(1:n_iters, function(x) resampling_r$test_set(x))
+
+  r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+  
+ # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
+  r_hat_list <- r_r$data$prediction # alternatively, r_r$prediction (not listed)
+  # m_hat_list <- mlr::getRRPredictionList(r_m)
+  r_hat_list <- lapply(r_hat_list, function(x) x$response)
+  # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
+
   # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
   #     (rin$desc$iters != r_m$pred$instance$desc$iters) ||
   #     !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
@@ -124,10 +152,14 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   #   stop('Resampling instances not equal')
   # }
   if ( (resampling$iters != resampling_m$iters) ||
+       (resampling$iters != resampling_r$iters) ||
        (resampling$iters != n_iters) ||
        (resampling_m$iters != n_iters) ||
-         (!identical(train_ids, train_ids_m)) ||
-         (!identical(test_ids, test_ids_m))) {
+       (resampling_r$iters != n_iters) ||
+       (!identical(train_ids, train_ids_m)) ||
+       (!identical(train_ids, train_ids_r)) ||
+       (!identical(test_ids, test_ids_m)) ||
+       (!identical(test_ids, test_ids_r))) {
     stop('Resampling instances not equal')
   }
 
@@ -137,6 +169,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
   D <- data[ , d]
   Y <- data[ , y]
+  Z <- data[ , z]
 
   # DML 1
   if ( dml_procedure == "dml1") {
@@ -144,7 +177,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
     se_i <- NA
     
-    v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+    v_hat <- u_hat <- w_hat <- matrix(NA, nrow = max(n_k), ncol = n_iters)
     
     for (i in 1:n_iters) {
         # test_index = test_index_list[[i]]
@@ -152,23 +185,23 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
         m_hat <- m_hat_list[[i]]
         g_hat <- g_hat_list[[i]]
+        r_hat <- r_hat_list[[i]]
 
-        d_k[, i] <- D[test_index]
-        v_hat[, i] <- D[test_index] - m_hat
+        v_hat[, i] <- D[test_index] - r_hat
         u_hat[, i]  <- Y[test_index] - g_hat
-        v_hatd[, i]  <- v_hat[, i]*D[test_index]
+        w_hat[, i] <- Z[test_index] - m_hat
 
-        orth_est <- orth_plr_dml(u_hat = u_hat[, i] , v_hat = v_hat[, i] ,
-                                 v_hatd = v_hatd[, i], 
-                                 inf_model = inf_model) #, se_type)
+        orth_est <- orth_plriv_dml(u_hat = u_hat[, i] , v_hat = v_hat[, i] , 
+                                   w_hat = w_hat[, i], 
+                                   inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
     
     }
     
     theta <- mean(thetas, na.rm = TRUE)
     
-    se <- sqrt(var_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat,
-                        v_hatd = v_hatd, inf_model = inf_model, se_type = se_type,
+    se <- sqrt(var_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat,
+                        w_hat = w_hat, inf_model = inf_model,
                         dml_procedure = dml_procedure))
     
     
@@ -178,8 +211,8 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     
     if (bootstrap != "none") {
       
-      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
-                              v_hatd = v_hatd, inf_model = inf_model, se = se,
+      boot <- bootstrap_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat, 
+                              w_hat = w_hat, inf_model = inf_model, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -189,7 +222,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   
   if ( dml_procedure == "dml2") {
 
-    v_hat <- u_hat <- v_hatd <- matrix(NA, nrow = n, ncol = 1)
+    v_hat <- u_hat <- w_hat <- matrix(NA, nrow = n, ncol = 1)
     
     for (i in 1:n_iters){
 
@@ -198,18 +231,19 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
        m_hat = m_hat_list[[i]]
        g_hat = g_hat_list[[i]]
+       r_hat = r_hat_list[[i]]
 
-       v_hat[test_index, 1] <- D[test_index] - m_hat
+       v_hat[test_index, 1] <- D[test_index] - r_hat
        u_hat[test_index, 1] <- Y[test_index] - g_hat
-       v_hatd[test_index, 1] <- v_hat[test_index]*D[test_index]
-
+       w_hat[test_index, 1] <- Z[test_index] - m_hat
     }
 
-    orth_est <- orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, inf_model = inf_model)
+    orth_est <- orth_plriv_dml(u_hat = u_hat, v_hat = v_hat, w_hat = w_hat, 
+                               inf_model = inf_model)
     
     theta <- orth_est$theta
-    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-                        v_hatd = v_hatd, inf_model = inf_model, se_type = se_type, 
+    se <- sqrt(var_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat,
+                        w_hat = w_hat, inf_model = inf_model, 
                         dml_procedure = dml_procedure))
     
     t <- theta/se 
@@ -218,8 +252,8 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     
     if (bootstrap != "none") {
       
-      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
-                              v_hatd = v_hatd, inf_model = inf_model, se = se,
+      boot <- bootstrap_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat, 
+                              w_hat = w_hat, inf_model = inf_model, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -239,23 +273,22 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
 #' Orthogonalized Estimation of Coefficient in PLR
 #'
-#' Function to estimate the structural parameter in a partially linear regression model (PLR).
+#' Function to estimate the structural parameter in a partially linear regression model with instrumental variables (PLRIV).
 #'
 #' @inheritParams var_plr
 #' @return List with estimate (\code{theta}).
 #' @export
-orth_plr_dml <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
+orth_plriv_dml <- function(u_hat, v_hat, w_hat, inf_model) { #, se_type) {
 
   theta <-  NA
 
-  if (inf_model == "DML2018") {
-    res_fit <- stats::lm(u_hat ~ 0 + v_hat)
+  if (inf_model == "ivreg") {
+    res_fit <- AER::ivreg(u_hat ~ 0 + v_hat | 0 + w_hat)
     theta <- stats::coef(res_fit)
   }
 
-   else if (inf_model == 'IV-type') {
-     theta <- mean(v_hat*u_hat)/mean(v_hatd)
-    # se <- 1/(mean(u_hat)^2) * mean((v_hat - theta*u_hat)*u_hat)^2
+   else if (inf_model == 'partialling-out') {
+     theta <- mean(u_hat*w_hat)/mean(v_hat*w_hat)
   }
 
   else {
@@ -273,35 +306,25 @@ orth_plr_dml <- function(u_hat, v_hat, v_hatd, inf_model) { #, se_type) {
 #' @inheritParams dml_plr
 #' @param theta final dml estimator for the partially linear model.
 #' @param d treatment variable.
-#' @param v_hat Residuals from \eqn{d-m(x)}.
+#' @param v_hat Residuals from \eqn{d-r(x)}.
 #' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hatd Product of \code{v_hat} with \code{d}.
+#' @param w_hat Residuals from \eqn{z-m(x)}.
 #' @return Variance estimator (\code{var}).
-var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_procedure) {
+var_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, dml_procedure) {
   
   var <- NA
   
-  if (se_type == inf_model){ 
-    
-    if (inf_model == "DML2018") {
+  if (inf_model == "partialling-out") {
   
-    var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat^2, na.rm = TRUE))^2  *
-            colMeans( ( (u_hat - v_hat*theta)*v_hat)^2), na.rm = TRUE)
-    }
-    
-     else if (inf_model == 'IV-type') {
-     var <- mean( 1/length(u_hat) * (1/colMeans(v_hatd, na.rm = TRUE))^2  * 
-            colMeans( ( (u_hat - d*theta)*v_hat)^2, na.rm = TRUE) )
-    }
-  
+    var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat * w_hat, na.rm = TRUE))^2  *
+            colMeans( ( (u_hat - v_hat*theta)*w_hat)^2), na.rm = TRUE)
   }
    
   # Q: only for "dml2"?
-  if (se_type == "ls" & inf_model == "DML2018" & dml_procedure == "dml2") {
-      res_fit <- stats::lm(u_hat ~ 0 + v_hat)
+  if (inf_model == "ivreg" & dml_procedure == "dml2") {
+      res_fit <- AER::ivreg(u_hat ~ 0 + v_hat | 0 + w_hat)
       var <- sandwich::vcovHC(res_fit)
   }
-  
   
   return(c(var))
 }
@@ -317,23 +340,15 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_proc
 #' @inheritParams DML
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
-bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstrap, nRep) {
+bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, se, bootstrap, nRep) {
   
   boot_var <- NA
   
- if (inf_model == "DML2018") {
-
-    score <- (u_hat - v_hat*theta)*v_hat
-    J <-  colMeans(v_hat*v_hat, na.rm = TRUE)
-    
-  }
-
-  else if (inf_model == 'IV-type') {
-    score <- (u_hat - d*theta)*v_hat
-    J <- colMeans(v_hatd, na.rm = TRUE)
-  }
+  # implement multiplier bootstrap for inf_model = "partialling-out" by default
+  score <- (u_hat - v_hat*theta)*w_hat
+  J <-  colMeans(v_hat*w_hat, na.rm = TRUE)
   
-  n <- length(d)
+  n <- length(u_hat)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)
   
   for (i in seq(nRep)) {
