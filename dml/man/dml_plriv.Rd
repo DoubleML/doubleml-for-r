@@ -2,7 +2,7 @@
 % Please edit documentation in R/dml_plriv.R
 \name{dml_plriv}
 \alias{dml_plriv}
-\title{Double Machine Learning for Partially Linear Regression.}
+\title{Double Machine Learning for Partially Linear Instrumental Variable Regression.}
 \usage{
 dml_plriv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   params = list(params_m = list(), params_r = list(), params_g = list()),
@@ -28,9 +28,9 @@ dml_plriv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 
 \item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
 
-\item{inf_model}{Inference model for final estimation, default \code{"partialling-out"} (...)}
+\item{inf_model}{Inference model for final estimation, default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}.}
 
-\item{se_type}{Method to estimate standard errors. Default \code{"partialling-out"}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
+\item{se_type}{Method to estimate standard errors. Default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
 
 \item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.}
 
@@ -42,5 +42,5 @@ dml_plriv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 Result object with estimated coefficient and standard errors.
 }
 \description{
-Double Machine Learning for Partially Linear Regression.
+Double Machine Learning for Partially Linear Instrumental Variable Regression.
 }

@@ -1,4 +1,4 @@
-#' Double Machine Learning for Partially Linear Regression.
+#' Double Machine Learning for Partially Linear Instrumental Variable Regression.
 #'
 #' @param data Data frame.
 #' @param y Name of outcome variable. The variable must be included in \code{data}.
@@ -9,8 +9,8 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of z on X (nuisance part m). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part r). 
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g, \code{params_m} for nuisance m, and \code{params_r} for nuisance r. 
-#' @param inf_model Inference model for final estimation, default \code{"partialling-out"} (...)
-#' @param se_type Method to estimate standard errors. Default \code{"partialling-out"}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
+#' @param inf_model Inference model for final estimation, default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. 
+#' @param se_type Method to estimate standard errors. Default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
