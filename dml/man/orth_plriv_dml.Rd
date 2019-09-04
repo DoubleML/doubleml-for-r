@@ -9,9 +9,11 @@ orth_plriv_dml(u_hat, v_hat, w_hat, inf_model)
 \arguments{
 \item{u_hat}{Residuals from \eqn{y-g(x)}.}
 
-\item{v_hat}{Residuals from \eqn{d-m(x)}.}
+\item{v_hat}{Residuals from \eqn{d-r(x)}.}
 
-\item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
+\item{w_hat}{Residuals from \eqn{z-m(x)}.}
+
+\item{inf_model}{Inference model for final estimation, default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}.}
 }
 \value{
 List with estimate (\code{theta}).

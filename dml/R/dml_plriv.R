@@ -275,7 +275,7 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 #'
 #' Function to estimate the structural parameter in a partially linear regression model with instrumental variables (PLRIV).
 #'
-#' @inheritParams var_plr
+#' @inheritParams var_plriv
 #' @return List with estimate (\code{theta}).
 #' @export
 orth_plriv_dml <- function(u_hat, v_hat, w_hat, inf_model) { #, se_type) {
@@ -303,9 +303,8 @@ orth_plriv_dml <- function(u_hat, v_hat, w_hat, inf_model) { #, se_type) {
 #' Variance estimation for DML estimator in the partially linear regression model
 #'
 #' Variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
-#' @inheritParams dml_plr
+#' @inheritParams dml_plriv
 #' @param theta final dml estimator for the partially linear model.
-#' @param d treatment variable.
 #' @param v_hat Residuals from \eqn{d-r(x)}.
 #' @param u_hat Residuals from \eqn{y-g(x)}.
 #' @param w_hat Residuals from \eqn{z-m(x)}.
@@ -335,9 +334,9 @@ var_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, dml_procedure) {
 #'
 #' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a partially linear regression model (PLR) with double machine learning.
 #'
-#' @inheritParams var_plr
-#' @inheritParams dml_plr
-#' @inheritParams DML
+#' @inheritParams var_plriv
+#' @inheritParams dml_plriv
+#' @inheritParams DMLIV
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
 bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, se, bootstrap, nRep) {
@@ -372,7 +371,6 @@ bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, se, bootstrap
   res = list(boot_theta = pertub)
   return(c(res))
 }
-
 
 
 

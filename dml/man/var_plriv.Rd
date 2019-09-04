@@ -15,11 +15,9 @@ var_plriv(theta, u_hat, v_hat, w_hat, inf_model, dml_procedure)
 
 \item{w_hat}{Residuals from \eqn{z-m(x)}.}
 
-\item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
+\item{inf_model}{Inference model for final estimation, default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}.}
 
 \item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
-
-\item{d}{treatment variable.}
 }
 \value{
 Variance estimator (\code{var}).
