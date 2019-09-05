@@ -237,7 +237,7 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
                             m = m_hat, inf_model = inf_model)
     
     theta <- orth_est$theta
-    se <- sqrt(var_irm(g0_hat = g0_hat, g1_hat = g1_hat, 
+    se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
                             d = D, m = m_hat, inf_model = inf_model))
     

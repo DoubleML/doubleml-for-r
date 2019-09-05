@@ -4,9 +4,13 @@
 \alias{var_irm}
 \title{Variance estimation for DML estimator in the interactive regression model}
 \usage{
-var_irm(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model)
+var_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model)
 }
 \arguments{
+\item{g0_hat}{Predictions from \eqn{g(0,X)}.}
+
+\item{g1_hat}{Predictions from \eqn{g(1,X)}}
+
 \item{u0_hat}{Residuals from \eqn{y-g(0,x)}.}
 
 \item{u1_hat}{Residuals from \eqn{y-g(1,x)}.}
@@ -16,8 +20,6 @@ var_irm(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model)
 \item{m}{Predictions from \eqn{d-m(x)}.}
 
 \item{inf_model}{Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATET"} for average treatment effect on the treated.}
-
-\item{theta}{Final dml estimator for the interactive regression model.}
 }
 \value{
 Variance estimator (\code{var}).
