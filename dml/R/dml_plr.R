@@ -76,6 +76,8 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   } # tbd: else 
   
   n_iters <- resampling$iters
+  
+  # tbd: ensure that train_ids and test_ids are integers
   train_ids <- lapply(1:n_iters, function(x) resampling$train_set(x))
   test_ids <- lapply(1:n_iters, function(x) resampling$test_set(x))
 
@@ -129,6 +131,15 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
          (!identical(train_ids, train_ids_m)) ||
          (!identical(test_ids, test_ids_m))) {
     stop('Resampling instances not equal')
+  }
+  
+  # tbd: handling case: (is.null(rownames(data)))
+  if (any(vapply(train_ids, function(x) is.character(x), logical(1L))) ) {
+    train_ids <- lapply(train_ids, function(x) as.integer(x))
+  }
+    
+  if (any(vapply(test_ids, function(x) is.character(x), logical(1L)))) {
+    test_ids <- lapply(test_ids, function(x) as.integer(x))
   }
 
   # test_index_list <- rin$test.inds
