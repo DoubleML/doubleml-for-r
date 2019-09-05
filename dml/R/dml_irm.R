@@ -232,7 +232,7 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
  
     }
 
-    orth_est <- orth_irm_dml(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
+    orth_est <- orth_irm_dml(g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, d = D, 
                             m = m_hat, inf_model = inf_model)
     
@@ -300,6 +300,7 @@ orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model) { #, s
 #'
 #' Variance estimation for the structural parameter estimator in an interactive regression model (irm) with double machine learning.
 #' @inheritParams dml_irm
+#' @param theta Final dml estimator for interactive regression model.
 #' @param d Treatment variable.
 #' @param m Predictions from \eqn{d-m(x)}.
 #' @param g0_hat Predictions from \eqn{g(0,X)}.

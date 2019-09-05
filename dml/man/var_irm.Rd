@@ -7,6 +7,8 @@
 var_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model)
 }
 \arguments{
+\item{theta}{Final dml estimator for interactive regression model.}
+
 \item{g0_hat}{Predictions from \eqn{g(0,X)}.}
 
 \item{g1_hat}{Predictions from \eqn{g(1,X)}}
