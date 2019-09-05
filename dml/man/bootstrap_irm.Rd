@@ -4,8 +4,8 @@
 \alias{bootstrap_irm}
 \title{Bootstrap Implementation for Interactive Regression Model}
 \usage{
-bootstrap_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model, se,
-  bootstrap, nRep)
+bootstrap_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model,
+  se, bootstrap, nRep)
 }
 \arguments{
 \item{theta}{Final dml estimator for interactive regression model.}
@@ -21,6 +21,8 @@ bootstrap_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model, se,
 \item{d}{Treatment variable.}
 
 \item{m}{Predictions from \eqn{d-m(x)}.}
+
+\item{y}{Outcome variable.}
 
 \item{inf_model}{Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATET"} for average treatment effect on the treated.}
 

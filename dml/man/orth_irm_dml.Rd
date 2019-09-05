@@ -4,7 +4,7 @@
 \alias{orth_irm_dml}
 \title{Orthogonalized Estimation of Coefficient in irm}
 \usage{
-orth_irm_dml(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model)
+orth_irm_dml(g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model)
 }
 \arguments{
 \item{g0_hat}{Predictions from \eqn{g(0,X)}.}
@@ -18,6 +18,8 @@ orth_irm_dml(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model)
 \item{d}{Treatment variable.}
 
 \item{m}{Predictions from \eqn{d-m(x)}.}
+
+\item{y}{Outcome variable.}
 
 \item{inf_model}{Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATET"} for average treatment effect on the treated.}
 }

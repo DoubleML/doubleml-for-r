@@ -119,22 +119,25 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
   g0_hat_list <- lapply(g0_hat_list, function(x) x$response)
   
-  # nuisance g1: E[Y|D=1, X]
+    # nuisance g1: E[Y|D=1, X]
   task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
   ml_g1 <- mlr3::lrn(mlmethod$mlmethod_g1)
   ml_g1$param_set$values <- params$params_g1 # tbd: check if parameter passing really works
   resampling_g1 <- mlr3::rsmp("custom")
   resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
-  
   train_ids_g1 <- lapply(1:n_iters, function(x) resampling_g1$train_set(x))
   test_ids_g1 <- lapply(1:n_iters, function(x) resampling_g1$test_set(x))
-  r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
-  # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  g1_hat_list <- r_g1$data$prediction
-  # g_hat_list <- mlr::getRRPredictionList(r_g)
-  #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
-  g1_hat_list <- lapply(g1_hat_list, function(x) x$response)
   
+  # tbd: option to omit estimation of g1_hat_list for ATET (omit computations)
+  # Estimation only required for ATE, not for ATET
+  #if (inf_model == "ATE") {
+    r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
+    # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
+    g1_hat_list <- r_g1$data$prediction
+    # g_hat_list <- mlr::getRRPredictionList(r_g)
+    #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
+    g1_hat_list <- lapply(g1_hat_list, function(x) x$response)
+  # }
   
   if ( (resampling$iters != resampling_g0$iters) ||
        (resampling$iters != resampling_g1$iters) ||
@@ -170,8 +173,8 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
     se_i <- NA
     
-    g0_hat <- g1_hat <-  u0_hat <- u1_hat <- m_hat_k <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
-    
+    g0_hat <- g1_hat <- u0_hat <- u1_hat <- m_hat_k <- d_k <- y_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+
     for (i in 1:n_iters) {
         # test_index = test_index_list[[i]]
         test_index = test_ids[[i]]
@@ -181,12 +184,13 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
         
         m_hat_k[, i] <- m_hat_list[[i]]
         d_k[, i] <- D[test_index]
+        y_k[, i] <- Y[test_index]
         u0_hat[, i]  <- Y[test_index] - g0_hat[, i]
         u1_hat[, i] <- Y[test_index] - g1_hat[, i]
     
         orth_est <- orth_irm_dml(g0_hat = g0_hat[, i], g1_hat = g1_hat[, i], 
                                  u0_hat = u0_hat[, i], u1_hat = u1_hat[, i],
-                                 d = d_k[, i], m = m_hat_k[, i],
+                                 d = d_k[, i], m = m_hat_k[, i], y = y_k[, i],
                                  inf_model = inf_model) #, se_type)
         thetas[i] <- orth_est$theta
     
@@ -196,7 +200,7 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     
     se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = d_k, m = m_hat_k, inf_model = inf_model))
+                            d = d_k, m = m_hat_k, y = y_k, inf_model = inf_model))
 
     t <- theta/se 
     
@@ -206,7 +210,8 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
       
       boot <- bootstrap_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = d_k, m = m_hat_k, inf_model = inf_model, se = se,
+                            d = d_k, m = m_hat_k, y = y_k, 
+                            inf_model = inf_model, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -234,12 +239,12 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
     orth_est <- orth_irm_dml(g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, d = D, 
-                            m = m_hat, inf_model = inf_model)
+                            y = Y, m = m_hat, inf_model = inf_model)
     
     theta <- orth_est$theta
     se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = D, m = m_hat, inf_model = inf_model))
+                            d = D, m = m_hat, y = Y, inf_model = inf_model))
     
     t <- theta/se 
     
@@ -250,7 +255,8 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
       boot <- bootstrap_irm(theta = theta, 
                             g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = D, m = m_hat, inf_model = inf_model, se = se,
+                            d = D, m = m_hat, y = Y, 
+                            inf_model = inf_model, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -275,16 +281,19 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 #' @inheritParams var_irm
 #' @return List with estimate (\code{theta}).
 #' @export
-orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model) { #, se_type) {
+orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model) { #, se_type) {
 
-  theta <-  NA
+  theta <- Ep <- NA
 
   if (inf_model == "ATE") {
-    theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m))
+     theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m))
     
   }
 
    else if (inf_model == "ATET") {
+     Ep <- mean(d) 
+     
+     theta <- mean( d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m))) / mean(d/Ep)
    }
   
   else {
@@ -302,13 +311,14 @@ orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model) { #, s
 #' @inheritParams dml_irm
 #' @param theta Final dml estimator for interactive regression model.
 #' @param d Treatment variable.
+#' @param y Outcome variable.
 #' @param m Predictions from \eqn{d-m(x)}.
 #' @param g0_hat Predictions from \eqn{g(0,X)}.
 #' @param g1_hat Predictions from \eqn{g(1,X)}
 #' @param u0_hat Residuals from \eqn{y-g(0,x)}.
 #' @param u1_hat Residuals from \eqn{y-g(1,x)}.
 #' @return Variance estimator (\code{var}).
-var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model) {
+var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model) {
   
   var <- NA
   
@@ -321,7 +331,15 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model) {
   }
     
    else if (inf_model == "ATET") {
-  
+    
+      if (is.numeric(d)) { 
+        d <- as.matrix(d)
+      }
+   
+    Ep <- colMeans(d)
+     
+   var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) )^2, na.rm = TRUE))
+     
   }
   
   return(c(var))
@@ -338,13 +356,25 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model) {
 #' @inheritParams DML
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
-bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, inf_model, se, bootstrap, nRep) {
+bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model, se, bootstrap, nRep) {
   
   boot_var <- NA
   
  if (inf_model == "ATE") {
 
-    score <- theta + g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m) - theta
+    score <- g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m) - theta
+ }
+  
+ if (inf_model == "ATET") {
+
+    if (is.numeric(d)) { 
+        d <- as.matrix(d)
+      }
+   
+    Ep <- colMeans(d)
+     
+    score <- d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta
+  
  }
   
   n <- length(d)
