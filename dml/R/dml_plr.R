@@ -66,20 +66,27 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
   
   if (is.null(resampling)) {
-    resampling <- mlr3::ResamplingCV$new()
-    resampling$param_set$values$folds = k
+    resampling_scheme <- mlr3::ResamplingCV$new()
+    resampling_scheme$param_set$values$folds <- k
   }
   
   # tbd: handling of resampling 
   if (!resampling$is_instantiated) {
-    resampling <- resampling$instantiate(task_g)
+    resampling_scheme <- resampling$clone()
+    resampling_scheme <- resampling_scheme$instantiate(task_g)
+  }
+  
+  if (!is.null(resampling) & resampling$is_instantiated) {
+    resampling_scheme <- mlr3::ResamplingCV$new()
+    resampling_scheme$param_set$values$folds <- resampling$iters
+    message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
   } # tbd: else 
   
-  n_iters <- resampling$iters
+  n_iters <- resampling_scheme$iters
   
   # tbd: ensure that train_ids and test_ids are integers
-  train_ids <- lapply(1:n_iters, function(x) resampling$train_set(x))
-  test_ids <- lapply(1:n_iters, function(x) resampling$test_set(x))
+  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
+  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
 
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
@@ -87,7 +94,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
     
    # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
-  r_g <- mlr3::resample(task_g, ml_g, resampling, store_models = TRUE)
+  r_g <- mlr3::resample(task_g, ml_g, resampling_scheme, store_models = TRUE)
   
   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
   g_hat_list <- r_g$data$prediction
@@ -125,8 +132,8 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
   #   stop('Resampling instances not equal')
   # }
-  if ( (resampling$iters != resampling_m$iters) ||
-       (resampling$iters != n_iters) ||
+  if ( (resampling_scheme$iters != resampling_m$iters) ||
+       (resampling_scheme$iters != n_iters) ||
        (resampling_m$iters != n_iters) ||
          (!identical(train_ids, train_ids_m)) ||
          (!identical(test_ids, test_ids_m))) {
