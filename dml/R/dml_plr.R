@@ -297,12 +297,12 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se_type, dml_proc
     if (inf_model == "DML2018") {
   
     var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat^2, na.rm = TRUE))^2  *
-            colMeans( ( (u_hat - v_hat*theta)*v_hat)^2), na.rm = TRUE)
+            colMeans( ( (u_hat - v_hat*theta)*v_hat)^2, na.rm = TRUE) )
     }
     
      else if (inf_model == 'IV-type') {
      var <- mean( 1/length(u_hat) * (1/colMeans(v_hatd, na.rm = TRUE))^2  * 
-            colMeans( ( (u_hat - d*theta)*v_hat)^2, na.rm = TRUE) )
+            colMeans( ( (u_hat - d*theta)*v_hat^2) , na.rm = TRUE))
     }
   
   }
