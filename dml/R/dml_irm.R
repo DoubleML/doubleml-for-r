@@ -64,32 +64,40 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
   
   if (is.null(resampling)) {
-    resampling <- mlr3::ResamplingCV$new()
-    resampling$param_set$values$folds = k
+    resampling_scheme <- mlr3::ResamplingCV$new()
+    resampling_scheme$param_set$values$folds <- k
   }
   
   # tbd: handling of resampling 
   if (!resampling$is_instantiated) {
-    resampling <- resampling$instantiate(task_m)
+    resampling_scheme <- resampling$clone()
+    resampling_scheme <- resampling_scheme$instantiate(task_m)
+  }
+  
+  if (!is.null(resampling) & resampling$is_instantiated) {
+    resampling_scheme <- mlr3::ResamplingCV$new()
+    resampling_scheme$param_set$values$folds <- resampling$iters
+    message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
   } # tbd: else 
   
-  n_iters <- resampling$iters
+  
+  n_iters <- resampling_scheme$iters
   # tbd: ensure that train_ids and test_ids are integers
-  train_ids <- lapply(1:n_iters, function(x) resampling$train_set(x))
-  test_ids <- lapply(1:n_iters, function(x) resampling$test_set(x))
+  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
+  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
   
   # train and test ids according to status of d
   # in each fold, select those with d = 0
   train_ids_0 <- lapply(1:n_iters, function(x) 
-                    resampling$train_set(x)[data[resampling$train_set(x), d] == 0])
+                    resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 0])
   # in each fold, select those with d = 0
   train_ids_1 <- lapply(1:n_iters, function(x) 
-                    resampling$train_set(x)[data[resampling$train_set(x), d] == 1])
+                    resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 1])
   
   ml_m <- mlr3::lrn(mlmethod$mlmethod_m)
   ml_m$param_set$values <- params$params_m # tbd: check if parameter passing really works
   # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  r_m <- mlr3::resample(task_m, ml_m, resampling, store_models = TRUE)
+  r_m <- mlr3::resample(task_m, ml_m, resampling_scheme, store_models = TRUE)
   # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
   m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
   # m_hat_list <- mlr::getRRPredictionList(r_m)
@@ -139,9 +147,9 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     g1_hat_list <- lapply(g1_hat_list, function(x) x$response)
   # }
   
-  if ( (resampling$iters != resampling_g0$iters) ||
-       (resampling$iters != resampling_g1$iters) ||
-       (resampling$iters != n_iters) ||
+  if ( (resampling_scheme$iters != resampling_g0$iters) ||
+       (resampling_scheme$iters != resampling_g1$iters) ||
+       (resampling_scheme$iters != n_iters) ||
        (resampling_g1$iters != n_iters) ||
        (resampling_g0$iters != n_iters) ||
        (!identical(train_ids_0, train_ids_g0)) ||
@@ -338,7 +346,7 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model) {
    
     Ep <- colMeans(d)
      
-   var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) )^2, na.rm = TRUE))
+   var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta)^2, na.rm = TRUE))
      
   }
   
