@@ -61,11 +61,16 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   # nuisance m
   m_indx <- names(data) != y
   data_m <- data[, m_indx, drop = FALSE]
-  task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
   
+    # tbd: handle case with classif vs. regr. for task_p
+  data_m[, d] <- factor(data_m[, d])
+  task_m <- mlr3::TaskClassif$new(id = paste0("nuis_p_", d), backend = data_m,
+                                    target = d, positive = "1")
+
   if (is.null(resampling)) {
     resampling_scheme <- mlr3::ResamplingCV$new()
     resampling_scheme$param_set$values$folds <- k
+    resampling_scheme <- resampling_scheme$instantiate(task_m)
   }
   
   # tbd: handling of resampling 
@@ -78,6 +83,7 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
     resampling_scheme <- mlr3::ResamplingCV$new()
     resampling_scheme$param_set$values$folds <- resampling$iters
     message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
+    resampling_scheme <- resampling_scheme$instantiate(task_m)
   } # tbd: else 
   
   
@@ -94,16 +100,18 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   train_ids_1 <- lapply(1:n_iters, function(x) 
                     resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 1])
   
-  ml_m <- mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m <- mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
   ml_m$param_set$values <- params$params_m # tbd: check if parameter passing really works
   # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
   r_m <- mlr3::resample(task_m, ml_m, resampling_scheme, store_models = TRUE)
   # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
-  # m_hat_list <- mlr::getRRPredictionList(r_m)
-  m_hat_list <- lapply(m_hat_list, function(x) x$response)
-  # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
-  
+  # m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
+  # # m_hat_list <- mlr::getRRPredictionList(r_m)
+  # m_hat_list <- lapply(m_hat_list, function(x) x$response)
+  # # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
+  m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$prob[, "1"])
+
+   
   # nuisance g0: E[Y|D=0, X]
   g_indx <- names(data) != d
   data_g <- data[ , g_indx, drop = FALSE]
@@ -122,11 +130,13 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
   r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  g0_hat_list <- r_g0$data$prediction
-  # g_hat_list <- mlr::getRRPredictionList(r_g)
-  #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
-  g0_hat_list <- lapply(g0_hat_list, function(x) x$response)
-  
+  # g0_hat_list <- r_g0$data$prediction
+  # # g_hat_list <- mlr::getRRPredictionList(r_g)
+  # #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
+  # g0_hat_list <- lapply(g0_hat_list, function(x) x$response)
+  g0_hat_list <- lapply(r_g0$data$prediction, function(x) x$test$response)
+
+  # 
     # nuisance g1: E[Y|D=1, X]
   task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
   ml_g1 <- mlr3::lrn(mlmethod$mlmethod_g1)
@@ -140,12 +150,14 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   # Estimation only required for ATE, not for ATET
   #if (inf_model == "ATE") {
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
-    # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-    g1_hat_list <- r_g1$data$prediction
-    # g_hat_list <- mlr::getRRPredictionList(r_g)
-    #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
-    g1_hat_list <- lapply(g1_hat_list, function(x) x$response)
-  # }
+  #   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
+  #   g1_hat_list <- r_g1$data$prediction
+  #   # g_hat_list <- mlr::getRRPredictionList(r_g)
+  #   #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
+  #   g1_hat_list <- lapply(g1_hat_list, function(x) x$response)
+  # # }
+  g1_hat_list <- lapply(r_g1$data$prediction, function(x) x$test$response)
+
   
   if ( (resampling_scheme$iters != resampling_g0$iters) ||
        (resampling_scheme$iters != resampling_g1$iters) ||

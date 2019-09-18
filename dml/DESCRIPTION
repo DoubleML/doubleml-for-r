@@ -14,8 +14,8 @@ Imports:
     stats,
     sandwich,
     checkmate,
-    mlr3 (>= 0.1.2.9000),
-    mlr3learners (>= 0.1.2),
+    mlr3 (>= 0.1.3),
+    mlr3learners (>= 0.1.3),
     AER
 RoxygenNote: 6.1.1
 Suggests: 
