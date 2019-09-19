@@ -97,11 +97,12 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   r_g <- mlr3::resample(task_g, ml_g, resampling_scheme, store_models = TRUE)
   
   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  g_hat_list <- r_g$data$prediction
-  # g_hat_list <- mlr::getRRPredictionList(r_g)
-  #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
-  g_hat_list <- lapply(g_hat_list, function(x) x$response)
-  
+  # g_hat_list <- r_g$data$prediction
+  # # g_hat_list <- mlr::getRRPredictionList(r_g)
+  # #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
+  # g_hat_list <- lapply(g_hat_list, function(x) x$response)
+  g_hat_list <- lapply(r_g$data$prediction, function(x) x$test$response)
+
   # nuisance m
   m_indx <- names(data) != y
   data_m <- data[, m_indx, drop = FALSE]
@@ -120,10 +121,11 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   
  # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
-  # m_hat_list <- mlr::getRRPredictionList(r_m)
-  m_hat_list <- lapply(m_hat_list, function(x) x$response)
-  # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
+  # m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
+  # # m_hat_list <- mlr::getRRPredictionList(r_m)
+  # m_hat_list <- lapply(m_hat_list, function(x) x$response)
+  # # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
+  m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$response)
 
 
   # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
