@@ -20,7 +20,7 @@
 #' @export
 
 dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params = list(params_mu0 = list(), params_mu1 = list(), params_m0 = list(), params_m1 = list(), params_p = list()), 
-                    dml_procedure = "dml2", always_takers = TRUE, never_tkaers = TRUE,
+                    dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
                     inf_model = "LATE", se_type = "LATE",
                     bootstrap = "normal",  nRep = 500, ...) {
 
@@ -177,47 +177,66 @@ dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params 
   data_m <- data[, m_indx, drop = FALSE]
   data_m[, d] <- factor(data_m[, d])
   
-  task_m0 <- mlr3::TaskClassif$new(id = paste0("nuis_m0_", d), backend = data_m,
-                                    target = d, positive = "1")
-  ml_m0 <- mlr3::lrn(mlmethod$mlmethod_m0, predict_type = "prob")
-  ml_m0$param_set$values <- params$params_m0 # tbd: check if parameter passing really works
- 
-  resampling_m0 <- mlr3::rsmp("custom")
-  # Train on subset with z == 0 (in each fold) only, predict for all test obs
-  resampling_m0$instantiate(task_m0, train_ids_0, test_ids)
-  train_ids_m0 <- lapply(1:n_iters, function(x) resampling_m0$train_set(x))
-  test_ids_m0 <- lapply(1:n_iters, function(x) resampling_m0$test_set(x))
-  r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
-  m0_hat_list <- lapply(r_m0$data$prediction, function(x) x$test$prob[, "1"])
+  if (always_takers == FALSE & never_takers == FALSE) {
 
-  # nuisance m1: E[E|Z=1, 0]
-  task_m1 <- mlr3::TaskClassif$new(id = paste0("nuis_m1_", d), backend = data_m,
-                                    target = d, positive = "1")
-  ml_m1 <- mlr3::lrn(mlmethod$mlmethod_m1, predict_type = "prob")
-  ml_m1$param_set$values <- params$params_m1 # tbd: check if parameter passing really works
- 
-  resampling_m1 <- mlr3::rsmp("custom")
-  # Train on subset with z == 0 (in each fold) only, predict for all test obs
-  resampling_m1$instantiate(task_m1, train_ids_1, test_ids)
-  train_ids_m1 <- lapply(1:n_iters, function(x) resampling_m1$train_set(x))
-  test_ids_m1 <- lapply(1:n_iters, function(x) resampling_m1$test_set(x))
-  r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
-  m1_hat_list <- lapply(r_m1$data$prediction, function(x) x$test$prob[, "1"])
+        message("If there are no always-takers and no never-takers, ATE is estimated")
+  }
+  
+  if (always_takers == FALSE) {
+    lengths <- lapply(test_ids, length)
+    m0_hat_list <- lapply(lengths, function(x) rep(0, x))
+  } 
 
+  if (always_takers == TRUE) {
+    task_m0 <- mlr3::TaskClassif$new(id = paste0("nuis_m0_", d), backend = data_m,
+                                      target = d, positive = "1")
+    ml_m0 <- mlr3::lrn(mlmethod$mlmethod_m0, predict_type = "prob")
+    ml_m0$param_set$values <- params$params_m0 # tbd: check if parameter passing really works
+   
+    resampling_m0 <- mlr3::rsmp("custom")
+    # Train on subset with z == 0 (in each fold) only, predict for all test obs
+    resampling_m0$instantiate(task_m0, train_ids_0, test_ids)
+    train_ids_m0 <- lapply(1:n_iters, function(x) resampling_m0$train_set(x))
+    test_ids_m0 <- lapply(1:n_iters, function(x) resampling_m0$test_set(x))
+    r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
+    m0_hat_list <- lapply(r_m0$data$prediction, function(x) x$test$prob[, "1"])
+  }
+  
+  if (never_takers == FALSE) {
+    lengths <- lapply(test_ids, length)
+    m1_hat_list <- lapply(lengths, function(x) rep(1, x))
+  }
+  
+  if (never_takers == TRUE) {
+    # nuisance m1: E[E|Z=1, 0]
+    task_m1 <- mlr3::TaskClassif$new(id = paste0("nuis_m1_", d), backend = data_m,
+                                      target = d, positive = "1")
+    ml_m1 <- mlr3::lrn(mlmethod$mlmethod_m1, predict_type = "prob")
+    ml_m1$param_set$values <- params$params_m1 # tbd: check if parameter passing really works
+   
+    resampling_m1 <- mlr3::rsmp("custom")
+    # Train on subset with z == 0 (in each fold) only, predict for all test obs
+    resampling_m1$instantiate(task_m1, train_ids_1, test_ids)
+    train_ids_m1 <- lapply(1:n_iters, function(x) resampling_m1$train_set(x))
+    test_ids_m1 <- lapply(1:n_iters, function(x) resampling_m1$test_set(x))
+    r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
+    m1_hat_list <- lapply(r_m1$data$prediction, function(x) x$test$prob[, "1"])
+  }
   
   if ( (resampling_scheme$iters != resampling_mu0$iters) ||
        (resampling_scheme$iters != resampling_mu1$iters) ||
-       (resampling_scheme$iters != resampling_m0$iters) ||
-       (resampling_scheme$iters != resampling_m1$iters) ||
+       # (resampling_scheme$iters != resampling_m0$iters) ||
+       # (resampling_scheme$iters != resampling_m1$iters) ||
        (resampling_scheme$iters != n_iters) ||
        (!identical(train_ids_0, train_ids_mu0)) ||
        (!identical(train_ids_1, train_ids_mu1)) ||
-       (!identical(train_ids_0, train_ids_m0)) ||
-       (!identical(train_ids_1, train_ids_m1)) ||      
+       # (!identical(train_ids_0, train_ids_m0)) ||
+       # (!identical(train_ids_1, train_ids_m1)) ||      
        (!identical(test_ids, test_ids_mu0)) ||
-       (!identical(test_ids, test_ids_mu1)) ||
-       (!identical(test_ids, test_ids_m0)) ||
-       (!identical(test_ids, test_ids_m1))) {
+       # (!identical(test_ids, test_ids_mu1)) ||
+       # (!identical(test_ids, test_ids_m0)) ||
+       # (!identical(test_ids, test_ids_m1))) {
+      (!identical(test_ids, test_ids_mu1))) {
     stop('Resampling instances not equal')
   }
   
