@@ -374,11 +374,11 @@ orth_irmiv_dml <- function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, inf
 
   theta <- NA
 
-  if (inf_model == "LATE") {
-     theta <- 1/mean( m1_hat - m0_hat + z*(d-m1_hat)/p_hat - (1-z)*(d-m0_hat)/(1-p_hat))*
-              mean(mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - (1-z)*(y - mu0_hat)/(1-p_hat))
+  if (inf_model == "LATE" | inf_model == "DML2018") {
+     theta <- 1/mean( m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
+              mean(mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
   }
-
+ 
    else if (inf_model == "LATET") { 
      
      # tbd: LATET
@@ -422,7 +422,17 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
                 colMeans( ( mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - 
                             (1-z)*(y - mu0_hat)/(1-p_hat))^2 , na.rm = TRUE) )
 
-     } else if (inf_model == "LATET") {
+     } 
+  
+  # else if (inf_model == "DML2018") {
+  # 
+  #      score_mat <- 1/(m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
+  #                     (mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
+  #               
+  #      var <- 1/length(d) * apply(score_mat, 2, function(x) var(x, na.rm = TRUE))
+  #   }
+  #   
+    else if (inf_model == "LATET") {
      
      # tbd: LATET
   
@@ -434,7 +444,9 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
      #
      # var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta)^2, na.rm = TRUE))
      #
-  }  else {
+
+      message ("LATET not yet implemented.")
+      }  else {
     
     stop("Inference framework for variance estimation unknown")
   }
