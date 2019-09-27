@@ -510,7 +510,7 @@ bootstrap_irmiv <- function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
         weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
 
-     pertub[1,i] <- mean( colMeans(weights * 1/se * score, na.rm = TRUE))
+     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score, na.rm = TRUE))
 
   }
 
