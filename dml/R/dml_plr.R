@@ -249,7 +249,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta)
+               boot_se = boot_se, boot_theta = boot_theta, r_g=r_g)
   
   class(res) <- "DML"
   return(res)
