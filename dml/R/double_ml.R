@@ -13,12 +13,12 @@ DoubleML <- R6Class("DoubleML", public = list(
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
-  fit = function(data, y, d) {
+  fit = function(data, y, d, z=NULL) {
     # perform sample splitting based on a dummy task with the whole data set
     private$split_samples(data)
     
     # ml estimation of nuisance models and computation of score elements
-    private$ml_nuisance_and_score_elements(data, y, d)
+    private$ml_nuisance_and_score_elements(data, y, d, z)
     
     # estimate the causal parameter(s)
     private$est_causal_pars()

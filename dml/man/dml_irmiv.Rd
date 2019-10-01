@@ -7,7 +7,7 @@
 dml_irmiv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   params = list(params_mu0 = list(), params_mu1 = list(), params_m0 =
   list(), params_m1 = list(), params_p = list()), dml_procedure = "dml2",
-  always_takers = TRUE, never_tkaers = TRUE, inf_model = "LATE",
+  always_takers = TRUE, never_takers = TRUE, inf_model = "LATE",
   se_type = "LATE", bootstrap = "normal", nRep = 500, ...)
 }
 \arguments{
@@ -31,6 +31,8 @@ dml_irmiv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 
 \item{always_takers}{option to adapt to cases with (default) and without always-takers. If \code{FALSE}, the estimator is adapted to a setting without always-takers.}
 
+\item{never_takers}{option to adapt to cases with (default) and without never-takers. If \code{FALSE}, the estimator is adapted to a setting without never-takers.}
+
 \item{inf_model}{Estimator for final estimation, default average treatment effect \code{"LATE"}. Alternatively switch to \code{"LATET"} for average treatment effect on the treated.}
 
 \item{se_type}{Method to estimate standard errors (redundant / identical to inf_model).}
@@ -40,8 +42,6 @@ dml_irmiv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 
 \item{...}{further options passed to underlying functions.}
-
-\item{never_takers}{option to adapt to cases with (default) and without never-takers. If \code{FALSE}, the estimator is adapted to a setting without never-takers.}
 }
 \value{
 Result object with estimated coefficient and standard errors.
