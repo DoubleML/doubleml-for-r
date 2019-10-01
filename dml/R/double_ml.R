@@ -91,14 +91,15 @@ private = list(
   var_est = function(inds=NULL) {
     score_a = private$score_a
     score = private$score
+    # n_obs must be determined before subsetting
+    n_obs = length(score)
     if(!is.null(inds)) {
       score_a = score_a[inds]
       score = score[inds]
     }
     
-    n_obs_sample = length(score)
     J = mean(score_a)
-    sigma2_hat = 1/n_obs_sample * mean(score^2) / (J^2)
+    sigma2_hat = 1/n_obs * mean(score^2) / (J^2)
   },
   orth_est = function(inds=NULL) {
     score_a = private$score_a
