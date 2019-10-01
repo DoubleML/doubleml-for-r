@@ -63,20 +63,20 @@ private = list(
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
     n_folds = self$n_folds
-    test_ids = private$smpls$test_index
+    test_ids = private$smpls$test_ids
     
     if (dml_procedure == "dml1") {
       thetas <- vars <-  rep(NA, n_folds)
       for (i_fold in 1:n_folds) {
         test_index <- test_ids[[i_fold]]
-        thetas[i_fold] <- private$orth_est(test_index)
+        thetas[i_fold] <- private$orth_est(inds=test_index)
       }
       self$coef <- mean(thetas)
       private$compute_score()
       
       for (i_fold in 1:n_folds) {
         test_index <- test_ids[[i_fold]]
-        vars[i_fold] <- private$var_est(test_index)
+        vars[i_fold] <- private$var_est(inds=test_index)
       }
       self$se = sqrt(mean(vars))
     }
