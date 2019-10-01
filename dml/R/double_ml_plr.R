@@ -63,12 +63,9 @@ private = list(
     u_hat <- Y - g_hat
     v_hatd <- v_hat * D
     
-    
-    if (self$inf_model == "DML2018") {
+    if (self$inf_model == 'IV-type') {
       private$score_a = -v_hatd
-    }
-    
-    else if (self$inf_model == 'IV-type') {
+    } else if (self$inf_model == 'DML2018') {
       private$score_a = -v_hat * v_hat
     }
     private$score_b = v_hat * u_hat
