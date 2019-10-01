@@ -8,6 +8,8 @@ DoubleML <- R6Class("DoubleML", public = list(
   dml_procedure = NULL,
   inf_model = NULL,
   n_rep_cross_fit = NULL,
+  coef = NULL,
+  se = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
@@ -18,11 +20,15 @@ DoubleML <- R6Class("DoubleML", public = list(
     # ml estimation of nuisance models and computation of score elements
     private$ml_nuisance_and_score_elements(data, y, d)
     
+    # estimate the causal parameter(s)
+    private$est_causal_pars()
+    
     invisible(self)
   }
 ),
 private = list(
   smpls = NULL,
+  score = NULL,
   score_a = NULL,
   score_b = NULL,
   initialize_double_ml = function(n_folds,
@@ -51,6 +57,61 @@ private = list(
     test_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$test_set(x))
     private$smpls <- list(train_ids = train_ids,
                           test_ids = test_ids)
+    
+    invisible(self)
+  },
+  est_causal_pars = function() {
+    dml_procedure = self$dml_procedure
+    n_folds = self$n_folds
+    test_index = private$smpls$test_index
+    
+    if (dml_procedure == "dml1") {
+      thetas <- vars <-  rep(NA, n_folds)
+      for (i_fold in 1:n_folds) {
+        test_index <- test_ids[[i_fold]]
+        thetas[i_fold] <- private$orth_est(test_index)
+      }
+      self$coef <- mean(thetas)
+      private$compute_score()
+      
+      for (i_fold in 1:n_folds) {
+        test_index <- test_ids[[i_fold]]
+        vars[i_fold] <- private$var_est(test_index)
+      }
+      self$se = sqrt(mean(vars))
+    }
+    else if (dml_procedure == "dml2") {
+      self$coef <- private$orth_est(test_index)
+      private$compute_score()
+      self$se = sqrt(private$var_est())
+    }
+    
+    invisible(self)
+  },
+  var_est = function(inds=NULL) {
+    score_a = private$score_a
+    score = private$score
+    if(!is.null(inds)) {
+      score_a = score_a[inds]
+      score = score[inds]
+    }
+    
+    n_obs_sample = length(score)
+    J = mean(score_a)
+    sigma2_hat = 1/n_obs_sample * mean(score^2) / (J^2)
+  },
+  orth_est = function(inds=NULL) {
+    score_a = private$score_a
+    score_b = private$score_b
+    if(!is.null(inds)) {
+      score_a = score_a[inds]
+      score_b = score_b[inds]
+    }
+    
+    theta = -mean(score_b) / mean(score_a)
+  },
+  compute_score = function() {
+    private$score = private$score_a * self$coef + private$score_b
     
     invisible(self)
   }
