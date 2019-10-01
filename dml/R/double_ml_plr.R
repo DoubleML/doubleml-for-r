@@ -1,4 +1,8 @@
-
+#' DoubleMLPLR R6 class
+#' 
+#' @docType class
+#' @importFrom R6 R6Class
+#' @export
 
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   initialize = function(n_folds,
