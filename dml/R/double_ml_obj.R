@@ -12,6 +12,10 @@ DoubleML <- R6Class("DoubleML", public = list(
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   fit = function(data, y, d) {
+    # perform sample splitting based on a dummy task with the whole data set
+    private$split_samples(data)
+    
+    # ml estimation of nuisance models and computation of score elements
     private$ml_nuisance_and_score_elements(data, y, d)
     
     invisible(self)
@@ -75,9 +79,6 @@ private = list(
     g_indx <- names(data) != d
     data_g <- data[ , g_indx, drop = FALSE]
     task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
-
-    # do sample splitting (needs a task)
-    private$split_samples(data)
     
     # instantiate custom resampling with already sampled train and test ids
     resampling_g <- mlr3::rsmp("custom")
