@@ -43,7 +43,7 @@ private = list(
     
     m_hat <- as.data.table(r_m$prediction())
     setorder(m_hat, 'row_id')
-    m_hat <- m_hat$response
+    m_hat <- m_hat$prob.1
     
     
     # nuisance g
