@@ -14,15 +14,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   
   learner_pars <- get_default_mlmethod_pliv(learner)
   
-  
-  
   set.seed(i_setting)
   cf <- mlr3::rsmp("cv", folds = 5)
   pliv_hat <- dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
                         resampling = cf, mlmethod = learner_pars$mlmethod,
-                        params = list(params_m = learner_pars$params$params_m,
-                                      params_g =  learner_pars$params$params_g,
-                                      params_r =  learner_pars$params$params_r),
+                        params = learner_pars$params,
                         dml_procedure = dml_procedure, inf_model = inf_model,
                         se_type = inf_model)
   theta <- coef(pliv_hat)
@@ -32,9 +28,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   set.seed(i_setting)
   double_mlpliv_obj = DoubleMLPLIV$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = list(params_m = learner_pars$params$params_m,
-                                                   params_g =  learner_pars$params$params_g,
-                                                   params_r =  learner_pars$params$params_r),
+                                     params = learner_pars$params,
                                      dml_procedure = dml_procedure, inf_model = inf_model)
   double_mlpliv_obj$fit(data_pliv[[i_setting]], y = "y", d = "d", z = 'z')
   theta_obj <- double_mlpliv_obj$coef

@@ -14,14 +14,11 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   
   learner_pars <- get_default_mlmethod_plr(learner)
   
-  
-  
   set.seed(i_setting)
   cf <- mlr3::rsmp("cv", folds = 5)
   plr_hat <- dml_plr(data_plr[[i_setting]], y = "y", d = "d",
                      resampling = cf, mlmethod = learner_pars$mlmethod,
-                     params = list(params_m = learner_pars$params$params_m,
-                                   params_g =  learner_pars$params$params_g),
+                     params = learner_pars$params,
                      dml_procedure = dml_procedure, inf_model = inf_model,
                      se_type = inf_model)
   theta <- coef(plr_hat)
@@ -31,8 +28,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = list(params_m = learner_pars$params$params_m,
-                                                   params_g =  learner_pars$params$params_g),
+                                     params = learner_pars$params,
                                      dml_procedure = dml_procedure, inf_model = inf_model)
   double_mlplr_obj$fit(data_plr[[i_setting]], y = "y", d = "d")
   theta_obj <- double_mlplr_obj$coef
