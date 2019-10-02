@@ -3,6 +3,7 @@
 settings <- list(list(theta = 0.5, n = 1000, p = 20),
                  list(theta = 1.5, n = 1000, p = 50),
                  list(theta = -0.75, n = 1000, p = 100))
+settings <- list(list(theta = 0.5, n = 1000, p = 20))
 
 n_settings <- length(settings)
 

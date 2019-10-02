@@ -21,7 +21,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, y, d) {
+  ml_nuisance_and_score_elements = function(data, y, d, ...) {
     
     # get conditional samples (conditioned on D = 0 or D = 1)
     private$get_cond_smpls(data[ , d])
@@ -29,8 +29,11 @@ private = list(
     # nuisance m
     m_indx <- names(data) != y
     data_m <- data[, m_indx, drop = FALSE]
-    task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
-    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+    data_m[, d] <- factor(data_m[, d])
+    
+    task_m <- mlr3::TaskClassif$new(id = paste0("nuis_p_", d), backend = data_m,
+                                    target = d, positive = "1")
+    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m, predict_type = "prob")
     ml_m$param_set$values <- self$params$params_m # tbd: check if parameter passing really works
     
     # instantiate custom resampling with already sampled train and test ids
@@ -59,8 +62,8 @@ private = list(
                               private$smpls$train_ids_0,
                               private$smpls$test_ids)
     
-    ml_g0 <- mlr3::lrn(self$ml_learners$mlmethod_g)
-    ml_g0$param_set$values <- self$params$params_g
+    ml_g0 <- mlr3::lrn(self$ml_learners$mlmethod_g0)
+    ml_g0$param_set$values <- self$params$params_g0
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
     
@@ -77,8 +80,8 @@ private = list(
                               private$smpls$train_ids_1,
                               private$smpls$test_ids)
     
-    ml_g1 <- mlr3::lrn(self$ml_learners$mlmethod_g)
-    ml_g1$param_set$values <- self$params$params_g
+    ml_g1 <- mlr3::lrn(self$ml_learners$mlmethod_g1)
+    ml_g1$param_set$values <- self$params$params_g1
     
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     
@@ -94,7 +97,7 @@ private = list(
     # fraction of treated for ATET
     p_hat <- vector('numeric', length=nrow(data))
     for (i_fold in 1:self$n_folds) {
-      p_hat[i_fold] = mean(D[private$smpls$test_ids[i_fold]])
+      p_hat[private$smpls$test_ids[[i_fold]]] = mean(D[private$smpls$test_ids[[i_fold]]])
     }
     
     if (self$inf_model == 'ATE') {
@@ -109,10 +112,13 @@ private = list(
   },
   get_cond_smpls = function(D) {
     private$smpls$train_ids_0 <- lapply(1:self$n_folds, function(x) 
-      private$smpls$train_ids[x][D[private$smpls$train_ids[x]] == 0])
-    private$smpls$train_ids_1 <- lapply(1:self$n_folds, function(x) 
-      private$smpls$train_ids[x][D[private$smpls$train_ids[x]] == 1])
+      private$smpls$train_ids[[x]][D[private$smpls$train_ids[[x]]] == 0])
+    private$smpls$train_ids_1 <-  lapply(1:self$n_folds, function(x) 
+      private$smpls$train_ids[[x]][D[private$smpls$train_ids[[x]]] == 1])
   }
 )
 )
+
+
+#DoubleMLIRM$debug("ml_nuisance_and_score_elements")
 
