@@ -21,7 +21,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, y, d) {
+  ml_nuisance_and_score_elements = function(data, y, d, ...) {
     # nuisance g
     g_indx <- names(data) != d
     data_g <- data[ , g_indx, drop = FALSE]
