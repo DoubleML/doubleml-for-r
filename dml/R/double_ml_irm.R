@@ -96,16 +96,21 @@ private = list(
     
     # fraction of treated for ATET
     p_hat <- vector('numeric', length=nrow(data))
-    for (i_fold in 1:self$n_folds) {
-      p_hat[private$smpls$test_ids[[i_fold]]] = mean(D[private$smpls$test_ids[[i_fold]]])
-    }
+    #if (self$dml_procedure == "dml1") {
+      for (i_fold in 1:self$n_folds) {
+        p_hat[private$smpls$test_ids[[i_fold]]] = mean(D[private$smpls$test_ids[[i_fold]]])
+      }
+    #}
+    #else if (self$dml_procedure == "dml2") {
+    #  p_hat = mean(D)
+    #}
     
     if (self$inf_model == 'ATE') {
-      private$score_b = g1_hat - g0_hat + D*(u1_hat)/m_hat + (1-D)*u0_hat/(1-m_hat)
+      private$score_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
       private$score_a = rep(-1, nrow(data))
     } else if (self$inf_model == 'ATET') {
       private$score_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
-      private$score_a = -D * p_hat
+      private$score_a = -D / p_hat
     }
     
     invisible(self)
