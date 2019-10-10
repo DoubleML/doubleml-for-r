@@ -78,9 +78,9 @@ get_default_mlmethod_pliv <- function(learner) {
 
 get_default_mlmethod_irm <- function(learner) {
   if (learner == 'glmnet') {
-    mlmethod <- list(mlmethod_m = paste0("classif.", shortname),
-                     mlmethod_g0 =  paste0("regr.", shortname), 
-                     mlmethod_g1 = paste0("regr.", shortname))
+    mlmethod <- list(mlmethod_m = paste0("classif.", learner),
+                     mlmethod_g0 =  paste0("regr.", learner),
+                     mlmethod_g1 = paste0("regr.", learner))
     slambda = "lambda.min"
     family = "gaussian"
     
