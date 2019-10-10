@@ -306,7 +306,7 @@ orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model) { #
   theta <- Ep <- NA
 
   if (inf_model == "ATE") {
-     theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m))
+     theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m))
     
   }
 
@@ -346,7 +346,7 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model) {
   
   # var <- mean( 1/length(d) * colMeans(((g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m))^2), na.rm = TRUE))
   
-    var <- mean( 1/length(d) * colMeans(((g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m) - theta)^2), na.rm = TRUE))
+    var <- mean( 1/length(d) * colMeans(((g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m) - theta)^2), na.rm = TRUE))
     
   }
     
