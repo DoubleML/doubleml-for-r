@@ -8,7 +8,8 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   initialize = function(n_folds,
                         ml_learners,
                         params = list(params_m = list(),
-                                      params_g = list()),
+                                      params_g0 = list(),
+                                      params_g1 = list()),
                         dml_procedure,
                         inf_model,
                         n_rep_cross_fit=1) {
