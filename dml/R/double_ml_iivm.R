@@ -9,7 +9,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g0 = list(),
-                                      params_g2 = list(),
+                                      params_g1 = list(),
                                       params_r0 = list(),
                                       params_r1 = list()),
                         dml_procedure,
@@ -147,7 +147,7 @@ private = list(
     
     if (self$inf_model == 'LATE') {
       private$score_b = g1_hat - g0_hat + Z*(u1_hat)/m_hat - (1-Z)*u1_hat/(1-m_hat)
-      private$score_a = -1 * (r1_hat - r0_hat) + Z*(w1_hat)/m_hat - (1-Z)*w0_hat/(1-m_hat)
+      private$score_a = -1 * (r1_hat - r0_hat + Z*(w1_hat)/m_hat - (1-Z)*w0_hat/(1-m_hat))
     }
     
     invisible(self)
