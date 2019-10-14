@@ -92,3 +92,23 @@ get_default_mlmethod_irm <- function(learner) {
   return(list(mlmethod=mlmethod, params=params))
 }
 
+get_default_mlmethod_iivm <- function(learner) {
+  if (learner == 'glmnet') {
+    mlmethod <- list(mlmethod_p = paste0("classif.", learner),
+                     mlmethod_mu0 =  paste0("regr.", learner),
+                     mlmethod_mu1 = paste0("regr.", learner),
+                     mlmethod_m0 = paste0("classif.", learner),
+                     mlmethod_m1 = paste0("classif.", learner))
+    slambda = "lambda.min"
+    family = "gaussian"
+    
+    params <- list(params_p = list(s = slambda),
+                   params_mu0 = list(s = slambda, family = family),
+                   params_mu1 =list(s = slambda, family = family),
+                   params_m0 = list(s = slambda),
+                   params_m1 =list(s = slambda))
+  }
+  
+  return(list(mlmethod=mlmethod, params=params))
+}
+
