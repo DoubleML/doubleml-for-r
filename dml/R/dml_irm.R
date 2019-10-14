@@ -356,7 +356,7 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model) {
         d <- as.matrix(d)
       }
    
-    Ep <- colMeans(d)
+    Ep <- colMeans(d, na.rm = TRUE)
     Ep <- matrix(rep(Ep, each=nrow(d)), nrow=nrow(d))
    var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta)^2, na.rm = TRUE))
      
