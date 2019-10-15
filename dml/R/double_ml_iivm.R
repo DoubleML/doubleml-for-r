@@ -44,9 +44,7 @@ private = list(
     
     r_p <- mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
     
-    p_hat <- as.data.table(r_p$prediction())
-    setorder(p_hat, 'row_id')
-    p_hat <- p_hat$prob.1
+    p_hat = extract_prob_prediction(r_p)
     
     
     # nuisance mu
@@ -64,9 +62,7 @@ private = list(
     
     r_mu0 <- mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
     
-    mu0_hat = as.data.table(r_mu0$prediction())
-    setorder(mu0_hat, 'row_id')
-    mu0_hat = mu0_hat$response
+    mu0_hat = extract_prediction(r_mu0)
     
     # mu1
     task_mu1 <- mlr3::TaskRegr$new(id = paste0("nuis_mu1_", y), backend = data_mu, target = y)
@@ -79,9 +75,7 @@ private = list(
     
     r_mu1 <- mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
     
-    mu1_hat = as.data.table(r_mu1$prediction())
-    setorder(mu1_hat, 'row_id')
-    mu1_hat = mu1_hat$response
+    mu1_hat = extract_prediction(r_mu1)
     
     # nuisance m
     m_indx <- names(data) != y & names(data) != z
@@ -100,9 +94,7 @@ private = list(
     
     r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
     
-    m0_hat = as.data.table(r_m0$prediction())
-    setorder(m0_hat, 'row_id')
-    m0_hat <- m0_hat$prob.1
+    m0_hat = extract_prob_prediction(r_m0)
     
     # m1
     task_m1 <- mlr3::TaskClassif$new(id = paste0("nuis_m1_", d), backend = data_m,
@@ -116,9 +108,7 @@ private = list(
     
     r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
     
-    m1_hat = as.data.table(r_m1$prediction())
-    setorder(m1_hat, 'row_id')
-    m1_hat <- m1_hat$prob.1
+    m1_hat = extract_prob_prediction(r_m1)
     
     
     # compute residuals

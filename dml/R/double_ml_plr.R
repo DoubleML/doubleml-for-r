@@ -35,9 +35,7 @@ private = list(
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
-    g_hat = as.data.table(r_g$prediction())
-    setorder(g_hat, 'row_id')
-    g_hat = g_hat$response
+    g_hat = extract_prediction(r_g)
     
     # nuisance m
     m_indx <- names(data) != y
@@ -51,9 +49,7 @@ private = list(
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
-    m_hat <- as.data.table(r_m$prediction())
-    setorder(m_hat, 'row_id')
-    m_hat <- m_hat$response
+    m_hat = extract_prediction(r_m)
     
     D <- data[ , d]
     Y <- data[ , y]

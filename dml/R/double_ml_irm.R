@@ -42,9 +42,7 @@ private = list(
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
-    m_hat <- as.data.table(r_m$prediction())
-    setorder(m_hat, 'row_id')
-    m_hat <- m_hat$prob.1
+    m_hat = extract_prob_prediction(r_m)
     
     
     # nuisance g
@@ -62,9 +60,7 @@ private = list(
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
     
-    g0_hat = as.data.table(r_g0$prediction())
-    setorder(g0_hat, 'row_id')
-    g0_hat = g0_hat$response
+    g0_hat = extract_prediction(r_g0)
     
     # g1
     task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
@@ -77,9 +73,7 @@ private = list(
     
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     
-    g1_hat = as.data.table(r_g1$prediction())
-    setorder(g1_hat, 'row_id')
-    g1_hat = g1_hat$response
+    g1_hat = extract_prediction(r_g1)
     
     D <- data[ , d]
     Y <- data[ , y]
