@@ -37,11 +37,8 @@ private = list(
     ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m, predict_type = "prob")
     ml_m$param_set$values <- self$params$params_m # tbd: check if parameter passing really works
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_m <- mlr3::rsmp("custom")
-    resampling_m$instantiate(task_m,
-                             private$smpls$train_ids,
-                             private$smpls$test_ids)
+    # instantiate resampling
+    resampling_m <- private$instantiate_resampling(task_m)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
@@ -57,11 +54,8 @@ private = list(
     # g0
     task_g0 <- mlr3::TaskRegr$new(id = paste0("nuis_g0_", d), backend = data_g, target = y)
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_g0 <- mlr3::rsmp("custom")
-    resampling_g0$instantiate(task_g0,
-                              private$smpls$train_ids_0,
-                              private$smpls$test_ids)
+    # instantiate resampling
+    resampling_g0 <- private$instantiate_resampling(task_g0, private$smpls$train_ids_0)
     
     ml_g0 <- mlr3::lrn(self$ml_learners$mlmethod_g0)
     ml_g0$param_set$values <- self$params$params_g0
@@ -75,11 +69,8 @@ private = list(
     # g1
     task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_g1 <- mlr3::rsmp("custom")
-    resampling_g1$instantiate(task_g1,
-                              private$smpls$train_ids_1,
-                              private$smpls$test_ids)
+    # instantiate resampling
+    resampling_g1 <- private$instantiate_resampling(task_g1, private$smpls$train_ids_1)
     
     ml_g1 <- mlr3::lrn(self$ml_learners$mlmethod_g1)
     ml_g1$param_set$values <- self$params$params_g1

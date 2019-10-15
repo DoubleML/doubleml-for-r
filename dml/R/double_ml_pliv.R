@@ -27,11 +27,8 @@ private = list(
     data_g <- data[ , g_indx, drop = FALSE]
     task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_g <- mlr3::rsmp("custom")
-    resampling_g$instantiate(task_g,
-                             private$smpls$train_ids,
-                             private$smpls$test_ids)
+    # instantiate resampling
+    resampling_g <- private$instantiate_resampling(task_g)
     
     ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
     ml_g$param_set$values <- self$params$params_g
@@ -50,11 +47,8 @@ private = list(
     ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
     ml_m$param_set$values <- self$params$params_m # tbd: check if parameter passing really works
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_m <- mlr3::rsmp("custom")
-    resampling_m$instantiate(task_m,
-                             private$smpls$train_ids,
-                             private$smpls$test_ids)
+    # instantiate resampling
+    resampling_m <- private$instantiate_resampling(task_m)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
@@ -70,11 +64,8 @@ private = list(
     ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
     ml_r$param_set$values <- self$params$params_r # tbd: check if parameter passing really works
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_r <- mlr3::rsmp("custom")
-    resampling_r$instantiate(task_r,
-                             private$smpls$train_ids,
-                             private$smpls$test_ids)
+    # instantiate resampling
+    resampling_r <- private$instantiate_resampling(task_r)
     
     r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
     

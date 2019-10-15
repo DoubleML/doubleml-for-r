@@ -39,11 +39,8 @@ private = list(
     ml_p <- mlr3::lrn(self$ml_learners$mlmethod_p, predict_type = "prob")
     ml_p$param_set$values <- self$params$params_p # tbd: check if parameter passing really works
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_p <- mlr3::rsmp("custom")
-    resampling_p$instantiate(task_p,
-                             private$smpls$train_ids,
-                             private$smpls$test_ids)
+    # instantiate resampling
+    resampling_p <- private$instantiate_resampling(task_p)
     
     r_p <- mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
     
@@ -59,11 +56,8 @@ private = list(
     # mu0
     task_mu0 <- mlr3::TaskRegr$new(id = paste0("nuis_mu0_", y), backend = data_mu, target = y)
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_mu0 <- mlr3::rsmp("custom")
-    resampling_mu0$instantiate(task_mu0,
-                              private$smpls$train_ids_0,
-                              private$smpls$test_ids)
+    # instantiate resampling
+    resampling_mu0 <- private$instantiate_resampling(task_mu0, private$smpls$train_ids_0)
     
     ml_mu0 <- mlr3::lrn(self$ml_learners$mlmethod_mu0)
     ml_mu0$param_set$values <- self$params$params_mu0
@@ -77,11 +71,8 @@ private = list(
     # mu1
     task_mu1 <- mlr3::TaskRegr$new(id = paste0("nuis_mu1_", y), backend = data_mu, target = y)
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_mu1 <- mlr3::rsmp("custom")
-    resampling_mu1$instantiate(task_mu1,
-                              private$smpls$train_ids_1,
-                              private$smpls$test_ids)
+    # instantiate resampling
+    resampling_mu1 <- private$instantiate_resampling(task_mu1, private$smpls$train_ids_1)
     
     ml_mu1 <- mlr3::lrn(self$ml_learners$mlmethod_mu1)
     ml_mu1$param_set$values <- self$params$params_mu1
@@ -101,11 +92,8 @@ private = list(
     task_m0 <- mlr3::TaskClassif$new(id = paste0("nuis_m0_", d), backend = data_m,
                                      target = d, positive = "1")
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_m0 <- mlr3::rsmp("custom")
-    resampling_m0$instantiate(task_m0,
-                              private$smpls$train_ids_0,
-                              private$smpls$test_ids)
+    # instantiate resampling
+    resampling_m0 <- private$instantiate_resampling(task_m0, private$smpls$train_ids_0)
     
     ml_m0 <- mlr3::lrn(self$ml_learners$mlmethod_m0, predict_type = "prob")
     ml_m0$param_set$values <- self$params$params_m0
@@ -120,11 +108,8 @@ private = list(
     task_m1 <- mlr3::TaskClassif$new(id = paste0("nuis_m1_", d), backend = data_m,
                                      target = d, positive = "1")
     
-    # instantiate custom resampling with already sampled train and test ids
-    resampling_m1 <- mlr3::rsmp("custom")
-    resampling_m1$instantiate(task_m1,
-                              private$smpls$train_ids_1,
-                              private$smpls$test_ids)
+    # instantiate resampling
+    resampling_m1 <- private$instantiate_resampling(task_m0, private$smpls$train_ids_1)
     
     ml_m1 <- mlr3::lrn(self$ml_learners$mlmethod_m1, predict_type = "prob")
     ml_m1$param_set$values <- self$params$params_m1

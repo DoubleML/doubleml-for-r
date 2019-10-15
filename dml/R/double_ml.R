@@ -60,6 +60,19 @@ private = list(
     
     invisible(self)
   },
+  instantiate_resampling = function(task, external_train_ids=NULL) {
+    # instantiate custom resampling with already sampled train and test ids
+    resampling <- mlr3::rsmp("custom")
+    if(!is.null(external_train_ids)) {
+      train_ids <- external_train_ids
+    } else {
+      train_ids<- private$smpls$train_ids
+    }
+    test_ids <- private$smpls$test_ids
+    
+    resampling$instantiate(task, train_ids, test_ids)
+    return(resampling)
+  },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
     n_folds = self$n_folds
