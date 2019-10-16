@@ -28,17 +28,12 @@ private = list(
     private$get_cond_smpls(data[ , d])
     
     # nuisance m
-    m_indx <- names(data) != y
-    data_m <- data[, m_indx, drop = FALSE]
-    data_m[, d] <- factor(data_m[, d])
-    
-    task_m <- mlr3::TaskClassif$new(id = paste0("nuis_p_", d), backend = data_m,
-                                    target = d, positive = "1")
+    task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
+                                    skip_cols = y, target = d)
     
     ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
                                   self$params$params_m)
     
-    # instantiate resampling
     resampling_m <- private$instantiate_resampling(task_m)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -47,30 +42,26 @@ private = list(
     
     
     # nuisance g
-    g_indx <- names(data) != d
-    data_g <- data[ , g_indx, drop = FALSE]
-    
-    # g0
-    task_g0 <- mlr3::TaskRegr$new(id = paste0("nuis_g0_", d), backend = data_g, target = y)
-    
-    # instantiate resampling
-    resampling_g0 <- private$instantiate_resampling(task_g0, private$smpls$train_ids_0)
+    task_g0 <- initiate_regr_task(paste0("nuis_g0_", y), data,
+                                 skip_cols = d, target = y)
     
     ml_g0 <- initiate_learner(self$ml_learners$mlmethod_g0,
                               self$params$params_g0)
+    
+    resampling_g0 <- private$instantiate_resampling(task_g0, private$smpls$train_ids_0)
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
     
     g0_hat = extract_prediction(r_g0)
     
     # g1
-    task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
-    
-    # instantiate resampling
-    resampling_g1 <- private$instantiate_resampling(task_g1, private$smpls$train_ids_1)
+    task_g1 <- initiate_regr_task(paste0("nuis_g1_", y), data,
+                                  skip_cols = d, target = y)
     
     ml_g1 <- initiate_learner(self$ml_learners$mlmethod_g1,
                               self$params$params_g1)
+    
+    resampling_g1 <- private$instantiate_resampling(task_g1, private$smpls$train_ids_1)
     
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     

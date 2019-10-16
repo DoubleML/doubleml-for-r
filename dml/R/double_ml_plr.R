@@ -23,29 +23,25 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
 private = list(
   ml_nuisance_and_score_elements = function(data, y, d, ...) {
     # nuisance g
-    g_indx <- names(data) != d
-    data_g <- data[ , g_indx, drop = FALSE]
-    task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
-    
-    # instantiate resampling
-    resampling_g <- private$instantiate_resampling(task_g)
+    task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
+                                 skip_cols = d, target = y)
     
     ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
                              self$params$params_g)
+    
+    resampling_g <- private$instantiate_resampling(task_g)
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
     g_hat = extract_prediction(r_g)
     
     # nuisance m
-    m_indx <- names(data) != y
-    data_m <- data[, m_indx, drop = FALSE]
-    task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
+    task_m <- initiate_regr_task(paste0("nuis_m_", d), data,
+                                 skip_cols = y, target = d)
     
     ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
                              self$params$params_m)
     
-    # instantiate resampling
     resampling_m <- private$instantiate_resampling(task_m)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)

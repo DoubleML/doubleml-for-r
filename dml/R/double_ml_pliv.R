@@ -23,15 +23,13 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
 private = list(
   ml_nuisance_and_score_elements = function(data, y, d, z) {
     # nuisance g
-    g_indx <- names(data) != d & names(data) != z
-    data_g <- data[ , g_indx, drop = FALSE]
-    task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
-    
-    # instantiate resampling
-    resampling_g <- private$instantiate_resampling(task_g)
+    task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
+                                 skip_cols = c(d, z), target = y)
     
     ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
                              self$params$params_g)
+    
+    resampling_g <- private$instantiate_resampling(task_g)
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
@@ -39,14 +37,12 @@ private = list(
     
     
     # nuisance m
-    m_indx <- names(data) != y & names(data) != d
-    data_m <- data[, m_indx, drop = FALSE]
-    task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
+    task_m <- initiate_regr_task(paste0("nuis_m_", z), data,
+                                 skip_cols = c(y, d), target = z)
     
     ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
                              self$params$params_m)
     
-    # instantiate resampling
     resampling_m <- private$instantiate_resampling(task_m)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -55,14 +51,12 @@ private = list(
     
     
     # nuisance r
-    r_indx <- names(data) != y & names(data) != z
-    data_r <- data[, r_indx, drop = FALSE]
-    task_r <- mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
+    task_r <- initiate_regr_task(paste0("nuis_r_", d), data,
+                                 skip_cols = c(y, z), target = d)
     
     ml_r <- initiate_learner(self$ml_learners$mlmethod_r,
                              self$params$params_r)
     
-    # instantiate resampling
     resampling_r <- private$instantiate_resampling(task_r)
     
     r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
