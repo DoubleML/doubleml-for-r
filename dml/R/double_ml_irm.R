@@ -34,8 +34,9 @@ private = list(
     
     task_m <- mlr3::TaskClassif$new(id = paste0("nuis_p_", d), backend = data_m,
                                     target = d, positive = "1")
-    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m, predict_type = "prob")
-    ml_m$param_set$values <- self$params$params_m # tbd: check if parameter passing really works
+    
+    ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
+                                  self$params$params_m)
     
     # instantiate resampling
     resampling_m <- private$instantiate_resampling(task_m)
@@ -55,8 +56,8 @@ private = list(
     # instantiate resampling
     resampling_g0 <- private$instantiate_resampling(task_g0, private$smpls$train_ids_0)
     
-    ml_g0 <- mlr3::lrn(self$ml_learners$mlmethod_g0)
-    ml_g0$param_set$values <- self$params$params_g0
+    ml_g0 <- initiate_learner(self$ml_learners$mlmethod_g0,
+                              self$params$params_g0)
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
     
@@ -68,8 +69,8 @@ private = list(
     # instantiate resampling
     resampling_g1 <- private$instantiate_resampling(task_g1, private$smpls$train_ids_1)
     
-    ml_g1 <- mlr3::lrn(self$ml_learners$mlmethod_g1)
-    ml_g1$param_set$values <- self$params$params_g1
+    ml_g1 <- initiate_learner(self$ml_learners$mlmethod_g1,
+                              self$params$params_g1)
     
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     

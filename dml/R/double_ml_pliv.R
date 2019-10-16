@@ -30,8 +30,8 @@ private = list(
     # instantiate resampling
     resampling_g <- private$instantiate_resampling(task_g)
     
-    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
-    ml_g$param_set$values <- self$params$params_g
+    ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
+                             self$params$params_g)
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
@@ -42,8 +42,9 @@ private = list(
     m_indx <- names(data) != y & names(data) != d
     data_m <- data[, m_indx, drop = FALSE]
     task_m <- mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
-    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
-    ml_m$param_set$values <- self$params$params_m # tbd: check if parameter passing really works
+    
+    ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
+                             self$params$params_m)
     
     # instantiate resampling
     resampling_m <- private$instantiate_resampling(task_m)
@@ -57,8 +58,9 @@ private = list(
     r_indx <- names(data) != y & names(data) != z
     data_r <- data[, r_indx, drop = FALSE]
     task_r <- mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
-    ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
-    ml_r$param_set$values <- self$params$params_r # tbd: check if parameter passing really works
+    
+    ml_r <- initiate_learner(self$ml_learners$mlmethod_r,
+                             self$params$params_r)
     
     # instantiate resampling
     resampling_r <- private$instantiate_resampling(task_r)
