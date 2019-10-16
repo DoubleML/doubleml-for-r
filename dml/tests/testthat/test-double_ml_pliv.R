@@ -1,5 +1,9 @@
 context("Unit tests for PLIV")
 
+library("mlr3learners")
+library('data.table')
+library('mlr3')
+
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('regr.lm', 'regr.glmnet'),
