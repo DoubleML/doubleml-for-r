@@ -16,7 +16,8 @@ Imports:
     checkmate,
     mlr3 (>= 0.1.3),
     mlr3learners (>= 0.1.3),
-    AER
+    AER,
+    data.table
 RoxygenNote: 6.1.1
 Suggests: 
     testthat,
