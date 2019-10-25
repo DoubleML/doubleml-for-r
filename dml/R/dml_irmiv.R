@@ -376,7 +376,7 @@ orth_irmiv_dml <- function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, inf
 
   if (inf_model == "LATE" | inf_model == "DML2018") {
      theta <- 1/mean( m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
-              mean(mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu1_hat)/(1-p_hat)))
+              mean(mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
   }
  
    else if (inf_model == "LATET") { 
@@ -418,7 +418,7 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
   if (inf_model == "LATE") {
     
     var <- mean( 1/length(d) * 1/(colMeans((m1_hat - m0_hat + z*(d-m1_hat)/p_hat - (1-z)*(d-m0_hat)/(1-p_hat)), na.rm = TRUE))^2  *
-                   colMeans( ( mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - (1-z)*(y - mu1_hat)/(1-p_hat) - 
+                   colMeans( ( mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - (1-z)*(y - mu0_hat)/(1-p_hat) - 
                                  (m1_hat - m0_hat + z*(d-m1_hat)/p_hat - (1-z)*(d-m0_hat)/(1-p_hat))*theta )^2, na.rm = TRUE) )
     
   } 
