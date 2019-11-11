@@ -14,14 +14,24 @@ DoubleML <- R6Class("DoubleML", public = list(
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   fit = function(data, y, d, z=NULL) {
-    # perform sample splitting based on a dummy task with the whole data set
-    private$split_samples(data)
+    
+    if(!is.null(private$smpls)) {
+      # perform sample splitting based on a dummy task with the whole data set
+      private$split_samples(data)
+    }
     
     # ml estimation of nuisance models and computation of score elements
     private$ml_nuisance_and_score_elements(data, y, d, z)
     
     # estimate the causal parameter(s)
     private$est_causal_pars()
+    
+    invisible(self)
+  },
+  set_samples = function(train_ids, test_ids) {
+    # TODO place some checks for the externally provided sample splits
+    private$smpls <- list(train_ids = train_ids,
+                          test_ids = test_ids)
     
     invisible(self)
   }
@@ -49,12 +59,17 @@ private = list(
     self$dml_procedure <- dml_procedure
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
+    
+    invisible(self)
   },
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("cv", folds = self$n_folds)$instantiate(dummy_task)
     train_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$train_set(x))
     test_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$test_set(x))
+    n = nrow(data)
+    train_ids <- list(1:(n/2), (n/2+1):n)
+    test_ids <- list((n/2+1):n, 1:(n/2))
     private$smpls <- list(train_ids = train_ids,
                           test_ids = test_ids)
     
