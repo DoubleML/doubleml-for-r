@@ -67,9 +67,6 @@ private = list(
     dummy_resampling_scheme <- rsmp("cv", folds = self$n_folds)$instantiate(dummy_task)
     train_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$train_set(x))
     test_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$test_set(x))
-    n = nrow(data)
-    train_ids <- list(1:(n/2), (n/2+1):n)
-    test_ids <- list((n/2+1):n, 1:(n/2))
     private$smpls <- list(train_ids = train_ids,
                           test_ids = test_ids)
     
