@@ -7,11 +7,9 @@
 DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   initialize = function(n_folds,
                         ml_learners,
-                        params = list(params_m = list(),
-                                      params_g0 = list(),
-                                      params_g1 = list(),
-                                      params_r0 = list(),
-                                      params_r1 = list()),
+                        params = list(params_p = list(),
+                                      params_mu = list(),
+                                      params_m = list()),
                         dml_procedure,
                         inf_model,
                         n_rep_cross_fit=1) {
@@ -26,15 +24,27 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
 private = list(
   ml_nuisance_and_score_elements = function(data, y, d, z) {
     
+    # get ml learner
+    ml_p <- initiate_prob_learner(self$ml_learners$mlmethod_p,
+                                  self$params$params_p)
+    
+    ml_mu0 <- initiate_learner(self$ml_learners$mlmethod_mu,
+                               self$params$params_mu)
+    ml_mu1 <- initiate_learner(self$ml_learners$mlmethod_mu,
+                               self$params$params_mu)
+    
+    ml_m0 <- initiate_prob_learner(self$ml_learners$mlmethod_m,
+                                   self$params$params_m)
+    ml_m1 <- initiate_prob_learner(self$ml_learners$mlmethod_m,
+                                   self$params$params_m)
+    
+    
     # get conditional samples (conditioned on z = 0 or z = 1)
     private$get_cond_smpls(data[ , z])
     
     # nuisance p
     task_p <- initiate_classif_task(paste0("nuis_p_", z), data,
                                     skip_cols = c(y, d), target = z)
-    
-    ml_p <- initiate_prob_learner(self$ml_learners$mlmethod_p,
-                                  self$params$params_p)
     
     resampling_p <- private$instantiate_resampling(task_p)
     
@@ -47,9 +57,6 @@ private = list(
     task_mu0 <- initiate_regr_task(paste0("nuis_mu0_", y), data,
                                   skip_cols = c(d, z), target = y)
     
-    ml_mu0 <- initiate_learner(self$ml_learners$mlmethod_mu0,
-                               self$params$params_mu0)
-    
     resampling_mu0 <- private$instantiate_resampling(task_mu0, private$smpls$train_ids_0)
     
     r_mu0 <- mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
@@ -59,9 +66,6 @@ private = list(
     # mu1
     task_mu1 <- initiate_regr_task(paste0("nuis_mu1_", y), data,
                                    skip_cols = c(d, z), target = y)
-    
-    ml_mu1 <- initiate_learner(self$ml_learners$mlmethod_mu1,
-                               self$params$params_mu1)
     
     resampling_mu1 <- private$instantiate_resampling(task_mu1, private$smpls$train_ids_1)
     
@@ -73,9 +77,6 @@ private = list(
     task_m0 <- initiate_classif_task(paste0("nuis_m0_", d), data,
                                      skip_cols = c(y, z), target = d)
     
-    ml_m0 <- initiate_prob_learner(self$ml_learners$mlmethod_m0,
-                                   self$params$params_m0)
-    
     resampling_m0 <- private$instantiate_resampling(task_m0, private$smpls$train_ids_0)
     
     r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
@@ -85,9 +86,6 @@ private = list(
     # m1
     task_m1 <- initiate_classif_task(paste0("nuis_m1_", d), data,
                                      skip_cols = c(y, z), target = d)
-    
-    ml_m1 <- initiate_prob_learner(self$ml_learners$mlmethod_m1,
-                                   self$params$params_m1)
     
     resampling_m1 <- private$instantiate_resampling(task_m0, private$smpls$train_ids_1)
     

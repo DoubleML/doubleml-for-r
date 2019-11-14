@@ -17,7 +17,7 @@
 #' @export
 
 dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = list(params_m = list(),
-                    params_g1 = list(), params_g2 = list()),
+                    params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "ATE", se_type = "ATE",
                     bootstrap = "normal",  nRep = 500, ...) {
@@ -118,8 +118,8 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   task_g0 <- mlr3::TaskRegr$new(id = paste0("nuis_g0_", d), backend = data_g, target = y)
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
-  ml_g0 <- mlr3::lrn(mlmethod$mlmethod_g0)
-  ml_g0$param_set$values <- params$params_g0 
+  ml_g0 <- mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g0$param_set$values <- params$params_g 
   resampling_g0 <- mlr3::rsmp("custom")
   # Train on subset with d == 0 (in each fold) only, predict for all test obs
   resampling_g0$instantiate(task_g0, train_ids_0, test_ids)
@@ -139,8 +139,8 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   # 
     # nuisance g1: E[Y|D=1, X]
   task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
-  ml_g1 <- mlr3::lrn(mlmethod$mlmethod_g1)
-  ml_g1$param_set$values <- params$params_g1 # tbd: check if parameter passing really works
+  ml_g1 <- mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g1$param_set$values <- params$params_g # tbd: check if parameter passing really works
   resampling_g1 <- mlr3::rsmp("custom")
   resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
   train_ids_g1 <- lapply(1:n_iters, function(x) resampling_g1$train_set(x))

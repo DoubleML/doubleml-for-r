@@ -79,14 +79,12 @@ get_default_mlmethod_pliv <- function(learner) {
 get_default_mlmethod_irm <- function(learner) {
   if (learner == 'glmnet') {
     mlmethod <- list(mlmethod_m = paste0("classif.", learner),
-                     mlmethod_g0 =  paste0("regr.", learner),
-                     mlmethod_g1 = paste0("regr.", learner))
+                     mlmethod_g =  paste0("regr.", learner))
     slambda = "lambda.min"
     family = "gaussian"
     
     params <- list(params_m = list(s = slambda),
-                   params_g0 = list(s = slambda, family = family),
-                   params_g1 =list(s = slambda, family = family))
+                   params_g = list(s = slambda, family = family))
   }
   
   return(list(mlmethod=mlmethod, params=params))
@@ -95,18 +93,14 @@ get_default_mlmethod_irm <- function(learner) {
 get_default_mlmethod_iivm <- function(learner) {
   if (learner == 'glmnet') {
     mlmethod <- list(mlmethod_p = paste0("classif.", learner),
-                     mlmethod_mu0 =  paste0("regr.", learner),
-                     mlmethod_mu1 = paste0("regr.", learner),
-                     mlmethod_m0 = paste0("classif.", learner),
-                     mlmethod_m1 = paste0("classif.", learner))
+                     mlmethod_mu =  paste0("regr.", learner),
+                     mlmethod_m = paste0("classif.", learner))
     slambda = "lambda.min"
     family = "gaussian"
     
     params <- list(params_p = list(s = slambda),
-                   params_mu0 = list(s = slambda, family = family),
-                   params_mu1 =list(s = slambda, family = family),
-                   params_m0 = list(s = slambda),
-                   params_m1 =list(s = slambda))
+                   params_mu = list(s = slambda, family = family),
+                   params_m = list(s = slambda))
   }
   
   return(list(mlmethod=mlmethod, params=params))

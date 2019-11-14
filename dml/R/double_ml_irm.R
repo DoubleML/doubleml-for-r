@@ -8,8 +8,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   initialize = function(n_folds,
                         ml_learners,
                         params = list(params_m = list(),
-                                      params_g0 = list(),
-                                      params_g1 = list()),
+                                      params_g = list()),
                         dml_procedure,
                         inf_model,
                         n_rep_cross_fit=1) {
@@ -24,15 +23,22 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
 private = list(
   ml_nuisance_and_score_elements = function(data, y, d, ...) {
     
+    # get ml learner
+    ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
+                                  self$params$params_m)
+    
+    ml_g0 <- initiate_learner(self$ml_learners$mlmethod_g,
+                              self$params$params_g)
+    ml_g1 <- initiate_learner(self$ml_learners$mlmethod_g,
+                              self$params$params_g)
+    
+    
     # get conditional samples (conditioned on D = 0 or D = 1)
     private$get_cond_smpls(data[ , d])
     
     # nuisance m
     task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
                                     skip_cols = y, target = d)
-    
-    ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
-                                  self$params$params_m)
     
     resampling_m <- private$instantiate_resampling(task_m)
     
@@ -45,9 +51,6 @@ private = list(
     task_g0 <- initiate_regr_task(paste0("nuis_g0_", y), data,
                                  skip_cols = d, target = y)
     
-    ml_g0 <- initiate_learner(self$ml_learners$mlmethod_g0,
-                              self$params$params_g0)
-    
     resampling_g0 <- private$instantiate_resampling(task_g0, private$smpls$train_ids_0)
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
@@ -57,9 +60,6 @@ private = list(
     # g1
     task_g1 <- initiate_regr_task(paste0("nuis_g1_", y), data,
                                   skip_cols = d, target = y)
-    
-    ml_g1 <- initiate_learner(self$ml_learners$mlmethod_g1,
-                              self$params$params_g1)
     
     resampling_g1 <- private$instantiate_resampling(task_g1, private$smpls$train_ids_1)
     

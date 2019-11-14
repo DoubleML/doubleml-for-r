@@ -7,6 +7,7 @@ test_cases = expand.grid(model = c('plr'),
                     stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
+skip('Skip old regression tests')
 patrick::with_parameters_test_that("Regression tests for dlm estimates for partial linear regression model:",
                                    .cases = test_cases, {
 

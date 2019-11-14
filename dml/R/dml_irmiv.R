@@ -19,7 +19,7 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params = list(params_mu0 = list(), params_mu1 = list(), params_m0 = list(), params_m1 = list(), params_p = list()), 
+dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()), 
                     dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
                     inf_model = "LATE", se_type = "LATE",
                     bootstrap = "normal",  nRep = 500, ...) {
@@ -140,8 +140,8 @@ dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params 
   task_mu0 <- mlr3::TaskRegr$new(id = paste0("nuis_mu0_", z), backend = data_mu, target = y)
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
-  ml_mu0 <- mlr3::lrn(mlmethod$mlmethod_mu0)
-  ml_mu0$param_set$values <- params$params_mu0 
+  ml_mu0 <- mlr3::lrn(mlmethod$mlmethod_mu)
+  ml_mu0$param_set$values <- params$params_mu 
   resampling_mu0 <- mlr3::rsmp("custom")
   # Train on subset with z == 0 (in each fold) only, predict for all test obs
   resampling_mu0$instantiate(task_mu0, train_ids_0, test_ids)
@@ -161,8 +161,8 @@ dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params 
 
   # nuisance g1: E[Y|Z=1, X]
   task_mu1 <- mlr3::TaskRegr$new(id = paste0("nuis_mu1_", z), backend = data_mu, target = y)
-  ml_mu1 <- mlr3::lrn(mlmethod$mlmethod_mu1)
-  ml_mu1$param_set$values <- params$params_mu1 
+  ml_mu1 <- mlr3::lrn(mlmethod$mlmethod_mu)
+  ml_mu1$param_set$values <- params$params_mu
   resampling_mu1 <- mlr3::rsmp("custom")
   # Train on subset with z == 1 (in each fold) only, predict for all test obs
   resampling_mu1$instantiate(task_mu1, train_ids_1, test_ids)
@@ -190,8 +190,8 @@ dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params 
   if (always_takers == TRUE) {
     task_m0 <- mlr3::TaskClassif$new(id = paste0("nuis_m0_", d), backend = data_m,
                                       target = d, positive = "1")
-    ml_m0 <- mlr3::lrn(mlmethod$mlmethod_m0, predict_type = "prob")
-    ml_m0$param_set$values <- params$params_m0 # tbd: check if parameter passing really works
+    ml_m0 <- mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+    ml_m0$param_set$values <- params$params_m # tbd: check if parameter passing really works
    
     resampling_m0 <- mlr3::rsmp("custom")
     # Train on subset with z == 0 (in each fold) only, predict for all test obs
@@ -211,8 +211,8 @@ dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params 
     # nuisance m1: E[E|Z=1, 0]
     task_m1 <- mlr3::TaskClassif$new(id = paste0("nuis_m1_", d), backend = data_m,
                                       target = d, positive = "1")
-    ml_m1 <- mlr3::lrn(mlmethod$mlmethod_m1, predict_type = "prob")
-    ml_m1$param_set$values <- params$params_m1 # tbd: check if parameter passing really works
+    ml_m1 <- mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+    ml_m1$param_set$values <- params$params_m # tbd: check if parameter passing really works
    
     resampling_m1 <- mlr3::rsmp("custom")
     # Train on subset with z == 0 (in each fold) only, predict for all test obs
