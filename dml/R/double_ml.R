@@ -15,7 +15,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   },
   fit = function(data, y, d, z=NULL) {
     
-    if(!is.null(private$smpls)) {
+    if(is.null(private$smpls)) {
       # perform sample splitting based on a dummy task with the whole data set
       private$split_samples(data)
     }
