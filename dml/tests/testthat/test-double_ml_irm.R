@@ -24,7 +24,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                      resampling = cf, mlmethod = learner_pars$mlmethod,
                      params = learner_pars$params,
                      dml_procedure = dml_procedure, inf_model = inf_model,
-                     se_type = inf_model)
+                     se_type = inf_model,
+                     bootstrap = "normal",  n_rep = 500)
   theta <- coef(irm_hat)
   se <- irm_hat$se
   
@@ -38,9 +39,16 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
   theta_obj <- double_mlirm_obj$coef
   se_obj <- double_mlirm_obj$se
   
+  # bootstrap
+  double_mlirm_obj$bootstrap(method = 'normal',  n_rep = 500)
+  boot_theta_obj = double_mlirm_obj$boot_coef
+  
   # at the moment the object result comes without a name
   expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
   expect_equal(se, c(d=se_obj), tolerance = 1e-8)
+  if (dml_procedure == "dml2") {
+    expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  }
 }
 )
 

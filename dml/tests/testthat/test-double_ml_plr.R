@@ -24,11 +24,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                      resampling = cf, mlmethod = learner_pars$mlmethod,
                      params = learner_pars$params,
                      dml_procedure = dml_procedure, inf_model = inf_model,
-                     se_type = inf_model)
+                     se_type = inf_model,
+                     bootstrap = "normal",  n_rep = 500)
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
-    
+  
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
@@ -38,9 +39,17 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
   
+  # bootstrap
+  double_mlplr_obj$bootstrap(method = 'normal',  n_rep = 500)
+  boot_theta_obj = double_mlplr_obj$boot_coef
+  
+  
   # at the moment the object result comes without a name
   expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
   expect_equal(se, c(d=se_obj), tolerance = 1e-8)
+  if (dml_procedure == "dml2") {
+    expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  }
 }
 )
 

@@ -10,6 +10,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   n_rep_cross_fit = NULL,
   coef = NULL,
   se = NULL,
+  boot_coef = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
@@ -26,6 +27,37 @@ DoubleML <- R6Class("DoubleML", public = list(
     # estimate the causal parameter(s)
     private$est_causal_pars()
     
+    invisible(self)
+  },
+  bootstrap = function(method='normal', n_rep = 500) {
+    dml_procedure = self$dml_procedure
+    n_obs = length(private$score_a)
+    n_folds = self$n_folds
+    test_ids = private$smpls$test_ids
+    
+    if (method == "Bayes") {
+      weights <- stats::rexp(n_rep * n_obs, rate = 1) - 1
+    } else if (method == "normal") {
+      weights <- stats::rnorm(n_rep * n_obs)
+    } else if (method == "wild") {
+      weights <- stats::rnorm(n_rep * n_obs)/sqrt(2) + (stats::rnorm(n_rep * n_obs)^2 - 1)/2
+    }
+    # for alignment with the functional (loop-wise) implementation we fill by row
+    weights <- matrix(weights, nrow = n_rep, ncol = n_obs, byrow=TRUE)
+    
+    if (dml_procedure == "dml1") {
+      boot_coefs <- matrix(NA, nrow = n_rep, ncol = n_folds)
+      for (i_fold in 1:n_folds) {
+        test_index <- test_ids[[i_fold]]
+        J = mean(private$score_a[test_index])
+        boot_coefs[,i_fold] <- weights[,test_index] %*% private$score[test_index] / (length(test_index) * self$se * J)
+      }
+      self$boot_coef = rowMeans(boot_coefs)
+    }
+    else if (dml_procedure == "dml2") {
+      J = mean(private$score_a)
+      self$boot_coef = weights %*% private$score / (n_obs * self$se * J)
+    }
     invisible(self)
   },
   set_samples = function(train_ids, test_ids) {
