@@ -344,13 +344,13 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
  if (inf_model == "DML2018") {
 
     score <- (u_hat - v_hat*theta)*v_hat
-    J <-  colMeans(v_hat*v_hat, na.rm = TRUE)
+    J <-  -colMeans(v_hat*v_hat, na.rm = TRUE)
     
   }
 
   else if (inf_model == 'IV-type') {
     score <- (u_hat - d*theta)*v_hat
-    J <- colMeans(v_hatd, na.rm = TRUE)
+    J <- -colMeans(v_hatd, na.rm = TRUE)
   }
   
   n <- length(d)
@@ -369,7 +369,6 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
       if (bootstrap == "wild") {
         weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
-      
      pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score, na.rm = TRUE))
     
   }

@@ -360,7 +360,7 @@ bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, se, bootstrap
   
   # implement multiplier bootstrap for inf_model = "partialling-out" by default
   score <- (u_hat - v_hat*theta)*w_hat
-  J <-  colMeans(v_hat*w_hat, na.rm = TRUE)
+  J <-  -colMeans(v_hat*w_hat, na.rm = TRUE)
   
   n <- length(u_hat)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)

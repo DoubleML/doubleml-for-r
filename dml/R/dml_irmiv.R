@@ -473,7 +473,7 @@ bootstrap_irmiv <- function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
     score <-  mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - (1-z)*(y - mu0_hat)/(1-p_hat) - 
             (m1_hat - m0_hat + z*(d-m1_hat)/p_hat - (1-z)*(d-m0_hat)/(1-p_hat))*theta 
     
-    J <-  colMeans( m1_hat - m0_hat + z*(d-m1_hat)/p_hat 
+    J <-  -colMeans( m1_hat - m0_hat + z*(d-m1_hat)/p_hat 
                                   - (1-z)*(d-m0_hat)/(1-p_hat) , na.rm = TRUE)
  }
 
