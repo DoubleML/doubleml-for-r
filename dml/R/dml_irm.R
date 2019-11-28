@@ -378,12 +378,14 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
   
  if (inf_model == "ATE") {
 
-    score <- g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m) - theta
+    score <- g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m) - theta
+    J <- -1
  }
   
  if (inf_model == "ATET") {
 
     score <- d*(y - g0_hat)/p_hat- m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta
+    J <- - colMeans(d/p_hat, na.rm=TRUE)
   
  }
   
@@ -404,7 +406,7 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
         weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
       
-     pertub[1,i] <- mean( colMeans(weights * 1/se * score, na.rm = TRUE))
+     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score, na.rm = TRUE))
     
   }
   
