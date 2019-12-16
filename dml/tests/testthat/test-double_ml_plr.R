@@ -20,18 +20,20 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   
   set.seed(i_setting)
   cf <- mlr3::rsmp("cv", folds = 5)
-  plr_hat <- dml_plr(data_plr[[i_setting]], y = "y", d = "d",
-                     resampling = cf, mlmethod = learner_pars$mlmethod,
-                     params = learner_pars$params,
-                     dml_procedure = dml_procedure, inf_model = inf_model,
-                     se_type = inf_model,
-                     bootstrap = "normal",  n_rep = 500)
+  plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
+                 model = "plr",
+                 k = n_folds, S = 1,
+                 mlmethod = learner_pars$mlmethod,
+                 params = learner_pars$params,
+                 dml_procedure = dml_procedure, inf_model = inf_model,
+                 se_type = inf_model,
+                 bootstrap = "normal", nRep = 500)
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
   
   set.seed(i_setting)
-  double_mlplr_obj = DoubleMLPLR$new(n_folds = 5,
+  double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
                                      dml_procedure = dml_procedure, inf_model = inf_model)
