@@ -7,7 +7,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   params = NULL,
   dml_procedure = NULL,
   inf_model = NULL,
-  n_rep_cross_fit = NULL,
+  n_rep_cross_fit = 1,
   coef = NULL,
   se = NULL,
   boot_coef = NULL,
@@ -16,16 +16,30 @@ DoubleML <- R6Class("DoubleML", public = list(
   },
   fit = function(data, y, d, z=NULL) {
     
-    if(is.null(private$smpls)) {
-      # perform sample splitting based on a dummy task with the whole data set
-      private$split_samples(data)
+    all_coef <- all_se <- rep(NA, self$n_rep_cross_fit)
+    
+    if(!is.null(private$smpls)) {
+      stop("Externally transferred samples not supported for repeated cross-fitting.")
     }
     
-    # ml estimation of nuisance models and computation of score elements
-    private$ml_nuisance_and_score_elements(data, y, d, z)
+    for (i_rep in 1:self$n_rep_cross_fit) {
+      if(is.null(private$smpls) | (self$n_rep_cross_fit>1)) {
+        # perform sample splitting based on a dummy task with the whole data set
+        private$split_samples(data)
+      }
+      
+      # ml estimation of nuisance models and computation of score elements
+      private$ml_nuisance_and_score_elements(data, y, d, z)
+      
+      # estimate the causal parameter(s)
+      private$est_causal_pars()
+      
+      all_coef[i_rep] = self$coef
+      all_se[i_rep] = self$se
+    }
     
-    # estimate the causal parameter(s)
-    private$est_causal_pars()
+    self$coef = stats::median(all_coef)
+    self$se = sqrt(stats::median(all_se^2  - (all_coef - self$coef)^2))
     
     invisible(self)
   },

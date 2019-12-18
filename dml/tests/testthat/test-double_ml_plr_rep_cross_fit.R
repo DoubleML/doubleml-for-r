@@ -10,6 +10,7 @@ test_cases = expand.grid(learner = c('regr.lm', 'regr.glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
                          inf_model = c('IV-type', 'DML2018'),
                          i_setting = 1:(length(data_plr)),
+                         n_rep_cross_fit = c(2, 5),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -22,7 +23,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   n_folds = 5
   plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
                  model = "plr",
-                 k = n_folds, S = 1,
+                 k = n_folds, S = n_rep_cross_fit,
                  mlmethod = learner_pars$mlmethod,
                  params = learner_pars$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
@@ -36,7 +37,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
-                                     dml_procedure = dml_procedure, inf_model = inf_model)
+                                     dml_procedure = dml_procedure, inf_model = inf_model,
+                                     n_rep_cross_fit = n_rep_cross_fit)
   double_mlplr_obj$fit(data_plr[[i_setting]], y = "y", d = "d")
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
