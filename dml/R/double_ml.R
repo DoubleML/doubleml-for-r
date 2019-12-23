@@ -56,19 +56,26 @@ DoubleML <- R6Class("DoubleML", public = list(
     } else if (method == "wild") {
       weights <- stats::rnorm(n_rep * n_obs)/sqrt(2) + (stats::rnorm(n_rep * n_obs)^2 - 1)/2
     }
+    
     # for alignment with the functional (loop-wise) implementation we fill by row
     weights <- matrix(weights, nrow = n_rep, ncol = n_obs, byrow=TRUE)
     
     if (dml_procedure == "dml1") {
       boot_coefs <- matrix(NA, nrow = n_rep, ncol = n_folds)
+      ii = 0
       for (i_fold in 1:n_folds) {
         test_index <- test_ids[[i_fold]]
+        n_obs_in_fold = length(test_index)
+        #print(private$score[test_index])
+        
         J = mean(private$score_a[test_index])
-        boot_coefs[,i_fold] <- weights[,test_index] %*% private$score[test_index] / (length(test_index) * self$se * J)
+        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$score[test_index] / (n_obs_in_fold * self$se * J)
+        ii = ii + n_obs_in_fold
       }
       self$boot_coef = rowMeans(boot_coefs)
     }
     else if (dml_procedure == "dml2") {
+      
       J = mean(private$score_a)
       self$boot_coef = weights %*% private$score / (n_obs * self$se * J)
     }

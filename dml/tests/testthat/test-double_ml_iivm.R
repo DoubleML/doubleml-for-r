@@ -17,6 +17,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                    .cases = test_cases, {
   
   learner_pars <- get_default_mlmethod_iivm(learner)
+  n_rep_boot = 498
   
   set.seed(i_setting)
   cf <- mlr3::rsmp("cv", folds = 5)
@@ -25,7 +26,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                         params = learner_pars$params,
                         dml_procedure = dml_procedure, inf_model = inf_model,
                         se_type = inf_model,
-                        bootstrap = "normal",  n_rep = 500)
+                        bootstrap = "normal",  nRep = n_rep_boot)
   theta <- coef(iivm_hat)
   se <- iivm_hat$se
   
@@ -40,15 +41,14 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   se_obj <- double_mliivm_obj$se
   
   # bootstrap
-  double_mliivm_obj$bootstrap(method = 'normal',  n_rep = 500)
+  double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   boot_theta_obj = double_mliivm_obj$boot_coef
   
   # at the moment the object result comes without a name
   expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
   expect_equal(se, c(d=se_obj), tolerance = 1e-8)
-  if (dml_procedure == "dml2") {
-    expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
-  }
+  expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  
 }
 )
 

@@ -365,6 +365,10 @@ bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, se, bootstrap
   n <- length(u_hat)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)
   
+  if (!is.vector(score)) {
+    J <- matrix(rep(J, each=nrow(score)), nrow=nrow(score))
+  }
+  
   for (i in seq(nRep)) {
     
     if (bootstrap == "Bayes") {
