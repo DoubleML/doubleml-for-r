@@ -494,7 +494,11 @@ bootstrap_irmiv <- function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
   
   n <- length(d)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)
-
+  
+  if (!is.vector(score)) {
+    J <- matrix(rep(J, each=nrow(score)), nrow=nrow(score))
+  }
+  
   for (i in seq(nRep)) {
 
     if (bootstrap == "Bayes") {

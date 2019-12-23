@@ -380,17 +380,26 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
 
     score <- g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m) - theta
     J <- -1
+    if (!is.vector(score)) {
+      J <- rep(J, ncol(score))
+    }
  }
   
  if (inf_model == "ATET") {
 
     score <- d*(y - g0_hat)/p_hat- m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta
+    
+    # note that the J here is by construction always equal to -1
     J <- - colMeans(d/p_hat, na.rm=TRUE)
   
  }
   
   n <- length(d)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)
+  
+  if (!is.vector(score)) {
+    J <- matrix(rep(J, each=nrow(score)), nrow=nrow(score))
+  }
   
   for (i in seq(nRep)) {
     

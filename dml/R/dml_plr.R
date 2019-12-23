@@ -356,6 +356,9 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, inf_model, se, bootstr
   n <- length(d)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)
   
+  if (!is.vector(score)) {
+    J <- matrix(rep(J, each=nrow(score)), nrow=nrow(score))
+  }
   for (i in seq(nRep)) {
     
     if (bootstrap == "Bayes") {
