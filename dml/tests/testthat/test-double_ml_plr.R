@@ -17,6 +17,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                    .cases = test_cases, {
   
   learner_pars <- get_default_mlmethod_plr(learner)
+  learner_pars_for_DML <- learner_pars
+  learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 1)
+  learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
   n_rep_boot = 498
   
   set.seed(i_setting)
@@ -24,8 +27,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
                  model = "plr",
                  k = n_folds, S = 1,
-                 mlmethod = learner_pars$mlmethod,
-                 params = learner_pars$params,
+                 mlmethod = learner_pars_for_DML$mlmethod,
+                 params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
                  se_type = inf_model,
                  bootstrap = "normal", nRep = n_rep_boot)
