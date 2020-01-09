@@ -143,6 +143,12 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
   theta_s <- vapply(res, function(x) x$coefficients, double(p1))
   se_s <- vapply(res, function(x) x$se, double(p1))
   
+  if (p1 == 1) {
+    # make sure to have matrices
+    theta_s = matrix(theta_s, nrow = 1)
+    se_s = matrix(theta_s, nrow = 1)
+  }
+  
   if (S > 1) {
     if (aggreg_median) {
       
