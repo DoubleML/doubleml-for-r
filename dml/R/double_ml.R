@@ -18,7 +18,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     all_coef <- all_se <- rep(NA, self$n_rep_cross_fit)
     
-    if(!is.null(private$smpls)) {
+    if ((self$n_rep_cross_fit > 1) & (!is.null(private$smpls))) {
       stop("Externally transferred samples not supported for repeated cross-fitting.")
     }
     
