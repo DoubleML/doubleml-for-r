@@ -10,6 +10,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   n_rep_cross_fit = 1,
   coef = NULL,
   se = NULL,
+  se_reestimate = FALSE,
   boot_coef = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
@@ -156,7 +157,11 @@ private = list(
         test_index <- test_ids[[i_fold]]
         vars[i_fold] <- private$var_est(inds=test_index)
       }
-      self$se = sqrt(mean(vars))
+      
+      if (se_reestimate == TRUE) {
+      self$se = sqrt(private$var_est())
+      }
+      
     }
     else if (dml_procedure == "dml2") {
       self$coef <- private$orth_est()
