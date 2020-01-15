@@ -99,11 +99,13 @@ private = list(
                         ml_learners,
                         params,
                         dml_procedure,
+                        se_reestimate,
                         inf_model,
                         n_rep_cross_fit) {
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
+    stopfinot(is.logical(se_reestimate), length(se_reestimate) == 1)
     stopifnot(is.character(inf_model), length(inf_model) == 1)
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
     
@@ -111,6 +113,7 @@ private = list(
     self$ml_learners <- ml_learners
     self$params <- params
     self$dml_procedure <- dml_procedure
+    self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
     
@@ -141,6 +144,7 @@ private = list(
   },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
+    se_reestimate = self$se_reestimate
     n_folds = self$n_folds
     test_ids = private$smpls$test_ids
     
