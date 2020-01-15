@@ -10,12 +10,14 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                         params = list(params_m = list(),
                                       params_g = list()),
                         dml_procedure,
+                        se_reestimate,
                         inf_model,
                         n_rep_cross_fit=1) {
     super$initialize_double_ml(n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
+                               se_reestimate,
                                inf_model,
                                n_rep_cross_fit)
   }
