@@ -105,7 +105,7 @@ private = list(
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
-    stopfinot(is.logical(se_reestimate), length(se_reestimate) == 1)
+    stopifnot(is.logical(se_reestimate), length(se_reestimate) == 1)
     stopifnot(is.character(inf_model), length(inf_model) == 1)
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
     
@@ -157,13 +157,15 @@ private = list(
       self$coef <- mean(thetas)
       private$compute_score()
       
-      for (i_fold in 1:n_folds) {
-        test_index <- test_ids[[i_fold]]
-        vars[i_fold] <- private$var_est(inds=test_index)
+      if (se_reestimate == FALSE) {
+        for (i_fold in 1:n_folds) {
+          test_index <- test_ids[[i_fold]]
+          vars[i_fold] <- private$var_est(inds=test_index)
+        }
+        self$se = sqrt(mean(vars)) 
       }
-      
       if (se_reestimate == TRUE) {
-      self$se = sqrt(private$var_est())
+        self$se = sqrt(private$var_est())
       }
       
     }
