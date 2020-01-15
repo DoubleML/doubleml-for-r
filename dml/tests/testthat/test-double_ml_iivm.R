@@ -8,6 +8,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
+                         se_reestimate = c(FALSE),
                          inf_model = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
                          stringsAsFactors = FALSE)
@@ -35,7 +36,9 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   double_mliivm_obj = DoubleMLIIVM$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
-                                     dml_procedure = dml_procedure, inf_model = inf_model)
+                                     dml_procedure = dml_procedure, 
+                                     se_reestimate = se_reestimate, 
+                                     inf_model = inf_model)
   double_mliivm_obj$fit(data_iivm[[i_setting]], y = "y", d = "d", z = "z")
   theta_obj <- double_mliivm_obj$coef
   se_obj <- double_mliivm_obj$se

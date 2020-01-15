@@ -8,6 +8,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('regr.lm', 'regr.glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
+                         se_reestimate = c(FALSE),
                          inf_model = c('partialling-out'),
                          i_setting = 1:(length(data_pliv)),
                          stringsAsFactors = FALSE)
@@ -35,7 +36,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   double_mlpliv_obj = DoubleMLPLIV$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
-                                     dml_procedure = dml_procedure, inf_model = inf_model)
+                                     dml_procedure = dml_procedure, 
+                                     se_reestimate = se_reestimate, 
+                                     inf_model = inf_model)
   double_mlpliv_obj$fit(data_pliv[[i_setting]], y = "y", d = "d", z = 'z')
   theta_obj <- double_mlpliv_obj$coef
   se_obj <- double_mlpliv_obj$se
