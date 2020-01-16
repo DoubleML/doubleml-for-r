@@ -10,6 +10,8 @@ DoubleML <- R6Class("DoubleML", public = list(
   n_rep_cross_fit = 1,
   coef = NULL,
   se = NULL,
+  t = NULL, 
+  pval = NULL,
   boot_coef = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
@@ -40,7 +42,9 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     self$coef = stats::median(all_coef)
     self$se = sqrt(stats::median(all_se^2  - (all_coef - self$coef)^2))
-    
+    self$t = self$coef/self$se
+    self$pval <- 2 * stats::pnorm(-abs(self$t))
+
     invisible(self)
   },
   bootstrap = function(method='normal', n_rep = 500) {
@@ -87,6 +91,20 @@ DoubleML <- R6Class("DoubleML", public = list(
                           test_ids = test_ids)
     
     invisible(self)
+  },
+  summary = function() {
+    ans <- NULL
+    k <- length(self$coef)
+    table <- matrix(NA, ncol = 4, nrow = k)
+    rownames(table) <- names(self$coef)
+    colnames(table) <- c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
+    table[, 1] <- self$coef
+    table[, 2] <- self$se
+    table[, 3] <- self$t
+    table[, 4] <- self$pval
+#    ans$coefficients <- table
+#    ans$object <- object
+    return(table)
   }
 ),
 private = list(
