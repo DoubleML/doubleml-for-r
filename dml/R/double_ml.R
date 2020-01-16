@@ -110,14 +110,14 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     if (length(k)) {
       print("Estimates and significance testing of the effect of target variables")
-      stats::printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE)
+      res <- as.matrix(stats::printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE))
       cat("\n")
     } 
     else {
       cat("No coefficients\n")
     }
     cat("\n")
-
+    invisible(res)
   }
 ),
 private = list(
