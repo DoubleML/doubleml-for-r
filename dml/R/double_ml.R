@@ -99,8 +99,8 @@ private = list(
                         ml_learners,
                         params,
                         dml_procedure,
-                        se_reestimate,
                         inf_model,
+                        se_reestimate,
                         n_rep_cross_fit) {
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
