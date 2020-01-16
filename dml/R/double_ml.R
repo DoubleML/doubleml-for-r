@@ -44,6 +44,8 @@ DoubleML <- R6Class("DoubleML", public = list(
     self$se = sqrt(stats::median(all_se^2  - (all_coef - self$coef)^2))
     self$t = self$coef/self$se
     self$pval <- 2 * stats::pnorm(-abs(self$t))
+    
+    names(self$coef) <- names(self$se) <- names(self$t) <- names(self$pval) <- d
 
     invisible(self)
   },
@@ -92,7 +94,8 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   },
-  summary = function() {
+  summary = function(digits = max(3L, getOption("digits") - 
+                                                          3L)) {
     ans <- NULL
     k <- length(self$coef)
     table <- matrix(NA, ncol = 4, nrow = k)
@@ -104,7 +107,17 @@ DoubleML <- R6Class("DoubleML", public = list(
     table[, 4] <- self$pval
 #    ans$coefficients <- table
 #    ans$object <- object
-    return(table)
+    
+    if (length(k)) {
+      print("Estimates and significance testing of the effect of target variables")
+      stats::printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE)
+      cat("\n")
+    } 
+    else {
+      cat("No coefficients\n")
+    }
+    cat("\n")
+
   }
 ),
 private = list(
