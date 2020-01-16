@@ -34,6 +34,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  bootstrap = "normal", nRep = n_rep_boot)
   theta <- coef(plr_hat)
   se <- plr_hat$se
+  t <- plr_hat$t
+  pval <- plr_hat$pval
   
   
   set.seed(i_setting)
@@ -44,15 +46,19 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   double_mlplr_obj$fit(data_plr[[i_setting]], y = "y", d = "d")
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
+  t_obj <- double_mlplr_obj$t
+  pval_obj <- double_mlplr_obj$pval
   
   # bootstrap
   double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   boot_theta_obj = double_mlplr_obj$boot_coef
   
-  
   # at the moment the object result comes without a name
-  expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
-  expect_equal(se, c(d=se_obj), tolerance = 1e-8)
+  expect_equal(theta, theta_obj, tolerance = 1e-8)
+  expect_equal(se, se_obj, tolerance = 1e-8)
+  expect_equal(t, t_obj, tolerance = 1e-8)
+  expect_equal(pval, pval_obj, tolerance = 1e-8)
+
   expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }

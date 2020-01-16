@@ -45,8 +45,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
   boot_theta_obj = double_mlirm_obj$boot_coef
   
   # at the moment the object result comes without a name
-  expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
-  expect_equal(se, c(d=se_obj), tolerance = 1e-8)
+  expect_equal(theta, theta_obj, tolerance = 1e-8)
+  expect_equal(se, se_obj, tolerance = 1e-8)
   expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }
