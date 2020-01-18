@@ -118,6 +118,34 @@ DoubleML <- R6Class("DoubleML", public = list(
     }
     cat("\n")
     invisible(res)
+  },
+  confint = function(parm, level = 0.95, joint = FALSE){
+    if (missing(parm)) {
+      parm <- names(self$coef)
+      }
+    else if (is.numeric(parm)) {
+      parm <- names(self$coef)[parm]
+    }
+
+    a <- (1 - level)/2
+    a <- c(a, 1 - a)
+    pct <- format.perc(a, 3)
+
+    if (joint == FALSE) {
+      fac <- stats::qnorm(a)
+      ci <- array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm,
+                                                                     pct))
+      ci[] <- self$coef[parm] + self$se %o% fac
+    }
+  
+    if (joint == TRUE) {
+        ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
+        sim <- apply(abs(self$boot_coef), 2, max)
+        hatc <- stats::quantile(sim, probs = 1 - a)
+        ci[, 1] <- self$coef[parm] - hatc * self$se
+        ci[, 2] <- self$coef[parm] + hatc * self$se
+     }
+    return(ci)
   }
 ),
 private = list(
