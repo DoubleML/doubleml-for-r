@@ -36,8 +36,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   se <- plr_hat$se
   t <- plr_hat$t
   pval <- plr_hat$pval
-  
-  
+  ci <- confint(plr_hat, level = 0.95, joint = FALSE)
+ 
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
@@ -48,16 +48,17 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   se_obj <- double_mlplr_obj$se
   t_obj <- double_mlplr_obj$t
   pval_obj <- double_mlplr_obj$pval
+  ci_obj <- double_mlplr_obj$confint(level = 0.95, joint = FALSE)
   
   # bootstrap
   double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   boot_theta_obj = double_mlplr_obj$boot_coef
-  
-  # at the moment the object result comes without a name
+
   expect_equal(theta, theta_obj, tolerance = 1e-8)
   expect_equal(se, se_obj, tolerance = 1e-8)
   expect_equal(t, t_obj, tolerance = 1e-8)
   expect_equal(pval, pval_obj, tolerance = 1e-8)
+  expect_equal(ci, ci_obj, tolerance = 1e-8)
 
   expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
