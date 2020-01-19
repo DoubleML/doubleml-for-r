@@ -146,7 +146,21 @@ DoubleML <- R6Class("DoubleML", public = list(
         ci[, 2] <- self$coef[parm] + hatc * self$se
      }
     return(ci)
-  }
+  } # , 
+  # print = function(digits = max(3L, getOption("digits") -
+  #                                                 3L)) {
+  # 
+  #   if (length(self$coef)) {
+  #     cat("Coefficients:\n")
+  #     print.default(format(self$coef, digits = digits), print.gap = 2L,
+  #                   quote = FALSE)
+  #   }
+  #   else {
+  #     cat("No coefficients\n")
+  #   }
+  #   cat("\n")
+  #   invisible(self$coef)
+  # }
 ),
 private = list(
   smpls = NULL,
