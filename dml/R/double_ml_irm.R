@@ -86,14 +86,15 @@ private = list(
     #}
     
     if (self$inf_model == 'ATE') {
-      private$score_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
-      private$score_a = rep(-1, nrow(data))
+      score_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
+      score_a = rep(-1, nrow(data))
     } else if (self$inf_model == 'ATET') {
-      private$score_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
-      private$score_a = -D / p_hat
+      score_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
+      score_a = -D / p_hat
     }
     
-    invisible(self)
+    return(list(score_a = score_a,
+                score_b = score_b))
   },
   get_cond_smpls = function(D) {
     private$smpls$train_ids_0 <- lapply(1:self$n_folds, function(x) 

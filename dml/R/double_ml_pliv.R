@@ -75,11 +75,12 @@ private = list(
     
     # note that v & w are flipped in python
     if (self$inf_model == 'partialling-out') {
-      private$score_a = -v_hat * w_hat
-      private$score_b = u_hat * w_hat
+      score_a = -v_hat * w_hat
+      score_b = u_hat * w_hat
     }
     
-    invisible(self)
+    return(list(score_a = score_a,
+                score_b = score_b))
   }
 )
 )

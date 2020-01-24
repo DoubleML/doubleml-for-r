@@ -107,11 +107,12 @@ private = list(
     
     
     if (self$inf_model == 'LATE') {
-      private$score_b = mu1_hat - mu0_hat + Z*(u1_hat)/p_hat - (1-Z)*u0_hat/(1-p_hat)
-      private$score_a = -1 * (m1_hat - m0_hat + Z*(w1_hat)/p_hat - (1-Z)*w0_hat/(1-p_hat))
+      score_b = mu1_hat - mu0_hat + Z*(u1_hat)/p_hat - (1-Z)*u0_hat/(1-p_hat)
+      score_a = -1 * (m1_hat - m0_hat + Z*(w1_hat)/p_hat - (1-Z)*w0_hat/(1-p_hat))
     }
     
-    invisible(self)
+    return(list(score_a = score_a,
+                score_b = score_b))
   },
   get_cond_smpls = function(Z) {
     private$smpls$train_ids_0 <- lapply(1:self$n_folds, function(x) 

@@ -19,18 +19,27 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     all_coef <- all_se <- rep(NA, self$n_rep_cross_fit)
     
+    n_obs = dim(data)[1]
+    n_treat = length(d)
+    private$i_treat = 1
+    
+    private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
+    
     if ((self$n_rep_cross_fit > 1) & (!is.null(private$smpls))) {
       stop("Externally transferred samples not supported for repeated cross-fitting.")
     }
     
     for (i_rep in 1:self$n_rep_cross_fit) {
+      private$i_rep = i_rep
       if(is.null(private$smpls) | (self$n_rep_cross_fit>1)) {
         # perform sample splitting based on a dummy task with the whole data set
         private$split_samples(data)
       }
       
       # ml estimation of nuisance models and computation of score elements
-      private$ml_nuisance_and_score_elements(data, y, d, z)
+      scores = private$ml_nuisance_and_score_elements(data, y, d, z)
+      private$set__score_a(scores$score_a)
+      private$set__score_b(scores$score_b)
       
       # estimate the causal parameter(s)
       private$est_causal_pars()
@@ -46,7 +55,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   },
   bootstrap = function(method='normal', n_rep = 500) {
     dml_procedure = self$dml_procedure
-    n_obs = length(private$score_a)
+    n_obs = dim(private$score_a)[1]
     n_folds = self$n_folds
     test_ids = private$smpls$test_ids
     
@@ -69,8 +78,8 @@ DoubleML <- R6Class("DoubleML", public = list(
         n_obs_in_fold = length(test_index)
         #print(private$score[test_index])
         
-        J = mean(private$score_a[test_index])
-        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$score[test_index] / (n_obs_in_fold * self$se * J)
+        J = mean(private$get__score_a()[test_index])
+        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (n_obs_in_fold * self$se * J)
         ii = ii + n_obs_in_fold
       }
       self$boot_coef = rowMeans(boot_coefs)
@@ -78,7 +87,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     else if (dml_procedure == "dml2") {
       
       J = mean(private$score_a)
-      self$boot_coef = weights %*% private$score / (n_obs * self$se * J)
+      self$boot_coef = weights %*% private$get__score() / (n_obs * self$se * J)
     }
     invisible(self)
   },
@@ -95,6 +104,10 @@ private = list(
   score = NULL,
   score_a = NULL,
   score_b = NULL,
+  all_coef = NULL,
+  all_se = NULL,
+  i_rep = NA,
+  i_treat = NA,
   initialize_double_ml = function(n_folds,
                         ml_learners,
                         params,
@@ -119,6 +132,29 @@ private = list(
     
     invisible(self)
   },
+  initialize_arrays = function(n_obs,
+                               n_treat,
+                               n_rep_cross_fit) {
+    private$score = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
+    private$score_a = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
+    private$score_b = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
+    
+    self$coef = array(NA, dim=c(n_treat))
+    self$se = array(NA, dim=c(n_treat))
+    
+    private$all_coef = array(NA, dim=c(n_treat, n_rep_cross_fit))
+    private$all_se = array(NA, dim=c(n_treat, n_rep_cross_fit))
+    
+  },
+  # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
+  # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
+  # self._i_rep, the index of the cross-fitting sample.
+  get__score_a = function() private$score_a[, private$i_rep, private$i_treat],
+  set__score_a = function(value) private$score_a[, private$i_rep, private$i_treat] <- value,
+  get__score_b = function() private$score_b[, private$i_rep, private$i_treat],
+  set__score_b = function(value) private$score_b[, private$i_rep, private$i_treat] <- value,
+  get__score = function() private$score[, private$i_rep, private$i_treat],
+  set__score = function(value) private$score[, private$i_rep, private$i_treat] <- value,
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("cv", folds = self$n_folds)$instantiate(dummy_task)
@@ -178,8 +214,8 @@ private = list(
     invisible(self)
   },
   var_est = function(inds=NULL) {
-    score_a = private$score_a
-    score = private$score
+    score_a = private$get__score_a()
+    score = private$get__score()
     # n_obs must be determined before subsetting
     n_obs = length(score)
     if(!is.null(inds)) {
@@ -191,8 +227,8 @@ private = list(
     sigma2_hat = 1/n_obs * mean(score^2) / (J^2)
   },
   orth_est = function(inds=NULL) {
-    score_a = private$score_a
-    score_b = private$score_b
+    score_a = private$get__score_a()
+    score_b = private$get__score_b()
     if(!is.null(inds)) {
       score_a = score_a[inds]
       score_b = score_b[inds]
@@ -200,8 +236,8 @@ private = list(
     theta = -mean(score_b) / mean(score_a)
   },
   compute_score = function() {
-    private$score = private$score_a * self$coef + private$score_b
-    
+    score = private$get__score_a() * self$coef + private$get__score_b()
+    private$set__score(score)
     invisible(self)
   }
 )
