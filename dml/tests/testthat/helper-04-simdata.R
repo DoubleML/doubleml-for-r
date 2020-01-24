@@ -42,3 +42,12 @@ for (i_setting in 1:n_settings) {
                                        settings[[i_setting]]$n,
                                        settings[[i_setting]]$p)
 }
+
+data_plr_multi <- vector("list", n_settings)
+set.seed(1282)
+
+for (i_setting in 1:n_settings) {
+  data_plr_multi[[i_setting]] <- dgp1_toeplitz(settings[[i_setting]]$n,
+                                               settings[[i_setting]]$p)
+}
+
