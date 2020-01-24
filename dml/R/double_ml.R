@@ -17,8 +17,6 @@ DoubleML <- R6Class("DoubleML", public = list(
   },
   fit = function(data, y, d, z=NULL) {
     
-    all_coef <- all_se <- rep(NA, self$n_rep_cross_fit)
-    
     n_obs = dim(data)[1]
     n_treat = length(d)
     private$i_treat = 1
@@ -42,14 +40,19 @@ DoubleML <- R6Class("DoubleML", public = list(
       private$set__score_b(scores$score_b)
       
       # estimate the causal parameter(s)
-      private$est_causal_pars()
+      coef <- private$est_causal_pars()
+      private$set__all_coef(coef)
       
-      all_coef[i_rep] = self$coef
-      all_se[i_rep] = self$se
+      # compute score (depends on estimated causal parameter)
+      private$compute_score()
+      
+      # compute standard errors for causal parameter
+      se <- private$se_causal_pars()
+      private$set__all_se(se)
     }
     
-    self$coef = stats::median(all_coef)
-    self$se = sqrt(stats::median(all_se^2  - (all_coef - self$coef)^2))
+    self$coef = stats::median(private$all_coef)
+    self$se = sqrt(stats::median(private$all_se^2  - (private$all_coef - self$coef)^2))
     
     invisible(self)
   },
@@ -155,6 +158,10 @@ private = list(
   set__score_b = function(value) private$score_b[, private$i_rep, private$i_treat] <- value,
   get__score = function() private$score[, private$i_rep, private$i_treat],
   set__score = function(value) private$score[, private$i_rep, private$i_treat] <- value,
+  get__all_coef = function() private$all_coef[private$i_treat, private$i_rep],
+  set__all_coef = function(value) private$all_coef[private$i_treat, private$i_rep] <- value,
+  get__all_se = function() private$all_se[private$i_treat, private$i_rep],
+  set__all_se = function(value) private$all_se[private$i_treat, private$i_rep] <- value,
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("cv", folds = self$n_folds)$instantiate(dummy_task)
@@ -185,33 +192,44 @@ private = list(
     test_ids = private$smpls$test_ids
     
     if (dml_procedure == "dml1") {
-      thetas <- vars <-  rep(NA, n_folds)
+      thetas <- rep(NA, n_folds)
       for (i_fold in 1:n_folds) {
         test_index <- test_ids[[i_fold]]
         thetas[i_fold] <- private$orth_est(inds=test_index)
       }
-      self$coef <- mean(thetas)
-      private$compute_score()
-      
+      coef <- mean(thetas)
+    }
+    else if (dml_procedure == "dml2") {
+      coef <- private$orth_est()
+    }
+    
+    return(coef)
+  },
+  se_causal_pars = function() {
+    dml_procedure = self$dml_procedure
+    se_reestimate = self$se_reestimate
+    n_folds = self$n_folds
+    test_ids = private$smpls$test_ids
+    
+    if (dml_procedure == "dml1") {
+      vars <-  rep(NA, n_folds)
       if (se_reestimate == FALSE) {
         for (i_fold in 1:n_folds) {
           test_index <- test_ids[[i_fold]]
           vars[i_fold] <- private$var_est(inds=test_index)
         }
-        self$se = sqrt(mean(vars)) 
+        se = sqrt(mean(vars)) 
       }
       if (se_reestimate == TRUE) {
-        self$se = sqrt(private$var_est())
+        se = sqrt(private$var_est())
       }
       
     }
     else if (dml_procedure == "dml2") {
-      self$coef <- private$orth_est()
-      private$compute_score()
-      self$se = sqrt(private$var_est())
+      se = sqrt(private$var_est())
     }
     
-    invisible(self)
+    return(se)
   },
   var_est = function(inds=NULL) {
     score_a = private$get__score_a()
@@ -236,7 +254,7 @@ private = list(
     theta = -mean(score_b) / mean(score_a)
   },
   compute_score = function() {
-    score = private$get__score_a() * self$coef + private$get__score_b()
+    score = private$get__score_a() * private$get__all_coef() + private$get__score_b()
     private$set__score(score)
     invisible(self)
   }
