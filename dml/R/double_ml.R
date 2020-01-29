@@ -25,20 +25,17 @@ DoubleML <- R6Class("DoubleML", public = list(
     if ((self$n_rep_cross_fit > 1) & (!is.null(private$smpls))) {
       stop("Externally transferred samples not supported for repeated cross-fitting.")
     }
+    private$split_samples(data)
     
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
-      if(is.null(private$smpls) | (self$n_rep_cross_fit>1)) {
-        # perform sample splitting based on a dummy task with the whole data set
-        private$split_samples(data)
-      }
       
       for (i_treat in 1:n_treat) {
         private$i_treat = i_treat
         
         # ml estimation of nuisance models and computation of score elements
         scores = private$ml_nuisance_and_score_elements(data,
-                                                        private$smpls,
+                                                        private$get__smpls(),
                                                         y, d[i_treat], z)
         private$set__score_a(scores$score_a)
         private$set__score_b(scores$score_b)
@@ -63,9 +60,16 @@ DoubleML <- R6Class("DoubleML", public = list(
   },
   bootstrap = function(method='normal', n_rep = 500) {
     dml_procedure = self$dml_procedure
-    n_obs = dim(private$score_a)[1]
+    n_obs = dim(private$score)[1]
+    n_treat = dim(private$score)[3]
     n_folds = self$n_folds
-    test_ids = private$smpls$test_ids
+    
+    # START: intermediate solution until multi-treat & rep cross fit is impl for bootstrap
+    private$i_rep = self$n_rep_cross_fit
+    private$i_treat = n_treat
+    smpls = private$get__smpls()
+    test_ids = smpls$test_ids
+    # END: intermediate solution until multi-treat & rep cross fit is impl for bootstrap
     
     if (method == "Bayes") {
       weights <- stats::rexp(n_rep * n_obs, rate = 1) - 1
@@ -156,6 +160,7 @@ private = list(
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
   # self._i_rep, the index of the cross-fitting sample.
+  get__smpls = function() private$smpls[[private$i_rep]],
   get__score_a = function() private$score_a[, private$i_rep, private$i_treat],
   set__score_a = function(value) private$score_a[, private$i_rep, private$i_treat] <- value,
   get__score_b = function() private$score_b[, private$i_rep, private$i_treat],
@@ -168,19 +173,27 @@ private = list(
   set__all_se = function(value) private$all_se[private$i_treat, private$i_rep] <- value,
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
-    dummy_resampling_scheme <- rsmp("cv", folds = self$n_folds)$instantiate(dummy_task)
-    train_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$train_set(x))
-    test_ids <- lapply(1:self$n_folds, function(x) dummy_resampling_scheme$test_set(x))
-    private$smpls <- list(train_ids = train_ids,
-                          test_ids = test_ids)
+    dummy_resampling_scheme <- rsmp("repeated_cv",
+                                    folds = self$n_folds,
+                                    repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
     
+    train_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                        function(x) dummy_resampling_scheme$train_set(x))
+    test_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                       function(x) dummy_resampling_scheme$test_set(x))
+    smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+      train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
+      test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
+    
+    private$smpls <- smpls
     invisible(self)
   },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
     se_reestimate = self$se_reestimate
     n_folds = self$n_folds
-    test_ids = private$smpls$test_ids
+    smpls = private$get__smpls()
+    test_ids = smpls$test_ids
     
     if (dml_procedure == "dml1") {
       thetas <- rep(NA, n_folds)
@@ -200,7 +213,8 @@ private = list(
     dml_procedure = self$dml_procedure
     se_reestimate = self$se_reestimate
     n_folds = self$n_folds
-    test_ids = private$smpls$test_ids
+    smpls = private$get__smpls()
+    test_ids = smpls$test_ids
     
     if (dml_procedure == "dml1") {
       vars <-  rep(NA, n_folds)
