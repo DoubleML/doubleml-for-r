@@ -23,7 +23,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, y, d, ...) {
+  ml_nuisance_and_score_elements = function(data, smpls, y, d, ...) {
     
     # get ml learner
     ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
@@ -36,15 +36,15 @@ private = list(
     
     
     # get conditional samples (conditioned on D = 0 or D = 1)
-    private$get_cond_smpls(data[ , d])
+    cond_smpls <- private$get_cond_smpls(smpls, data[ , d])
     
     # nuisance m
     task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
                                     skip_cols = y, target = d)
     
     resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
-                                                     private$smpls$train_ids,
-                                                     private$smpls$test_ids)
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
@@ -56,8 +56,8 @@ private = list(
                                  skip_cols = d, target = y)
     
     resampling_g0 <- mlr3::rsmp("custom")$instantiate(task_g0,
-                                                      private$smpls$train_ids_0,
-                                                      private$smpls$test_ids)
+                                                      cond_smpls$train_ids_0,
+                                                      smpls$test_ids)
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
     
@@ -68,8 +68,8 @@ private = list(
                                   skip_cols = d, target = y)
     
     resampling_g1  <- mlr3::rsmp("custom")$instantiate(task_g1,
-                                                       private$smpls$train_ids_1,
-                                                       private$smpls$test_ids)
+                                                       cond_smpls$train_ids_1,
+                                                       smpls$test_ids)
     
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     
@@ -84,7 +84,7 @@ private = list(
     p_hat <- vector('numeric', length=nrow(data))
     #if (self$dml_procedure == "dml1") {
       for (i_fold in 1:self$n_folds) {
-        p_hat[private$smpls$test_ids[[i_fold]]] = mean(D[private$smpls$test_ids[[i_fold]]])
+        p_hat[smpls$test_ids[[i_fold]]] = mean(D[smpls$test_ids[[i_fold]]])
       }
     #}
     #else if (self$dml_procedure == "dml2") {
@@ -102,11 +102,13 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   },
-  get_cond_smpls = function(D) {
-    private$smpls$train_ids_0 <- lapply(1:self$n_folds, function(x) 
-      private$smpls$train_ids[[x]][D[private$smpls$train_ids[[x]]] == 0])
-    private$smpls$train_ids_1 <-  lapply(1:self$n_folds, function(x) 
-      private$smpls$train_ids[[x]][D[private$smpls$train_ids[[x]]] == 1])
+  get_cond_smpls = function(smpls, D) {
+    train_ids_0 <- lapply(1:self$n_folds, function(x) 
+      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
+    train_ids_1 <-  lapply(1:self$n_folds, function(x) 
+      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
+    return(list(train_ids_0=train_ids_0,
+                train_ids_1=train_ids_1))
   }
 )
 )

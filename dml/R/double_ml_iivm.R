@@ -24,7 +24,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, y, d, z) {
+  ml_nuisance_and_score_elements = function(data, smpls, y, d, z) {
     
     # get ml learner
     ml_p <- initiate_prob_learner(self$ml_learners$mlmethod_p,
@@ -42,15 +42,15 @@ private = list(
     
     
     # get conditional samples (conditioned on z = 0 or z = 1)
-    private$get_cond_smpls(data[ , z])
+    cond_smpls <- private$get_cond_smpls(smpls, data[ , z])
     
     # nuisance p
     task_p <- initiate_classif_task(paste0("nuis_p_", z), data,
                                     skip_cols = c(y, d), target = z)
     
     resampling_p  <- mlr3::rsmp("custom")$instantiate(task_p,
-                                                      private$smpls$train_ids,
-                                                      private$smpls$test_ids)
+                                                      smpls$train_ids,
+                                                      smpls$test_ids)
     
     r_p <- mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
     
@@ -62,8 +62,8 @@ private = list(
                                   skip_cols = c(d, z), target = y)
     
     resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu0,
-                                                       private$smpls$train_ids_0,
-                                                       private$smpls$test_ids)
+                                                       cond_smpls$train_ids_0,
+                                                       smpls$test_ids)
     
     r_mu0 <- mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
     
@@ -74,8 +74,8 @@ private = list(
                                    skip_cols = c(d, z), target = y)
     
     resampling_mu1 <- mlr3::rsmp("custom")$instantiate(task_mu1,
-                                                       private$smpls$train_ids_1,
-                                                       private$smpls$test_ids)
+                                                       cond_smpls$train_ids_1,
+                                                       smpls$test_ids)
     
     r_mu1 <- mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
     
@@ -86,8 +86,8 @@ private = list(
                                      skip_cols = c(y, z), target = d)
     
     resampling_m0 <- mlr3::rsmp("custom")$instantiate(task_m0,
-                                                      private$smpls$train_ids_0,
-                                                      private$smpls$test_ids)
+                                                      cond_smpls$train_ids_0,
+                                                      smpls$test_ids)
     
     r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
     
@@ -98,8 +98,8 @@ private = list(
                                      skip_cols = c(y, z), target = d)
     
     resampling_m1 <- mlr3::rsmp("custom")$instantiate(task_m1,
-                                                      private$smpls$train_ids_1,
-                                                      private$smpls$test_ids)
+                                                      cond_smpls$train_ids_1,
+                                                      smpls$test_ids)
     
     r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
     
@@ -124,11 +124,13 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   },
-  get_cond_smpls = function(Z) {
-    private$smpls$train_ids_0 <- lapply(1:self$n_folds, function(x) 
-      private$smpls$train_ids[[x]][Z[private$smpls$train_ids[[x]]] == 0])
-    private$smpls$train_ids_1 <-  lapply(1:self$n_folds, function(x) 
-      private$smpls$train_ids[[x]][Z[private$smpls$train_ids[[x]]] == 1])
+  get_cond_smpls = function(smpls, Z) {
+    train_ids_0 <- lapply(1:self$n_folds, function(x) 
+      smpls$train_ids[[x]][Z[smpls$train_ids[[x]]] == 0])
+    train_ids_1 <-  lapply(1:self$n_folds, function(x) 
+      smpls$train_ids[[x]][Z[smpls$train_ids[[x]]] == 1])
+    return(list(train_ids_0=train_ids_0,
+                train_ids_1=train_ids_1))
   }
 )
 )

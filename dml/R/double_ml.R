@@ -37,7 +37,9 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
         
         # ml estimation of nuisance models and computation of score elements
-        scores = private$ml_nuisance_and_score_elements(data, y, d[i_treat], z)
+        scores = private$ml_nuisance_and_score_elements(data,
+                                                        private$smpls,
+                                                        y, d[i_treat], z)
         private$set__score_a(scores$score_a)
         private$set__score_b(scores$score_b)
         
@@ -82,7 +84,6 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_fold in 1:n_folds) {
         test_index <- test_ids[[i_fold]]
         n_obs_in_fold = length(test_index)
-        #print(private$score[test_index])
         
         J = mean(private$get__score_a()[test_index])
         boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (n_obs_in_fold * self$se * J)

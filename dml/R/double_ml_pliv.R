@@ -23,7 +23,7 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, y, d, z) {
+  ml_nuisance_and_score_elements = function(data, smpls, y, d, z) {
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
                                  skip_cols = c(d, z), target = y)
@@ -32,8 +32,8 @@ private = list(
                              self$params$params_g)
     
     resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
-                                                     private$smpls$train_ids,
-                                                     private$smpls$test_ids)
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
@@ -48,8 +48,8 @@ private = list(
                              self$params$params_m)
     
     resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
-                                                     private$smpls$train_ids,
-                                                     private$smpls$test_ids)
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
@@ -64,8 +64,8 @@ private = list(
                              self$params$params_r)
     
     resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
-                                                     private$smpls$train_ids,
-                                                     private$smpls$test_ids)
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
     
     r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
     
