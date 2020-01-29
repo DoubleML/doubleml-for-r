@@ -31,7 +31,9 @@ private = list(
     ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
                              self$params$params_g)
     
-    resampling_g <- private$instantiate_resampling(task_g)
+    resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
+                                                     private$smpls$train_ids,
+                                                     private$smpls$test_ids)
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
@@ -45,7 +47,9 @@ private = list(
     ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
                              self$params$params_m)
     
-    resampling_m <- private$instantiate_resampling(task_m)
+    resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+                                                     private$smpls$train_ids,
+                                                     private$smpls$test_ids)
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
@@ -59,7 +63,9 @@ private = list(
     ml_r <- initiate_learner(self$ml_learners$mlmethod_r,
                              self$params$params_r)
     
-    resampling_r <- private$instantiate_resampling(task_r)
+    resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
+                                                     private$smpls$train_ids,
+                                                     private$smpls$test_ids)
     
     r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
     

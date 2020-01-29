@@ -48,7 +48,9 @@ private = list(
     task_p <- initiate_classif_task(paste0("nuis_p_", z), data,
                                     skip_cols = c(y, d), target = z)
     
-    resampling_p <- private$instantiate_resampling(task_p)
+    resampling_p  <- mlr3::rsmp("custom")$instantiate(task_p,
+                                                      private$smpls$train_ids,
+                                                      private$smpls$test_ids)
     
     r_p <- mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
     
@@ -59,7 +61,9 @@ private = list(
     task_mu0 <- initiate_regr_task(paste0("nuis_mu0_", y), data,
                                   skip_cols = c(d, z), target = y)
     
-    resampling_mu0 <- private$instantiate_resampling(task_mu0, private$smpls$train_ids_0)
+    resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu0,
+                                                       private$smpls$train_ids_0,
+                                                       private$smpls$test_ids)
     
     r_mu0 <- mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
     
@@ -69,7 +73,9 @@ private = list(
     task_mu1 <- initiate_regr_task(paste0("nuis_mu1_", y), data,
                                    skip_cols = c(d, z), target = y)
     
-    resampling_mu1 <- private$instantiate_resampling(task_mu1, private$smpls$train_ids_1)
+    resampling_mu1 <- mlr3::rsmp("custom")$instantiate(task_mu1,
+                                                       private$smpls$train_ids_1,
+                                                       private$smpls$test_ids)
     
     r_mu1 <- mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
     
@@ -79,7 +85,9 @@ private = list(
     task_m0 <- initiate_classif_task(paste0("nuis_m0_", d), data,
                                      skip_cols = c(y, z), target = d)
     
-    resampling_m0 <- private$instantiate_resampling(task_m0, private$smpls$train_ids_0)
+    resampling_m0 <- mlr3::rsmp("custom")$instantiate(task_m0,
+                                                      private$smpls$train_ids_0,
+                                                      private$smpls$test_ids)
     
     r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
     
@@ -89,7 +97,9 @@ private = list(
     task_m1 <- initiate_classif_task(paste0("nuis_m1_", d), data,
                                      skip_cols = c(y, z), target = d)
     
-    resampling_m1 <- private$instantiate_resampling(task_m0, private$smpls$train_ids_1)
+    resampling_m1 <- mlr3::rsmp("custom")$instantiate(task_m1,
+                                                      private$smpls$train_ids_1,
+                                                      private$smpls$test_ids)
     
     r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
     
