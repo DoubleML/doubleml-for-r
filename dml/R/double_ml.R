@@ -19,7 +19,6 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     n_obs = dim(data)[1]
     n_treat = length(d)
-    private$i_treat = 1
     
     private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
     
@@ -34,25 +33,29 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$split_samples(data)
       }
       
-      # ml estimation of nuisance models and computation of score elements
-      scores = private$ml_nuisance_and_score_elements(data, y, d, z)
-      private$set__score_a(scores$score_a)
-      private$set__score_b(scores$score_b)
-      
-      # estimate the causal parameter(s)
-      coef <- private$est_causal_pars()
-      private$set__all_coef(coef)
-      
-      # compute score (depends on estimated causal parameter)
-      private$compute_score()
-      
-      # compute standard errors for causal parameter
-      se <- private$se_causal_pars()
-      private$set__all_se(se)
+      for (i_treat in 1:n_treat) {
+        private$i_treat = i_treat
+        
+        # ml estimation of nuisance models and computation of score elements
+        scores = private$ml_nuisance_and_score_elements(data, y, d[i_treat], z)
+        private$set__score_a(scores$score_a)
+        private$set__score_b(scores$score_b)
+        
+        # estimate the causal parameter(s)
+        coef <- private$est_causal_pars()
+        private$set__all_coef(coef)
+        
+        # compute score (depends on estimated causal parameter)
+        private$compute_score()
+        
+        # compute standard errors for causal parameter
+        se <- private$se_causal_pars()
+        private$set__all_se(se)
+      }
     }
     
-    self$coef = stats::median(private$all_coef)
-    self$se = sqrt(stats::median(private$all_se^2  - (private$all_coef - self$coef)^2))
+    self$coef = apply(private$all_coef, 1, stats::median)
+    self$se = sqrt(apply(private$all_se^2  - (private$all_coef - self$coef)^2, 1, stats::median))
     
     invisible(self)
   },
