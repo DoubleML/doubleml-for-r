@@ -55,8 +55,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       }
     }
     
-    self$coef = apply(private$all_coef, 1, stats::median)
-    self$se = sqrt(apply(private$all_se^2  - (private$all_coef - self$coef)^2, 1, stats::median))
+    private$agg_cross_fit()
     
     invisible(self)
   },
@@ -237,6 +236,14 @@ private = list(
     }
     
     return(se)
+  },
+  agg_cross_fit = function() {
+    # aggregate parameters from the repeated cross-fitting
+    # don't use the getter (always for one treatment variable and one sample), but the private variable
+    self$coef = apply(private$all_coef, 1, stats::median)
+    self$se = sqrt(apply(private$all_se^2  - (private$all_coef - self$coef)^2, 1, stats::median))
+    
+    invisible(self)
   },
   var_est = function(inds=NULL) {
     score_a = private$get__score_a()
