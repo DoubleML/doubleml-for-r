@@ -18,6 +18,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   fit = function(data, y, d, z=NULL) {
+    n_treat = dim(private$score)[3]
     
     n_obs = dim(data)[1]
     n_treat = length(d)
@@ -32,7 +33,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
       
-      for (i_treat in 1:n_treat) {
+      for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
         # ml estimation of nuisance models and computation of score elements
@@ -60,47 +61,15 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   bootstrap = function(method='normal', n_rep = 500) {
-    dml_procedure = self$dml_procedure
-    n_obs = dim(private$score)[1]
-    n_treat = dim(private$score)[3]
-    n_folds = self$n_folds
+    
     
     # START: intermediate solution until multi-treat & rep cross fit is impl for bootstrap
     private$i_rep = self$n_rep_cross_fit
-    private$i_treat = n_treat
-    smpls = private$get__smpls()
-    test_ids = smpls$test_ids
+    private$i_treat = private$n_treat
     # END: intermediate solution until multi-treat & rep cross fit is impl for bootstrap
     
-    if (method == "Bayes") {
-      weights <- stats::rexp(n_rep * n_obs, rate = 1) - 1
-    } else if (method == "normal") {
-      weights <- stats::rnorm(n_rep * n_obs)
-    } else if (method == "wild") {
-      weights <- stats::rnorm(n_rep * n_obs)/sqrt(2) + (stats::rnorm(n_rep * n_obs)^2 - 1)/2
-    }
+    self$boot_coef = private$compute_bootstrap(method, n_rep)
     
-    # for alignment with the functional (loop-wise) implementation we fill by row
-    weights <- matrix(weights, nrow = n_rep, ncol = n_obs, byrow=TRUE)
-    
-    if (dml_procedure == "dml1") {
-      boot_coefs <- matrix(NA, nrow = n_rep, ncol = n_folds)
-      ii = 0
-      for (i_fold in 1:n_folds) {
-        test_index <- test_ids[[i_fold]]
-        n_obs_in_fold = length(test_index)
-        
-        J = mean(private$get__score_a()[test_index])
-        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (n_obs_in_fold * self$se * J)
-        ii = ii + n_obs_in_fold
-      }
-      self$boot_coef = rowMeans(boot_coefs)
-    }
-    else if (dml_procedure == "dml2") {
-      
-      J = mean(private$score_a)
-      self$boot_coef = weights %*% private$get__score() / (n_obs * self$se * J)
-    }
     invisible(self)
   },
   set_samples = function(train_ids, test_ids) {
@@ -118,6 +87,8 @@ private = list(
   score_b = NULL,
   all_coef = NULL,
   all_se = NULL,
+  n_obs = NULL,
+  n_treat = NULL,
   i_rep = NA,
   i_treat = NA,
   initialize_double_ml = function(n_folds,
@@ -147,6 +118,10 @@ private = list(
   initialize_arrays = function(n_obs,
                                n_treat,
                                n_rep_cross_fit) {
+    # set dimensions as private properties before initializing arrays
+    private$n_obs = n_obs
+    private$n_treat = n_treat
+    
     private$score = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
     private$score_a = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
     private$score_b = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
@@ -245,18 +220,53 @@ private = list(
     
     invisible(self)
   },
+  compute_bootstrap = function(method, n_rep) {
+    dml_procedure = self$dml_procedure
+    smpls = private$get__smpls()
+    test_ids = smpls$test_ids
+    
+    if (method == "Bayes") {
+      weights <- stats::rexp(n_rep * private$n_obs, rate = 1) - 1
+    } else if (method == "normal") {
+      weights <- stats::rnorm(n_rep * private$n_obs)
+    } else if (method == "wild") {
+      weights <- stats::rnorm(n_rep * private$n_obs)/sqrt(2) + (stats::rnorm(n_rep * private$n_obs)^2 - 1)/2
+    }
+    
+    # for alignment with the functional (loop-wise) implementation we fill by row
+    weights <- matrix(weights, nrow = n_rep, ncol = private$n_obs, byrow=TRUE)
+    
+    if (dml_procedure == "dml1") {
+      boot_coefs <- matrix(NA, nrow = n_rep, ncol = self$n_folds)
+      ii = 0
+      for (i_fold in 1:self$n_folds) {
+        test_index <- test_ids[[i_fold]]
+        n_obs_in_fold = length(test_index)
+        
+        J = mean(private$get__score_a()[test_index])
+        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (n_obs_in_fold * self$se * J)
+        ii = ii + n_obs_in_fold
+      }
+      boot_coef = rowMeans(boot_coefs)
+    }
+    else if (dml_procedure == "dml2") {
+      
+      J = mean(private$score_a)
+      boot_coef = weights %*% private$get__score() / (private$n_obs * self$se * J)
+    }
+    
+    return(boot_coef)
+  },
   var_est = function(inds=NULL) {
     score_a = private$get__score_a()
     score = private$get__score()
-    # n_obs must be determined before subsetting
-    n_obs = length(score)
     if(!is.null(inds)) {
       score_a = score_a[inds]
       score = score[inds]
     }
     
     J = mean(score_a)
-    sigma2_hat = 1/n_obs * mean(score^2) / (J^2)
+    sigma2_hat = 1/private$n_obs * mean(score^2) / (J^2)
   },
   orth_est = function(inds=NULL) {
     score_a = private$get__score_a()
