@@ -261,15 +261,16 @@ private = list(
         n_obs_in_fold = length(test_index)
         
         J = mean(private$get__score_a()[test_index])
-        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (n_obs_in_fold * self$se * J)
+        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (
+          n_obs_in_fold * private$get__all_se() * J)
         ii = ii + n_obs_in_fold
       }
       boot_coef = rowMeans(boot_coefs)
     }
     else if (dml_procedure == "dml2") {
       
-      J = mean(private$score_a)
-      boot_coef = weights %*% private$get__score() / (private$n_obs * self$se * J)
+      J = mean(private$get__score_a())
+      boot_coef = weights %*% private$get__score() / (private$n_obs * private$get__all_se() * J)
     }
     
     return(boot_coef)
