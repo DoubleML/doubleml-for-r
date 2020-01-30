@@ -1,5 +1,7 @@
 library('R6')
 library('data.table')
+library('mlr3')
+library("mlr3learners")
 
 DoubleML <- R6Class("DoubleML", public = list(
   n_folds = NULL,
