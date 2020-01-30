@@ -18,8 +18,6 @@ DoubleML <- R6Class("DoubleML", public = list(
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   fit = function(data, y, d, z=NULL) {
-    n_treat = dim(private$score)[3]
-    
     n_obs = dim(data)[1]
     n_treat = length(d)
     
@@ -61,14 +59,18 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   bootstrap = function(method='normal', n_rep = 500) {
+    private$initialize_boot_arrays(n_rep, self$n_rep_cross_fit)
     
-    
-    # START: intermediate solution until multi-treat & rep cross fit is impl for bootstrap
-    private$i_rep = self$n_rep_cross_fit
-    private$i_treat = private$n_treat
-    # END: intermediate solution until multi-treat & rep cross fit is impl for bootstrap
-    
-    self$boot_coef = private$compute_bootstrap(method, n_rep)
+    for (i_rep in 1:self$n_rep_cross_fit) {
+      private$i_rep = i_rep
+      
+      for (i_treat in 1:private$n_treat) {
+        private$i_treat = i_treat
+        
+        boot_coef = private$compute_bootstrap(method, n_rep)
+        private$set__boot_coef(boot_coef)
+      }
+    }
     
     invisible(self)
   },
@@ -89,6 +91,7 @@ private = list(
   all_se = NULL,
   n_obs = NULL,
   n_treat = NULL,
+  n_rep_boot = NULL,
   i_rep = NA,
   i_treat = NA,
   initialize_double_ml = function(n_folds,
@@ -133,6 +136,10 @@ private = list(
     private$all_se = array(NA, dim=c(n_treat, n_rep_cross_fit))
     
   },
+  initialize_boot_arrays = function(n_rep, n_rep_cross_fit) {
+    private$n_rep_boot = n_rep
+    self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep_cross_fit))
+  },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
   # self._i_rep, the index of the cross-fitting sample.
@@ -147,6 +154,16 @@ private = list(
   set__all_coef = function(value) private$all_coef[private$i_treat, private$i_rep] <- value,
   get__all_se = function() private$all_se[private$i_treat, private$i_rep],
   set__all_se = function(value) private$all_se[private$i_treat, private$i_rep] <- value,
+  get__boot_coef = function() {
+    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
+    ind_end = private$i_rep * private$n_rep_boot
+    self$boot_coef[private$i_treat, ind_start:ind_end]
+    },
+  set__boot_coef = function(value) {
+    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
+    ind_end = private$i_rep * private$n_rep_boot
+    self$boot_coef[private$i_treat, ind_start:ind_end] <- value
+    },
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("repeated_cv",
