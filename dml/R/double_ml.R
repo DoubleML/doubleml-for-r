@@ -23,10 +23,9 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
     
-    if ((self$n_rep_cross_fit > 1) & (!is.null(private$smpls))) {
-      stop("Externally transferred samples not supported for repeated cross-fitting.")
+    if (is.null(private$smpls)) {
+      private$split_samples(data)
     }
-    private$split_samples(data)
     
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
@@ -74,10 +73,10 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   },
-  set_samples = function(train_ids, test_ids) {
+  set_samples = function(smpls) {
     # TODO place some checks for the externally provided sample splits
-    private$smpls <- list(train_ids = train_ids,
-                          test_ids = test_ids)
+    # see also python
+    private$smpls <- smpls
     
     invisible(self)
   }
