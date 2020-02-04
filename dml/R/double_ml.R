@@ -14,7 +14,8 @@ DoubleML <- R6Class("DoubleML", public = list(
   se = NULL,
   se_reestimate = FALSE,
   boot_coef = NULL,
-  param_set = NULL, 
+  param_set_g = NULL, 
+  param_set_m = NULL,
   tune_settings = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
@@ -89,7 +90,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     n_obs = dim(data)[1]
     n_treat = length(d)
     
-    # TBD: prepare output of parameter tuning
+    # TBD: prepare output of parameter tuning (dimensions: n_folds x n_rep_cross_fit)
     private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
     
     if (is.null(private$smpls)) {
@@ -104,8 +105,15 @@ DoubleML <- R6Class("DoubleML", public = list(
         
         # TBD: insert setter/getter function -> correct indices and names
         #  ! important ! tuned params must exactly correspond to training samples
+        # TBD: user friendly way to pass (pre-)trained parameters
+        # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
+        #      e.g., in seperate function (tune_mlr3)...
+        # TBD: Pass through instances (requires prespecified tasks)
+        # TBD: Handling different measures for classification and regression (logit???)
         private$params = private$tune_params(data, private$get__smpls(),
-                                              y, d[i_treat], z, param_set, tune_settings)
+                                              y, d[i_treat], z, param_set_g = self$param_set_g, 
+                                                                param_set_m = self$param_set_m, 
+                                              self$tune_settings)
 
       }
     }
@@ -132,7 +140,8 @@ private = list(
                         inf_model,
                         se_reestimate,
                         n_rep_cross_fit,
-                        param_set,
+                        param_set_g,
+                        param_set_m,
                         tune_settings) {
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
@@ -149,7 +158,8 @@ private = list(
     self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
-    self$param_set <- param_set
+    self$param_set_g <- param_set_g
+    self$param_set_m <- param_set_m
     self$tune_settings <- tune_settings
     
     invisible(self)

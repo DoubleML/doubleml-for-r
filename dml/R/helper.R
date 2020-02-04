@@ -53,3 +53,25 @@ initiate_classif_task = function(id, data, skip_cols, target) {
   return(task)
 }
 
+
+extract_training_data = function(data, smpls) {
+  data_train = data[smpls, , drop = FALSE]
+  
+  return(data_train)
+}
+
+tune_instance = function(tuner, tuning_instance){
+  tuning_result = tuner$tune(tuning_instance)
+  tuning_archive = tuning_instance$archive()
+  params = tuning_instance$result$params
+  
+  tuning_results = list(tuning_result = tuning_result, 
+                        tuning_archive = tuning_archive, 
+                        params = params)
+  return(tuning_results)
+}
+  
+
+
+
+
