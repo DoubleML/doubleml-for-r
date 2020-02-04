@@ -117,8 +117,10 @@ private = list(
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
                                                 skip_cols = d, target = y))
     
+    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
+    
     tuning_instance_g = lapply(task_g, function(x) TuningInstance$new(task = x,
-                                          learner = self$ml_learners$mlmethod_g,
+                                          learner = ml_g,
                                           resampling = CV_tune,
                                           measures = measure_g,
                                           param_set = param_set_g,
@@ -130,8 +132,10 @@ private = list(
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", d), x,
                                                   skip_cols = y, target = d))
     
+    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+
     tuning_instance_m = lapply(task_m, function(x) TuningInstance$new(task = x,
-                                          learner = self$ml_learners$mlmethod_m,
+                                          learner = ml_m,
                                           resampling = CV_tune,
                                           measures = measure_m,
                                           param_set = param_set_m,
