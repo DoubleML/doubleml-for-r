@@ -17,6 +17,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   param_set_g = NULL, 
   param_set_m = NULL,
   tune_settings = NULL,
+  param_tuning = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
@@ -110,11 +111,14 @@ DoubleML <- R6Class("DoubleML", public = list(
         #      e.g., in seperate function (tune_mlr3)...
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
-        private$params = private$tune_params(data, private$get__smpls(),
+        self$param_tuning = private$tune_params(data, private$get__smpls(),
                                               y, d[i_treat], z, param_set_g = self$param_set_g, 
                                                                 param_set_m = self$param_set_m, 
                                               self$tune_settings)
-
+        
+        self$params = list(params_g = extract_tuned_params(self$param_tuning$tuning_result_g),
+                           params_m = extract_tuned_params(self$param_tuning$tuning_result_m))
+         
       }
     }
 
@@ -142,7 +146,8 @@ private = list(
                         n_rep_cross_fit,
                         param_set_g,
                         param_set_m,
-                        tune_settings) {
+                        tune_settings, 
+                        param_tuning) {
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
@@ -161,6 +166,7 @@ private = list(
     self$param_set_g <- param_set_g
     self$param_set_m <- param_set_m
     self$tune_settings <- tune_settings
+    self$param_tuning <- param_tuning
     
     invisible(self)
   },

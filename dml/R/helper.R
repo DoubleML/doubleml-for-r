@@ -71,7 +71,9 @@ tune_instance = function(tuner, tuning_instance){
   return(tuning_results)
 }
   
-
-
+extract_tuned_params = function(param_results) {
+  params = lapply(param_results, function(x) x$params)
+  return(params)
+}
 
 
