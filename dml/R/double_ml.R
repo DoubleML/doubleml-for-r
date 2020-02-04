@@ -14,10 +14,15 @@ DoubleML <- R6Class("DoubleML", public = list(
   se = NULL,
   se_reestimate = FALSE,
   boot_coef = NULL,
+  param_set = NULL, 
+  tune_settings = NULL,
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   fit = function(data, y, d, z=NULL) {
+    
+    # TBD: insert check for tuned params
+    
     n_obs = dim(data)[1]
     n_treat = length(d)
     
@@ -79,6 +84,33 @@ DoubleML <- R6Class("DoubleML", public = list(
     private$smpls <- smpls
     
     invisible(self)
+  }, 
+  tune = function(data, y, d, z=NULL) {
+    n_obs = dim(data)[1]
+    n_treat = length(d)
+    
+    # TBD: prepare output of parameter tuning
+    private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
+    
+    if (is.null(private$smpls)) {
+      private$split_samples(data)
+    }
+    
+    for (i_rep in 1:self$n_rep_cross_fit) {
+      private$i_rep = i_rep
+      
+      for (i_treat in 1:private$n_treat) {
+        private$i_treat = i_treat
+        
+        # TBD: insert setter/getter function -> correct indices and names
+        #  ! important ! tuned params must exactly correspond to training samples
+        private$params = private$tune_params(data, private$get__smpls(),
+                                              y, d[i_treat], z, param_set, tune_settings)
+
+      }
+    }
+
+    invisible(self)
   }
 ),
 private = list(
@@ -99,13 +131,16 @@ private = list(
                         dml_procedure,
                         inf_model,
                         se_reestimate,
-                        n_rep_cross_fit) {
+                        n_rep_cross_fit,
+                        param_set,
+                        tune_settings) {
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
     stopifnot(is.logical(se_reestimate), length(se_reestimate) == 1)
     stopifnot(is.character(inf_model), length(inf_model) == 1)
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
+    stopifnot(is.list(tune_settings))
     
     self$n_folds <- n_folds
     self$ml_learners <- ml_learners
@@ -114,6 +149,8 @@ private = list(
     self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
+    self$param_set <- param_set
+    self$tune_settings <- tune_settings
     
     invisible(self)
   },

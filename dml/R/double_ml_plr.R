@@ -12,14 +12,24 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                         dml_procedure,
                         inf_model,
                         se_reestimate=FALSE,
-                        n_rep_cross_fit=1) {
+                        n_rep_cross_fit=1, 
+                        param_set = NULL,
+                        tune_settings = list(n_folds_tune = 5,
+                                        n_rep_tune = 1, 
+                                        rsmp_tune = "cv", 
+                                        measure = "regr.mse", 
+                                        n_eval = 20, 
+                                        algorithm = "grid_search")) 
+  {
     super$initialize_double_ml(n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
                                inf_model,
                                se_reestimate,
-                               n_rep_cross_fit)
+                               n_rep_cross_fit, 
+                               param_set,
+                               tune_settings)
   }
 ),
 private = list(
@@ -69,6 +79,39 @@ private = list(
     
     return(list(score_a = score_a,
                 score_b = score_b))
+  }, 
+  tune_params = function(data, smpls, y, d, param_set, tune_settings, ...){
+    
+    checkmate::check_class(param_set, "ParamSet")    
+    
+    task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
+                                 skip_cols = d, target = y)
+    
+    ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
+                             self$params$params_g)
+    
+    resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
+    
+    r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+    
+    g_hat = extract_prediction(r_g)
+    
+    # nuisance m
+    task_m <- initiate_regr_task(paste0("nuis_m_", d), data,
+                                 skip_cols = y, target = d)
+    
+    ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
+                             self$params$params_m)
+    
+    resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
+    
+    r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    
+    
   }
 )
 )
