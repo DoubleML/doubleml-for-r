@@ -1,6 +1,8 @@
 context("Unit tests for PLR")
 
 library("mlr3learners")
+library("mlr3tuning")
+library("paradox")
 library('data.table')
 library('mlr3')
 
@@ -45,7 +47,22 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
                                      inf_model = inf_model)
+  
+  tune_ps = ParamSet$new(list(
+                          ParamDbl$new("cp", lower = 0.001, upper = 0.1),
+                          ParamInt$new("minsplit", lower = 1, upper = 10)))
+  
+  double_mlplr_obj$param_set_g = tune_ps
+  double_mlplr_obj$param_set_m = tune_ps
+  
+  
+  # TBD: Interface (when to specify y, d, and data?)
+  double_mlplr_obj$tune(data_plr[[i_setting]], y = "y", d = "d")
+  
+  # TBD: pass params to fit
   double_mlplr_obj$fit(data_plr[[i_setting]], y = "y", d = "d")
+  
+  
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
   
