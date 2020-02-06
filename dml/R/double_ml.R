@@ -114,7 +114,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         self$param_tuning = private$tune_params(data, private$get__smpls(),
                                               y, d[i_treat], z, param_set_g = self$param_set_g, 
                                                                 param_set_m = self$param_set_m, 
-                                              self$tune_settings)
+                                                tune_settings = self$tune_settings)
         
         self$params = list(params_g = extract_tuned_params(self$param_tuning$tuning_result_g),
                            params_m = extract_tuned_params(self$param_tuning$tuning_result_m))

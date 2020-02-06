@@ -89,32 +89,32 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   }, 
-  tune_params = function(data, smpls, y, d, param_set_g, param_set_m, ...){
+  tune_params = function(data, smpls, y, d, param_set_g, param_set_m, tune_settings, ...){
     
     checkmate::check_class(param_set_g, "ParamSet")    
     checkmate::check_class(param_set_m, "ParamSet")
     
     data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
 
-    if (any(class(self$tune_settings$CV_tune) == "Resampling")) {
-      CV_tune = self$tune_settings$CV_tune
+    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
+      CV_tune = tune_settings$rsmp_tune
     } else {
-      CV_tune = mlr3::rsmp(self$tune_settings$rsmp_tune, folds = self$tune_settings$n_folds_tune)
+      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
     
-    if (any(class(self$tune_settings$measure_g) == "Measure")) {
-      measure_g = self$tune_settings$measure_g
+    if (any(class(tune_settings$measure_g) == "Measure")) {
+      measure_g = tune_settings$measure_g
     } else {
-      measure_g = mlr3::msr(self$tune_settings$measure_g)
+      measure_g = mlr3::msr(tune_settings$measure_g)
     }
     
     if (any(class(tune_settings$measure_m) == "Measure")) {
-      measure_m = self$tune_settings$measure_m
+      measure_m = tune_settings$measure_m
     } else {
-      measure_m = mlr3::msr(self$tune_settings$measure_m)
+      measure_m = mlr3::msr(tune_settings$measure_m)
     }
     
-    terminator = self$tune_settings$terminator
+    terminator = tune_settings$terminator
     
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
                                                 skip_cols = d, target = y))
@@ -128,7 +128,7 @@ private = list(
                                           param_set = param_set_g,
                                           terminator = terminator))
     
-    tuner = mlr3tuning::tnr(self$tune_settings$algorithm, resolution = self$tune_settings$resolution)
+    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", d), x,
