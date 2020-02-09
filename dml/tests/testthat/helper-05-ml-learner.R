@@ -16,6 +16,14 @@ get_default_mlmethod_plr <- function(learner, default = FALSE) {
                      params_m = list(num.trees = 120))
       
     }
+    else if (learner == 'regr.rpart') {
+      mlmethod <- list(mlmethod_m = learner,
+                       mlmethod_g = learner)
+      
+      params <- list(params_g = list(cp = 0.01, minsplit = 20),
+                     params_m = list(cp = 0.01, minsplit = 20))
+    
+  }
     
     # else if (learner == 'regr.glmnet') {
     #   mlmethod <- list(mlmethod_m = learner,
@@ -68,6 +76,16 @@ get_default_mlmethod_pliv <- function(learner) {
     params <- list(params_g = list(num.trees = 100),
                    params_m = list(num.trees = 120),
                    params_r = list(num.trees = 100))
+    
+  }
+   else if (learner == 'regr.rpart') {
+    mlmethod <- list(mlmethod_m = learner,
+                     mlmethod_g = learner,
+                     mlmethod_r = learner)
+    
+    params <- list(params_g = list(cp = 0.01, minsplit = 20),
+                   params_m = list(cp = 0.01, minsplit = 20),
+                   params_r = list(cp = 0.01, minsplit = 20))
     
   }
   else if (learner == 'regr.glmnet') {
