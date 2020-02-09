@@ -47,31 +47,60 @@ private = list(
     task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
                                  skip_cols = d, target = y)
     
-    ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
-                             self$params$params_g)
+    # ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
+                             # self$params$params_g)
+    ml_g <- lapply(self$params$params_g, function(x) initiate_learner(self$ml_learners$mlmethod_g, 
+                                                                      x))
     
-    resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
-                                                     smpls$train_ids,
-                                                     smpls$test_ids)
+    # resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
+    #                                                  smpls$train_ids,
+    #                                                  smpls$test_ids)
     
-    r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+    resampling_g = initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
+
     
-    g_hat = extract_prediction(r_g)
+    r_g = resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
+    
+    g_hat = lapply(r_g, extract_prediction)
+    
+    g_hat = rearrange_prediction(g_hat)
     
     # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", d), data,
-                                 skip_cols = y, target = d)
+    # task_m <- initiate_regr_task(paste0("nuis_m_", d), data,
+    #                              skip_cols = y, target = d)
+    # 
+    # ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
+    #                          self$params$params_m)
+    # 
+    # resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+    #                                                  smpls$train_ids,
+    #                                                  smpls$test_ids)
+    # 
+    # r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    # 
+    # m_hat = extract_prediction(r_m)
     
-    ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
-                             self$params$params_m)
+    task_m <- initiate_regr_task(paste0("nuis_m_", y), data,
+                                 skip_cols = d, target = y)
     
-    resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
-                                                     smpls$train_ids,
-                                                     smpls$test_ids)
+    # ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
+                             # self$params$params_m)
+    ml_m <- lapply(self$params$params_m, function(x) initiate_learner(self$ml_learners$mlmethod_m, 
+                                                                      x))
     
-    r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    # resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+    #                                                  smpls$train_ids,
+    #                                                  smpls$test_ids)
     
-    m_hat = extract_prediction(r_m)
+    resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
+
+    
+    r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
+    
+    m_hat = lapply(r_m, extract_prediction)
+    
+    m_hat = rearrange_prediction(m_hat)
+    
     
     D <- data[ , d]
     Y <- data[ , y]

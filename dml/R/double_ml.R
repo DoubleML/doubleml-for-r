@@ -104,7 +104,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
-        # TBD: insert setter/getter function -> correct indices and names
+        # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting
         #  ! important ! tuned params must exactly correspond to training samples
         # TBD: user friendly way to pass (pre-)trained parameters
         # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 

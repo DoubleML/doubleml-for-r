@@ -2,12 +2,20 @@
 extract_prediction = function(obj_resampling) {
   f_hat <- as.data.table(obj_resampling$prediction())
   setorder(f_hat, 'row_id')
-  f_hat <- f_hat$response
+  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response))
   
   return(f_hat)
 }
 
+rearrange_prediction = function(prediction_list){
+    predictions <- rbindlist(prediction_list)
+    setorder(predictions, 'row_id')
+    predictions <- predictions$response
+    return(predictions)
+}
 
+
+# TBD: implement for probability predictions
 extract_prob_prediction = function(obj_resampling) {
   f_hat <- as.data.table(obj_resampling$prediction())
   setorder(f_hat, 'row_id')
@@ -75,5 +83,86 @@ extract_tuned_params = function(param_results) {
   params = lapply(param_results, function(x) x$params)
   return(params)
 }
+
+
+initiate_resampling = function(task, train_ids, test_ids){
+    stopifnot(length(train_ids) == length(test_ids))
+    resampling = lapply(1:length(train_ids), function(x)
+                                              mlr3::rsmp("custom")$instantiate(task,
+                                                          list(train_ids[[x]]),
+                                                          list(test_ids[[x]])))
+    return(resampling)
+}
+
+
+
+resample_dml = function(task, learner, resampling, store_models = FALSE){
+    task = mlr3::assert_task(as_task(task, clone = TRUE))
+    checkmate::check_list(learner)
+    checkmate::check_list(resampling)
+    learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
+    resampling = lapply(resampling, function(x) mlr3::assert_resampling(as_resampling(x)))
+    # mlr3::assert_flag(store_models)
+    instance = lapply(resampling, function(x) x$clone(deep = TRUE))
+    
+    # TBD: handle non-instantiated resampling (but should not be necessary -> initiate_resampling)
+    # if (!any(instance$is_instantiated)) {
+    #     instance = lapply(instance, function(x) x$instantiate(task))
+    # }
+
+    res = lapply(1:length(learner), function(x) mlr3::resample(task, learner[[x]], 
+                                                    resampling[[x]], store_models = store_models))
+      
+    return(res)
+
+}
+
+
+# resample_dml = function(task, learner, resampling, store_models = FALSE){
+#     task = mlr3::assert_task(as_task(task, clone = TRUE))
+#     checkmate::check_list(learner)
+#     learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
+#     resampling = mlr3::assert_resampling(as_resampling(resampling))
+#     mlr3::assert_flag(store_models)
+#     # lapply(learner, function(x) mlr3::assert_learnable(task, learner = x))
+#     instance = resampling$clone(deep = TRUE)
+# resample_dml = function(task, learner, resampling, store_models = FALSE){
+    # task = mlr3::assert_task(as_task(task, clone = TRUE))
+    # checkmate::check_list(learner)
+    # learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
+    # resampling = mlr3::assert_resampling(as_resampling(resampling))
+    # mlr3::assert_flag(store_models)
+    # # lapply(learner, function(x) mlr3::assert_learnable(task, learner = x))
+    # instance = resampling$clone(deep = TRUE)
+#     if (!instance$is_instantiated) {
+#         instance = instance$instantiate(task)
+#     }
+#     n = instance$iters
+#     if (use_future()) {
+#         lg$debug("Running resample() via future with %i iterations", 
+#             n)
+#         res = future.apply::future_lapply(seq_len(n), workhorse, ### how to proceed here?
+#             task = task, learner = learner, resampling = instance, 
+#             store_models = store_models, lgr_threshold = lg$threshold, 
+#             future.globals = FALSE, future.scheduling = structure(TRUE, 
+#                 ordering = "random"), future.packages = "mlr3")
+#     }
+#     else {
+#         lg$debug("Running resample() sequentially with %i iterations", 
+#             n)
+#         res = lapply(learner, function(x) workhorse, task = task, learner = x,
+#             resampling = instance, store_models = store_models)
+#     }
+#     res = map_dtr(res, reassemble, learner = learner)
+#     res[, `:=`(c("task", "resampling", "iteration"), 
+#         list(list(task), list(instance), seq_len(n)))]
+#     ResampleResult$new(res)
+# }
+# <bytecode: 0x000001f8c340bb18>
+# <environment: namespace:mlr3> 
+# }
+# 
+# 
+
 
 
