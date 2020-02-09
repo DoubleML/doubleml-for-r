@@ -28,11 +28,11 @@ extract_prob_prediction = function(obj_resampling) {
 initiate_learner = function(mlmethod, params) {
   learner <- mlr3::lrn(mlmethod)
   
-  if (!is.null(params)){
+  if (!is.null(params) & length(params) != 0){
   learner$param_set$values <- params
   }
   
-  else if (is.null(params)){
+  else if (is.null(params) | length(params) == 0){
     message("No parameters provided for learners. Default values are used.")
   }
   
