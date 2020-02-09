@@ -7,8 +7,8 @@
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   initialize = function(n_folds,
                         ml_learners,
-                        params = list(params_m = list(NULL),
-                                      params_g = list(NULL)),
+                        params = list(params_m = list(),
+                                      params_g = list()),
                         dml_procedure,
                         inf_model,
                         se_reestimate=FALSE,
