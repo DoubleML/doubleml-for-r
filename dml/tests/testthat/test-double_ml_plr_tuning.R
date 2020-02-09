@@ -79,8 +79,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                           ParamDbl$new("cp", lower = 0.001, upper = 0.1),
                           ParamInt$new("minsplit", lower = 1, upper = 10)))
   
-  double_mlplr_obj_tuned$param_set_g = tune_ps
-  double_mlplr_obj_tuned$param_set_m = tune_ps
+  double_mlplr_obj_tuned$param_set$param_set_g = tune_ps
+  double_mlplr_obj_tuned$param_set$param_set_m = tune_ps
 
   double_mlplr_obj_tuned$tune(data_plr[[i_setting]], y = "y", d = "d")
   
@@ -94,7 +94,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   boot_theta_obj_tuned = double_mlplr_obj_tuned$boot_coef
   
   
-  # which restrictions to test?
+  # restrictions to test?
+  
   }
 )
 
