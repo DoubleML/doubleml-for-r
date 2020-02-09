@@ -7,14 +7,14 @@
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   initialize = function(n_folds,
                         ml_learners,
-                        params = list(params_m = list(),
-                                      params_g = list()),
+                        params = list(params_m = list(NULL),
+                                      params_g = list(NULL)),
                         dml_procedure,
                         inf_model,
                         se_reestimate=FALSE,
                         n_rep_cross_fit=1, 
-                        param_set_g = NULL,
-                        param_set_m = NULL,
+                        param_set = list(param_set_m = list(),
+                                           param_set_g = list()),
                         tune_settings = list(n_folds_tune = 5,
                                         n_rep_tune = 1, 
                                         rsmp_tune = "cv", 
@@ -35,8 +35,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                inf_model,
                                se_reestimate,
                                n_rep_cross_fit, 
-                               param_set_g,
-                               param_set_m,
+                               param_set,
                                tune_settings, 
                                param_tuning)
   }
@@ -113,10 +112,10 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   }, 
-  tune_params = function(data, smpls, y, d, param_set_g, param_set_m, tune_settings, ...){
+  tune_params = function(data, smpls, y, d, param_set, tune_settings, ...){
     
-    checkmate::check_class(param_set_g, "ParamSet")    
-    checkmate::check_class(param_set_m, "ParamSet")
+    checkmate::check_class(param_set$param_set_g, "ParamSet")    
+    checkmate::check_class(param_set$param_set_m, "ParamSet")
     
     data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
 
@@ -149,7 +148,7 @@ private = list(
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measures = measure_g,
-                                          param_set = param_set_g,
+                                          param_set = param_set$param_set_g,
                                           terminator = terminator))
     
     tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
@@ -164,7 +163,7 @@ private = list(
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measures = measure_m,
-                                          param_set = param_set_m,
+                                          param_set = param_set$param_set_m,
                                           terminator = terminator))
     
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))

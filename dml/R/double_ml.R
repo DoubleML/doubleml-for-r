@@ -14,8 +14,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   se = NULL,
   se_reestimate = FALSE,
   boot_coef = NULL,
-  param_set_g = NULL, 
-  param_set_m = NULL,
+  param_set = NULL, 
   tune_settings = NULL,
   param_tuning = NULL,
   initialize = function(...) {
@@ -104,7 +103,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
-        # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting
+        # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
         #  ! important ! tuned params must exactly correspond to training samples
         # TBD: user friendly way to pass (pre-)trained parameters
         # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
@@ -112,8 +111,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
         self$param_tuning = private$tune_params(data, private$get__smpls(),
-                                              y, d[i_treat], z, param_set_g = self$param_set_g, 
-                                                                param_set_m = self$param_set_m, 
+                                              y, d[i_treat], z, param_set = self$param_set, 
                                                 tune_settings = self$tune_settings)
         
         self$params = list(params_g = extract_tuned_params(self$param_tuning$tuning_result_g),
@@ -144,8 +142,7 @@ private = list(
                         inf_model,
                         se_reestimate,
                         n_rep_cross_fit,
-                        param_set_g,
-                        param_set_m,
+                        param_set,
                         tune_settings, 
                         param_tuning) {
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
@@ -163,8 +160,7 @@ private = list(
     self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
-    self$param_set_g <- param_set_g
-    self$param_set_m <- param_set_m
+    self$param_set <- param_set
     self$tune_settings <- tune_settings
     self$param_tuning <- param_tuning
     
