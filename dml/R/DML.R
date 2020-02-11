@@ -16,7 +16,7 @@
 
 # Preliminary implementation of Inference task (basic input + output, ignore OOP first)
 
-DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
+DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
                           mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
@@ -24,17 +24,6 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
                           ...){
 
   
-  # if (is.null(ResampleInstance)) {
-  # 
-  #   if (is.null(resampling)) {
-  #   resampling <-  mlr::makeResampleDesc("CV", iters = k)
-  #   }
-  # }
-  if (is.null(resampling)) {
-    resampling <- mlr3::ResamplingCV$new()
-    resampling$param_set$values$folds = k
-  }
-    
   # if(S > 1 & !is.null(ResampleInstance)) {
   #   
   #   message("ResampleInstance is not passed for repeated cross-fitting! Resampling is based on ResampleIncstance$desc.")
@@ -104,8 +93,12 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
   # }
   # 
   
+  if (is.null(smpls)) {
+    smpls <- lapply(1:S, function(x) sample_splitting(k, data))
+  }
+  
   for (s in seq(S)){
-    
+    this_smpls = smpls[[s]]
 
     for (j in seq(p1)) {
       
@@ -116,7 +109,7 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
       # tbd: implementation of object orientation -> from here jump to plr, ...
       
       res_j <- dml_plr(data = data, y = y, d = d[j],
-                    resampling = resampling,  
+                       smpls = this_smpls,  
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
                     params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
                     inf_model = inf_model, se_type = se_type,

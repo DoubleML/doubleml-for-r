@@ -19,12 +19,14 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()), 
+dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()), 
                     dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
                     inf_model = "LATE", se_type = "LATE",
                     bootstrap = "normal",  nRep = 500, ...) {
   
-  smpls = sample_splitting(k, resampling, data)
+  if (is.null(smpls)) {
+    smpls = sample_splitting(k, data)
+  }
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
   

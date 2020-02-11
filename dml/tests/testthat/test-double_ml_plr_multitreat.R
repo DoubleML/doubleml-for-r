@@ -27,18 +27,17 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   set.seed(i_setting)
   # To get matching results with the oop we instatiate the resampling here in
   # order to get the same sample split for all treatment variables
-  dummy_task = Task$new('dummy_resampling', 'regr', data_plr_multi[[i_setting]])
-  resampling <- rsmp("cv", folds = n_folds)$instantiate(dummy_task)
-  train_sets <- lapply(1:n_folds, function(x) resampling$train_set(x))
-  test_sets <- lapply(1:n_folds, function(x) resampling$test_set(x))
-  resampling <- rsmp("custom")$instantiate(dummy_task,
-                                           train_sets,
-                                           test_sets)
+  #dummy_task = Task$new('dummy_resampling', 'regr', data_plr_multi[[i_setting]])
+  #resampling <- rsmp("cv", folds = n_folds)$instantiate(dummy_task)
+  #train_sets <- lapply(1:n_folds, function(x) resampling$train_set(x))
+  #test_sets <- lapply(1:n_folds, function(x) resampling$test_set(x))
+  #resampling <- rsmp("custom")$instantiate(dummy_task,
+  #                                         train_sets,
+  #                                         test_sets)
   
   plr_hat <- DML(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
                  model = "plr",
                  k = n_folds, S = 1,
-                 resampling = resampling,
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
