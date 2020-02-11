@@ -80,14 +80,17 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   n_iters <- resampling_scheme$iters
   train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
   test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
-
+  
+  resampling_g <- mlr3::rsmp("custom")
+  resampling_g$instantiate(task_g, train_ids, test_ids)
+  
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
   ml_g <- mlr3::lrn(mlmethod$mlmethod_g)
   ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
     
    # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
-  r_g <- mlr3::resample(task_g, ml_g, resampling_scheme, store_models = TRUE)
+  r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
   
   # # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
   # g_hat_list <- r_g$data$prediction
@@ -150,9 +153,9 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
   #   stop('Resampling instances not equal')
   # }
-  if ( (resampling_scheme$iters != resampling_m$iters) ||
-       (resampling_scheme$iters != resampling_r$iters) ||
-       (resampling_scheme$iters != n_iters) ||
+  if ( (resampling_g$iters != resampling_m$iters) ||
+       (resampling_g$iters != resampling_r$iters) ||
+       (resampling_g$iters != n_iters) ||
        (resampling_m$iters != n_iters) ||
        (resampling_r$iters != n_iters) ||
        (!identical(train_ids, train_ids_m)) ||

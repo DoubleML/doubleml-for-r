@@ -78,18 +78,21 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
   test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
   
+  resampling_m <- mlr3::rsmp("custom")
+  resampling_m$instantiate(task_m, train_ids, test_ids)
+  
   # train and test ids according to status of d
   # in each fold, select those with d = 0
   train_ids_0 <- lapply(1:n_iters, function(x) 
-                    resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 0])
+                    resampling_m$train_set(x)[data[resampling_m$train_set(x), d] == 0])
   # in each fold, select those with d = 0
   train_ids_1 <- lapply(1:n_iters, function(x) 
-                    resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 1])
+                    resampling_m$train_set(x)[data[resampling_m$train_set(x), d] == 1])
   
   ml_m <- mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
   ml_m$param_set$values <- params$params_m # tbd: check if parameter passing really works
   # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  r_m <- mlr3::resample(task_m, ml_m, resampling_scheme, store_models = TRUE)
+  r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
   # m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
   # # m_hat_list <- mlr::getRRPredictionList(r_m)
@@ -145,9 +148,9 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   g1_hat_list <- lapply(r_g1$data$prediction, function(x) x$test$response)
 
   
-  if ( (resampling_scheme$iters != resampling_g0$iters) ||
-       (resampling_scheme$iters != resampling_g1$iters) ||
-       (resampling_scheme$iters != n_iters) ||
+  if ( (resampling_m$iters != resampling_g0$iters) ||
+       (resampling_m$iters != resampling_g1$iters) ||
+       (resampling_m$iters != n_iters) ||
        (resampling_g1$iters != n_iters) ||
        (resampling_g0$iters != n_iters) ||
        (!identical(train_ids_0, train_ids_g0)) ||
