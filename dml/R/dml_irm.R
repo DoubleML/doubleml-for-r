@@ -21,12 +21,11 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
                     dml_procedure = "dml2",
                     inf_model = "ATE", se_type = "ATE",
                     bootstrap = "normal",  nRep = 500, ...) {
-
-  # function not yet fully implemented (test)
-  if (!is.null(resampling)) {
-    checkmate::check_class(resampling, "ResamplingCV")
-  }
-  # tbd. if (is.null(resampling))
+  
+  smpls = sample_splitting(resampling, data)
+  train_ids = smpls$train_ids
+  test_ids = smpls$test_ids
+  
   checkmate::checkDataFrame(data)
 
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
@@ -49,37 +48,10 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   data_m[, d] <- factor(data_m[, d])
   task_m <- mlr3::TaskClassif$new(id = paste0("nuis_p_", d), backend = data_m,
                                     target = d, positive = "1")
-
-  if (is.null(resampling)) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- k
-  }
-  
-  # tbd: handling of resampling 
-  if (!resampling$is_instantiated) {
-    resampling_scheme <- resampling$clone()
-    resampling_scheme <- resampling_scheme$instantiate(task_m)
-  }
-  
-  if (!is.null(resampling) & resampling$is_instantiated) {
-    # skip re-instantiation in case of a ResamplingCustom object that was already instatiated (see also multi-treatment unit test)
-    if (resampling$id == 'custom'){
-      resampling_scheme = resampling
-    } else {
-      resampling_scheme <- mlr3::ResamplingCV$new()
-      resampling_scheme$param_set$values$folds <- resampling$iters
-      message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
-    }
-  } # tbd: else 
-  
-  
-  n_iters <- resampling_scheme$iters
-  # tbd: ensure that train_ids and test_ids are integers
-  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
-  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
   
   resampling_m <- mlr3::rsmp("custom")
   resampling_m$instantiate(task_m, train_ids, test_ids)
+  n_iters <- resampling_m$iters
   
   # train and test ids according to status of d
   # in each fold, select those with d = 0

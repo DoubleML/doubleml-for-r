@@ -39,5 +39,42 @@ se_repeated <- function(se_s, coefficients, theta_s, aggreg_median) {
 }
 
 
+sample_splitting <- function(resampling, data) {
+  
+  # function not yet fully implemented (test)
+  if (!is.null(resampling)) {
+    checkmate::check_class(resampling, "ResamplingCV")
+  }
+  
+  if (is.null(resampling)) {
+    resampling_scheme <- mlr3::ResamplingCV$new()
+    resampling_scheme$param_set$values$folds <- k
+  }
+  
+  # tbd: handling of resampling 
+  if (!resampling$is_instantiated) {
+    resampling_scheme <- resampling$clone()
+    dummy_task = Task$new('dummy_resampling', 'regr', data)
+    resampling_scheme <- resampling_scheme$instantiate(dummy_task)
+  }
+  
+  if (!is.null(resampling) & resampling$is_instantiated) {
+    # skip re-instantiation in case of a ResamplingCustom object that was already instatiated (see also multi-treatment unit test)
+    if (resampling$id == 'custom'){
+      resampling_scheme = resampling
+    } else {
+      resampling_scheme <- mlr3::ResamplingCV$new()
+      resampling_scheme$param_set$values$folds <- resampling$iters
+      message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
+    }
+  } # tbd: else 
+  
+  n_iters <- resampling_scheme$iters
+  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
+  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
+  
+  return(list(train_ids = train_ids, test_ids = test_ids))
+}
+
 
   
