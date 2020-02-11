@@ -84,9 +84,14 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   }
   
   if (!is.null(resampling) & resampling$is_instantiated) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- resampling$iters
-    message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
+    # skip re-instantiation in case of a ResamplingCustom object that was already instatiated (see also multi-treatment unit test)
+    if (resampling$id == 'custom'){
+      resampling_scheme = resampling
+    } else {
+      resampling_scheme <- mlr3::ResamplingCV$new()
+      resampling_scheme$param_set$values$folds <- resampling$iters
+      message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
+    }
   } # tbd: else 
   
   n_iters <- resampling_scheme$iters
