@@ -22,7 +22,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
                     inf_model = "IV-type", se_type = "ls",
                     bootstrap = "normal",  nRep = 500, ...) {
   
-  smpls = sample_splitting(resampling, data)
+  smpls = sample_splitting(k, resampling, data)
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
   

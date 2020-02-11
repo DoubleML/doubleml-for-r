@@ -24,7 +24,7 @@ dml_irmiv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, params 
                     inf_model = "LATE", se_type = "LATE",
                     bootstrap = "normal",  nRep = 500, ...) {
   
-  smpls = sample_splitting(resampling, data)
+  smpls = sample_splitting(k, resampling, data)
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
   

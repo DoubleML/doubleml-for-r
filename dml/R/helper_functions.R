@@ -39,7 +39,7 @@ se_repeated <- function(se_s, coefficients, theta_s, aggreg_median) {
 }
 
 
-sample_splitting <- function(resampling, data) {
+sample_splitting <- function(k, resampling, data) {
   
   # function not yet fully implemented (test)
   if (!is.null(resampling)) {
@@ -47,8 +47,8 @@ sample_splitting <- function(resampling, data) {
   }
   
   if (is.null(resampling)) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- k
+    resampling <- mlr3::ResamplingCV$new()
+    resampling$param_set$values$folds <- k
   }
   
   # tbd: handling of resampling 

@@ -24,7 +24,7 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
                     inf_model = "partialling-out", se_type = "partialling-out",
                     bootstrap = "normal",  nRep = 500, ...) {
   
-  smpls = sample_splitting(resampling, data)
+  smpls = sample_splitting(k, resampling, data)
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
