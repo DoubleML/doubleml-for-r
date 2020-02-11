@@ -34,23 +34,6 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   n <- nrow(data)
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
-  
-  # if (is.null(ResampleInstance)) {
-  #   n_iters <- resampling$iters
-  #   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
-  #   }
-  # 
-  # else {
-  # 
-  #   if (!is.null(resampling)) {
-  #     message("Options in 'resampling' are overwritten by options specified for 'ResampleInstance'")
-  #   }
-  # 
-  #   rin <- ResampleInstance
-  #   resampling <- rin$desc
-  #   n_iters <- resampling$iters
-  # 
-  #   }
 
    if (se_type != "ls") {
     se_type <- inf_model
