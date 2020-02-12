@@ -43,7 +43,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, params, ...) {
+  ml_nuisance_and_score_elements = function(data, smpls, y, d, z = NULL, params, ...) {
     
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", d), data, 
