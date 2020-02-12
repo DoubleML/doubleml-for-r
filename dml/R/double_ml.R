@@ -10,6 +10,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   dml_procedure = NULL,
   inf_model = NULL,
   n_rep_cross_fit = 1,
+  n_nuisance = NULL,
   coef = NULL,
   se = NULL,
   se_reestimate = FALSE,
@@ -141,6 +142,7 @@ private = list(
                         inf_model,
                         se_reestimate,
                         n_rep_cross_fit,
+                        n_nuisance,
                         param_set,
                         tune_settings, 
                         param_tuning) {
@@ -159,6 +161,7 @@ private = list(
     self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
+    self$n_nuisance <- n_nuisance
     self$param_set <- param_set
     self$tune_settings <- tune_settings
     self$param_tuning <- param_tuning
@@ -186,6 +189,14 @@ private = list(
   initialize_boot_arrays = function(n_rep, n_rep_cross_fit) {
     private$n_rep_boot = n_rep
     self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep_cross_fit))
+  },
+  initialize_lists = function(n_treat,
+                              n_rep_cross_fit, 
+                              n_nuisance) {
+    # set dimensions as private properties before initializing arrays
+    private$n_treat = n_treat
+    
+    private$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
