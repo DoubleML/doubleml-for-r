@@ -43,7 +43,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, ...) {
+  ml_nuisance_and_score_elements = function(data, smpls, y, d, params, ...) {
     
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", d), data, 
@@ -55,16 +55,16 @@ private = list(
       
     if (is.null(self$param_tuning)){
       
-      if (length(self$params$params_g)==0){
+      if (length(params$params_g)==0){
         message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
       }
       
-      if (length(self$params$params_m)==0){
+      if (length(params$params_m)==0){
         message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
       }
       
       ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
-                               self$params$params_g)
+                               params$params_g)
   
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
@@ -74,7 +74,7 @@ private = list(
       
 
       ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
-                               self$params$params_m)
+                               params$params_m)
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
@@ -83,14 +83,14 @@ private = list(
     }
     
     else if (!is.null(self$param_tuning)){
-      ml_g <- lapply(self$params$params_g, function(x) initiate_learner(self$ml_learners$mlmethod_g, 
+      ml_g <- lapply(params$params_g, function(x) initiate_learner(self$ml_learners$mlmethod_g, 
                                                                         x))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat)
       
-      ml_m <- lapply(self$params$params_m, function(x) initiate_learner(self$ml_learners$mlmethod_m, 
+      ml_m <- lapply(params$params_m, function(x) initiate_learner(self$ml_learners$mlmethod_m, 
                                                                         x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)

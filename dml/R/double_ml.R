@@ -43,7 +43,8 @@ DoubleML <- R6Class("DoubleML", public = list(
         # ml estimation of nuisance models and computation of score elements
         scores = private$ml_nuisance_and_score_elements(data,
                                                         private$get__smpls(),
-                                                        y, d[i_treat], z)
+                                                        y, d[i_treat], z, 
+                                                        private$get__params())
         private$set__score_a(scores$score_a)
         private$set__score_b(scores$score_b)
         
@@ -92,7 +93,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     n_treat = length(d)
     
     # TBD: prepare output of parameter tuning (dimensions: n_folds x n_rep_cross_fit)
-    private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
+    private$initialize_list(n_treat, self$n_rep_cross_fit, self$n_nuisance) 
     
     if (is.null(private$smpls)) {
       private$split_samples(data)
@@ -222,6 +223,7 @@ private = list(
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
+  get__params = function() private$params[[private$i_rep]][[private$i_treat]],
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("repeated_cv",
