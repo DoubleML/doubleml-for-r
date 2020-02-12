@@ -314,11 +314,18 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
       boot_theta <- boot$boot_theta
     }
   }
-
+  
+  
+  all_preds = list(p_hat_list = p_hat_list,
+                   mu0_hat_list = mu0_hat_list,
+                   mu1_hat_list = mu1_hat_list,
+                   m0_hat = m0_hat,
+                   m1_hat = m1_hat)
 
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta)
+               boot_se = boot_se, boot_theta = boot_theta,
+               all_preds = all_preds)
   
   class(res) <- "DML"
   return(res)

@@ -237,11 +237,15 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
       boot_theta <- boot$boot_theta
     }
   }
-
+  
+  all_preds = list(m_hat_list = m_hat_list,
+                   g_hat_list = g_hat_list,
+                   r_hat_list = r_hat_list)
 
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta)
+               boot_se = boot_se, boot_theta = boot_theta,
+               all_preds)
   
   class(res) <- "DML"
   return(res)
