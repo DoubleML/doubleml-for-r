@@ -33,7 +33,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     if (is.null(private$smpls)) {
       private$split_samples(data)
     }
-    
+
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
       
@@ -113,9 +113,10 @@ DoubleML <- R6Class("DoubleML", public = list(
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
         self$param_tuning = private$tune_params(data, private$get__smpls(),
-                                              y, d[i_treat], z, param_set = self$param_set, 
+                                                y, d[i_treat], z, param_set = self$param_set, 
                                                 tune_settings = self$tune_settings)
         
+        # here: set__params()
         self$params = self$param_tuning$params
 
       }
@@ -223,7 +224,15 @@ private = list(
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
-  get__params = function() private$params[[private$i_rep]][[private$i_treat]],
+  get__params = function(){
+    if (length(self$params) == self$n_nuisance){
+      params = self$params
+    }
+    else {
+      params = self$params[[private$i_rep]][[private$i_treat]]
+    }
+    return(params)
+    },
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("repeated_cv",
