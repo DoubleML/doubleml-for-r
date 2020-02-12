@@ -44,7 +44,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         scores = private$ml_nuisance_and_score_elements(data,
                                                         private$get__smpls(),
                                                         y, d[i_treat], z, 
-                                                        private$get__params())
+                                                        params = private$get__params())
         private$set__score_a(scores$score_a)
         private$set__score_b(scores$score_b)
         
@@ -225,7 +225,11 @@ private = list(
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
   get__params = function(){
-    if (length(self$params) == self$n_nuisance){
+    
+    if (is.null(self$params)){
+      params = list()
+    }
+    else if (length(self$params) == self$n_nuisance){
       params = self$params
     }
     else {
