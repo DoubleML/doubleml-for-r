@@ -92,8 +92,8 @@ DoubleML <- R6Class("DoubleML", public = list(
     n_obs = dim(data)[1]
     n_treat = length(d)
     
-    # TBD: prepare output of parameter tuning (dimensions: n_folds x n_rep_cross_fit)
-    private$initialize_list(n_treat, self$n_rep_cross_fit, self$n_nuisance) 
+    # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
+    private$initialize_lists(n_treat, self$n_rep_cross_fit, self$n_nuisance) 
     
     if (is.null(private$smpls)) {
       private$split_samples(data)
@@ -112,12 +112,14 @@ DoubleML <- R6Class("DoubleML", public = list(
         #      e.g., in seperate function (tune_mlr3)...
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
-        self$param_tuning = private$tune_params(data, private$get__smpls(),
+        param_tuning = private$tune_params(data, private$get__smpls(),
                                                 y, d[i_treat], z, param_set = self$param_set, 
                                                 tune_settings = self$tune_settings)
         
         # here: set__params()
-        self$params = self$param_tuning$params
+        private$set__params(param_tuning)
+        
+        #self$params = self$param_tuning$params
 
       }
     }
@@ -198,7 +200,8 @@ private = list(
     # set dimensions as private properties before initializing arrays
     private$n_treat = n_treat
     
-    private$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
+    self$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
+    self$param_tuning = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
@@ -237,6 +240,10 @@ private = list(
     }
     return(params)
     },
+  set__params = function(tuning_params){
+    self$params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
+    self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+  },
   split_samples = function(data) {
     dummy_task = Task$new('dummy_resampling', 'regr', data)
     dummy_resampling_scheme <- rsmp("repeated_cv",

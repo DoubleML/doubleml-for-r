@@ -170,10 +170,10 @@ private = list(
     
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
     
-    tuning_result = list(tuning_result_g = tuning_result_g, 
-                         tuning_result_m = tuning_result_m, 
+    tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
+                                              tuning_result_m = tuning_result_m),
                          params = list(params_g = extract_tuned_params(tuning_result_g), 
-                              params_m = extract_tuned_params(tuning_result_m)))
+                                       params_m = extract_tuned_params(tuning_result_m)))
     
     return(tuning_result)
     
