@@ -36,6 +36,17 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
+  boot_theta = matrix(NA, nrow = p1, ncol = n_rep_boot)
+  d = c('d1', 'd2', 'd3')
+  p1 = length(d)
+  for (j in seq(p1)) {
+    boot_theta[j,] <- dml_plr_boot(data_plr_multi[[i_setting]], y = "y", d = d[j],
+                                   theta = plr_hat$theta_s[d[j],1], se = plr_hat$se_s[d[j],1], all_preds = plr_hat$all_preds[[1]][[j]],
+                                   dml_procedure = dml_procedure,
+                                   inf_model = inf_model, se_type = inf_model,
+                                   bootstrap = "normal",  nRep = n_rep_boot)
+  }
+  plr_hat$boot_theta <- boot_theta
   
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
@@ -48,9 +59,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
   
+  # bootstrap
+  double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  boot_theta_obj = double_mlplr_obj$boot_coef
+  
   # at the moment the object result comes without a name
   expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
   expect_equal(se, c(d=se_obj), tolerance = 1e-8)
+  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }
 )
