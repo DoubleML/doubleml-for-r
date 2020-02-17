@@ -156,19 +156,8 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
                         v_hatd = v_hatd, inf_model = inf_model, se_type = se_type,
                         dml_procedure = dml_procedure))
     
-    
-    t <- theta/se 
-    
+    t <- theta/se
     pval <-  2 * stats::pnorm(-abs(t))
-    
-    if (bootstrap != "none") {
-      
-      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
-                              v_hatd = v_hatd, inf_model = inf_model, se = se,
-                              bootstrap = bootstrap, nRep = nRep)
-  #    boot_se <- sqrt(boot$boot_var)
-      boot_theta <- boot$boot_theta
-    }
     
   }
   
@@ -197,21 +186,13 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
                         v_hatd = v_hatd, inf_model = inf_model, se_type = se_type, 
                         dml_procedure = dml_procedure))
     
-    t <- theta/se 
-    
+    t <- theta/se
     pval <-  2 * stats::pnorm(-abs(t))
-    
-    if (bootstrap != "none") {
-      
-      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
-                              v_hatd = v_hatd, inf_model = inf_model, se = se,
-                              bootstrap = bootstrap, nRep = nRep)
-  #    boot_se <- sqrt(boot$boot_var)
-      boot_theta <- boot$boot_theta
-    }
   }
 
-  all_preds = list(m_hat_list = m_hat_list, g_hat_list = g_hat_list)
+  all_preds = list(m_hat_list = m_hat_list,
+                   g_hat_list = g_hat_list,
+                   smpls = smpls)
 
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
@@ -222,6 +203,77 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   return(res)
 }
 
+#' @export
+dml_plr_boot <- function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
+                          inf_model = "IV-type", se_type = "ls",
+                          bootstrap = "normal",  nRep = 500) {
+  
+  m_hat_list <- all_preds$m_hat_list
+  g_hat_list <- all_preds$g_hat_list
+  
+  smpls <- all_preds$smpls
+  train_ids <- smpls$train_ids
+  test_ids <- smpls$test_ids
+  
+  n_iters = length(test_ids)
+  n_k <- vapply(test_ids, length, double(1L))
+  
+  n <- nrow(data)
+  D <- data[ , d]
+  Y <- data[ , y]
+  
+  # DML 1
+  if ( dml_procedure == "dml1") {
+    v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+    
+    for (i in 1:n_iters) {
+      test_index = test_ids[[i]]
+      
+      m_hat <- m_hat_list[[i]]
+      g_hat <- g_hat_list[[i]]
+      
+      d_k[, i] <- D[test_index]
+      v_hat[, i] <- D[test_index] - m_hat
+      u_hat[, i]  <- Y[test_index] - g_hat
+      v_hatd[, i]  <- v_hat[, i]*D[test_index]
+    }
+    
+    if (bootstrap != "none") {
+      
+      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
+                            v_hatd = v_hatd, inf_model = inf_model, se = se,
+                            bootstrap = bootstrap, nRep = nRep)
+      boot_theta <- boot$boot_theta
+    }
+  }
+  
+  if ( dml_procedure == "dml2") {
+    
+    v_hat <- u_hat <- v_hatd <- matrix(NA, nrow = n, ncol = 1)
+    
+    for (i in 1:n_iters){
+      test_index = test_ids[[i]]
+      
+      m_hat = m_hat_list[[i]]
+      g_hat = g_hat_list[[i]]
+      
+      v_hat[test_index, 1] <- D[test_index] - m_hat
+      u_hat[test_index, 1] <- Y[test_index] - g_hat
+      v_hatd[test_index, 1] <- v_hat[test_index]*D[test_index]
+      
+    }
+    
+    if (bootstrap != "none") {
+      
+      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
+                            v_hatd = v_hatd, inf_model = inf_model, se = se,
+                            bootstrap = bootstrap, nRep = nRep)
+      boot_theta <- boot$boot_theta
+    }
+  }
+  
+  return(boot_theta)
+}
 
 
 #' Orthogonalized Estimation of Coefficient in PLR

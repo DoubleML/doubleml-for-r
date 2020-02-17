@@ -44,6 +44,8 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
   boot_theta <- matrix(NA, nrow = p1, ncol = nRep * S)
   boot_list <- rep(list(), S)
   
+  all_preds <- list()
+  
   # 
   # if ( length(mlmethod$mlmethod_m) == 1 & p1 > 1) {
   #   mlmethod$mlmethod_m <- rep(mlmethod$mlmethod_m, p1)
@@ -122,13 +124,16 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
       boot_se[j] <- res_j$boot_se
       boot_theta_s[j,] <- res_j$boot_theta
       
+      all_preds[[j]] <- res_j$all_preds
+      
     }
     
   names(coefficients) <- names(se) <- names(t) <- names(pval) <- 
     names(boot_se) <- rownames(boot_theta_s) <- d
 
   res[[s]] <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta_s, samplesize = n)
+               boot_se = boot_se, boot_theta = boot_theta_s, samplesize = n,
+               all_preds = all_preds)
   
   }
   
@@ -162,12 +167,14 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
   pval <- 2 * stats::pnorm(-abs(t))
   
   boot_list <- lapply(res, function(x) x$boot_theta)
+  all_preds <- lapply(res,function(x) x$all_preds)
   boot_theta <- matrix(unlist(boot_list), ncol = nRep * S)
     
   names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- rownames(boot_theta) <- d
   res <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
                boot_se = boot_se, boot_theta = boot_theta, samplesize = n,
-               theta_s = theta_s, se_s = se_s)
+               theta_s = theta_s, se_s = se_s,
+               all_preds = all_preds)
   
   class(res) <- "DML"
   

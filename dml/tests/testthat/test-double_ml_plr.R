@@ -36,6 +36,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
+  plr_hat$boot_theta <- dml_plr_boot(data_plr[[i_setting]], y = "y", d = "d",
+                                     theta = theta, se = se, all_preds = plr_hat$all_preds[[1]][[1]],
+                                     dml_procedure = dml_procedure,
+                                     inf_model = inf_model, se_type = inf_model,
+                                     bootstrap = "normal",  nRep = n_rep_boot)
+  
   
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
