@@ -69,7 +69,7 @@ private = list(
     
     r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
     
-    g0_hat = extract_prediction(r_g0)
+    g0_hat = extract_prediction(r_g0)$response
     
     # g1
     task_g1 <- initiate_regr_task(paste0("nuis_g1_", y), data,
@@ -81,7 +81,7 @@ private = list(
     
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     
-    g1_hat = extract_prediction(r_g1)
+    g1_hat = extract_prediction(r_g1)$response
     
     D <- data[ , d]
     Y <- data[ , y]

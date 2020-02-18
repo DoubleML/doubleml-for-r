@@ -45,7 +45,7 @@ private = list(
     
     r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     
-    g_hat = extract_prediction(r_g)
+    g_hat = extract_prediction(r_g)$response
     
     
     # nuisance m
@@ -61,7 +61,7 @@ private = list(
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
-    m_hat = extract_prediction(r_m)
+    m_hat = extract_prediction(r_m)$response
     
     
     # nuisance r
@@ -77,7 +77,7 @@ private = list(
     
     r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
     
-    r_hat = extract_prediction(r_r)
+    r_hat = extract_prediction(r_r)$response
     
     
     D <- data[ , d]

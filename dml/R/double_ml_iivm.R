@@ -75,7 +75,7 @@ private = list(
     
     r_mu0 <- mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
     
-    mu0_hat = extract_prediction(r_mu0)
+    mu0_hat = extract_prediction(r_mu0)$response
     
     # mu1
     task_mu1 <- initiate_regr_task(paste0("nuis_mu1_", y), data,
@@ -87,7 +87,7 @@ private = list(
     
     r_mu1 <- mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
     
-    mu1_hat = extract_prediction(r_mu1)
+    mu1_hat = extract_prediction(r_mu1)$response
     
     # nuisance m
     task_m0 <- initiate_classif_task(paste0("nuis_m0_", d), data,
