@@ -19,8 +19,7 @@
 dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "IV-type", se_type = "ls",
-                    bootstrap = "normal",  nRep = 500, ...) {
+                    inf_model = "IV-type", se_type = "ls", ...) {
   
   if (is.null(smpls)) {
     smpls = sample_splitting(k, data)
@@ -34,7 +33,6 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   # tbd: parameter passing
   n <- nrow(data)
   theta <- se <- te <- pval <- boot_se <- NA
-  boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
    if (se_type != "ls") {
     se_type <- inf_model
@@ -125,8 +123,7 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
 
   # DML 1
   if ( dml_procedure == "dml1") {
-    thetas <- vars <- boot_vars <-  rep(NA, n_iters)
-    boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
+    thetas <- vars <-  rep(NA, n_iters)
     se_i <- NA
     
     v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
@@ -194,9 +191,8 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
                    g_hat_list = g_hat_list,
                    smpls = smpls)
 
-  names(theta) <- names(se) <- names(boot_se) <- d
+  names(theta) <- names(se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta,
                all_preds = all_preds)
   
   class(res) <- "DML"

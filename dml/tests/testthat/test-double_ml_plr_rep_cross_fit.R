@@ -32,20 +32,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
-                 se_type = inf_model,
-                 bootstrap = "normal", nRep = n_rep_boot)
+                 se_type = inf_model)
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
-  boot_theta = matrix(NA, nrow = 1, ncol = n_rep_boot * n_rep_cross_fit)
-  for (s in seq(n_rep_cross_fit)){
-    boot_theta[1, ((s-1)*n_rep_boot+1):(s*n_rep_boot)] <- dml_plr_boot(data_plr[[i_setting]], y = "y", d = "d",
-                                     theta = plr_hat$theta_s[s], se = plr_hat$se_s[s], all_preds = plr_hat$all_preds[[s]][[1]],
-                                     dml_procedure = dml_procedure,
-                                     inf_model = inf_model, se_type = inf_model,
-                                     bootstrap = "normal",  nRep = n_rep_boot)
-  }
-  plr_hat$boot_theta <- boot_theta
+  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr[[i_setting]], y = "y", d = "d",
+                                      dml_procedure = dml_procedure,
+                                      inf_model = inf_model, se_type = inf_model,
+                                      bootstrap = "normal", nRep = n_rep_boot)
   
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,

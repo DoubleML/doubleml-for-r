@@ -20,18 +20,8 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
                           mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
-                          bootstrap = "normal", nRep = 500, aggreg_median = TRUE,
+                          aggreg_median = TRUE,
                           ...){
-
-  
-  # if(S > 1 & !is.null(ResampleInstance)) {
-  #   
-  #   message("ResampleInstance is not passed for repeated cross-fitting! Resampling is based on ResampleIncstance$desc.")
-  #   resampling <- ResampleInstance$desc
-  #   n_iters <- resampling$iters
-  #   
-  #   ResampleInstance <- NULL
-  #   }
   
   p1 <- length(d)
   n <- nrow(data)
@@ -40,9 +30,6 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
   theta_s <- se_s <- matrix(NA, nrow = p1, ncol = S)
    
   coefficients <- se <- t <- pval <- boot_se <- rep(NA, p1)
-  boot_theta_s <- matrix(NA, nrow = p1, ncol = nRep)
-  boot_theta <- matrix(NA, nrow = p1, ncol = nRep * S)
-  boot_list <- rep(list(), S)
   
   all_preds <- list()
   
@@ -114,26 +101,21 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
                        smpls = this_smpls,  
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
                     params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
-                    inf_model = inf_model, se_type = se_type,
-                    bootstrap = bootstrap, nRep = nRep, ...)
+                    inf_model = inf_model, se_type = se_type, ...)
       
       coefficients[j] <- res_j$coefficients
       se[j] <- res_j$se
       t[j] <- res_j$t
       pval[j] <- res_j$pval
-      boot_se[j] <- res_j$boot_se
-      boot_theta_s[j,] <- res_j$boot_theta
       
       all_preds[[j]] <- res_j$all_preds
       
     }
     
-  names(coefficients) <- names(se) <- names(t) <- names(pval) <- 
-    names(boot_se) <- rownames(boot_theta_s) <- d
+  names(coefficients) <- names(se) <- names(t) <- names(pval) <- d
 
   res[[s]] <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta_s, samplesize = n,
-               all_preds = all_preds)
+               samplesize = n, all_preds = all_preds)
   
   }
   
@@ -166,14 +148,11 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
   t <- coefficients/se
   pval <- 2 * stats::pnorm(-abs(t))
   
-  boot_list <- lapply(res, function(x) x$boot_theta)
   all_preds <- lapply(res,function(x) x$all_preds)
-  boot_theta <- matrix(unlist(boot_list), ncol = nRep * S)
     
-  names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- rownames(boot_theta) <- d
+  names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- d
   res <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta, samplesize = n,
-               theta_s = theta_s, se_s = se_s,
+               samplesize = n, theta_s = theta_s, se_s = se_s,
                all_preds = all_preds)
   
   class(res) <- "DML"

@@ -31,22 +31,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
-                 se_type = inf_model,
-                 bootstrap = "none", nRep = n_rep_boot) # deactivate bootstrap to prevent seed issues with multi-treat as bootstrap is done in between
+                 se_type = inf_model)
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
-  boot_theta = matrix(NA, nrow = p1, ncol = n_rep_boot)
-  d = c('d1', 'd2', 'd3')
-  p1 = length(d)
-  for (j in seq(p1)) {
-    boot_theta[j,] <- dml_plr_boot(data_plr_multi[[i_setting]], y = "y", d = d[j],
-                                   theta = plr_hat$theta_s[d[j],1], se = plr_hat$se_s[d[j],1], all_preds = plr_hat$all_preds[[1]][[j]],
-                                   dml_procedure = dml_procedure,
-                                   inf_model = inf_model, se_type = inf_model,
-                                   bootstrap = "normal",  nRep = n_rep_boot)
-  }
-  plr_hat$boot_theta <- boot_theta
+  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
+                                      dml_procedure = dml_procedure,
+                                      inf_model = inf_model, se_type = inf_model,
+                                      bootstrap = "normal", nRep = n_rep_boot)
   
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
