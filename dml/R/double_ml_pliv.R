@@ -12,18 +12,26 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
                         dml_procedure,
                         inf_model,
                         se_reestimate=FALSE,
-                        n_rep_cross_fit=1) {
+                        n_rep_cross_fit=1,
+                        n_nuisance = NULL, 
+                        param_set = NULL,
+                        tune_settings = list(),
+                        param_tuning = NULL) {
     super$initialize_double_ml(n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
                                inf_model,
                                se_reestimate,
-                               n_rep_cross_fit)
+                               n_rep_cross_fit,
+                               n_nuisance,
+                               param_set,
+                               tune_settings,
+                               param_tuning)
   }
 ),
 private = list(
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, z) {
+  ml_nuisance_and_score_elements = function(data, smpls, y, d, z, params) {
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
                                  skip_cols = c(d, z), target = y)
