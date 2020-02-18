@@ -13,7 +13,6 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                         inf_model,
                         se_reestimate=FALSE,
                         n_rep_cross_fit=1,
-                        n_nuisance = NULL, 
                         param_set = NULL,
                         tune_settings = list(),
                         param_tuning = NULL) {
@@ -24,13 +23,13 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                                inf_model,
                                se_reestimate,
                                n_rep_cross_fit,
-                               n_nuisance,
                                param_set,
                                tune_settings,
                                param_tuning)
   }
 ),
 private = list(
+  n_nuisance = 3,
   ml_nuisance_and_score_elements = function(data, smpls, y, d, params, ...) {
     
     # get ml learner

@@ -10,7 +10,6 @@ DoubleML <- R6Class("DoubleML", public = list(
   dml_procedure = NULL,
   inf_model = NULL,
   n_rep_cross_fit = 1,
-  n_nuisance = NULL,
   coef = NULL,
   se = NULL,
   se_reestimate = FALSE,
@@ -93,7 +92,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     n_treat = length(d)
     
     # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
-    private$initialize_lists(n_treat, self$n_rep_cross_fit, self$n_nuisance) 
+    private$initialize_lists(n_treat, self$n_rep_cross_fit, private$n_nuisance) 
     
     if (is.null(private$smpls)) {
       private$split_samples(data)
@@ -146,7 +145,6 @@ private = list(
                         inf_model,
                         se_reestimate,
                         n_rep_cross_fit,
-                        n_nuisance,
                         param_set,
                         tune_settings, 
                         param_tuning) {
@@ -165,7 +163,6 @@ private = list(
     self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
     self$n_rep_cross_fit <- n_rep_cross_fit
-    self$n_nuisance <- n_nuisance
     self$param_set <- param_set
     self$tune_settings <- tune_settings
     self$param_tuning <- param_tuning
@@ -232,7 +229,7 @@ private = list(
     if (is.null(self$params)){
       params = list()
     }
-    else if (length(self$params) == self$n_nuisance){
+    else if (length(self$params) == private$n_nuisance){
       params = self$params
     }
     else {

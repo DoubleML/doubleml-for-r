@@ -12,8 +12,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                         dml_procedure,
                         inf_model,
                         se_reestimate=FALSE,
-                        n_rep_cross_fit=1, 
-                        n_nuisance = 2, 
+                        n_rep_cross_fit=1,
                         param_set = list(param_set_m = list(),
                                            param_set_g = list()),
                         tune_settings = list(n_folds_tune = 5,
@@ -43,6 +42,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   }
 ),
 private = list(
+  n_nuisance = 2,
   ml_nuisance_and_score_elements = function(data, smpls, y, d, z = NULL, params, ...) {
     
     # nuisance g
