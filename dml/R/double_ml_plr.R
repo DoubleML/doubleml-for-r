@@ -46,12 +46,12 @@ private = list(
   ml_nuisance_and_score_elements = function(data, smpls, y, d, z = NULL, params, ...) {
     
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", d), data, 
+    task_g <- initiate_regr_task(paste0("nuis_g_", y), data, 
                                   skip_cols = d, target = y)
           
     # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", y), data,
-                                   skip_cols = d, target = y)
+    task_m <- initiate_regr_task(paste0("nuis_m_", d), data,
+                                   skip_cols = y, target = d)
       
     if (is.null(self$param_tuning)){
       
