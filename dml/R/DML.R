@@ -182,6 +182,9 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
 
 }
 
+
+
+
 #' Methods for Inference Task
 #'
 #' Methods for S3 class \code{DML}
@@ -245,6 +248,34 @@ confint.DML <- function(object, parm, level = 0.95, joint = FALSE, ...){
    }
   return(ci)
 }
+
+#' @export
+bootstrap.DML <- function(object, data, y, d,
+                          dml_procedure, inf_model, se_type,
+                          bootstrap = "normal", nRep = 500) {
+  
+  xx = dim(object$theta_s)
+  n_rep_cross_fit = xx[2]
+  p1 = length(d)
+  
+  boot_theta = matrix(NA, nrow = p1, ncol = nRep * n_rep_cross_fit)
+  for (s in seq(n_rep_cross_fit)){
+    for (j in seq(p1)) {
+      ind_start <- ((s-1)*nRep+1)
+      ind_end <- (s*nRep)
+      boot_theta[j, ind_start:ind_end] <- dml_plr_boot(data, y = y, d = d[j],
+                                                       theta = object$theta_s[j, s], se = object$se_s[j, s],
+                                                       all_preds = object$all_preds[[s]][[j]],
+                                                       dml_procedure = dml_procedure,
+                                                       inf_model = inf_model, se_type = inf_model,
+                                                       bootstrap = bootstrap,  nRep = nRep)
+    }
+  }
+  
+  return(boot_theta)
+  
+}
+
 
 #' Methods for Inference Task
 #'
