@@ -26,8 +26,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                         tuning_instance_m = NULL,
                                         tuner = "grid_search",
                                         resolution = 5), 
-                        param_tuning = NULL)
-  {
+                        param_tuning = NULL)  {
     super$initialize_double_ml(n_folds,
                                ml_learners,
                                params,
@@ -35,7 +34,6 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                inf_model,
                                se_reestimate,
                                n_rep_cross_fit, 
-                               n_nuisance,
                                param_set,
                                tune_settings, 
                                param_tuning)
