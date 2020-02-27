@@ -16,41 +16,23 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = list(params_m = list(),
+dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "IV-type", se_type = "ls",
-                    bootstrap = "normal",  nRep = 500, ...) {
-
-  # function not yet fully implemented (test)
-  if (!is.null(resampling)) {
-    checkmate::check_class(resampling, "ResamplingCV")
+                    inf_model = "IV-type", se_type = "ls", ...) {
+  
+  if (is.null(smpls)) {
+    smpls = sample_splitting(k, data)
   }
-  # tbd. if (is.null(resampling))
+  train_ids = smpls$train_ids
+  test_ids = smpls$test_ids
+  
   checkmate::checkDataFrame(data)
 
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
   # tbd: parameter passing
   n <- nrow(data)
   theta <- se <- te <- pval <- boot_se <- NA
-  boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
-  
-  # if (is.null(ResampleInstance)) {
-  #   n_iters <- resampling$iters
-  #   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
-  #   }
-  # 
-  # else {
-  # 
-  #   if (!is.null(resampling)) {
-  #     message("Options in 'resampling' are overwritten by options specified for 'ResampleInstance'")
-  #   }
-  # 
-  #   rin <- ResampleInstance
-  #   resampling <- rin$desc
-  #   n_iters <- resampling$iters
-  # 
-  #   }
 
    if (se_type != "ls") {
     se_type <- inf_model
@@ -65,41 +47,17 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   data_g <- data[ , g_indx, drop = FALSE]
   task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
   
-  if (is.null(resampling)) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- k
-  }
+  resampling_g <- mlr3::rsmp("custom")
+  resampling_g$instantiate(task_g, train_ids, test_ids)
+  n_iters = resampling_g$iters
   
-  # tbd: handling of resampling 
-  if (!resampling$is_instantiated) {
-    resampling_scheme <- resampling$clone()
-    resampling_scheme <- resampling_scheme$instantiate(task_g)
-  }
-  
-  if (!is.null(resampling) & resampling$is_instantiated) {
-    # skip re-instantiation in case of a ResamplingCustom object that was already instatiated (see also multi-treatment unit test)
-    if (resampling$id == 'custom'){
-      resampling_scheme = resampling
-    } else {
-      resampling_scheme <- mlr3::ResamplingCV$new()
-      resampling_scheme$param_set$values$folds <- resampling$iters
-      message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
-    }
-  } # tbd: else 
-  
-  n_iters <- resampling_scheme$iters
-  
-  # tbd: ensure that train_ids and test_ids are integers
-  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
-  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
-
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
   ml_g <- mlr3::lrn(mlmethod$mlmethod_g)
   ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
     
    # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
-  r_g <- mlr3::resample(task_g, ml_g, resampling_scheme, store_models = TRUE)
+  r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
   
   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
   # g_hat_list <- r_g$data$prediction
@@ -139,8 +97,8 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
   #   stop('Resampling instances not equal')
   # }
-  if ( (resampling_scheme$iters != resampling_m$iters) ||
-       (resampling_scheme$iters != n_iters) ||
+  if ( (resampling_g$iters != resampling_m$iters) ||
+       (resampling_g$iters != n_iters) ||
        (resampling_m$iters != n_iters) ||
          (!identical(train_ids, train_ids_m)) ||
          (!identical(test_ids, test_ids_m))) {
@@ -165,8 +123,7 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
 
   # DML 1
   if ( dml_procedure == "dml1") {
-    thetas <- vars <- boot_vars <-  rep(NA, n_iters)
-    boot_thetas <- matrix(NA, ncol = nRep, nrow = n_iters)
+    thetas <- vars <-  rep(NA, n_iters)
     se_i <- NA
     
     v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
@@ -196,19 +153,8 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
                         v_hatd = v_hatd, inf_model = inf_model, se_type = se_type,
                         dml_procedure = dml_procedure))
     
-    
-    t <- theta/se 
-    
+    t <- theta/se
     pval <-  2 * stats::pnorm(-abs(t))
-    
-    if (bootstrap != "none") {
-      
-      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
-                              v_hatd = v_hatd, inf_model = inf_model, se = se,
-                              bootstrap = bootstrap, nRep = nRep)
-  #    boot_se <- sqrt(boot$boot_var)
-      boot_theta <- boot$boot_theta
-    }
     
   }
   
@@ -237,29 +183,93 @@ dml_plr <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
                         v_hatd = v_hatd, inf_model = inf_model, se_type = se_type, 
                         dml_procedure = dml_procedure))
     
-    t <- theta/se 
-    
+    t <- theta/se
     pval <-  2 * stats::pnorm(-abs(t))
-    
-    if (bootstrap != "none") {
-      
-      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
-                              v_hatd = v_hatd, inf_model = inf_model, se = se,
-                              bootstrap = bootstrap, nRep = nRep)
-  #    boot_se <- sqrt(boot$boot_var)
-      boot_theta <- boot$boot_theta
-    }
   }
 
+  all_preds = list(m_hat_list = m_hat_list,
+                   g_hat_list = g_hat_list,
+                   smpls = smpls)
 
-  names(theta) <- names(se) <- names(boot_se) <- d
+  names(theta) <- names(se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta)
+               all_preds = all_preds)
   
   class(res) <- "DML"
   return(res)
 }
 
+#' @export
+dml_plr_boot <- function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
+                          inf_model = "IV-type", se_type = "ls",
+                          bootstrap = "normal",  nRep = 500) {
+  
+  m_hat_list <- all_preds$m_hat_list
+  g_hat_list <- all_preds$g_hat_list
+  
+  smpls <- all_preds$smpls
+  train_ids <- smpls$train_ids
+  test_ids <- smpls$test_ids
+  
+  n_iters = length(test_ids)
+  n_k <- vapply(test_ids, length, double(1L))
+  
+  n <- nrow(data)
+  D <- data[ , d]
+  Y <- data[ , y]
+  
+  # DML 1
+  if ( dml_procedure == "dml1") {
+    v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+    
+    for (i in 1:n_iters) {
+      test_index = test_ids[[i]]
+      
+      m_hat <- m_hat_list[[i]]
+      g_hat <- g_hat_list[[i]]
+      
+      d_k[, i] <- D[test_index]
+      v_hat[, i] <- D[test_index] - m_hat
+      u_hat[, i]  <- Y[test_index] - g_hat
+      v_hatd[, i]  <- v_hat[, i]*D[test_index]
+    }
+    
+    if (bootstrap != "none") {
+      
+      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
+                            v_hatd = v_hatd, inf_model = inf_model, se = se,
+                            bootstrap = bootstrap, nRep = nRep)
+      boot_theta <- boot$boot_theta
+    }
+  }
+  
+  if ( dml_procedure == "dml2") {
+    
+    v_hat <- u_hat <- v_hatd <- matrix(NA, nrow = n, ncol = 1)
+    
+    for (i in 1:n_iters){
+      test_index = test_ids[[i]]
+      
+      m_hat = m_hat_list[[i]]
+      g_hat = g_hat_list[[i]]
+      
+      v_hat[test_index, 1] <- D[test_index] - m_hat
+      u_hat[test_index, 1] <- Y[test_index] - g_hat
+      v_hatd[test_index, 1] <- v_hat[test_index]*D[test_index]
+      
+    }
+    
+    if (bootstrap != "none") {
+      
+      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
+                            v_hatd = v_hatd, inf_model = inf_model, se = se,
+                            bootstrap = bootstrap, nRep = nRep)
+      boot_theta <- boot$boot_theta
+    }
+  }
+  
+  return(boot_theta)
+}
 
 
 #' Orthogonalized Estimation of Coefficient in PLR

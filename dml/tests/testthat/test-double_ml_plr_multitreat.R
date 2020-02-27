@@ -25,28 +25,20 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   n_folds = 5
   
   set.seed(i_setting)
-  # To get matching results with the oop we instatiate the resampling here in
-  # order to get the same sample split for all treatment variables
-  dummy_task = Task$new('dummy_resampling', 'regr', data_plr_multi[[i_setting]])
-  resampling <- rsmp("cv", folds = n_folds)$instantiate(dummy_task)
-  train_sets <- lapply(1:n_folds, function(x) resampling$train_set(x))
-  test_sets <- lapply(1:n_folds, function(x) resampling$test_set(x))
-  resampling <- rsmp("custom")$instantiate(dummy_task,
-                                           train_sets,
-                                           test_sets)
-  
   plr_hat <- DML(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
                  model = "plr",
                  k = n_folds, S = 1,
-                 resampling = resampling,
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
-                 se_type = inf_model,
-                 bootstrap = "none", nRep = n_rep_boot) # deactivate bootstrap to prevent seed issues with multi-treat as bootstrap is done in between
+                 se_type = inf_model)
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
+  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
+                                      dml_procedure = dml_procedure,
+                                      inf_model = inf_model, se_type = inf_model,
+                                      bootstrap = "normal", nRep = n_rep_boot)
   
   set.seed(i_setting)
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
@@ -59,9 +51,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
   
+  # bootstrap
+  double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  boot_theta_obj = double_mlplr_obj$boot_coef
+  
   # at the moment the object result comes without a name
   expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
   expect_equal(se, c(d=se_obj), tolerance = 1e-8)
+  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }
 )

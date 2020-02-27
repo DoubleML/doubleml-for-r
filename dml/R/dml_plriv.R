@@ -17,22 +17,23 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod, 
+dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, 
                       params = list(params_m = list(), params_r = list(),
                                     params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "partialling-out", se_type = "partialling-out",
                     bootstrap = "normal",  nRep = 500, ...) {
+  
+  if (is.null(smpls)) {
+    smpls = sample_splitting(k, data)
+  }
+  train_ids = smpls$train_ids
+  test_ids = smpls$test_ids
 
   if (is.null(z)){
     stop("No instrument in z specified.")
   }
   
-  # function not yet fully implemented (test)
-  if (!is.null(resampling)) {
-    checkmate::check_class(resampling, "ResamplingCV")
-  }
-  # tbd. if (is.null(resampling))
   checkmate::checkDataFrame(data)
 
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
@@ -40,23 +41,6 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   n <- nrow(data)
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
-  
-  # if (is.null(ResampleInstance)) {
-  #   n_iters <- resampling$iters
-  #   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
-  #   }
-  # 
-  # else {
-  # 
-  #   if (!is.null(resampling)) {
-  #     message("Options in 'resampling' are overwritten by options specified for 'ResampleInstance'")
-  #   }
-  # 
-  #   rin <- ResampleInstance
-  #   resampling <- rin$desc
-  #   n_iters <- resampling$iters
-  # 
-  #   }
 
   if (se_type != "partialling-out" & se_type != "ivreg") {
     stop("Value for se_type is not valid.")
@@ -72,34 +56,17 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   data_g <- data[ , g_indx, drop = FALSE]
   task_g <- mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
   
-  if (is.null(resampling)) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- k
-  }
+  resampling_g <- mlr3::rsmp("custom")
+  resampling_g$instantiate(task_g, train_ids, test_ids)
+  n_iters <- resampling_g$iters
   
-  # tbd: handling of resampling 
-  if (!resampling$is_instantiated) {
-    resampling_scheme <- resampling$clone()
-    resampling_scheme <- resampling_scheme$instantiate(task_g)
-  }
-  
-  if (!is.null(resampling) & resampling$is_instantiated) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- resampling$iters
-    message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
-  } # tbd: else 
-  
-  n_iters <- resampling_scheme$iters
-  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
-  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
-
   # tbd: handling learners from mlr3 base and mlr3learners package
   # ml_g <- mlr3::mlr_learners$get(mlmethod$mlmethod_g)
   ml_g <- mlr3::lrn(mlmethod$mlmethod_g)
   ml_g$param_set$values <- params$params_g # tbd: check if parameter passing really works
     
    # ml_g <-  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
-  r_g <- mlr3::resample(task_g, ml_g, resampling_scheme, store_models = TRUE)
+  r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
   
   # # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
   # g_hat_list <- r_g$data$prediction
@@ -162,9 +129,9 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
   #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
   #   stop('Resampling instances not equal')
   # }
-  if ( (resampling_scheme$iters != resampling_m$iters) ||
-       (resampling_scheme$iters != resampling_r$iters) ||
-       (resampling_scheme$iters != n_iters) ||
+  if ( (resampling_g$iters != resampling_m$iters) ||
+       (resampling_g$iters != resampling_r$iters) ||
+       (resampling_g$iters != n_iters) ||
        (resampling_m$iters != n_iters) ||
        (resampling_r$iters != n_iters) ||
        (!identical(train_ids, train_ids_m)) ||
@@ -270,11 +237,15 @@ dml_plriv <- function(data, y, d, z, k = 2, resampling = NULL, mlmethod,
       boot_theta <- boot$boot_theta
     }
   }
-
+  
+  all_preds = list(m_hat_list = m_hat_list,
+                   g_hat_list = g_hat_list,
+                   r_hat_list = r_hat_list)
 
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta)
+               boot_se = boot_se, boot_theta = boot_theta,
+               all_preds)
   
   class(res) <- "DML"
   return(res)
