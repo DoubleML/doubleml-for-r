@@ -27,6 +27,7 @@ test_cases = expand.grid(learner_list = learner_list,
 ###      and different settings (1-split...)
 
 # test all params for all learners ?
+
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 skip('Skip tests for tuning')
@@ -37,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   n_folds = 5                                                                    
   # set.seed(i_setting)
   # n_folds = 5
-  # plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
+  # plr_hat <- DML(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
   #                model = "plr",
   #                k = n_folds, S = 1,
   #                mlmethod = learner_pars_for_DML$mlmethod,
@@ -48,16 +49,19 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   # theta <- coef(plr_hat)
   # se <- plr_hat$se
   
+  # exact parameter provision
+  learner_pars_exact = list(rep(list(learner_pars_once$params), 3))
   
   set.seed(i_setting)
   double_mlplr_obj_untuned = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_list,
-                                     params = learner_pars,
+                                     params = learner_pars_exact,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model)
+                                     inf_model = inf_model,
+                                     n_rep_cross_fit = 1)
   
-  double_mlplr_obj_untuned$fit(data_plr[[i_setting]], y = "y", d = "d")
+  double_mlplr_obj_untuned$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'))
   
   theta_obj_untuned <- double_mlplr_obj_untuned$coef
   se_obj_untuned <- double_mlplr_obj_untuned$se
@@ -70,7 +74,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   set.seed(i_setting)
   double_mlplr_obj_tuned = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_list,
-                                     params = learner_pars,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
                                      inf_model = inf_model)
@@ -82,9 +85,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   double_mlplr_obj_tuned$param_set$param_set_g = tune_ps
   double_mlplr_obj_tuned$param_set$param_set_m = tune_ps
 
-  double_mlplr_obj_tuned$tune(data_plr[[i_setting]], y = "y", d = "d")
+  double_mlplr_obj_tuned$tune(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'))
   
-  double_mlplr_obj_tuned$fit(data_plr[[i_setting]], y = "y", d = "d")
+  double_mlplr_obj_tuned$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'))
   
   theta_obj_tuned <- double_mlplr_obj_tuned$coef
   se_obj_tuned <- double_mlplr_obj_tuned$se

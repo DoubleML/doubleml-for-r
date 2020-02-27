@@ -20,7 +20,7 @@ test_cases = expand.grid(learner_list = learner_list,
                          se_reestimate = c(FALSE),
                          inf_model = c('IV-type', 'DML2018'),
                          i_setting = 1:(length(data_plr)),
-                         n_rep_cross_fit = c(1, 2, 5),
+                         n_rep_cross_fit = c(2, 5),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -30,8 +30,8 @@ test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 # test all params for all learners ?
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
-skip('Skip tests for tuning')
 
+skip('Skip tests for tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR with repeated cross-fitting:",
                                    .cases = test_cases, {
   
@@ -68,8 +68,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR with repeated c
   se_obj_exact <- double_mlplr_obj_exact$se
   
   # bootstrap
-  # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
+  double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
 
     
   # pass one set of parameters (recycled for every fold and rep)
@@ -88,8 +88,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR with repeated c
   se_obj_once <- double_mlplr_obj_once$se
   
   # bootstrap
-  # double_mlplr_obj_once$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_once = double_mlplr_obj_once$boot_coef
+  double_mlplr_obj_once$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  boot_theta_obj_once = double_mlplr_obj_once$boot_coef
 
   
   # pass empty set of parameters (NULL, use default values)   
@@ -108,38 +108,40 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR with repeated c
   se_obj_null <- double_mlplr_obj_null$se
   
   # bootstrap
-  # double_mlplr_obj_null$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_null = double_mlplr_obj_null$boot_coef
+  double_mlplr_obj_null$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  boot_theta_obj_null = double_mlplr_obj_null$boot_coef
+
   
-  # no parameters specified (use default values)   
+  
+  
   set.seed(i_setting)
-  double_mlplr_obj_default = DoubleMLPLR$new(n_folds = n_folds,
+  double_mlplr_obj_tuned = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_list,
+                                     params = learner_pars,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     inf_model = inf_model)
   
-  double_mlplr_obj_default$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'))
+  tune_ps = ParamSet$new(list(
+                          ParamDbl$new("cp", lower = 0.001, upper = 0.1),
+                          ParamInt$new("minsplit", lower = 1, upper = 10)))
   
-  theta_obj_default <- double_mlplr_obj_default$coef
-  se_obj_default <- double_mlplr_obj_default$se
+  double_mlplr_obj_tuned$param_set$param_set_g = tune_ps
+  double_mlplr_obj_tuned$param_set$param_set_m = tune_ps
+
+  double_mlplr_obj_tuned$tune(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'))
+  
+  double_mlplr_obj_tuned$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'))
+  
+  theta_obj_tuned <- double_mlplr_obj_tuned$coef
+  se_obj_tuned <- double_mlplr_obj_tuned$se
   
   # bootstrap
-  # double_mlplr_obj_default$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_default = double_mlplr_obj_default$boot_coef
-
-  expect_equal(theta_obj_once, theta_obj_exact, tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_exact, tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
-  expect_equal(se_obj_once, se_obj_exact, tolerance = 1e-8)
-  expect_equal(se_obj_null, se_obj_exact, tolerance = 1e-8)
-  expect_equal(se_obj_null, se_obj_default, tolerance = 1e-8)
-
-  # expect_equal(boot_theta_obj_once, boot_theta_obj_exact, tolerance = 1e-8)
-  # expect_equal(boot_theta_obj_null, boot_theta_obj_exact, tolerance = 1e-8)
-
-
+  double_mlplr_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  boot_theta_obj_tuned = double_mlplr_obj_tuned$boot_coef
+  
+  
+  # restrictions to test?
   
   }
 )
