@@ -43,7 +43,14 @@ initiate_learner = function(mlmethod, params) {
 initiate_prob_learner = function(mlmethod, params) {
   learner <- mlr3::lrn(mlmethod,
                        predict_type = 'prob')
+  
+  if (!is.null(params) & length(params) != 0){
   learner$param_set$values <- params
+  }
+  
+  else if (is.null(params) | length(params) == 0){
+    message("No parameters provided for learners. Default values are used.")
+  }
   
   return(learner)
 }
