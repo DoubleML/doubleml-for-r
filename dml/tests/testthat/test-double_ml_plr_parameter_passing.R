@@ -31,19 +31,23 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   n_folds = 2                                                                   
   
   # TBD: Functional Test Case
+  learner_pars <- get_default_mlmethod_plr(learner)
+  learner_pars_for_DML <- learner_pars
+  learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 2)
+  learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 2)
 
-  # set.seed(i_setting)
-  # n_folds = 5
-  # plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
-  #                model = "plr",
-  #                k = n_folds, S = n_rep_cross_fit,
-  #                mlmethod = learner_pars_for_DML$mlmethod,
-  #                params = learner_pars_for_DML$params,
-  #                dml_procedure = dml_procedure, inf_model = inf_model,
-  #                se_type = inf_model,
-  #                bootstrap = "none", nRep = 500)
-  # theta <- coef(plr_hat)
-  # se <- plr_hat$se
+  set.seed(i_setting)
+  n_folds = 5
+  plr_hat <- DML(data_plr_multi[[i_setting]], y = "y",  d = c('d1', 'd2'),
+                 model = "plr",
+                 k = n_folds, S = n_rep_cross_fit,
+                 mlmethod = learner_pars_for_DML$mlmethod,
+                 params = learner_pars_for_DML$params,
+                 dml_procedure = dml_procedure, inf_model = inf_model,
+                 se_type = inf_model,
+                 bootstrap = "none", nRep = 500)
+  theta <- coef(plr_hat)
+  se <- plr_hat$se
 
   # exact parameter provision
   learner_pars_once <- get_default_mlmethod_plr(learner, default = FALSE)
