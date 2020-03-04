@@ -1,4 +1,4 @@
-context("Unit tests for PLR")
+context("Unit tests for tuning of PLR")
 
 library("mlr3learners")
 library("mlr3tuning")
@@ -33,10 +33,6 @@ test_cases = expand.grid(learner_list = learner_list,
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
 
-### TBD: Set up test cases for different ways to provide tuning settings 
-###      and different settings (1-split...)
-
-# test all params for all learners ?
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
