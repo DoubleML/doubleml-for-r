@@ -25,7 +25,7 @@ tune_settings = list(n_folds_tune = 3,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(learner_list = learner_list,
+test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
                          inf_model = c('IV-type', 'DML2018'),

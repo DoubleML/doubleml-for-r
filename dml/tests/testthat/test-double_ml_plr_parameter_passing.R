@@ -13,7 +13,7 @@ learner = c('regr.rpart')
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
   
-test_cases = expand.grid(learner_list = learner_list,
+test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
                          inf_model = c('IV-type', 'DML2018'),
