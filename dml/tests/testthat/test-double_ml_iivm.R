@@ -32,9 +32,11 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   
     
   set.seed(i_setting)
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
+
   double_mliivm_obj = DoubleMLIIVM$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
                                      inf_model = inf_model)
