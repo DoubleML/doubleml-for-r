@@ -40,11 +40,13 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                       inf_model = inf_model, se_type = inf_model,
                                       bootstrap = "normal", nRep = n_rep_boot)
   
-  
   set.seed(i_setting)
+
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
+
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
                                      inf_model = inf_model)
