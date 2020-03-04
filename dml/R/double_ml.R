@@ -226,7 +226,7 @@ private = list(
     },
   get__params = function(){
     
-    if (is.null(self$params)){
+    if (is.null(self$params) | all(lapply(self$params, length)==0)){
       params = list()
     }
     else {
@@ -268,7 +268,7 @@ private = list(
         test_index <- test_ids[[i_fold]]
         thetas[i_fold] <- private$orth_est(inds=test_index)
       }
-      coef <- mean(thetas)
+      coef <- mean(thetas, na.rm = TRUE)
     }
     else if (dml_procedure == "dml2") {
       coef <- private$orth_est()
