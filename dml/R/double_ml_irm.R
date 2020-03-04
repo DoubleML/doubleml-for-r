@@ -55,7 +55,7 @@ private = list(
     
     r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     
-    m_hat = extract_prob_prediction(r_m)
+    m_hat = extract_prob_prediction(r_m)$response
     
     
     # nuisance g
