@@ -4,7 +4,7 @@
 \alias{var_irm}
 \title{Variance estimation for DML estimator in the interactive regression model}
 \usage{
-var_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model)
+var_irm(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_model)
 }
 \arguments{
 \item{theta}{Final dml estimator for interactive regression model.}
