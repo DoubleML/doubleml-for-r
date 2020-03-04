@@ -229,9 +229,6 @@ private = list(
     if (is.null(self$params)){
       params = list()
     }
-    else if (length(self$params) == private$n_nuisance){
-      params = self$params
-    }
     else {
       params = self$params[[private$i_rep]][[private$i_treat]]
     }
