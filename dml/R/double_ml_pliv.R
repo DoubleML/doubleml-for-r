@@ -112,7 +112,7 @@ private = list(
       m_hat = lapply(r_m, extract_prediction)
       m_hat = rearrange_prediction(m_hat)
       
-      ml_m <- lapply(params$params_r, function(x) initiate_learner(self$ml_learners$mlmethod_r, 
+      ml_r <- lapply(params$params_r, function(x) initiate_learner(self$ml_learners$mlmethod_r, 
                                                                         x))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
@@ -135,6 +135,92 @@ private = list(
     
     return(list(score_a = score_a,
                 score_b = score_b))
+  },
+  tune_params = function(data, smpls, y, d, z, param_set, tune_settings, ...){
+    
+    checkmate::check_class(param_set$param_set_g, "ParamSet")    
+    checkmate::check_class(param_set$param_set_m, "ParamSet")
+    checkmate::check_class(param_set$param_set_r, "ParamSet")
+
+    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
+
+    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
+      CV_tune = tune_settings$rsmp_tune
+    } else {
+      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+    }
+    
+    if (any(class(tune_settings$measure_g) == "Measure")) {
+      measure_g = tune_settings$measure_g
+    } else {
+      measure_g = mlr3::msr(tune_settings$measure_g)
+    }
+    
+    if (any(class(tune_settings$measure_m) == "Measure")) {
+      measure_m = tune_settings$measure_m
+    } else {
+      measure_m = mlr3::msr(tune_settings$measure_m)
+    }
+    
+    if (any(class(tune_settings$measure_r) == "Measure")) {
+      measure_r = tune_settings$measure_r
+    } else {
+      measure_r = mlr3::msr(tune_settings$measure_r)
+    }
+    
+    terminator = tune_settings$terminator
+    
+    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
+                                                skip_cols = c(d, z), target = y))
+    
+    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
+    
+    tuning_instance_g = lapply(task_g, function(x) TuningInstance$new(task = x,
+                                          learner = ml_g,
+                                          resampling = CV_tune,
+                                          measures = measure_g,
+                                          param_set = param_set$param_set_g,
+                                          terminator = terminator))
+    
+    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
+    
+    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", d), x,
+                                                  skip_cols = c(y, z), target = d))
+    
+    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+
+    tuning_instance_m = lapply(task_m, function(x) TuningInstance$new(task = x,
+                                          learner = ml_m,
+                                          resampling = CV_tune,
+                                          measures = measure_m,
+                                          param_set = param_set$param_set_m,
+                                          terminator = terminator))
+    
+    tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
+    
+    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_",z), x,
+                                                  skip_cols = c(y, d), target = z))
+    ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
+
+    tuning_instance_r = lapply(task_r, function(x) TuningInstance$new(task = x,
+                                          learner = ml_r,
+                                          resampling = CV_tune,
+                                          measures = measure_r,
+                                          param_set = param_set$param_set_r,
+                                          terminator = terminator))
+    
+    tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
+    
+    tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
+                                              tuning_result_m = tuning_result_m, 
+                                              tuning_result_r = tuning_result_r),
+                         params = list(params_g = extract_tuned_params(tuning_result_g), 
+                                       params_m = extract_tuned_params(tuning_result_m),
+                                       params_r = extract_tuned_params(tuning_result_r)))
+    
+    return(tuning_result)
+    
   }
 )
 )
