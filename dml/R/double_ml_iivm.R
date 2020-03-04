@@ -35,17 +35,17 @@ private = list(
     
     # get ml learner
     ml_p <- initiate_prob_learner(self$ml_learners$mlmethod_p,
-                                  self$params$params_p)
+                                  params$params_p)
     
     ml_mu0 <- initiate_learner(self$ml_learners$mlmethod_mu,
-                               self$params$params_mu)
+                               params$params_mu)
     ml_mu1 <- initiate_learner(self$ml_learners$mlmethod_mu,
-                               self$params$params_mu)
+                               params$params_mu)
     
     ml_m0 <- initiate_prob_learner(self$ml_learners$mlmethod_m,
-                                   self$params$params_m)
+                                   params$params_m)
     ml_m1 <- initiate_prob_learner(self$ml_learners$mlmethod_m,
-                                   self$params$params_m)
+                                   params$params_m)
     
     
     # get conditional samples (conditioned on z = 0 or z = 1)
