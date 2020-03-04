@@ -108,14 +108,23 @@ get_default_mlmethod_pliv <- function(learner) {
 get_default_mlmethod_irm <- function(learner) {
   if (learner == 'glmnet') {
     mlmethod <- list(mlmethod_m = paste0("classif.", learner),
-                     mlmethod_g =  paste0("regr.", learner))
+                     mlmethod_g = paste0("regr.", learner))
     slambda = "lambda.min"
     family = "gaussian"
     
     params <- list(params_m = list(s = slambda),
                    params_g = list(s = slambda, family = family))
-  }
+  }  
   
+  else if (learner == 'rpart') {
+    mlmethod <- list(mlmethod_m = paste0("classif.", learner),
+                     mlmethod_g = paste0("regr.", learner))
+
+    params <- list(params_g = list(cp = 0.01, minsplit = 20),
+                   params_m = list(cp = 0.01, minsplit = 20))
+    
+  }
+
   return(list(mlmethod=mlmethod, params=params))
 }
 
