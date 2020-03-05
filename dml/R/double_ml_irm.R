@@ -29,8 +29,12 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  n_nuisance = 3,
+  n_nuisance = 2,
   ml_nuisance_and_score_elements = function(data, smpls, y, d, params, ...) {
+    
+    # nuisance m
+    task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
+                                    skip_cols = y, target = d)
     
     # get ml learner
     ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
@@ -45,9 +49,7 @@ private = list(
     # get conditional samples (conditioned on D = 0 or D = 1)
     cond_smpls <- private$get_cond_smpls(smpls, data[ , d])
     
-    # nuisance m
-    task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
-                                    skip_cols = y, target = d)
+
     
     resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                      smpls$train_ids,
@@ -59,28 +61,27 @@ private = list(
     
     
     # nuisance g
-    task_g0 <- initiate_regr_task(paste0("nuis_g0_", y), data,
+    task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
                                  skip_cols = d, target = y)
     
-    resampling_g0 <- mlr3::rsmp("custom")$instantiate(task_g0,
+    resampling_g0 <- mlr3::rsmp("custom")$instantiate(task_g,
                                                       cond_smpls$train_ids_0,
                                                       smpls$test_ids)
     
-    r_g0 <- mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
+    r_g0 <- mlr3::resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
     
     g0_hat = extract_prediction(r_g0)$response
     
-    # g1
-    task_g1 <- initiate_regr_task(paste0("nuis_g1_", y), data,
-                                  skip_cols = d, target = y)
-    
-    resampling_g1  <- mlr3::rsmp("custom")$instantiate(task_g1,
+    resampling_g1  <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        cond_smpls$train_ids_1,
                                                        smpls$test_ids)
     
-    r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
+    r_g1 <- mlr3::resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
     
     g1_hat = extract_prediction(r_g1)$response
+    
+    }
+  
     
     D <- data[ , d]
     Y <- data[ , y]
@@ -109,6 +110,69 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   },
+ tune_params = function(data, smpls, y, d, param_set, tune_settings, ...){
+   checkmate::check_class(param_set$param_set_g, "ParamSet")    
+   checkmate::check_class(param_set$param_set_m, "ParamSet")
+   
+   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
+   
+   if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
+     CV_tune = tune_settings$rsmp_tune
+   } else {
+     CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+   }
+    
+   if (any(class(tune_settings$measure_g) == "Measure")) {
+     measure_g = tune_settings$measure_g
+   } else {
+     measure_g = mlr3::msr(tune_settings$measure_g)
+   }
+    
+   if (any(class(tune_settings$measure_m) == "Measure")) {
+     measure_m = tune_settings$measure_m
+   } else {
+     measure_m = mlr3::msr(tune_settings$measure_m)
+   }
+    
+   terminator = tune_settings$terminator
+    
+   task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
+                                               skip_cols = d, target = y))
+    
+   ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
+    
+   tuning_instance_g = lapply(task_g, function(x) TuningInstance$new(task = x,
+                                          learner = ml_g,
+                                          resampling = CV_tune,
+                                          measures = measure_g,
+                                          param_set = param_set$param_set_g,
+                                          terminator = terminator))
+    
+   tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+   tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
+    
+   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", d), x,
+                                                  skip_cols = y, target = d))
+    
+   ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+
+   tuning_instance_m = lapply(task_m, function(x) TuningInstance$new(task = x,
+                                         learner = ml_m,
+                                         resampling = CV_tune,
+                                         measures = measure_m,
+                                         param_set = param_set$param_set_m,
+                                         terminator = terminator))
+   
+   tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
+    
+   tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
+                                             tuning_result_m = tuning_result_m),
+                        params = list(params_g = extract_tuned_params(tuning_result_g), 
+                                      params_m = extract_tuned_params(tuning_result_m)))
+   
+   return(tuning_result)
+  },
+  
   get_cond_smpls = function(smpls, D) {
     train_ids_0 <- lapply(1:self$n_folds, function(x) 
       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
