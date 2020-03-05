@@ -10,7 +10,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 # settings for parameter provision
 learner = c('rpart')
 
-learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
+learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m" = learner)
 
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
@@ -39,7 +39,6 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   theta <- coef(iivm_hat)
   se <- iivm_hat$se
   
-    
   set.seed(i_setting)
   params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep_cross_fit)
 
