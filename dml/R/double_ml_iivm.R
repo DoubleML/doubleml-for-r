@@ -61,7 +61,7 @@ private = list(
     
     r_p <- mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
     
-    p_hat = extract_prob_prediction(r_p)$response
+    p_hat = extract_prob_prediction(r_p)$prob.1
     
     
     # nuisance mu
@@ -98,7 +98,7 @@ private = list(
     
     r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
     
-    m0_hat = extract_prob_prediction(r_m0)$response
+    m0_hat = extract_prob_prediction(r_m0)$prob.1
     
     # m1
     task_m1 <- initiate_classif_task(paste0("nuis_m1_", d), data,
@@ -110,7 +110,7 @@ private = list(
     
     r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
     
-    m1_hat = extract_prob_prediction(r_m1)$response
+    m1_hat = extract_prob_prediction(r_m1)$prob.1
     
     
     # compute residuals
