@@ -196,7 +196,6 @@ private = list(
    
    return(tuning_result)
   },
-  
   get_cond_smpls = function(smpls, D) {
     train_ids_0 <- lapply(1:self$n_folds, function(x) 
       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
