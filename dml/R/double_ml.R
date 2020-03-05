@@ -306,8 +306,9 @@ private = list(
   agg_cross_fit = function() {
     # aggregate parameters from the repeated cross-fitting
     # don't use the getter (always for one treatment variable and one sample), but the private variable
-    self$coef = apply(private$all_coef, 1, stats::median)
-    self$se = sqrt(apply(private$all_se^2  - (private$all_coef - self$coef)^2, 1, stats::median))
+    self$coef = apply(private$all_coef, 1, function(x) stats::median(x, na.rm = TRUE))
+    self$se = sqrt(apply(private$all_se^2  - (private$all_coef - self$coef)^2, 1, 
+                                           function(x) stats::median(x, na.rm = TRUE)))
     
     invisible(self)
   },
