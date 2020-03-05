@@ -36,12 +36,12 @@ test_cases = expand.grid(learner_list = learner,
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
+
 skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                    .cases = test_cases, {
                                                         
-  
   # TBD: Functional Test Case
 
   set.seed(i_setting)
@@ -81,33 +81,15 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
   double_mlpliv_obj_tuned$fit(data_pliv[[i_setting]], y = "y", d = "d", z = "z")
   
-  theta_obj_exact <- double_mlpliv_obj_tuned$coef
-  se_obj_exact <- double_mlpliv_obj_tuned$se
+  theta_obj_tuned <- double_mlpliv_obj_tuned$coef
+  se_obj_tuned <- double_mlpliv_obj_tuned$se
   
   # bootstrap
   # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
 
-  
-  # pass empty set of parameters (NULL, use default values)   
-  set.seed(i_setting)
-  double_mlpliv_obj_null = DoubleMLPLIV$new(n_folds = n_folds,
-                                     ml_learners = learner_list,
-                                     params = NULL,
-                                     dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
-                                     inf_model = inf_model,
-                                     n_rep_cross_fit = n_rep_cross_fit)
-  
-  double_mlpliv_obj_null$fit(data_pliv[[i_setting]], y = "y", d = "d", z = "z")
-  
-  theta_obj_null <- double_mlpliv_obj_null$coef
-  se_obj_null <- double_mlpliv_obj_null$se
-  
-  # bootstrap
-  # double_mlplr_obj_null$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_null = double_mlplr_obj_null$boot_coef
-  
+  expect_is(theta_obj_tuned, "numeric")
+  expect_is(se_obj_tuned, "numeric")
   }
 )
 
