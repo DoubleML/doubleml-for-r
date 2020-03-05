@@ -135,10 +135,21 @@ get_default_mlmethod_iivm <- function(learner) {
                      mlmethod_m = paste0("classif.", learner))
     slambda = "lambda.min"
     family = "gaussian"
-    
+     
     params <- list(params_p = list(s = slambda),
                    params_mu = list(s = slambda, family = family),
                    params_m = list(s = slambda))
+  }
+  
+  else if (learner == 'rpart') {
+    mlmethod <- list(mlmethod_p = paste0("classif.", learner),
+                     mlmethod_mu = paste0("regr.", learner), 
+                     mlmethod_m = paste0("classif.", learner))
+
+    params <- list(params_p = list(cp = 0.01, minsplit = 20),
+                   params_mu = list(cp = 0.01, minsplit = 20),
+                   params_m = list(cp = 0.01, minsplit = 20))
+    
   }
   
   return(list(mlmethod=mlmethod, params=params))
