@@ -30,24 +30,19 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   }
 ),
 private = list(
-  n_nuisance = 5,
+  n_nuisance = 3,
   ml_nuisance_and_score_elements = function(data, smpls, y, d, z, params) {
     
     # get ml learner
     ml_p <- initiate_prob_learner(self$ml_learners$mlmethod_p,
                                   params$params_p)
     
-    ml_mu0 <- initiate_learner(self$ml_learners$mlmethod_mu,
+    ml_mu <- initiate_learner(self$ml_learners$mlmethod_mu,
                                params$params_mu)
-    ml_mu1 <- initiate_learner(self$ml_learners$mlmethod_mu,
-                               params$params_mu)
-    
-    ml_m0 <- initiate_prob_learner(self$ml_learners$mlmethod_m,
+
+    ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
                                    params$params_m)
-    ml_m1 <- initiate_prob_learner(self$ml_learners$mlmethod_m,
-                                   params$params_m)
-    
-    
+
     # get conditional samples (conditioned on z = 0 or z = 1)
     cond_smpls <- private$get_cond_smpls(smpls, data[ , z])
     
@@ -62,54 +57,39 @@ private = list(
     r_p <- mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
     
     p_hat = extract_prob_prediction(r_p)$prob.1
-    
-    
+
     # nuisance mu
-    task_mu0 <- initiate_regr_task(paste0("nuis_mu0_", y), data,
+    task_mu <- initiate_regr_task(paste0("nuis_mu_", y), data,
                                   skip_cols = c(d, z), target = y)
     
-    resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu0,
+    resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu,
                                                        cond_smpls$train_ids_0,
                                                        smpls$test_ids)
-    
-    r_mu0 <- mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
-    
+    r_mu0 <- mlr3::resample(task_mu, ml_mu, resampling_mu0, store_models = TRUE)
     mu0_hat = extract_prediction(r_mu0)$response
     
     # mu1
-    task_mu1 <- initiate_regr_task(paste0("nuis_mu1_", y), data,
-                                   skip_cols = c(d, z), target = y)
-    
-    resampling_mu1 <- mlr3::rsmp("custom")$instantiate(task_mu1,
+    resampling_mu1 <- mlr3::rsmp("custom")$instantiate(task_mu,
                                                        cond_smpls$train_ids_1,
                                                        smpls$test_ids)
-    
-    r_mu1 <- mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
-    
+    r_mu1 <- mlr3::resample(task_mu, ml_mu, resampling_mu1, store_models = TRUE)
     mu1_hat = extract_prediction(r_mu1)$response
     
     # nuisance m
-    task_m0 <- initiate_classif_task(paste0("nuis_m0_", d), data,
+    task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
                                      skip_cols = c(y, z), target = d)
     
-    resampling_m0 <- mlr3::rsmp("custom")$instantiate(task_m0,
+    resampling_m0 <- mlr3::rsmp("custom")$instantiate(task_m,
                                                       cond_smpls$train_ids_0,
                                                       smpls$test_ids)
-    
-    r_m0 <- mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
-    
+    r_m0 <- mlr3::resample(task_m, ml_m, resampling_m0, store_models = TRUE)
     m0_hat = extract_prob_prediction(r_m0)$prob.1
     
     # m1
-    task_m1 <- initiate_classif_task(paste0("nuis_m1_", d), data,
-                                     skip_cols = c(y, z), target = d)
-    
-    resampling_m1 <- mlr3::rsmp("custom")$instantiate(task_m1,
+    resampling_m1 <- mlr3::rsmp("custom")$instantiate(task_m,
                                                       cond_smpls$train_ids_1,
                                                       smpls$test_ids)
-    
-    r_m1 <- mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
-    
+    r_m1 <- mlr3::resample(task_m, ml_m, resampling_m1, store_models = TRUE)
     m1_hat = extract_prob_prediction(r_m1)$prob.1
     
     
