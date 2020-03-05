@@ -23,6 +23,12 @@ extract_prob_prediction = function(obj_resampling) {
   return(f_hat)
 }
 
+rearrange_prob_prediction = function(prediction_list){
+    predictions <- rbindlist(prediction_list)
+    setorder(predictions, 'row_id')
+    predictions <- predictions$prob.1
+    return(predictions)
+}
 
 initiate_learner = function(mlmethod, params) {
   learner <- mlr3::lrn(mlmethod)
