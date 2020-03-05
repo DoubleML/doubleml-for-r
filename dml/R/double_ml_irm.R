@@ -96,12 +96,15 @@ private = list(
       # get conditional samples (conditioned on D = 0 or D = 1)
       cond_smpls <- private$get_cond_smpls(smpls, data[ , d])
       
-      resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
-      r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat <- lapply(r_g, extract_prediction)
-      g_hat <- rearrange_prediction(g_hat)
-      
-      
+      resampling_g0 <- initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
+      r_g0 <- resample_dml(task_g, ml_g, resampling_g0, store_models = TRUE)
+      g0_hat <- lapply(r_g0, extract_prediction)
+      g0_hat <- rearrange_prediction(g0_hat)
+
+      resampling_g1 <- initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
+      r_g1 <- resample_dml(task_g, ml_g, resampling_g1, store_models = TRUE)
+      g1_hat <- lapply(r_g1, extract_prediction)
+      g1_hat <- rearrange_prediction(g1_hat)            
     }
     
     D <- data[ , d]
