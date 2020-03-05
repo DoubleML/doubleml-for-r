@@ -39,7 +39,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   
   set.seed(i_setting)
   pliv_hat <- dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
-                        k = n_folds, mlmethod = learner_list,
+                        k = n_folds, S = n_rep_cross_fit, 
+                        mlmethod = learner_list,
                         params = learner_pars_once$params,
                         dml_procedure = dml_procedure, inf_model = inf_model,
                         se_type = inf_model,
