@@ -34,7 +34,7 @@ test_cases = expand.grid(learner = learner,
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-skip('Skip tests for tuning')
+# skip('Skip tests for tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                    .cases = test_cases, {
   
@@ -76,6 +76,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   
   # restrictions to test
     # Functional (tbd) vs OOP implementation (handling randomness in param selection!?)
-  
+  expect_is(theta_obj_tuned, "numeric")
+  expect_is(se_obj_tuned, "numeric")
   }
 )
