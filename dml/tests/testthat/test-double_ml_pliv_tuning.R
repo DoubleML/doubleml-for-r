@@ -40,9 +40,7 @@ skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                    .cases = test_cases, {
-  
-  n_rep_boot = 498    
-  n_folds = 2                                                                   
+                                                        
   
   # TBD: Functional Test Case
 

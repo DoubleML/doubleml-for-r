@@ -22,7 +22,8 @@ test_cases = expand.grid(learner = learner,
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
-skip('Skip tests for tuning')
+
+# skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                    .cases = test_cases, {

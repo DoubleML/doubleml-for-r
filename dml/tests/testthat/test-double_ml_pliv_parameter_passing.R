@@ -22,7 +22,7 @@ test_cases = expand.grid(learner = learner,
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
-skip('Skip tests for tuning')
+# skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                    .cases = test_cases, {
@@ -40,7 +40,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   set.seed(i_setting)
   pliv_hat <- dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
                         k = n_folds, mlmethod = learner_list,
-                        params = learner_pars$params,
+                        params = learner_pars_once$params,
                         dml_procedure = dml_procedure, inf_model = inf_model,
                         se_type = inf_model,
                         bootstrap = "normal",  nRep = n_rep_boot)
