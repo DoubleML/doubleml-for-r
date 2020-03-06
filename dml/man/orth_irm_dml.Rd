@@ -4,7 +4,7 @@
 \alias{orth_irm_dml}
 \title{Orthogonalized Estimation of Coefficient in irm}
 \usage{
-orth_irm_dml(g0_hat, g1_hat, u0_hat, u1_hat, d, m, y, inf_model)
+orth_irm_dml(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_model)
 }
 \arguments{
 \item{g0_hat}{Predictions from \eqn{g(0,X)}.}

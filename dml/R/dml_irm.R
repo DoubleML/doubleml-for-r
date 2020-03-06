@@ -16,17 +16,18 @@
 #' @return Result object with estimated coefficient and standard errors.
 #' @export
 
-dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = list(params_m = list(),
+dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
                     inf_model = "ATE", se_type = "ATE",
                     bootstrap = "normal",  nRep = 500, ...) {
-
-  # function not yet fully implemented (test)
-  if (!is.null(resampling)) {
-    checkmate::check_class(resampling, "ResamplingCV")
+  
+  if (is.null(smpls)) {
+    smpls = sample_splitting(k, data)
   }
-  # tbd. if (is.null(resampling))
+  train_ids = smpls$train_ids
+  test_ids = smpls$test_ids
+  
   checkmate::checkDataFrame(data)
 
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
@@ -34,23 +35,6 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   n <- nrow(data)
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
-  
-  # if (is.null(ResampleInstance)) {
-  #   n_iters <- resampling$iters
-  #   rin <- mlr::makeResampleInstance(resampling, size = nrow(data))
-  #   }
-  # 
-  # else {
-  # 
-  #   if (!is.null(resampling)) {
-  #     message("Options in 'resampling' are overwritten by options specified for 'ResampleInstance'")
-  #   }
-  # 
-  #   rin <- ResampleInstance
-  #   resampling <- rin$desc
-  #   n_iters <- resampling$iters
-  # 
-  #   }
 
   if (se_type != inf_model){
     se_type <- inf_model
@@ -66,44 +50,23 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   data_m[, d] <- factor(data_m[, d])
   task_m <- mlr3::TaskClassif$new(id = paste0("nuis_p_", d), backend = data_m,
                                     target = d, positive = "1")
-
-  if (is.null(resampling)) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- k
-    resampling_scheme <- resampling_scheme$instantiate(task_m)
-  }
   
-  # tbd: handling of resampling 
-  if (!resampling$is_instantiated) {
-    resampling_scheme <- resampling$clone()
-    resampling_scheme <- resampling_scheme$instantiate(task_m)
-  }
-  
-  if (!is.null(resampling) & resampling$is_instantiated) {
-    resampling_scheme <- mlr3::ResamplingCV$new()
-    resampling_scheme$param_set$values$folds <- resampling$iters
-    message("Specified 'resampling' was instantiated. New resampling scheme was instantiated internally.")
-    resampling_scheme <- resampling_scheme$instantiate(task_m)
-  } # tbd: else 
-  
-  
-  n_iters <- resampling_scheme$iters
-  # tbd: ensure that train_ids and test_ids are integers
-  train_ids <- lapply(1:n_iters, function(x) resampling_scheme$train_set(x))
-  test_ids <- lapply(1:n_iters, function(x) resampling_scheme$test_set(x))
+  resampling_m <- mlr3::rsmp("custom")
+  resampling_m$instantiate(task_m, train_ids, test_ids)
+  n_iters <- resampling_m$iters
   
   # train and test ids according to status of d
   # in each fold, select those with d = 0
   train_ids_0 <- lapply(1:n_iters, function(x) 
-                    resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 0])
+                    resampling_m$train_set(x)[data[resampling_m$train_set(x), d] == 0])
   # in each fold, select those with d = 0
   train_ids_1 <- lapply(1:n_iters, function(x) 
-                    resampling_scheme$train_set(x)[data[resampling_scheme$train_set(x), d] == 1])
+                    resampling_m$train_set(x)[data[resampling_m$train_set(x), d] == 1])
   
   ml_m <- mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
   ml_m$param_set$values <- params$params_m # tbd: check if parameter passing really works
   # ml_m <- mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  r_m <- mlr3::resample(task_m, ml_m, resampling_scheme, store_models = TRUE)
+  r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   # r_m <- mlr::resample(learner = ml_m, task = task_m, resampling = rin)
   # m_hat_list <- r_m$data$prediction # alternatively, r_m$prediction (not listed)
   # # m_hat_list <- mlr::getRRPredictionList(r_m)
@@ -159,9 +122,9 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
   g1_hat_list <- lapply(r_g1$data$prediction, function(x) x$test$response)
 
   
-  if ( (resampling_scheme$iters != resampling_g0$iters) ||
-       (resampling_scheme$iters != resampling_g1$iters) ||
-       (resampling_scheme$iters != n_iters) ||
+  if ( (resampling_m$iters != resampling_g0$iters) ||
+       (resampling_m$iters != resampling_g1$iters) ||
+       (resampling_m$iters != n_iters) ||
        (resampling_g1$iters != n_iters) ||
        (resampling_g0$iters != n_iters) ||
        (!identical(train_ids_0, train_ids_g0)) ||
@@ -285,11 +248,15 @@ dml_irm <- function(data, y, d, k = 2, resampling = NULL, mlmethod, params = lis
       boot_theta <- boot$boot_theta
     }
   }
-
-
+  
+  all_preds = list(m_hat_list = m_hat_list,
+                   g0_hat_list = g0_hat_list,
+                   g1_hat_list = g1_hat_list)
+  
   names(theta) <- names(se) <- names(boot_se) <- d
   res <- list( coefficients = theta, se = se, t = t, pval = pval,
-               boot_se = boot_se, boot_theta = boot_theta)
+               boot_se = boot_se, boot_theta = boot_theta,
+               all_preds = all_preds)
   
   class(res) <- "DML"
   return(res)

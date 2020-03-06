@@ -98,3 +98,34 @@ dgp1_irmiv <- function(theta, N, k) {
   
   return(data)
 }
+
+dgp1_toeplitz = function(n, p, betamax = 4, decay = 0.99, threshold = 0, noisevar = 10,  ...){
+  
+  beta = vector("numeric", length = p)
+  
+  for (j in 1:p){
+    beta[j]= betamax*(j)^{-decay}
+  }
+  
+  beta[beta<threshold] = 0
+  
+  cols_treatment = c(1, 5, 10)
+  
+  covar=toeplitz(0.9^(0:(p-1)))
+  diag(covar) = rep(1,p)
+  mu = rep(0,p)
+  
+  X = mvtnorm::rmvnorm(n=n, mean=mu, sigma=covar)
+  e = rnorm(n, sd = sqrt(noisevar))
+  y = X%*%beta + e
+  
+  d = X[,cols_treatment]
+  X = X[,-cols_treatment]
+  
+  #colnames(x) = paste0("X", seq( from = 1, to = dim(x)[1] ))
+  colnames(d) = paste0("d", seq( from = 1, to = length(cols_treatment)))
+  #names(y) = "y"
+  data = data.frame(y,d,X)
+  
+  return(data)
+}

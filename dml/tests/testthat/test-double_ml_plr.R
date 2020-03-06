@@ -31,18 +31,26 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, inf_model = inf_model,
-                 se_type = inf_model,
-                 bootstrap = "normal", nRep = n_rep_boot)
+                 se_type = inf_model)
   theta <- coef(plr_hat)
   se <- plr_hat$se
+
   t <- plr_hat$t
   pval <- plr_hat$pval
   ci <- confint(plr_hat, level = 0.95, joint = FALSE)
  
+  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr[[i_setting]], y = "y", d = "d",
+                                      dml_procedure = dml_procedure,
+                                      inf_model = inf_model, se_type = inf_model,
+                                      bootstrap = "normal", nRep = n_rep_boot)
+
   set.seed(i_setting)
+
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
+
   double_mlplr_obj = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
                                      inf_model = inf_model)

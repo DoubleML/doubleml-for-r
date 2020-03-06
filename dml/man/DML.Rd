@@ -4,10 +4,10 @@
 \alias{DML}
 \title{Wrapper Function for Double Machine Learning with Cross-Fitting}
 \usage{
-DML(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
+DML(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
   mlmethod, dml_procedure = "dml2", params = list(params_m = list(),
   params_g = list()), inf_model = "IV-type", se_type = "ls",
-  bootstrap = "normal", nRep = 500, aggreg_median = TRUE, ...)
+  aggreg_median = TRUE, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -22,8 +22,6 @@ DML(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
 
 \item{S}{number of repetitions (default \code{S=1}.}
 
-\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
-
 \item{mlmethod}{If multiple target coefficients are provided and different mlmethods chosen for each coefficient, the names of the methods are required to match. A list of available methods is available at \url{https://mlr.mlr-org.com/articles/tutorial/integrated_learners.html}.}
 
 \item{dml_procedure}{Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).}
@@ -33,10 +31,6 @@ DML(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
 \item{inf_model}{Inference model for final estimation, default \code{"IV-type"} (...)}
 
 \item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
-
-\item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.}
-
-\item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 
 \item{aggreg_median}{logical indicating how target estimators and standard errors should be aggregated for repeated cross-fitting. By default (\code{TRUE}), the median over all estimators as taken as the final estimator. If \code{FALSE}, the mean is calculated over all estimators.}
 

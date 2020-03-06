@@ -4,7 +4,7 @@
 \alias{dml_plriv}
 \title{Double Machine Learning for Partially Linear Instrumental Variable Regression.}
 \usage{
-dml_plriv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
+dml_plriv(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   params = list(params_m = list(), params_r = list(), params_g = list()),
   dml_procedure = "dml2", inf_model = "partialling-out",
   se_type = "partialling-out", bootstrap = "normal", nRep = 500, ...)
@@ -19,8 +19,6 @@ dml_plriv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 \item{z}{Name of instrumental variables.}
 
 \item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
-
-\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
 \item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of z on X (nuisance part m). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part r).}
 
@@ -37,6 +35,8 @@ dml_plriv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 
 \item{...}{further options passed to underlying functions.}
+
+\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 }
 \value{
 Result object with estimated coefficient and standard errors.

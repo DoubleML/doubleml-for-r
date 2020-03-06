@@ -4,10 +4,10 @@
 \alias{dml_irm}
 \title{Double Machine Learning for Interactive Regression Model.}
 \usage{
-dml_irm(data, y, d, k = 2, resampling = NULL, mlmethod,
-  params = list(params_m = list(), params_g1 = list(), params_g2 =
-  list()), dml_procedure = "dml2", inf_model = "ATE",
-  se_type = "ATE", bootstrap = "normal", nRep = 500, ...)
+dml_irm(data, y, d, k = 2, smpls = NULL, mlmethod,
+  params = list(params_m = list(), params_g = list()),
+  dml_procedure = "dml2", inf_model = "ATE", se_type = "ATE",
+  bootstrap = "normal", nRep = 500, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -17,8 +17,6 @@ dml_irm(data, y, d, k = 2, resampling = NULL, mlmethod,
 \item{d}{Name of treatment variables for which inference should be performed.}
 
 \item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
-
-\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
 \item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m).}
 
@@ -35,6 +33,8 @@ dml_irm(data, y, d, k = 2, resampling = NULL, mlmethod,
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 
 \item{...}{further options passed to underlying functions.}
+
+\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 }
 \value{
 Result object with estimated coefficient and standard errors.

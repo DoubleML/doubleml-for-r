@@ -21,9 +21,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   n_rep_boot = 498
   
   set.seed(i_setting)
-  cf <- mlr3::rsmp("cv", folds = 5)
   pliv_hat <- dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
-                        resampling = cf, mlmethod = learner_pars$mlmethod,
+                        k = 5, mlmethod = learner_pars$mlmethod,
                         params = learner_pars$params,
                         dml_procedure = dml_procedure, inf_model = inf_model,
                         se_type = inf_model,
@@ -33,9 +32,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   
     
   set.seed(i_setting)
+  
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
+
   double_mlpliv_obj = DoubleMLPLIV$new(n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
                                      inf_model = inf_model)

@@ -4,10 +4,9 @@
 \alias{dml_plr}
 \title{Double Machine Learning for Partially Linear Regression.}
 \usage{
-dml_plr(data, y, d, k = 2, resampling = NULL, mlmethod,
+dml_plr(data, y, d, k = 2, smpls = NULL, mlmethod,
   params = list(params_m = list(), params_g = list()),
-  dml_procedure = "dml2", inf_model = "IV-type", se_type = "ls",
-  bootstrap = "normal", nRep = 500, ...)
+  dml_procedure = "dml2", inf_model = "IV-type", se_type = "ls", ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -17,8 +16,6 @@ dml_plr(data, y, d, k = 2, resampling = NULL, mlmethod,
 \item{d}{Name of treatment variables for which inference should be performed.}
 
 \item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
-
-\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
 \item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m).}
 
@@ -30,11 +27,13 @@ dml_plr(data, y, d, k = 2, resampling = NULL, mlmethod,
 
 \item{se_type}{Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{inf_model}. The options chosen for \code{inf_model} and \code{se_type} are required to match.}
 
+\item{...}{further options passed to underlying functions.}
+
+\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
+
 \item{bootstrap}{Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.}
 
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
-
-\item{...}{further options passed to underlying functions.}
 }
 \value{
 Result object with estimated coefficient and standard errors.

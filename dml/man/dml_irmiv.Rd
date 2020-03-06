@@ -4,11 +4,11 @@
 \alias{dml_irmiv}
 \title{Double Machine Learning for Interactive Instrumental Variable Regression Model.}
 \usage{
-dml_irmiv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
-  params = list(params_mu0 = list(), params_mu1 = list(), params_m0 =
-  list(), params_m1 = list(), params_p = list()), dml_procedure = "dml2",
-  always_takers = TRUE, never_takers = TRUE, inf_model = "LATE",
-  se_type = "LATE", bootstrap = "normal", nRep = 500, ...)
+dml_irmiv(data, y, d, z, k = 2, smpls = NULL, mlmethod,
+  params = list(params_mu = list(), params_m = list(), params_p =
+  list()), dml_procedure = "dml2", always_takers = TRUE,
+  never_takers = TRUE, inf_model = "LATE", se_type = "LATE",
+  bootstrap = "normal", nRep = 500, ...)
 }
 \arguments{
 \item{data}{Data frame.}
@@ -20,8 +20,6 @@ dml_irmiv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 \item{z}{Name of instrumental variables.}
 
 \item{k}{Number of folds for \code{k}-fold cross-fitting (default \code{k}=2).}
-
-\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 
 \item{mlmethod}{List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_mu1} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X for individuals with Z = 1  (nuisance part mu1) and \code{mlmethod_mu0} for individuals with Z = 0 (nuisance part mu0). Set \code{mlmethod_m1} for  classification method for regression of d on X for individuals with Z = 1 (nuisance part m1) and \code{mlmethod_m0} for observations with Z = 0 (nuisance part m0). Set \code{mlmethod_p} for classification method for propensity score (nuisance part p).}
 
@@ -42,6 +40,8 @@ dml_irmiv(data, y, d, z, k = 2, resampling = NULL, mlmethod,
 \item{nRep}{Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.}
 
 \item{...}{further options passed to underlying functions.}
+
+\item{resampling}{Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.}
 }
 \value{
 Result object with estimated coefficient and standard errors.

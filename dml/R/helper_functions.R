@@ -39,5 +39,20 @@ se_repeated <- function(se_s, coefficients, theta_s, aggreg_median) {
 }
 
 
+sample_splitting <- function(k, data) {
+  
+  resampling <- mlr3::ResamplingCV$new()
+  resampling$param_set$values$folds <- k
+  
+  dummy_task = Task$new('dummy_resampling', 'regr', data)
+  resampling <- resampling$instantiate(dummy_task)
+  
+  n_iters <- resampling$iters
+  train_ids <- lapply(1:n_iters, function(x) resampling$train_set(x))
+  test_ids <- lapply(1:n_iters, function(x) resampling$test_set(x))
+  
+  return(list(train_ids = train_ids, test_ids = test_ids))
+}
+
 
   

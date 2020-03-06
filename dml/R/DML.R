@@ -16,33 +16,12 @@
 
 # Preliminary implementation of Inference task (basic input + output, ignore OOP first)
 
-DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
+DML <- function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
                           mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
                           params_g = list()), inf_model = "IV-type", se_type = "ls", 
-                          bootstrap = "normal", nRep = 500, aggreg_median = TRUE,
+                          aggreg_median = TRUE,
                           ...){
-
-  
-  # if (is.null(ResampleInstance)) {
-  # 
-  #   if (is.null(resampling)) {
-  #   resampling <-  mlr::makeResampleDesc("CV", iters = k)
-  #   }
-  # }
-  if (is.null(resampling)) {
-    resampling <- mlr3::ResamplingCV$new()
-    resampling$param_set$values$folds = k
-  }
-    
-  # if(S > 1 & !is.null(ResampleInstance)) {
-  #   
-  #   message("ResampleInstance is not passed for repeated cross-fitting! Resampling is based on ResampleIncstance$desc.")
-  #   resampling <- ResampleInstance$desc
-  #   n_iters <- resampling$iters
-  #   
-  #   ResampleInstance <- NULL
-  #   }
   
   p1 <- length(d)
   n <- nrow(data)
@@ -51,9 +30,8 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
   theta_s <- se_s <- matrix(NA, nrow = p1, ncol = S)
    
   coefficients <- se <- t <- pval <- boot_se <- rep(NA, p1)
-  boot_theta_s <- matrix(NA, nrow = p1, ncol = nRep)
-  boot_theta <- matrix(NA, nrow = p1, ncol = nRep * S)
-  boot_list <- rep(list(), S)
+  
+  all_preds <- list()
   
   # 
   # if ( length(mlmethod$mlmethod_m) == 1 & p1 > 1) {
@@ -104,8 +82,12 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
   # }
   # 
   
+  if (is.null(smpls)) {
+    smpls <- lapply(1:S, function(x) sample_splitting(k, data))
+  }
+  
   for (s in seq(S)){
-    
+    this_smpls = smpls[[s]]
 
     for (j in seq(p1)) {
       
@@ -116,26 +98,24 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
       # tbd: implementation of object orientation -> from here jump to plr, ...
       
       res_j <- dml_plr(data = data, y = y, d = d[j],
-                    resampling = resampling,  
+                       smpls = this_smpls,  
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
                     params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
-                    inf_model = inf_model, se_type = se_type,
-                    bootstrap = bootstrap, nRep = nRep, ...)
+                    inf_model = inf_model, se_type = se_type, ...)
       
       coefficients[j] <- res_j$coefficients
       se[j] <- res_j$se
       t[j] <- res_j$t
       pval[j] <- res_j$pval
-      boot_se[j] <- res_j$boot_se
-      boot_theta_s[j,] <- res_j$boot_theta
+      
+      all_preds[[j]] <- res_j$all_preds
       
     }
     
-  names(coefficients) <- names(se) <- names(t) <- names(pval) <- 
-    names(boot_se) <- rownames(boot_theta_s) <- d
+  names(coefficients) <- names(se) <- names(t) <- names(pval) <- d
 
   res[[s]] <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta_s, samplesize = n)
+               samplesize = n, all_preds = all_preds)
   
   }
   
@@ -168,19 +148,21 @@ DML <- function(data, y, d, model = "plr", k = 2, S = 1, resampling = NULL,
   t <- coefficients/se
   pval <- 2 * stats::pnorm(-abs(t))
   
-  boot_list <- lapply(res, function(x) x$boot_theta)
-  boot_theta <- matrix(unlist(boot_list), ncol = nRep * S)
+  all_preds <- lapply(res,function(x) x$all_preds)
     
-  names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- rownames(boot_theta) <- d
+  names(coefficients) <- names(se) <- names(t) <- names(pval) <- names(boot_se) <- d
   res <- list( coefficients = coefficients, se = se, t = t, pval = pval, 
-               boot_se = boot_se, boot_theta = boot_theta, samplesize = n,
-               theta_s = theta_s, se_s = se_s)
+               samplesize = n, theta_s = theta_s, se_s = se_s,
+               all_preds = all_preds)
   
   class(res) <- "DML"
   
   return(res)
 
 }
+
+
+
 
 #' Methods for Inference Task
 #'
@@ -245,6 +227,34 @@ confint.DML <- function(object, parm, level = 0.95, joint = FALSE, ...){
    }
   return(ci)
 }
+
+#' @export
+bootstrap.DML <- function(object, data, y, d,
+                          dml_procedure, inf_model, se_type,
+                          bootstrap = "normal", nRep = 500) {
+  
+  xx = dim(object$theta_s)
+  n_rep_cross_fit = xx[2]
+  p1 = length(d)
+  
+  boot_theta = matrix(NA, nrow = p1, ncol = nRep * n_rep_cross_fit)
+  for (s in seq(n_rep_cross_fit)){
+    for (j in seq(p1)) {
+      ind_start <- ((s-1)*nRep+1)
+      ind_end <- (s*nRep)
+      boot_theta[j, ind_start:ind_end] <- dml_plr_boot(data, y = y, d = d[j],
+                                                       theta = object$theta_s[j, s], se = object$se_s[j, s],
+                                                       all_preds = object$all_preds[[s]][[j]],
+                                                       dml_procedure = dml_procedure,
+                                                       inf_model = inf_model, se_type = inf_model,
+                                                       bootstrap = bootstrap,  nRep = nRep)
+    }
+  }
+  
+  return(boot_theta)
+  
+}
+
 
 #' Methods for Inference Task
 #'
