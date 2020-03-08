@@ -62,14 +62,11 @@ DoubleML <- R6Class("DoubleML", public = list(
       }
     }
     
- #   self$coef = stats::median(all_coef)
- #   self$se = sqrt(stats::median(all_se^2  - (all_coef - self$coef)^2))
- #   self$t = self$coef/self$se
- #   self$pval <- 2 * stats::pnorm(-abs(self$t))
-=======
     private$agg_cross_fit()
     
-  #  names(self$coef) <- names(self$se) <- names(self$t) <- names(self$pval) <- d
+    self$t = self$coef/self$se
+    self$pval = 2 * stats::pnorm(-abs(self$t))
+    names(self$coef) = names(self$se) = names(self$t) = names(self$pval) = d
 
     invisible(self)
   },
