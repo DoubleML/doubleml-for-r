@@ -12,6 +12,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                                       params_m = list()),
                         dml_procedure,
                         inf_model,
+                        subgroups = list(always_takers = TRUE, never_takers = TRUE),
                         se_reestimate=FALSE,
                         n_rep_cross_fit=1,
                         param_set = NULL,
@@ -22,6 +23,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                                params,
                                dml_procedure,
                                inf_model,
+                               subgroups,
                                se_reestimate,
                                n_rep_cross_fit,
                                param_set,
@@ -80,13 +82,13 @@ private = list(
       
       # get conditional samples (conditioned on z = 0 or z = 1)
       cond_smpls <- private$get_cond_smpls(smpls, data[ , z])
-  
+      
       resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu,
                                                          cond_smpls$train_ids_0,
                                                          smpls$test_ids)
       r_mu0 <- mlr3::resample(task_mu, ml_mu, resampling_mu0, store_models = TRUE)
       mu0_hat = extract_prediction(r_mu0)$response
-      
+    
       # mu1
       resampling_mu1 <- mlr3::rsmp("custom")$instantiate(task_mu,
                                                          cond_smpls$train_ids_1,
@@ -94,21 +96,35 @@ private = list(
       r_mu1 <- mlr3::resample(task_mu, ml_mu, resampling_mu1, store_models = TRUE)
       mu1_hat = extract_prediction(r_mu1)$response
     
+      if (self$subgroups$always_takers == FALSE & self$subgroups$never_takers == FALSE) {
+        message("If there are no always-takers and no never-takers, ATE is estimated")
+      }
+      
+      if (self$subgroups$always_takers == FALSE){
+        m0_hat <- rep(0, nrow(data))
+      }
+      
+      else if (self$subgroups$always_takers == TRUE){
       resampling_m0 <- mlr3::rsmp("custom")$instantiate(task_m,
                                                         cond_smpls$train_ids_0,
                                                         smpls$test_ids)
       r_m0 <- mlr3::resample(task_m, ml_m, resampling_m0, store_models = TRUE)
       m0_hat = extract_prob_prediction(r_m0)$prob.1
+      }
       
+      if (self$subgroups$never_takers == FALSE){
+        m1_hat <- rep(1, nrow(data))
+      }
+      
+      else if (self$subgroups$never_takers == TRUE){
       # m1
       resampling_m1 <- mlr3::rsmp("custom")$instantiate(task_m,
                                                         cond_smpls$train_ids_1,
                                                         smpls$test_ids)
       r_m1 <- mlr3::resample(task_m, ml_m, resampling_m1, store_models = TRUE)
       m1_hat = extract_prob_prediction(r_m1)$prob.1
-      
+      }
     }
-    
     
     else if (!is.null(self$param_tuning)){
     

@@ -9,6 +9,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   params = NULL,
   dml_procedure = NULL,
   inf_model = NULL,
+  subgroups = NULL,
   n_rep_cross_fit = 1,
   coef = NULL,
   se = NULL,
@@ -225,6 +226,7 @@ private = list(
                         params,
                         dml_procedure,
                         inf_model,
+                        subgroups, 
                         se_reestimate,
                         n_rep_cross_fit,
                         param_set,
@@ -244,6 +246,7 @@ private = list(
     self$dml_procedure <- dml_procedure
     self$se_reestimate <- se_reestimate
     self$inf_model <- inf_model
+    self$subgroups <- subgroups
     self$n_rep_cross_fit <- n_rep_cross_fit
     self$param_set <- param_set
     self$tune_settings <- tune_settings
