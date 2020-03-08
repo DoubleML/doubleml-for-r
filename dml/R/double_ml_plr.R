@@ -33,6 +33,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                params,
                                dml_procedure,
                                inf_model,
+                               subgroups,
                                se_reestimate,
                                n_rep_cross_fit, 
                                param_set,
