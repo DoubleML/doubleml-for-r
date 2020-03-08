@@ -38,11 +38,6 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   t <- plr_hat$t
   pval <- plr_hat$pval
   ci <- confint(plr_hat, level = 0.95, joint = FALSE)
- 
-  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr[[i_setting]], y = "y", d = "d",
-                                      dml_procedure = dml_procedure,
-                                      inf_model = inf_model, se_type = inf_model,
-                                      bootstrap = "normal", nRep = n_rep_boot)
 
   set.seed(i_setting)
 
@@ -61,17 +56,13 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   pval_obj <- double_mlplr_obj$pval
   ci_obj <- double_mlplr_obj$confint(level = 0.95, joint = FALSE)
   
-  # bootstrap
-  double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  boot_theta_obj = double_mlplr_obj$boot_coef
-
   expect_equal(theta, theta_obj, tolerance = 1e-8)
   expect_equal(se, se_obj, tolerance = 1e-8)
   expect_equal(t, t_obj, tolerance = 1e-8)
   expect_equal(pval, pval_obj, tolerance = 1e-8)
   expect_equal(ci, ci_obj, tolerance = 1e-8)
 
-  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  # expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }
 )
