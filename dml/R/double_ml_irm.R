@@ -11,6 +11,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                                       params_g = list()),
                         dml_procedure,
                         inf_model,
+                        subgroups = NULL,
                         se_reestimate=FALSE,
                         n_rep_cross_fit=1,
                         param_set = NULL,
