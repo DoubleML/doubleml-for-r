@@ -164,11 +164,10 @@ DoubleML <- R6Class("DoubleML", public = list(
       parm <- names(self$coef)[parm]
     }
 
-    a <- (1 - level)/2
-    a <- c(a, 1 - a)
-    pct <- format.perc(a, 3)
-
     if (joint == FALSE) {
+      a <- (1 - level)/2
+      a <- c(a, 1 - a)
+      pct <- format.perc(a, 3)
       fac <- stats::qnorm(a)
       ci <- array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm,
                                                                      pct))
@@ -176,11 +175,21 @@ DoubleML <- R6Class("DoubleML", public = list(
     }
   
     if (joint == TRUE) {
-        ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
-        sim <- apply(abs(self$boot_coef), 2, max)
-        hatc <- stats::quantile(sim, probs = 1 - a)
-        ci[, 1] <- self$coef[parm] - hatc * self$se
-        ci[, 2] <- self$coef[parm] + hatc * self$se
+      
+      a <- (1 - level) 
+      ab <- c(a/2, 1 - a/2)      
+      pct <- format.perc(ab, 3)
+      ci <- array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
+      
+      if (is.null(self$boot_coef)){
+        stop("Multiplier bootstrap has not yet been performed. First call bootstrap() and then try confint() again.")
+      }
+      
+      sim <- apply(abs(self$boot_coef), 2, max)
+      hatc <- stats::quantile(sim, probs = 1 - a)
+      
+      ci[, 1] <- self$coef[parm] - hatc * self$se
+      ci[, 2] <- self$coef[parm] + hatc * self$se
      }
     return(ci)
   } # , 
