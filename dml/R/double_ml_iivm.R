@@ -153,15 +153,31 @@ private = list(
       ml_m <- lapply(params$params_m, function(x) initiate_prob_learner(self$ml_learners$mlmethod_m,
                                                                         x))
       
-      resampling_m0 <- initiate_resampling(task_m, cond_smpls$train_ids_0, smpls$test_ids)
-      r_m0 <- resample_dml(task_m, ml_m, resampling_m0, store_models = TRUE)
-      m0_hat <- lapply(r_m0, extract_prob_prediction)
-      m0_hat <- rearrange_prob_prediction(m0_hat)
+      if (self$subgroups$always_takers == FALSE & self$subgroups$never_takers == FALSE) {
+        message("If there are no always-takers and no never-takers, ATE is estimated")
+      }
       
-      resampling_m1 <- initiate_resampling(task_m, cond_smpls$train_ids_1, smpls$test_ids)
-      r_m1 <- resample_dml(task_m, ml_m, resampling_m1, store_models = TRUE)
-      m1_hat <- lapply(r_m1, extract_prob_prediction)
-      m1_hat <- rearrange_prob_prediction(m1_hat)
+      if (self$subgroups$always_takers == FALSE){
+        m0_hat <- rep(0, nrow(data))
+      }
+      
+      else if (self$subgroups$always_takers == TRUE){
+        resampling_m0 <- initiate_resampling(task_m, cond_smpls$train_ids_0, smpls$test_ids)
+        r_m0 <- resample_dml(task_m, ml_m, resampling_m0, store_models = TRUE)
+        m0_hat <- lapply(r_m0, extract_prob_prediction)
+        m0_hat <- rearrange_prob_prediction(m0_hat)
+      }
+      
+      if (self$subgroups$never_takers == FALSE){
+        m1_hat <- rep(1, nrow(data))
+      }
+      
+      else if (self$subgroups$never_takers == TRUE){
+        resampling_m1 <- initiate_resampling(task_m, cond_smpls$train_ids_1, smpls$test_ids)
+        r_m1 <- resample_dml(task_m, ml_m, resampling_m1, store_models = TRUE)
+        m1_hat <- lapply(r_m1, extract_prob_prediction)
+        m1_hat <- rearrange_prob_prediction(m1_hat)
+      }
       
     }
     
