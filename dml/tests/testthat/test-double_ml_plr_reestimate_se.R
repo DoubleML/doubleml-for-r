@@ -12,6 +12,7 @@ test_cases = expand.grid(learner = c('regr.glmnet'),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
+skip("skip reestimate se test")
 patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                                    .cases = test_cases, {
   
