@@ -16,9 +16,9 @@ extract_test_pred <- function(x) {
 #' @param probs probability.
 #' @param digits number of digits.
 #' @rdname helpers 
-format.perc <- function (probs, digits) {
-  paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
-        "%" ) }
+# format.perc <- function (probs, digits) {
+#   paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
+#         "%" ) }
 
 #' @param se_s Standard errors from repeated cross-fitting.
 #' @param coefficients Final estimators aggregated over all repetitions. 

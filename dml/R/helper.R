@@ -137,6 +137,11 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
 }
 
 
+format.perc <- function (probs, digits) {
+  paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
+        "%" ) }
+
+
 # resample_dml = function(task, learner, resampling, store_models = FALSE){
 #     task = mlr3::assert_task(as_task(task, clone = TRUE))
 #     checkmate::check_list(learner)
