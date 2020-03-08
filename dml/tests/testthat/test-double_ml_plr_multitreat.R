@@ -35,11 +35,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  se_type = inf_model)
   theta <- coef(plr_hat)
   se <- plr_hat$se
+  ci_ptwise <- confint(plr_hat, joint = FALSE, level = 0.95)
   
-  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
+  set.seed(i_setting)
+  plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr_multi[[i_setting]], y = "y", 
+                                      d = c('d1', 'd2', 'd3'), 
                                       dml_procedure = dml_procedure,
                                       inf_model = inf_model, se_type = inf_model,
                                       bootstrap = "normal", nRep = n_rep_boot)
+  ci_joint <- confint(plr_hat, joint = TRUE, level = 0.95)
   
   set.seed(i_setting)
   params_OOP <- rep(list(rep(list(learner_pars$params), 3)), 1)
@@ -55,14 +59,21 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   se_obj <- double_mlplr_obj$se
   
   # bootstrap
+  set.seed(i_setting)
   double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   boot_theta_obj = double_mlplr_obj$boot_coef
   
-  # at the moment the object result comes without a name
-  expect_equal(theta, c(d=theta_obj), tolerance = 1e-8)
-  expect_equal(se, c(d=se_obj), tolerance = 1e-8)
-  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  # joint confint
+  ci_ptwise_obj = double_mlplr_obj$confint(joint = FALSE, level = 0.95)
+  ci_joint_obj = double_mlplr_obj$confint(joint = TRUE, level = 0.95)
   
+  # at the moment the object result comes without a name
+  expect_equal(theta, c(theta_obj), tolerance = 1e-8)
+  expect_equal(se, c(se_obj), tolerance = 1e-8)
+  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  expect_equal(ci_ptwise, ci_ptwise_obj)
+  expect_equal(ci_joint, ci_joint_obj)
+
 }
 )
 
