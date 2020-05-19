@@ -3,22 +3,15 @@
 \name{helpers}
 \alias{helpers}
 \alias{extract_test_pred}
-\alias{format.perc}
 \alias{se_repeated}
 \title{Helper Functions}
 \usage{
 extract_test_pred(x)
 
-\method{format}{perc}(probs, digits)
-
 se_repeated(se_s, coefficients, theta_s, aggreg_median)
 }
 \arguments{
 \item{x}{some object.}
-
-\item{probs}{probability.}
-
-\item{digits}{number of digits.}
 
 \item{se_s}{Standard errors from repeated cross-fitting.}
 
@@ -27,6 +20,10 @@ se_repeated(se_s, coefficients, theta_s, aggreg_median)
 \item{theta_s}{Estimators from all repetitions.}
 
 \item{aggreg_median}{logical indicating how target estimators and standard errors should be aggregated for repeated cross-fitting. By default (\code{TRUE}), the median over all estimators as taken as the final estimator. If \code{FALSE}, the mean is calculated over all estimators.}
+
+\item{probs}{probability.}
+
+\item{digits}{number of digits.}
 }
 \description{
 Functions needed in package code.

@@ -142,6 +142,32 @@ format.perc <- function (probs, digits) {
         "%" ) }
 
 
+# Take x (vector or matrix) as input and return it as a matrix
+assure_matrix = function(x){
+  if (is.vector(x)){
+    x = matrix(x, ncol = 1)
+  }
+  
+  else {
+    checkmate::check_matrix(x)
+  }
+  
+  return(x)
+  
+}
+
+# Check if matrices in a list have the same number of rows
+check_matrix_row = function(mat_list){
+  checkmate::check_list(mat_list)
+  
+  n_rows = vapply(mat_list, nrow, integer(1L))
+ 
+  if ( isFALSE(all(n_rows == n_rows[1]))){
+    stop("Matrices do not have same number of rows.")
+  }
+}
+
+
 # resample_dml = function(task, learner, resampling, store_models = FALSE){
 #     task = mlr3::assert_task(as_task(task, clone = TRUE))
 #     checkmate::check_list(learner)
