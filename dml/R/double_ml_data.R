@@ -9,7 +9,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class. 
     #' 
-    #' @param data (`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame], [data.table], [Matrix], ..
+    #' @param data (`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame] (default), [data.table], [Matrix], ..
   initialize = function(self, 
                         data, 
                         x_cols, 
@@ -17,12 +17,11 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
                         d_cols,
                         z_col = NULL){
     
-    # assertions? 
-    
     self$data = data
     self$x_cols = x_cols
     self$y_col = d_cols
     self$z_col = z_col
+    
     self$set_y_z()
     
     # by default, we initialize to the first treatment variable
@@ -79,9 +78,43 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL){
   
 }
   
-vec_to_matrix = function(X){
+double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
+                                              d_cols = NULL, z_col = NULL){
   
+  if ( is.null(x_cols) | is.null(y_col) | is.null(d_cols)){
+    stop("Column indices x_cols, y_col and d_cols not specified.")
+  }
+  
+  checkmate::check_character(x_cols)
+  checkmate::check_character(y_col)
+  checkmate::check_character(d_cols)
+  
+  if (!is.null(z_col)){
+    checkmate::check_character(z_col)
+  }
+  
+  col_indx =  c(x_cols, y_col, d_cols, z_col)
+  data = data.table::data.table(df)[, col_indx]
+   
+  y_name = "y" 
+  x_names = paste0("X", 1:length(x_cols))
+  d_names = paste0("d", 1:length(d_cols))
+  
+  if (!is.null(z_col)){
+    z_name = paste0("z", 1:length(z_col))
+  }
+    
+  else {
+    z_name = NULL
+  }
+  names(data) = c(x_names, y_name, d_names, z_name)
+  
+  return(data)
 }
 
 
-# double_ml_data_from_data_frame = function(df, )
+
+
+
+
+
