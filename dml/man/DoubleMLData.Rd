@@ -9,7 +9,7 @@
 DoubleMLData
 }
 \arguments{
-\item{data}{(`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame], [data.table], [Matrix], ..}
+\item{data}{(`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame] (default), [data.table], [Matrix], ..}
 }
 \description{
 Data structure for double machine learning.
