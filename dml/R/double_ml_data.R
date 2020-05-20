@@ -10,8 +10,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     #' Creates a new instance of this [R6][R6::R6Class] class. 
     #' 
     #' @param data (`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame] (default), [data.table], [Matrix], ..
-  initialize = function(self, 
-                        data, 
+  initialize = function(data, 
                         x_cols, 
                         y_col, 
                         d_cols,
@@ -22,14 +21,17 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$y_col = d_cols
     self$z_col = z_col
     
-    self$set_y_z()
+    # self$set_y_z()
     
     # by default, we initialize to the first treatment variable
-    self$set_x_d(d_cols[1])
+    # self$set_x_d(d_cols[1])
+    
+    invisible(self)
+
     },
   
   x = function(self){
-    return(self)
+    return(self[, x_cols])
   },
   
   set_x_d = function(self, treatment_var){
@@ -61,17 +63,34 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL){
     data = data.table::data.table(X,y,d,z)
   }
   
-  if (is.null(z)){
-      z_col = NULL
+  if (!is.null(z)){
+    
+    if (ncol(z) == 1) {
+      z_col = "z"
+    }
+    
+    else {
+      z_col = paste0("z", 1:ncol(z))
+    }
+      
   }
     
   else {
-    z_col = paste0("z", 1:ncol(z))
+    z_col = NULL
     }
     
   y_col = "y" 
-  d_cols = paste0("d", 1:ncol(d))
+
+  if (ncol(d) == 1){
+    d_cols = "d"
+  }
+  
+  else {
+    d_cols = paste0("d", 1:ncol(d))
+  }
+  
   x_cols = paste0("X", 1:ncol(X))
+  
   names(data) = c(x_cols, y_col, d_cols, z_col)
 
   return(data)
@@ -94,14 +113,27 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   }
   
   col_indx =  c(x_cols, y_col, d_cols, z_col)
-  data = data.table::data.table(df)[, col_indx]
+  data = data.table::data.table(df)[, col_indx, with = FALSE]
    
   y_name = "y" 
   x_names = paste0("X", 1:length(x_cols))
-  d_names = paste0("d", 1:length(d_cols))
+  
+  if (length(d_cols) == 1){
+    d_names = "d"
+  }
+  
+  else {
+    d_names = paste0("d", 1:length(d_cols))
+  }
   
   if (!is.null(z_col)){
-    z_name = paste0("z", 1:length(z_col))
+    if (length(z_col) == 1) {
+      z_name = "z"
+    }
+    
+    else {
+      z_name = paste0("z", 1:length(z_col))
+    }
   }
     
   else {
