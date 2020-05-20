@@ -70,6 +70,11 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   expect_identical(D2, D6)     
   expect_identical(D3, D7)
   
+  # Use DoubleMLData class
+  D8 = DoubleMLData$new(data = D7, x_cols = X_cols1,
+                        y_col = y_indx, 
+                        d_cols = d2_indx)
+  
   } 
 )
 
