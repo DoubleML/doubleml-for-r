@@ -4,42 +4,110 @@
 #' Data structure for double machine learning. 
 #
 #'
+#'
 DoubleMLData <- R6Class("DoubleMLData", public = list(
+   
+  data = NULL, 
+  x_cols = NULL, 
+  y_col = NULL, 
+  d_cols = NULL, 
+  z_col = NULL, 
+  d = NULL, 
+  X = NULL,
+  y = NULL,
+  z = NULL,
   
-    #' @description
-    #' Creates a new instance of this [R6][R6::R6Class] class. 
-    #' 
-    #' @param data (`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame] (default), [data.table], [Matrix], ..
-  initialize = function(data, 
-                        x_cols, 
-                        y_col, 
-                        d_cols,
+  initialize = function(data = NULL, 
+                        x_cols = NULL,
+                        y_col = NULL, 
+                        d_cols = NULL,
                         z_col = NULL){
     
+    if (all(class(data) == "data.frame")){
+      data = double_ml_data_from_data_frame(data, x_cols = x_cols, y_col = y_col,
+                                              d_cols = d_cols, z_col = z_col)
+    }
+    
+    checkmate::check_class(data, "data.table")
+      
     self$data = data
     self$x_cols = x_cols
-    self$y_col = d_cols
+    self$y_col = y_col
+    self$d_cols = d_cols
     self$z_col = z_col
-    
-    # self$set_y_z()
-    
+
+    self$set_y_z()
+
     # by default, we initialize to the first treatment variable
-    # self$set_x_d(d_cols[1])
-    
+    self$set_x_d(d_cols[1]) 
+
     invisible(self)
 
-    },
-  
-  x = function(self){
-    return(self[, x_cols])
+  },
+
+  .X = function(){
+       return(self$X)
+  },
+   
+  .z = function(){
+       if (is.null(self$z)){
+         return(NULL)
+       }
+      
+       else{
+         return(self$z)
+       }
   },
   
-  set_x_d = function(self, treatment_var){
+  .d = function(){
+       return(self$d)
+  },
+  
+  .y = function(){
+       return(self$y)
+  },
+  
+  all_variables = function(){
+    return(names(self$data))
+  },
+  
+  n_treat = function(){
+    return(length(self$d_cols))
+  },
+  
+  n_obs = function(){
+    return(dim(self$data)[1])
+  },
+  
+  set_x_d = function(treatment_var = NULL){
     checkmate::check_character(treatment_var)
     checkmate::check_subset(treatment_var, self$d_cols)
     xd_list = c(self$x_cols, self$d_cols)
+    xd_list = xd_list[xd_list != treatment_var]
+
+    self$d = data.table::data.table(self$data[, treatment_var, with = FALSE])
+    names(self$d) = paste0(treatment_var)
     
+    self$X = data.table::data.table(self$data[, xd_list, with = FALSE])
+    
+    invisible(self)
+  }, 
+  
+  set_y_z = function(){
+    self$y = data.table::data.table(self$data[, self$y_col, with = FALSE])
+  
+    if (is.null(self$z)){
+      self$z = NULL
+    }
+    
+    else {
+      self$z = data.table::data.table(self$data[, self$z_cols, with = FALSE])
+    }
+    
+    invisible(self)
+  
   }
+  
   )
 )
 
@@ -53,14 +121,14 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL){
   
   
   if (is.null(z)){
-    check_matrix_row(list(X,y,d))
+    check_matrix_row(list(X, y, d))
     data = data.table::data.table(X, y, d)
   }
 
   else {
     z = assure_matrix(z)
-    check_matrix_row(list(X,y,d,z))
-    data = data.table::data.table(X,y,d,z)
+    check_matrix_row(list(X, y, d, z))
+    data = data.table::data.table(X, y, d, z)
   }
   
   if (!is.null(z)){
@@ -143,7 +211,6 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   
   return(data)
 }
-
 
 
 
