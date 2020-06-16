@@ -36,10 +36,10 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$d_cols = d_cols
     self$z_col = z_col
 
-    private$set__y_z()
+    self$set__y_z()
 
     # by default, we initialize to the first treatment variable
-    private$set__x_d(d_cols[1]) 
+    self$set__x_d(d_cols[1]) 
 
     invisible(self)
 
@@ -55,9 +55,8 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   
   n_obs = function(){
     return(dim(self$data)[1])
-  }
-),
-private = list(
+  },
+  
   set__x_d = function(treatment_var = NULL){
     checkmate::check_character(treatment_var)
     checkmate::check_subset(treatment_var, self$d_cols)
