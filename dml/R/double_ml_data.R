@@ -45,28 +45,6 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
 
   },
 
-  .X = function(){
-       return(self$X)
-  },
-   
-  .z = function(){
-       if (is.null(self$z)){
-         return(NULL)
-       }
-      
-       else{
-         return(self$z)
-       }
-  },
-  
-  .d = function(){
-       return(self$d)
-  },
-  
-  .y = function(){
-       return(self$y)
-  },
-  
   all_variables = function(){
     return(names(self$data))
   },
