@@ -66,10 +66,10 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   
   expect_error(double_ml_data_from_data_frame(data))
   
-  expect_identical(D1, D4)
-  expect_identical(D2, D5)   
-  expect_identical(D2, D6)     
-  expect_identical(D3, D7)
+  expect_identical(D1$data, D4$data)
+  expect_identical(D2$data, D5$data)   
+  expect_identical(D2$data, D6$data)     
+  expect_identical(D3$data, D7$data)
   
   # Instantiate DoubleMLData
   D8 = DoubleMLData$new(data, x_cols = X_cols1, 
@@ -89,9 +89,9 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   
 
     
-  expect_identical(D1, D8$data)
-  expect_identical(D2, D9$data)   
-  expect_identical(D3, D10$data)
+  expect_identical(D1$data, D8$data)
+  expect_identical(D2$data, D9$data)   
+  expect_identical(D3$data, D10$data)
   } 
 )
 

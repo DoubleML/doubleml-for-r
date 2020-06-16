@@ -23,11 +23,13 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
                         d_cols = NULL,
                         z_col = NULL){
     
+    # TBD: Input data.frame
     if (all(class(data) == "data.frame")){
       data = double_ml_data_from_data_frame(data, x_cols = x_cols, y_col = y_col,
-                                              d_cols = d_cols, z_col = z_col)
+                                              d_cols = d_cols, z_col = z_col,
+                                              data_class = "data.table")
     }
-    
+
     checkmate::check_class(data, "data.table")
       
     self$data = data
@@ -88,8 +90,10 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
 )
 
 
-# Input: Matrices or vectors; Output: DoubleMLData
-double_ml_data_from_matrix = function(X, y, d, z = NULL){
+# Input: Matrices or vectors; Output: DoubleMLData or data.table
+double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLData"){
+
+  checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
 
   X = assure_matrix(X)
   y = assure_matrix(y)
@@ -136,18 +140,28 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL){
   x_cols = paste0("X", 1:ncol(X))
   
   names(data) = c(x_cols, y_col, d_cols, z_col)
+  
+  if (data_class == "DoubleMLData") {
 
+  data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
+                          z_col = z_col)
+  }
+  
   return(data)
   
 }
+
+# Input: Data frame, Output: DoubleMLData or data.table
   
 double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
-                                              d_cols = NULL, z_col = NULL){
+                                              d_cols = NULL, z_col = NULL, 
+                                              data_class = "DoubleMLData"){
   
   if ( is.null(x_cols) | is.null(y_col) | is.null(d_cols)){
     stop("Column indices x_cols, y_col and d_cols not specified.")
   }
   
+  checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
   checkmate::check_character(x_cols)
   checkmate::check_character(y_col)
   checkmate::check_character(d_cols)
@@ -184,6 +198,12 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
     z_name = NULL
   }
   names(data) = c(x_names, y_name, d_names, z_name)
+  
+  if (data_class == "DoubleMLData") {
+    
+    data = DoubleMLData$new(data, x_cols = x_names, y_col = y_name, d_cols = d_names, 
+                          z_col = z_name)
+  }
   
   return(data)
 }
