@@ -24,14 +24,11 @@ DoubleML <- R6Class("DoubleML", public = list(
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
-  fit = function(data, y, d, z=NULL) {
+  fit = function(se_reestimate = FALSE, keep_scores = TRUE) {
     
     # TBD: insert check for tuned params
     
-    n_obs = dim(data)[1]
-    n_treat = length(d)
-    
-    private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
+    private$initialize_arrays(private$n_obs, private$n_treat, self$n_rep_cross_fit)
     
     if (is.null(private$smpls)) {
       private$split_samples(data)
@@ -97,10 +94,9 @@ DoubleML <- R6Class("DoubleML", public = list(
   }, 
   tune = function(data, y, d, z=NULL) {
     n_obs = dim(data)[1]
-    n_treat = length(d)
-    
+
     # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
-    private$initialize_lists(n_treat, self$n_rep_cross_fit, private$n_nuisance) 
+    private$initialize_lists(private$n_treat, self$n_rep_cross_fit, private$n_nuisance) 
     
     if (is.null(private$smpls)) {
       private$split_samples(data)
@@ -244,6 +240,7 @@ private = list(
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
     stopifnot(is.list(tune_settings))
     
+    self$data <- data
     self$n_folds <- n_folds
     self$ml_learners <- ml_learners
     self$params <- params
@@ -256,14 +253,14 @@ private = list(
     self$tune_settings <- tune_settings
     self$param_tuning <- param_tuning
     
+    private$n_obs = data$n_obs()
+    private$n_treat = data$n_treat()
+    
     invisible(self)
   },
   initialize_arrays = function(n_obs,
                                n_treat,
                                n_rep_cross_fit) {
-    # set dimensions as private properties before initializing arrays
-    private$n_obs = n_obs
-    private$n_treat = n_treat
     
     private$score = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
     private$score_a = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
@@ -283,9 +280,6 @@ private = list(
   initialize_lists = function(n_treat,
                               n_rep_cross_fit, 
                               n_nuisance) {
-    # set dimensions as private properties before initializing arrays
-    private$n_treat = n_treat
-    
     self$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
     self$param_tuning = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
   },
