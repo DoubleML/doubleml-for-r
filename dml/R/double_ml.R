@@ -4,6 +4,7 @@ library('mlr3')
 library("mlr3learners")
 
 DoubleML <- R6Class("DoubleML", public = list(
+  data = NULL,
   n_folds = NULL,
   ml_learners = NULL,
   params = NULL,
@@ -221,7 +222,8 @@ private = list(
   n_rep_boot = NULL,
   i_rep = NA,
   i_treat = NA,
-  initialize_double_ml = function(n_folds,
+  initialize_double_ml = function(data, 
+                        n_folds,
                         ml_learners,
                         params,
                         dml_procedure,
@@ -232,6 +234,8 @@ private = list(
                         param_set,
                         tune_settings, 
                         param_tuning) {
+    
+    checkmate::check_class(data, "DoubleMLData")
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)

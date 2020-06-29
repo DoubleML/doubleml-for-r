@@ -5,7 +5,8 @@
 #' @export
 
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
-  initialize = function(n_folds,
+  initialize = function(data, 
+                        n_folds,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list()),
@@ -28,7 +29,9 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                         tuner = "grid_search",
                                         resolution = 5), 
                         param_tuning = NULL)  {
-    super$initialize_double_ml(n_folds,
+    
+    super$initialize_double_ml(data, 
+                               n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
