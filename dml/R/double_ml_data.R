@@ -69,8 +69,6 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$d = data.table::data.table(self$data[, treatment_var, with = FALSE])
     names(self$d) = paste0(treatment_var)
     
-    self$d_col = paste0(treatment_var)
-    
     self$X = data.table::data.table(self$data[, xd_list, with = FALSE])
     self$x_cols = names(self$X)
     
