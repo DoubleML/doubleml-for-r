@@ -46,15 +46,15 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
 ),
 private = list(
   n_nuisance = 2,
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, z = NULL, params, ...) {
+  ml_nuisance_and_score_elements = function(data, smpls, params, ...) {
     
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", y), data, 
-                                  skip_cols = d, target = y)
+    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data, 
+                                  skip_cols = data$d_col, target = data$y_col)
           
-    # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", d), data,
-                                   skip_cols = y, target = d)
+    # nuisance m  
+    task_m <- initiate_regr_task(paste0("nuis_m_", data$d_col), data$data, # adjust to multi treatment case
+                                   skip_cols = data$y_col, target = data$d_col)
       
     if (is.null(self$param_tuning)){
       
@@ -101,11 +101,11 @@ private = list(
       m_hat = rearrange_prediction(m_hat)
     }
     
-    D <- data[ , d]
-    Y <- data[ , y]
+    D <- data$d$d # numeric # tbd: optimize
+    Y <- data$y$y # numeric # tbd: optimize
     v_hat <- D - m_hat
     u_hat <- Y - g_hat
-    v_hatd <- v_hat * D
+    v_hatd <- v_hat * D # tbd: handle product of numeric and binary in data.table
     
     if (self$inf_model == 'IV-type') {
       score_a = -v_hatd
@@ -144,7 +144,7 @@ private = list(
     
     terminator = tune_settings$terminator
     
-    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
+    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                 skip_cols = d, target = y))
     
     ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
@@ -159,7 +159,7 @@ private = list(
     tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
-    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", d), x,
+    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$d_cols), x,
                                                   skip_cols = y, target = d))
     
     ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)

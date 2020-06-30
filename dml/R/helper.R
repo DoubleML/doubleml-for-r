@@ -2,7 +2,7 @@
 extract_prediction = function(obj_resampling) {
   f_hat <- as.data.table(obj_resampling$prediction())
   setorder(f_hat, 'row_id')
-  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response))
+  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
   
   return(f_hat)
 }
