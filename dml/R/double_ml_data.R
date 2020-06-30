@@ -11,7 +11,6 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   x_cols = NULL, 
   y_col = NULL, 
   d_cols = NULL,
-  d_col = NULL,
   z_col = NULL, 
   d = NULL, 
   X = NULL,
