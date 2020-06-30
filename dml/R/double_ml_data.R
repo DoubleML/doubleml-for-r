@@ -81,12 +81,14 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$y = data.table::data.table(self$data[, self$y_col, with = FALSE])
     names(self$y) = paste0(self$y_col)
 
-    if (is.null(self$z)){
+    if (is.null(self$z_col)){
       self$z = NULL
     }
     
     else {
-      self$z = data.table::data.table(self$data[, self$z_cols, with = FALSE])
+      self$z = data.table::data.table(self$data[, self$z_col, with = FALSE])
+      names(self$z) = paste0(self$z_col)
+
     }
     
     invisible(self)
