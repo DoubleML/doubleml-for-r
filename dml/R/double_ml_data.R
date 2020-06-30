@@ -25,6 +25,9 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
                         z_col = NULL){
     
     # TBD: Input data.frame
+    if (all(class(data)=="data.frame")){
+      stop("'data' is a data.frame, use 'double_ml_data_from_data_frame' call to instantiate DoubleMLData.")
+    }
 
     checkmate::check_class(data, "data.table")
         
