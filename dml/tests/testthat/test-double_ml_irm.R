@@ -33,13 +33,19 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     
   set.seed(i_setting)
   params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
-
-  double_mlirm_obj = DoubleMLIRM$new(n_folds = 5,
+  
+  Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  
+  data_ml = DoubleMLData$new(data_irm[[i_setting]], y_col = "y", 
+                              d_cols = "d", x_cols = Xnames)
+                        
+  double_mlirm_obj = DoubleMLIRM$new(data_ml, 
+                                     n_folds = 5,
                                      ml_learners = learner_pars$mlmethod,
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, inf_model = inf_model)
-  double_mlirm_obj$fit(data_irm[[i_setting]], y = "y", d = "d")
+  double_mlirm_obj$fit()
   theta_obj <- double_mlirm_obj$coef
   se_obj <- double_mlirm_obj$se
   
