@@ -5,7 +5,8 @@
 #' @export
 
 DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
-  initialize = function(n_folds,
+  initialize = function(data, 
+                        n_folds,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list(),
@@ -32,7 +33,8 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
                                         tuner = "grid_search",
                                         resolution = 5),
                         param_tuning = NULL) {
-    super$initialize_double_ml(n_folds,
+    super$initialize_double_ml(data, 
+                               n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
@@ -47,18 +49,18 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
 ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, z, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, params) {
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
-                                 skip_cols = c(d, z), target = y)
+    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data,
+                                 skip_cols = c(data$d_col, data$z_col), target = data$y_col)
     
     # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", z), data,
-                                 skip_cols = c(y, d), target = z)
+    task_m <- initiate_regr_task(paste0("nuis_m_", data$z_col), data$data,
+                                 skip_cols = c(data$y_col, data$d_col), target = data$z_col)
     
     # nuisance r
-    task_r <- initiate_regr_task(paste0("nuis_r_", d), data,
-                                 skip_cols = c(y, z), target = d)
+    task_r <- initiate_regr_task(paste0("nuis_r_", data$d_col), data$data,
+                                 skip_cols = c(data$y_col, data$z_col), target = data$d_col)
     
     if (is.null(self$param_tuning)){
       
@@ -122,9 +124,9 @@ private = list(
       r_hat = rearrange_prediction(r_hat)
     }
     
-    D <- data[ , d]
-    Y <- data[ , y]
-    Z <- data[ , z]
+    D <- data$d$d
+    Y <- data$y$y
+    Z <- data$z$z
     w_hat <- Z - m_hat
     u_hat <- Y - g_hat
     v_hat <- D - r_hat
