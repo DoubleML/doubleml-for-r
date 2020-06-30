@@ -37,7 +37,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   
   Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
    
-  data_ml = DoubleMLData$new(data_pliv[[i_setting]], y_col = "y", 
+  data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames, z_col = "z")
 
   double_mlpliv_obj = DoubleMLPLIV$new(data_ml, 

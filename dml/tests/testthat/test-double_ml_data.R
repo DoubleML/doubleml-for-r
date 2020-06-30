@@ -72,6 +72,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   expect_identical(D3$data, D7$data)
   
   # Instantiate DoubleMLData
+  data = data.table(data)
+  data2 = data.table(data2)
   D8 = DoubleMLData$new(data, x_cols = X_cols1, 
                               y_col = y_indx, 
                               d_cols = d_indx, 

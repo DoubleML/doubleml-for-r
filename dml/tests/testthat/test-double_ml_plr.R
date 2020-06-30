@@ -45,10 +45,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
   Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   
-  data_ml = DoubleMLData$new(data_plr[[i_setting]], y_col = "y", 
+  data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
-                        
-  
+                  
   double_mlplr_obj = DoubleMLPLR$new(data = data_ml, 
                                      n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,

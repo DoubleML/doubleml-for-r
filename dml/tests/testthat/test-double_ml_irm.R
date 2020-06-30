@@ -36,7 +36,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
   
   Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   
-  data_ml = DoubleMLData$new(data_irm[[i_setting]], y_col = "y", 
+  data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
                         
   double_mlirm_obj = DoubleMLIRM$new(data_ml, 
