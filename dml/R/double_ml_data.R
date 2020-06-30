@@ -25,25 +25,22 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
                         z_col = NULL){
     
     # TBD: Input data.frame
-    if (all(class(data) == "data.frame")){
-      data = double_ml_data_from_data_frame(data, x_cols = x_cols, y_col = y_col,
-                                              d_cols = d_cols, z_col = z_col,
-                                              data_class = "data.table")
-    }
 
     checkmate::check_class(data, "data.table")
-      
-    self$data = data
+        
+    col_indx =  c(x_cols, y_col, d_cols, z_col)
+    self$data = data[, col_indx, with = FALSE]
+  
     self$x_cols = x_cols
     self$y_col = y_col
     self$d_cols = d_cols
     self$z_col = z_col
-
+    
     self$set__y_z()
 
     # by default, we initialize to the first treatment variable
     self$set__x_d(d_cols[1]) 
-
+    
     invisible(self)
 
   },
