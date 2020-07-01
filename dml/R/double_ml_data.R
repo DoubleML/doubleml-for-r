@@ -79,7 +79,10 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     if (treatment_var %in% self$x_cols){
       stop("The specified treatment variable must not be an element of the control variables X.")
     }
-
+    
+    if (any(self$d_cols %in% self$x_cols)){
+      stop("The specified treatment variables must not be an element of the control variables X.")
+    }
     self$treat_col = treatment_var
     self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
     
