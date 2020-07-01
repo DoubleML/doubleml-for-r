@@ -50,11 +50,11 @@ private = list(
     
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model, 
-                                  skip_cols = data$treat_col, target = data$y_col)
+                                  skip_cols = "d", target = "y")
           
     # nuisance m  
     task_m <- initiate_regr_task(paste0("nuis_m_", data$treat_col), data$data_model, # adjust to multi treatment case
-                                   skip_cols = data$y_col, target = data$treat_col)
+                                   skip_cols = "y", target = "d")
       
     if (is.null(self$param_tuning)){
       
