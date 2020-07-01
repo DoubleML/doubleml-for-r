@@ -25,6 +25,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   n_folds = 2
   # dml1: expect different se's
   set.seed(i_setting)
+  
   double_mlplr_obj_dml1 = DoubleMLPLR$new(n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
@@ -36,36 +37,43 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   se_obj_dml1 <- double_mlplr_obj_dml1$se
   
   set.seed(i_setting)
-  double_mlplr_obj_dml1_reestim = DoubleMLPLR$new(n_folds = n_folds,
+  Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]], y_col = "y", 
+                              d_cols = "d", x_cols = Xnames)
+  
+  double_mlplr_obj_dml1_reestim = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
                                      dml_procedure = "dml1", 
                                      se_reestimate = TRUE,
                                      inf_model = inf_model)
-  double_mlplr_obj_dml1_reestim$fit(data_plr[[i_setting]], y = "y", d = "d")
+  double_mlplr_obj_dml1_reestim$fit()
   theta_obj_dml1_reestim <- double_mlplr_obj_dml1_reestim$coef
   se_obj_dml1_reestim <- double_mlplr_obj_dml1_reestim$se
   
   # dml2: expect same se's
   set.seed(i_setting)
-  double_mlplr_obj_dml2 = DoubleMLPLR$new(n_folds = n_folds,
+  double_mlplr_obj_dml2 = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
                                      dml_procedure = "dml2", 
                                      se_reestimate = FALSE,
                                      inf_model = inf_model)
-  double_mlplr_obj_dml2$fit(data_plr[[i_setting]], y = "y", d = "d")
+  double_mlplr_obj_dml2$fit()
   theta_obj_dml2 <- double_mlplr_obj_dml2$coef
   se_obj_dml2 <- double_mlplr_obj_dml2$se
   
   set.seed(i_setting)
-  double_mlplr_obj_dml2_reestim = DoubleMLPLR$new(n_folds = n_folds,
+  double_mlplr_obj_dml2_reestim = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = learner_pars$params,
                                      dml_procedure = "dml2", 
                                      se_reestimate = TRUE,
                                      inf_model = inf_model)
-  double_mlplr_obj_dml2_reestim$fit(data_plr[[i_setting]], y = "y", d = "d")
+  double_mlplr_obj_dml2_reestim$fit()
   theta_obj_dml2_reestim <- double_mlplr_obj_dml2_reestim$coef
   se_obj_dml2_reestim <- double_mlplr_obj_dml2_reestim$se
   
