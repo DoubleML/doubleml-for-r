@@ -41,38 +41,46 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   
   set.seed(i_setting)
   params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep_cross_fit)
-
-  double_mliivm_obj_exact = DoubleMLIIVM$new(n_folds = n_folds,
+  set.seed(i_setting)
+  
+  Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]], y_col = "y", 
+                              d_cols = "d", x_cols = Xnames, z_col = "z")
+  
+  double_mliivm_obj_exact = DoubleMLIIVM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
                                      inf_model = inf_model, 
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mliivm_obj_exact$fit(data_iivm[[i_setting]], y = "y", d = "d", z = "z")
+  double_mliivm_obj_exact$fit()
   theta_obj_exact <- double_mliivm_obj_exact$coef
   se_obj_exact <- double_mliivm_obj_exact$se
   
   set.seed(i_setting)
-  double_mliivm_obj_null = DoubleMLIIVM$new(n_folds = n_folds,
+  double_mliivm_obj_null = DoubleMLIIVM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = NULL,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
                                      inf_model = inf_model, 
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mliivm_obj_null$fit(data_iivm[[i_setting]], y = "y", d = "d", z = "z")
+  double_mliivm_obj_null$fit()
   theta_obj_null <- double_mliivm_obj_null$coef
   se_obj_null <- double_mliivm_obj_null$se
   
   set.seed(i_setting)
-  double_mliivm_obj_default = DoubleMLIIVM$new(n_folds = n_folds,
+  double_mliivm_obj_default = DoubleMLIIVM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
                                      inf_model = inf_model, 
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mliivm_obj_default$fit(data_iivm[[i_setting]], y = "y", d = "d", z = "z")
+  double_mliivm_obj_default$fit()
   theta_obj_default <- double_mliivm_obj_default$coef
   se_obj_default <- double_mliivm_obj_default$se  
 
