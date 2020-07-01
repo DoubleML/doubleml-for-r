@@ -39,15 +39,15 @@ private = list(
     
     # nuisance p
     task_p <- initiate_classif_task(paste0("nuis_p_", data$z_col), data$data_model,
-                                    skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
+                                    skip_cols = c("y", "d"), target = "z")
  
     # nuisance mu
     task_mu <- initiate_regr_task(paste0("nuis_mu_", data$y_col), data$data_model,
-                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
+                                  skip_cols = c("d", "z"), target = "y")
     
     # nuisance m
     task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
-                                     skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
+                                     skip_cols = c("y", "z"), target = "d")
     
     if (is.null(self$param_tuning)){
     
@@ -235,7 +235,7 @@ private = list(
    terminator = tune_settings$terminator
     
    task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", z), x,
-                                               skip_cols = c(y, d), target = z))
+                                               skip_cols = c("y", "d"), target = "z"))
     
    ml_p <- mlr3::lrn(self$ml_learners$mlmethod_p)
     
@@ -264,7 +264,7 @@ private = list(
    tuning_result_mu = lapply(tuning_instance_mu, function(x) tune_instance(tuner, x))
  
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", d), x,
-                                                  skip_cols = c(y, z), target = d))
+                                                  skip_cols = c("y", "z"), target = "d"))
     
    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 
