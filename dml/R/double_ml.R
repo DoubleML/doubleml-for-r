@@ -95,14 +95,14 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   }, 
-  tune = function(data, y, d, z=NULL) {
-    n_obs = dim(data)[1]
+  tune = function() {
+    n_obs = nrow(self$data$data_model)
 
     # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
     private$initialize_lists(private$n_treat, self$n_rep_cross_fit, private$n_nuisance) 
     
     if (is.null(private$smpls)) {
-      private$split_samples(data)
+      private$split_samples()
     }
     
     for (i_rep in 1:self$n_rep_cross_fit) {
@@ -111,6 +111,10 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
+        if (private$n_treat > 1){
+          self$data$set__x_d(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+        }
+        
         # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
         #  ! important ! tuned params must exactly correspond to training samples
         # TBD: user friendly way to pass (pre-)trained parameters
@@ -118,7 +122,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         #      e.g., in seperate function (tune_mlr3)...
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
-        param_tuning = private$tune_params(data, private$get__smpls(),
+        param_tuning = private$tune_params(self$data, private$get__smpls(),
                                                 y, d[i_treat], z, param_set = self$param_set, 
                                                 tune_settings = self$tune_settings)
         
