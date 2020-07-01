@@ -138,6 +138,8 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     
     self$data_model = data.table::data.table(self$data[, col_indx, with = FALSE])
     
+    stopifnot(nrow(self$data) == nrow(self$data_model))
+    
     # Enforce variable names for data_model
     setnames(self$data_model, self$y_col, "y")
     setnames(self$data, self$x_cols, paste0("X", 1:length(self$x_cols)))
