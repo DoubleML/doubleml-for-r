@@ -115,7 +115,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   
   set__y_z = function(){
     self$y = data.table::data.table(self$data[, self$y_col, with = FALSE])
-    names(self$y) = paste0(self$y_col)
+    names(self$y) = self$y_col
 
     if (is.null(self$z_col)){
       self$z = NULL
@@ -123,7 +123,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     
     else {
       self$z = data.table::data.table(self$data[, self$z_col, with = FALSE])
-      names(self$z) = paste0(self$z_col)
+      names(self$z) = self$z_col
 
     }
     
@@ -135,9 +135,31 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   set__data_model = function(){
     
     col_indx = c(self$x_cols, self$y_col, self$treat_col, self$other_treat_cols, self$z_col)
-
+    
     self$data_model = data.table::data.table(self$data[, col_indx, with = FALSE])
-
+    
+    # Enforce variable names for data_model
+    setnames(self$data_model, self$y_col, "y")
+    setnames(self$data, self$x_cols, paste0("X", 1:length(self$x_cols)))
+    
+    if (!is.null(self$treat_col)){
+      setnames(self$data_model, self$treat_col, "d")
+    }
+    
+    if (!is.null(self$other_treat_cols)){
+      setnames(self$data_model, self$other_treat_cols,  paste0("other_d", 1:length(self$other_treat_cols)))
+    }
+    
+    if (!is.null(self$z_col)){
+      if (length(self$z_col) == 1) {
+        setnames(self$data_model, self$z_col, "z")
+      }
+      
+      else {
+        setnames(self$data_model, self$z_col, paste0("z", 1:length(self$z_col)))
+      }
+    }
+      
     invisible(self)
   }
  )
