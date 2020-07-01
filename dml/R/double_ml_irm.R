@@ -138,11 +138,11 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   },
- tune_params = function(data, smpls, y, d, param_set, tune_settings, ...){
+ tune_params = function(data, smpls, param_set, tune_settings, ...){
    checkmate::check_class(param_set$param_set_g, "ParamSet")    
    checkmate::check_class(param_set$param_set_m, "ParamSet")
    
-   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
+   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
    
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
      CV_tune = tune_settings$rsmp_tune
@@ -164,7 +164,7 @@ private = list(
     
    terminator = tune_settings$terminator
     
-   task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
+   task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
                                                skip_cols = "d", target = "y"))
     
    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
@@ -179,7 +179,7 @@ private = list(
    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
    tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
-   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", d), x,
+   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
                                                   skip_cols = "y", target = "d"))
     
    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
