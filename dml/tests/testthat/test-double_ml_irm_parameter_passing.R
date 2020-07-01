@@ -45,13 +45,20 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
   set.seed(i_setting)
   params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep_cross_fit)
 
-  double_mlirm_obj_exact = DoubleMLIRM$new(n_folds = n_folds,
+  Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d") == FALSE]
+  
+  data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
+                              d_cols = c("d"), x_cols = Xnames)
+  
+
+  double_mlirm_obj_exact = DoubleMLIRM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, inf_model = inf_model, 
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mlirm_obj_exact$fit(data_irm[[i_setting]], y = "y", d = "d")
+  double_mlirm_obj_exact$fit()
   theta_obj_exact <- double_mlirm_obj_exact$coef
   se_obj_exact <- double_mlirm_obj_exact$se
   
@@ -61,23 +68,25 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
   
   
   set.seed(i_setting)
-  double_mlirm_obj_null = DoubleMLIRM$new(n_folds = n_folds,
+  double_mlirm_obj_null = DoubleMLIRM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      params = NULL,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, inf_model = inf_model,
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mlirm_obj_null$fit(data_irm[[i_setting]], y = "y", d = "d")
+  double_mlirm_obj_null$fit()
   theta_obj_null <- double_mlirm_obj_null$coef
   se_obj_null <- double_mlirm_obj_null$se
   
   set.seed(i_setting)
-  double_mlirm_obj_default = DoubleMLIRM$new(n_folds = n_folds,
+  double_mlirm_obj_default = DoubleMLIRM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, inf_model = inf_model,
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mlirm_obj_default$fit(data_irm[[i_setting]], y = "y", d = "d")
+  double_mlirm_obj_default$fit()
   theta_obj_default <- double_mlirm_obj_default$coef
   se_obj_default <- double_mlirm_obj_default$se
   
