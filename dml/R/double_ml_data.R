@@ -73,8 +73,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   
     checkmate::check_character(treatment_var, max.len = 1)
     checkmate::check_subset(treatment_var, self$d_cols)
-    checkmate::check_lengt
-    
+
     self$treat_col = treatment_var
     self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
     
