@@ -8,6 +8,7 @@
 DoubleMLData <- R6Class("DoubleMLData", public = list(
    
   data = NULL, 
+  data_model = NULL,
   x_cols = NULL, 
   y_col = NULL, 
   d_cols = NULL,
@@ -38,6 +39,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
         
     col_indx =  c(x_cols, y_col, d_cols, z_col)
     self$data = data[, col_indx, with = FALSE]
+    self$data_model = NULL
   
     self$x_cols = x_cols
     self$y_col = y_col
@@ -73,6 +75,10 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   
     checkmate::check_character(treatment_var, max.len = 1)
     checkmate::check_subset(treatment_var, self$d_cols)
+    
+    if (treatment_var %in% self$x_cols){
+      stop("The specified treatment variable must not be an element of the control variables X.")
+    }
 
     self$treat_col = treatment_var
     self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
@@ -99,6 +105,8 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$X = data.table::data.table(self$data[, self$x_cols, with = FALSE])
     self$x_cols = names(self$X)
     
+    self$set__data_model()
+    
     invisible(self)
   }, 
   
@@ -116,6 +124,17 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
 
     }
     
+    self$set__data_model()
+
+    invisible(self)
+  },
+  
+  set__data_model = function(){
+    
+    col_indx = c(self$x_cols, self$y_col, self$treat_col, self$other_treat_cols, self$z_col)
+
+    self$data_model = data.table::data.table(self$data[, col_indx, with = FALSE])
+
     invisible(self)
   }
  )
