@@ -117,7 +117,7 @@ private = list(
     u1_hat <- Y - g1_hat
     
     # fraction of treated for ATET
-    p_hat <- vector('numeric', length= data$n_obs())
+    p_hat <- vector('numeric', length= nrow(data$data_model))
     #if (self$dml_procedure == "dml1") {
       for (i_fold in 1:self$n_folds) {
         p_hat[smpls$test_ids[[i_fold]]] = mean(D[smpls$test_ids[[i_fold]]])
@@ -129,7 +129,7 @@ private = list(
     
     if (self$inf_model == 'ATE') {
       score_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
-      score_a = rep(-1, data$n_obs())
+      score_a = rep(-1, nrow(data$data_model))
     } else if (self$inf_model == 'ATET') {
       score_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
       score_a = -D / p_hat
