@@ -37,12 +37,12 @@ private = list(
   ml_nuisance_and_score_elements = function(data, smpls, params, ...) {
     
     # nuisance m
-    task_m <- initiate_classif_task(paste0("nuis_m_", data$d_col), data$data,
-                                    skip_cols = data$y_col, target = data$d_col)
+    task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
+                                    skip_cols = data$y_col, target = data$treat_col)
     
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data,
-                                 skip_cols = data$d_col, target = data$y_col)
+    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
+                                 skip_cols = data$treat_col, target = data$y_col)
     
     if (is.null(self$param_tuning)){
       
@@ -68,7 +68,7 @@ private = list(
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data$d$d)
+      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$d)
       
       resampling_g0 <- mlr3::rsmp("custom")$instantiate(task_g,
                                                         cond_smpls$train_ids_0,
@@ -98,7 +98,7 @@ private = list(
                                                                         x))
       
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data$d$d)
+      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$d)
       
       resampling_g0 <- initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
       r_g0 <- resample_dml(task_g, ml_g, resampling_g0, store_models = TRUE)
@@ -111,8 +111,8 @@ private = list(
       g1_hat <- rearrange_prediction(g1_hat)            
     }
     
-    D <- data$d$d
-    Y <- data$y$y
+    D <- data$data_model$d
+    Y <- data$data_model$y
     u0_hat <- Y - g0_hat
     u1_hat <- Y - g1_hat
     
