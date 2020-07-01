@@ -12,7 +12,7 @@ test_cases = expand.grid(learner = c('regr.glmnet'),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-skip("skip reestimate se test")
+# skip("skip reestimate se test")
 patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                                    .cases = test_cases, {
   
@@ -24,27 +24,29 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
  
   n_folds = 2
   # dml1: expect different se's
-  set.seed(i_setting)
   
-  double_mlplr_obj_dml1 = DoubleMLPLR$new(n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
-                                     dml_procedure = "dml1", 
-                                     se_reestimate = FALSE,
-                                     inf_model = inf_model)
-  double_mlplr_obj_dml1$fit(data_plr[[i_setting]], y = "y", d = "d")
-  theta_obj_dml1 <- double_mlplr_obj_dml1$coef
-  se_obj_dml1 <- double_mlplr_obj_dml1$se
-  
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
   set.seed(i_setting)
   Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
   
+  double_mlplr_obj_dml1 = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
+                                     ml_learners = learner_pars$mlmethod,
+                                     params = params_OOP,
+                                     dml_procedure = "dml1", 
+                                     se_reestimate = FALSE,
+                                     inf_model = inf_model)
+  double_mlplr_obj_dml1$fit()
+  theta_obj_dml1 <- double_mlplr_obj_dml1$coef
+  se_obj_dml1 <- double_mlplr_obj_dml1$se
+  
+  set.seed(i_setting)
   double_mlplr_obj_dml1_reestim = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = "dml1", 
                                      se_reestimate = TRUE,
                                      inf_model = inf_model)
@@ -57,7 +59,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   double_mlplr_obj_dml2 = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = "dml2", 
                                      se_reestimate = FALSE,
                                      inf_model = inf_model)
@@ -69,7 +71,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   double_mlplr_obj_dml2_reestim = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
-                                     params = learner_pars$params,
+                                     params = params_OOP,
                                      dml_procedure = "dml2", 
                                      se_reestimate = TRUE,
                                      inf_model = inf_model)
