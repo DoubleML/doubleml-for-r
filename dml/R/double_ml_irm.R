@@ -38,11 +38,11 @@ private = list(
     
     # nuisance m
     task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
-                                    skip_cols = data$y_col, target = data$treat_col)
+                                    skip_cols = "y", target = "d")
     
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
-                                 skip_cols = data$treat_col, target = data$y_col)
+                                 skip_cols = "d", target = "y")
     
     if (is.null(self$param_tuning)){
       
@@ -165,7 +165,7 @@ private = list(
    terminator = tune_settings$terminator
     
    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
-                                               skip_cols = d, target = y))
+                                               skip_cols = "d", target = "y"))
     
    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
     
@@ -180,7 +180,7 @@ private = list(
    tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", d), x,
-                                                  skip_cols = y, target = d))
+                                                  skip_cols = "y", target = "d"))
     
    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 
