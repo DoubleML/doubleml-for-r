@@ -35,19 +35,19 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
 ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, z, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, params) {
     
     # nuisance p
-    task_p <- initiate_classif_task(paste0("nuis_p_", data$z_col), data$data,
-                                    skip_cols = c(data$y_col, data$d_col), target = data$z_col)
+    task_p <- initiate_classif_task(paste0("nuis_p_", data$z_col), data$data_model,
+                                    skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
  
     # nuisance mu
-    task_mu <- initiate_regr_task(paste0("nuis_mu_", data$y_col), data$data,
-                                  skip_cols = c(data$d_col, data$z_col), target = data$y_col)
+    task_mu <- initiate_regr_task(paste0("nuis_mu_", data$y_col), data$data_model,
+                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
     
     # nuisance m
-    task_m <- initiate_classif_task(paste0("nuis_m_", data$d_col), data$data,
-                                     skip_cols = c(data$y_col, data$z_col), target = data$d_col)
+    task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
+                                     skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
     
@@ -83,7 +83,7 @@ private = list(
       p_hat = extract_prob_prediction(r_p)$prob.1
       
       # get conditional samples (conditioned on z = 0 or z = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data$z$z)
+      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
       
       resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu,
                                                          cond_smpls$train_ids_0,
@@ -103,7 +103,7 @@ private = list(
       }
       
       if (self$subgroups$always_takers == FALSE){
-        m0_hat <- rep(0, nrow(data))
+        m0_hat <- rep(0, nrow(data$data_model))
       }
       
       else if (self$subgroups$always_takers == TRUE){
@@ -115,7 +115,7 @@ private = list(
       }
       
       if (self$subgroups$never_takers == FALSE){
-        m1_hat <- rep(1, data$n_obs())
+        m1_hat <- rep(1, nrow(data$data_model))
       }
       
       else if (self$subgroups$never_takers == TRUE){
@@ -140,7 +140,7 @@ private = list(
       ml_mu <- lapply(params$params_mu, function(x) initiate_learner(self$ml_learners$mlmethod_mu,
                                                                         x))
       # get conditional samples (conditioned on Z = 0 or Z = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data$z$z)
+      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
       
       resampling_mu0 <- initiate_resampling(task_mu, cond_smpls$train_ids_0, smpls$test_ids)
       r_mu0 <- resample_dml(task_mu, ml_mu, resampling_mu0, store_models = TRUE)
@@ -160,7 +160,7 @@ private = list(
       }
       
       if (self$subgroups$always_takers == FALSE){
-        m0_hat <- rep(0, data$n_obs())
+        m0_hat <- rep(0, nrow(data$data_model))
       }
       
       else if (self$subgroups$always_takers == TRUE){
@@ -171,7 +171,7 @@ private = list(
       }
       
       if (self$subgroups$never_takers == FALSE){
-        m1_hat <- rep(1, data$n_obs())
+        m1_hat <- rep(1, nrow(data$data_model))
       }
       
       else if (self$subgroups$never_takers == TRUE){
@@ -184,9 +184,9 @@ private = list(
     }
     
     # compute residuals
-    Z <- data$z$z
-    D <- data$d$d
-    Y <- data$y$y
+    Z <- data$data_model$z
+    D <- data$data_model$d
+    Y <- data$data_model$y
     u0_hat = Y - mu0_hat
     u1_hat = Y - mu1_hat
     w0_hat = D - m0_hat
