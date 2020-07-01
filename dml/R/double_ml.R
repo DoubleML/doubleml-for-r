@@ -123,7 +123,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
         param_tuning = private$tune_params(self$data, private$get__smpls(),
-                                                y, d[i_treat], z, param_set = self$param_set, 
+                                                param_set = self$param_set, 
                                                 tune_settings = self$tune_settings)
         
         # here: set__params()
