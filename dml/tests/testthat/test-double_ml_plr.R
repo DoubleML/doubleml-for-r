@@ -44,7 +44,6 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
 
   Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-  
   data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
                   
