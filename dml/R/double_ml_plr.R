@@ -101,8 +101,8 @@ private = list(
       m_hat = rearrange_prediction(m_hat)
     }
     
-    D <- data$d$d # numeric # tbd: optimize
-    Y <- data$y$y # numeric # tbd: optimize
+    D <- data$data_model$d # numeric # tbd: optimize
+    Y <- data$data_model$y # numeric # tbd: optimize
     v_hat <- D - m_hat
     u_hat <- Y - g_hat
     v_hatd <- v_hat * D # tbd: handle product of numeric and binary in data.table
