@@ -51,16 +51,16 @@ private = list(
   n_nuisance = 3,
   ml_nuisance_and_score_elements = function(data, smpls, params) {
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data,
-                                 skip_cols = c(data$d_col, data$z_col), target = data$y_col)
+    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
+                                 skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
     
     # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", data$z_col), data$data,
-                                 skip_cols = c(data$y_col, data$d_col), target = data$z_col)
+    task_m <- initiate_regr_task(paste0("nuis_m_", data$z_col), data$data_model,
+                                 skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
     
     # nuisance r
-    task_r <- initiate_regr_task(paste0("nuis_r_", data$d_col), data$data,
-                                 skip_cols = c(data$y_col, data$z_col), target = data$d_col)
+    task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
+                                 skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
       
@@ -124,9 +124,9 @@ private = list(
       r_hat = rearrange_prediction(r_hat)
     }
     
-    D <- data$d$d
-    Y <- data$y$y
-    Z <- data$z$z
+    D <- data$data_model$d
+    Y <- data$data_model$y
+    Z <- data$data_model$z
     w_hat <- Z - m_hat
     u_hat <- Y - g_hat
     v_hat <- D - r_hat
