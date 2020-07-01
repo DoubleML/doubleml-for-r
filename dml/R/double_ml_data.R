@@ -11,18 +11,22 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   x_cols = NULL, 
   y_col = NULL, 
   d_cols = NULL,
-  d_col = NULL,
+  treat_col = NULL,
+  other_treat_cols = NULL,
+  other_treat = NULL,
   z_col = NULL, 
   d = NULL, 
   X = NULL,
   y = NULL,
   z = NULL,
+  use_other_treat_as_covariate = TRUE, 
   
   initialize = function(data = NULL, 
                         x_cols = NULL,
                         y_col = NULL, 
                         d_cols = NULL,
-                        z_col = NULL){
+                        z_col = NULL, 
+                        use_other_treat_as_covariate = TRUE){
     
     # TBD: Input data.frame
     if (all(class(data)=="data.frame")){
@@ -30,6 +34,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     }
 
     checkmate::check_class(data, "data.table")
+    checkmate::check_class(use_other_treat_as_covariate, "logical")
         
     col_indx =  c(x_cols, y_col, d_cols, z_col)
     self$data = data[, col_indx, with = FALSE]
@@ -37,12 +42,16 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$x_cols = x_cols
     self$y_col = y_col
     self$d_cols = d_cols
+    self$treat_col = NULL
+    self$other_treat_cols = NULL
+    self$other_treat = NULL
+    self$use_other_treat_as_covariate = use_other_treat_as_covariate
     self$z_col = z_col
-    
+
     self$set__y_z()
 
     # by default, we initialize to the first treatment variable
-    self$set__x_d(d_cols[1]) 
+    self$set__x_d(d_cols[1], use_other_treat_as_covariate = self$use_other_treat_as_covariate) 
     
     invisible(self)
 
@@ -60,18 +69,34 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     return(dim(self$data)[1])
   },
   
-  set__x_d = function(treatment_var = NULL){
+  set__x_d = function(treatment_var = NULL, use_other_treat_as_covariate = TRUE){
+  
     checkmate::check_character(treatment_var)
     checkmate::check_subset(treatment_var, self$d_cols)
-    xd_list = c(self$x_cols, self$d_cols)
-    xd_list = xd_list[xd_list != treatment_var]
-
+    
+    self$treat_col = treatment_var
+    self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
+    
     self$d = data.table::data.table(self$data[, treatment_var, with = FALSE])
-    names(self$d) = paste0(treatment_var)
+    names(self$d) = treatment_var
+    message(paste0("Set treatment variable d to ", treatment_var, "."))
     
-    self$d_col = paste0(treatment_var)
+    if (length(self$d_cols) > 1 & use_other_treat_as_covariate == TRUE) {
+    self$other_treat = data.table::data.table(self$data[, self$other_treat_cols, with = FALSE])
+    names(self$other_treat) = self$other_treat_cols
+    }
     
-    self$X = data.table::data.table(self$data[, xd_list, with = FALSE])
+    else {
+      
+      if (length(self$d_cols) > 1) {
+        message("Controls variables do not include other treatment variables")
+      }
+      
+      self$other_treat = NULL
+      self$other_treat_cols = NULL
+    }
+      
+    self$X = data.table::data.table(self$data[, self$x_cols, with = FALSE])
     self$x_cols = names(self$X)
     
     invisible(self)
