@@ -49,12 +49,12 @@ private = list(
   ml_nuisance_and_score_elements = function(data, smpls, params, ...) {
     
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data, 
-                                  skip_cols = data$d_col, target = data$y_col)
+    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model, 
+                                  skip_cols = data$treat_col, target = data$y_col)
           
     # nuisance m  
-    task_m <- initiate_regr_task(paste0("nuis_m_", data$d_col), data$data, # adjust to multi treatment case
-                                   skip_cols = data$y_col, target = data$d_col)
+    task_m <- initiate_regr_task(paste0("nuis_m_", data$treat_col), data$data_model, # adjust to multi treatment case
+                                   skip_cols = data$y_col, target = data$treat_col)
       
     if (is.null(self$param_tuning)){
       
