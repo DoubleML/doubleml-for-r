@@ -1,6 +1,8 @@
 ### Debug R6 classes
 The documentation for R6 class debugging can be found here: https://r6.r-lib.org/articles/Debugging.html.
 1. Debugging with the first approach [Enabling debugging for all future instances of a class](https://r6.r-lib.org/articles/Debugging.html#enabling-debugging-for-all-future-instances-of-a-class) does not work right now with inherited classes.
+    + This is also how you can **debug initialization** of a new object, e.g. by using `DoubleMLData$debug("initialize")`. 
+    
 2. Debugging with the second approach [Debugging methods in individual objects](https://r6.r-lib.org/articles/Debugging.html#debugging-methods-in-individual-objects) works via
 ```R
 # Generate Data
