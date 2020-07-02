@@ -141,24 +141,24 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     stopifnot(nrow(self$data) == nrow(self$data_model))
     
     # Enforce variable names for data_model
-    setnames(self$data_model, self$y_col, "y")
-    setnames(self$data, self$x_cols, paste0("X", 1:length(self$x_cols)))
+    data.table::setnames(self$data_model, self$y_col, "y")
+    data.table::setnames(self$data, self$x_cols, paste0("X", 1:length(self$x_cols)))
     
     if (!is.null(self$treat_col)){
-      setnames(self$data_model, self$treat_col, "d")
+      data.table::setnames(self$data_model, self$treat_col, "d")
     }
     
     if (!is.null(self$other_treat_cols)){
-      setnames(self$data_model, self$other_treat_cols,  paste0("other_d", 1:length(self$other_treat_cols)))
+      data.table::setnames(self$data_model, self$other_treat_cols,  paste0("other_d", 1:length(self$other_treat_cols)))
     }
     
     if (!is.null(self$z_col)){
       if (length(self$z_col) == 1) {
-        setnames(self$data_model, self$z_col, "z")
+        data.table::setnames(self$data_model, self$z_col, "z")
       }
       
       else {
-        setnames(self$data_model, self$z_col, paste0("z", 1:length(self$z_col)))
+        data.table::setnames(self$data_model, self$z_col, paste0("z", 1:length(self$z_col)))
       }
     }
       
@@ -169,6 +169,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
 
 
 # Input: Matrices or vectors; Output: DoubleMLData or data.table
+#' @export
 double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLData"){
 
   checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
@@ -230,7 +231,7 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLD
 }
 
 # Input: Data frame, Output: DoubleMLData or data.table
-  
+#' @export
 double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
                                               d_cols = NULL, z_col = NULL, 
                                               data_class = "DoubleMLData"){
@@ -285,9 +286,4 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   
   return(data)
 }
-
-
-
-
-
 
