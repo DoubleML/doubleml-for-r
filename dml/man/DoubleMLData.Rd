@@ -4,16 +4,11 @@
 \name{DoubleMLData}
 \alias{DoubleMLData}
 \title{DoubleMLData}
-\format{An object of class \code{R6ClassGenerator} of length 24.}
+\format{An object of class \code{R6ClassGenerator} of length 25.}
 \usage{
 DoubleMLData
 }
-\arguments{
-\item{data}{(`any`)\cr The format of the input data depends on the specialization. E.g., a R [data.frame] (default), [data.table], [Matrix], ..}
-}
 \description{
 Data structure for double machine learning.
-
-Creates a new instance of this [R6][R6::R6Class] class.
 }
 \keyword{datasets}
