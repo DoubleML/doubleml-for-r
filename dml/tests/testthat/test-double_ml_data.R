@@ -139,15 +139,15 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                           z_col = z_null, 
                                           use_other_treat_as_covariate = FALSE)
   D10_setd = D10$set__data_model("d2")
-    
+  # to do: check correct behavior when changing treat from d1 to d2
+  
   expect_identical(D1$data_model, D8$data_model) # order of columns currently only enforced for data_model
   expect_identical(D2$data_model, D9$data_model)  
   expect_identical(D2_1X$data_model, D9_1X$data_model)   
   expect_identical(D3$data_model, D10$data_model)
   expect_identical(D3_1d$data_model, D10_1d$data_model)
   expect_identical(D3_setd$data_model, D10_setd$data_model)
-
-
+  
   expect_identical(D4_renamed$data_model, D8_renamed$data_model)
   expect_equivalent(D8$data_model, D8_renamed$data_model)
   
