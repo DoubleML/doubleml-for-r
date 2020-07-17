@@ -37,6 +37,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D3 = double_ml_data_from_matrix(X2, y, d2)
   D3_1d = double_ml_data_from_matrix(X2, y, d2, use_other_treat_as_covariate = FALSE)
 
+  D3_setd = D3$set__data_model("d2")
 
   # Input: Data frame, assign columns by names
   d_indx = "d"
@@ -85,6 +86,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                           d_cols = d2_indx, 
                                           z_col = z_null, 
                                           use_other_treat_as_covariate = FALSE)
+  D7_setd = D7$set__data_model("d2")
   
   expect_error(double_ml_data_from_data_frame(data))
   
@@ -94,8 +96,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   expect_equal(D2$data, D6$data)
   expect_equal(D3$data, D7$data)
   expect_identical(D3_1d$data_model, D7_1d$data_model)
+  expect_identical(D3_setd$data_model, D7_setd$data_model)
 
-  
   # renaming / enforced names
   expect_equivalent(D4$data, D4_renamed$data)
   expect_equivalent(D4$data_model, D4_renamed$data_model)
@@ -136,15 +138,19 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                           d_cols = d2_indx, 
                                           z_col = z_null, 
                                           use_other_treat_as_covariate = FALSE)
+  D10_setd = D10$set__data_model("d2")
     
-  expect_equal(D1$data_model, D8$data_model) # order of columns currently only enforced for data_model
-  expect_equal(D2$data_model, D9$data_model)  
-  expect_equal(D2_1X$data_model, D9_1X$data_model)   
+  expect_identical(D1$data_model, D8$data_model) # order of columns currently only enforced for data_model
+  expect_identical(D2$data_model, D9$data_model)  
+  expect_identical(D2_1X$data_model, D9_1X$data_model)   
   expect_identical(D3$data_model, D10$data_model)
   expect_identical(D3_1d$data_model, D10_1d$data_model)
+  expect_identical(D3_setd$data_model, D10_setd$data_model)
+
 
   expect_identical(D4_renamed$data_model, D8_renamed$data_model)
   expect_equivalent(D8$data_model, D8_renamed$data_model)
+  
   } 
 )
 
