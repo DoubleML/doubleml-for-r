@@ -112,7 +112,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
         
         if (private$n_treat > 1){
-          self$data$set__x_d(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+          self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
         
         # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
