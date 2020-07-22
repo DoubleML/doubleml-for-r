@@ -63,7 +63,7 @@ initiate_prob_learner = function(mlmethod, params) {
 
 initiate_regr_task = function(id, data, skip_cols, target) {
   indx <- !(names(data) %in% skip_cols)
-  data_sel <- data[ , indx, drop = FALSE]
+  data_sel <- data[ , indx, with = FALSE]
   task <- mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
   
   return(task)
@@ -72,7 +72,7 @@ initiate_regr_task = function(id, data, skip_cols, target) {
 
 initiate_classif_task = function(id, data, skip_cols, target) {
   indx <- !(names(data) %in% skip_cols)
-  data_sel <- data[ , indx, drop = FALSE]
+  data_sel <- data[ , indx, with = FALSE]
   data_sel[, target] <- factor(data_sel[, target])
   task <- mlr3::TaskClassif$new(id = id, backend = data_sel,
                                 target = target, positive = "1")
