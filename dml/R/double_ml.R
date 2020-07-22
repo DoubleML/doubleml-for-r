@@ -4,6 +4,7 @@ library('mlr3')
 library("mlr3learners")
 
 DoubleML <- R6Class("DoubleML", public = list(
+  data = NULL,
   n_folds = NULL,
   ml_learners = NULL,
   params = NULL,
@@ -23,17 +24,14 @@ DoubleML <- R6Class("DoubleML", public = list(
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
-  fit = function(data, y, d, z=NULL) {
+  fit = function(se_reestimate = FALSE) {
     
     # TBD: insert check for tuned params
     
-    n_obs = dim(data)[1]
-    n_treat = length(d)
-    
-    private$initialize_arrays(n_obs, n_treat, self$n_rep_cross_fit)
+    private$initialize_arrays()
     
     if (is.null(private$smpls)) {
-      private$split_samples(data)
+      private$split_samples()
     }
 
     for (i_rep in 1:self$n_rep_cross_fit) {
@@ -42,10 +40,13 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
+        if (private$n_treat > 1){
+          self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+        }
+        
         # ml estimation of nuisance models and computation of score elements
-        scores = private$ml_nuisance_and_score_elements(data,
+        scores = private$ml_nuisance_and_score_elements(self$data,
                                                         private$get__smpls(),
-                                                        y, d[i_treat], z, 
                                                         params = private$get__params())
         private$set__score_a(scores$score_a)
         private$set__score_b(scores$score_b)
@@ -67,7 +68,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     self$t = self$coef/self$se
     self$pval = 2 * stats::pnorm(-abs(self$t))
-    names(self$coef) = names(self$se) = names(self$t) = names(self$pval) = d
+    names(self$coef) = names(self$se) = names(self$t) = names(self$pval) = self$data$d_cols
 
     invisible(self)
   },
@@ -94,15 +95,14 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   }, 
-  tune = function(data, y, d, z=NULL) {
-    n_obs = dim(data)[1]
-    n_treat = length(d)
-    
+  tune = function() {
+    n_obs = nrow(self$data$data_model)
+
     # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
-    private$initialize_lists(n_treat, self$n_rep_cross_fit, private$n_nuisance) 
+    private$initialize_lists(private$n_treat, self$n_rep_cross_fit, private$n_nuisance) 
     
     if (is.null(private$smpls)) {
-      private$split_samples(data)
+      private$split_samples()
     }
     
     for (i_rep in 1:self$n_rep_cross_fit) {
@@ -111,6 +111,10 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
+        if (private$n_treat > 1){
+          self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+        }
+        
         # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
         #  ! important ! tuned params must exactly correspond to training samples
         # TBD: user friendly way to pass (pre-)trained parameters
@@ -118,8 +122,8 @@ DoubleML <- R6Class("DoubleML", public = list(
         #      e.g., in seperate function (tune_mlr3)...
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
-        param_tuning = private$tune_params(data, private$get__smpls(),
-                                                y, d[i_treat], z, param_set = self$param_set, 
+        param_tuning = private$tune_params(self$data, private$get__smpls(),
+                                                param_set = self$param_set, 
                                                 tune_settings = self$tune_settings)
         
         # here: set__params()
@@ -221,7 +225,8 @@ private = list(
   n_rep_boot = NULL,
   i_rep = NA,
   i_treat = NA,
-  initialize_double_ml = function(n_folds,
+  initialize_double_ml = function(data, 
+                        n_folds,
                         ml_learners,
                         params,
                         dml_procedure,
@@ -232,6 +237,8 @@ private = list(
                         param_set,
                         tune_settings, 
                         param_tuning) {
+    
+    checkmate::check_class(data, "DoubleMLData")
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
@@ -240,6 +247,7 @@ private = list(
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
     stopifnot(is.list(tune_settings))
     
+    self$data <- data
     self$n_folds <- n_folds
     self$ml_learners <- ml_learners
     self$params <- params
@@ -252,24 +260,22 @@ private = list(
     self$tune_settings <- tune_settings
     self$param_tuning <- param_tuning
     
+    private$n_obs = data$n_obs()
+    private$n_treat = data$n_treat()
+    
     invisible(self)
   },
-  initialize_arrays = function(n_obs,
-                               n_treat,
-                               n_rep_cross_fit) {
-    # set dimensions as private properties before initializing arrays
-    private$n_obs = n_obs
-    private$n_treat = n_treat
+  initialize_arrays = function() {
     
-    private$score = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
-    private$score_a = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
-    private$score_b = array(NA, dim=c(n_obs, n_rep_cross_fit, n_treat))
+    private$score = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$score_a = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$score_b = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
     
-    self$coef = array(NA, dim=c(n_treat))
-    self$se = array(NA, dim=c(n_treat))
+    self$coef = array(NA, dim=c(private$n_treat))
+    self$se = array(NA, dim=c(private$n_treat))
     
-    private$all_coef = array(NA, dim=c(n_treat, n_rep_cross_fit))
-    private$all_se = array(NA, dim=c(n_treat, n_rep_cross_fit))
+    private$all_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit))
+    private$all_se = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit))
     
   },
   initialize_boot_arrays = function(n_rep, n_rep_cross_fit) {
@@ -279,9 +285,6 @@ private = list(
   initialize_lists = function(n_treat,
                               n_rep_cross_fit, 
                               n_nuisance) {
-    # set dimensions as private properties before initializing arrays
-    private$n_treat = n_treat
-    
     self$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
     self$param_tuning = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
   },
@@ -323,8 +326,8 @@ private = list(
     self$params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
     self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
   },
-  split_samples = function(data) {
-    dummy_task = Task$new('dummy_resampling', 'regr', data)
+  split_samples = function() {
+    dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
     dummy_resampling_scheme <- rsmp("repeated_cv",
                                     folds = self$n_folds,
                                     repeats = self$n_rep_cross_fit)$instantiate(dummy_task)

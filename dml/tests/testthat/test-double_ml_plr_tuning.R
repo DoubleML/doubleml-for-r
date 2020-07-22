@@ -59,7 +59,12 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   # se <- plr_hat$se
   
   set.seed(i_setting)
-  double_mlplr_obj_tuned = DoubleMLPLR$new(n_folds = n_folds,
+  Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
+  data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
+                              d_cols = c("d1", "d2"), x_cols = Xnames)
+
+  double_mlplr_obj_tuned = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_list,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
@@ -74,10 +79,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   double_mlplr_obj_tuned$param_set$param_set_m = tune_ps
   
   double_mlplr_obj_tuned$tune_settings = tune_settings
-
-  double_mlplr_obj_tuned$tune(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2'))
-  
-  double_mlplr_obj_tuned$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2'))
+  double_mlplr_obj_tuned$tune()
+  double_mlplr_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlplr_obj_tuned$coef
   se_obj_tuned <- double_mlplr_obj_tuned$se
@@ -86,9 +89,20 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   # double_mlplr_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_tuned = double_mlplr_obj_tuned$boot_coef
   
-  
   # restrictions to test
     # Functional (tbd) vs OOP implementation (handling randomness in param selection!?)
+  
+  # Test case without including "other" treatment variables
+    
+  expect_is(theta_obj_tuned, "numeric")
+  expect_is(se_obj_tuned, "numeric")
+  
+  data_ml$use_other_treat_as_covariate = FALSE
+  double_mlplr_obj_tuned$tune()
+  double_mlplr_obj_tuned$fit()
+  theta_obj_tuned <- double_mlplr_obj_tuned$coef
+  se_obj_tuned <- double_mlplr_obj_tuned$se
+  
   expect_is(theta_obj_tuned, "numeric")
   expect_is(se_obj_tuned, "numeric")
   }

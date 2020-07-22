@@ -55,7 +55,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   learner_pars_exact <- rep(list(rep(list(learner_pars_once$params), 2)), n_rep_cross_fit)
   
   set.seed(i_setting)
-  double_mlplr_obj_exact = DoubleMLPLR$new(n_folds = n_folds,
+  
+  Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
+  
+  data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
+                              d_cols = c("d1", "d2"), x_cols = Xnames)
+                        
+  double_mlplr_obj_exact = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_list,
                                      params = learner_pars_exact,
                                      dml_procedure = dml_procedure, 
@@ -63,7 +70,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                      inf_model = inf_model,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  double_mlplr_obj_exact$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2'))
+  double_mlplr_obj_exact$fit()
   
   theta_obj_exact <- double_mlplr_obj_exact$coef
   se_obj_exact <- double_mlplr_obj_exact$se
@@ -75,7 +82,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   
   # pass empty set of parameters (NULL, use default values)   
   set.seed(i_setting)
-  double_mlplr_obj_null = DoubleMLPLR$new(n_folds = n_folds,
+  double_mlplr_obj_null = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_list,
                                      params = NULL,
                                      dml_procedure = dml_procedure, 
@@ -83,7 +91,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                      inf_model = inf_model,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  double_mlplr_obj_null$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2'))
+  double_mlplr_obj_null$fit()
   
   theta_obj_null <- double_mlplr_obj_null$coef
   se_obj_null <- double_mlplr_obj_null$se
@@ -94,14 +102,15 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   
   # no parameters specified (use default values)   
   set.seed(i_setting)
-  double_mlplr_obj_default = DoubleMLPLR$new(n_folds = n_folds,
+  double_mlplr_obj_default = DoubleMLPLR$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_list,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
                                      inf_model = inf_model,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  double_mlplr_obj_default$fit(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2'))
+  double_mlplr_obj_default$fit()
   
   theta_obj_default <- double_mlplr_obj_default$coef
   se_obj_default <- double_mlplr_obj_default$se

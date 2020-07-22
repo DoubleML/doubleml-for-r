@@ -2,7 +2,7 @@
 extract_prediction = function(obj_resampling) {
   f_hat <- as.data.table(obj_resampling$prediction())
   setorder(f_hat, 'row_id')
-  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response))
+  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
   
   return(f_hat)
 }
@@ -63,7 +63,7 @@ initiate_prob_learner = function(mlmethod, params) {
 
 initiate_regr_task = function(id, data, skip_cols, target) {
   indx <- !(names(data) %in% skip_cols)
-  data_sel <- data[ , indx, drop = FALSE]
+  data_sel <- data[ , indx, with = FALSE]
   task <- mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
   
   return(task)
@@ -72,7 +72,7 @@ initiate_regr_task = function(id, data, skip_cols, target) {
 
 initiate_classif_task = function(id, data, skip_cols, target) {
   indx <- !(names(data) %in% skip_cols)
-  data_sel <- data[ , indx, drop = FALSE]
+  data_sel <- data[ , indx, with = FALSE]
   data_sel[, target] <- factor(data_sel[, target])
   task <- mlr3::TaskClassif$new(id = id, backend = data_sel,
                                 target = target, positive = "1")
@@ -140,6 +140,32 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
 format.perc <- function (probs, digits) {
   paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
         "%" ) }
+
+
+# Take x (vector or matrix) as input and return it as a matrix
+assure_matrix = function(x){
+  if (is.vector(x)){
+    x = matrix(x, ncol = 1)
+  }
+  
+  else {
+    checkmate::check_matrix(x)
+  }
+  
+  return(x)
+  
+}
+
+# Check if matrices in a list have the same number of rows
+check_matrix_row = function(mat_list){
+  checkmate::check_list(mat_list)
+  
+  n_rows = vapply(mat_list, nrow, integer(1L))
+ 
+  if ( isFALSE(all(n_rows == n_rows[1]))){
+    stop("Matrices do not have same number of rows.")
+  }
+}
 
 
 # resample_dml = function(task, learner, resampling, store_models = FALSE){

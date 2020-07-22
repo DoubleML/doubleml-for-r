@@ -37,7 +37,7 @@ test_cases = expand.grid(learner_list = learner,
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-skip('Skip tests for tuning')
+ skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                    .cases = test_cases, {
@@ -45,7 +45,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   # TBD: Functional Test Case
 
   set.seed(i_setting)
-  n_folds = 5
+  n_folds = 2
   n_rep_boot = 498
   
   # set.seed(i_setting)
@@ -60,7 +60,12 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
   
   set.seed(i_setting)
-  double_mlpliv_obj_tuned = DoubleMLPLIV$new(n_folds = n_folds,
+  Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]], y_col = "y", 
+                              d_cols = "d", x_cols = Xnames, z_col = "z")
+
+  double_mlpliv_obj_tuned = DoubleMLPLIV$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_list,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
@@ -77,9 +82,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   
   double_mlpliv_obj_tuned$tune_settings = tune_settings
   
-  double_mlpliv_obj_tuned$tune(data_pliv[[i_setting]], y = "y", d = "d", z = "z")
-
-  double_mlpliv_obj_tuned$fit(data_pliv[[i_setting]], y = "y", d = "d", z = "z")
+  double_mlpliv_obj_tuned$tune()
+  double_mlpliv_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlpliv_obj_tuned$coef
   se_obj_tuned <- double_mlpliv_obj_tuned$se
@@ -90,6 +94,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
   expect_is(theta_obj_tuned, "numeric")
   expect_is(se_obj_tuned, "numeric")
+  
   }
 )
 

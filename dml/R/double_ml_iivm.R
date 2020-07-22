@@ -5,7 +5,8 @@
 #' @export
 
 DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
-  initialize = function(n_folds,
+  initialize = function(data, 
+                        n_folds,
                         ml_learners,
                         params = list(params_p = list(),
                                       params_mu = list(),
@@ -18,7 +19,8 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                         param_set = NULL,
                         tune_settings = list(),
                         param_tuning = NULL) {
-    super$initialize_double_ml(n_folds,
+    super$initialize_double_ml(data, 
+                               n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
@@ -33,19 +35,19 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
 ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, z, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, params) {
     
     # nuisance p
-    task_p <- initiate_classif_task(paste0("nuis_p_", z), data,
-                                    skip_cols = c(y, d), target = z)
+    task_p <- initiate_classif_task(paste0("nuis_p_", data$z_col), data$data_model,
+                                    skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
  
     # nuisance mu
-    task_mu <- initiate_regr_task(paste0("nuis_mu_", y), data,
-                                  skip_cols = c(d, z), target = y)
+    task_mu <- initiate_regr_task(paste0("nuis_mu_", data$y_col), data$data_model,
+                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
     
     # nuisance m
-    task_m <- initiate_classif_task(paste0("nuis_m_", d), data,
-                                     skip_cols = c(y, z), target = d)
+    task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
+                                     skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
     
@@ -81,7 +83,7 @@ private = list(
       p_hat = extract_prob_prediction(r_p)$prob.1
       
       # get conditional samples (conditioned on z = 0 or z = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data[ , z])
+      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
       
       resampling_mu0 <- mlr3::rsmp("custom")$instantiate(task_mu,
                                                          cond_smpls$train_ids_0,
@@ -101,7 +103,7 @@ private = list(
       }
       
       if (self$subgroups$always_takers == FALSE){
-        m0_hat <- rep(0, nrow(data))
+        m0_hat <- rep(0, nrow(data$data_model))
       }
       
       else if (self$subgroups$always_takers == TRUE){
@@ -113,7 +115,7 @@ private = list(
       }
       
       if (self$subgroups$never_takers == FALSE){
-        m1_hat <- rep(1, nrow(data))
+        m1_hat <- rep(1, nrow(data$data_model))
       }
       
       else if (self$subgroups$never_takers == TRUE){
@@ -138,7 +140,7 @@ private = list(
       ml_mu <- lapply(params$params_mu, function(x) initiate_learner(self$ml_learners$mlmethod_mu,
                                                                         x))
       # get conditional samples (conditioned on Z = 0 or Z = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data[ , z])
+      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
       
       resampling_mu0 <- initiate_resampling(task_mu, cond_smpls$train_ids_0, smpls$test_ids)
       r_mu0 <- resample_dml(task_mu, ml_mu, resampling_mu0, store_models = TRUE)
@@ -158,7 +160,7 @@ private = list(
       }
       
       if (self$subgroups$always_takers == FALSE){
-        m0_hat <- rep(0, nrow(data))
+        m0_hat <- rep(0, nrow(data$data_model))
       }
       
       else if (self$subgroups$always_takers == TRUE){
@@ -169,7 +171,7 @@ private = list(
       }
       
       if (self$subgroups$never_takers == FALSE){
-        m1_hat <- rep(1, nrow(data))
+        m1_hat <- rep(1, nrow(data$data_model))
       }
       
       else if (self$subgroups$never_takers == TRUE){
@@ -182,9 +184,9 @@ private = list(
     }
     
     # compute residuals
-    Z <- data[ , z]
-    D <- data[ , d]
-    Y <- data[ , y]
+    Z <- data$data_model[, data$z_col, with = FALSE]
+    D <- data$data_model[, data$treat_col, with = FALSE]
+    Y <- data$data_model[, data$y_col, with = FALSE]
     u0_hat = Y - mu0_hat
     u1_hat = Y - mu1_hat
     w0_hat = D - m0_hat
@@ -199,12 +201,12 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   },
- tune_params = function(data, smpls, y, d, z, param_set, tune_settings, ...){
+ tune_params = function(data, smpls, param_set, tune_settings, ...){
    checkmate::check_class(param_set$param_set_p, "ParamSet")    
    checkmate::check_class(param_set$param_set_mu, "ParamSet")
    checkmate::check_class(param_set$param_set_m, "ParamSet")
 
-   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
+   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
    
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
      CV_tune = tune_settings$rsmp_tune
@@ -232,8 +234,8 @@ private = list(
     
    terminator = tune_settings$terminator
     
-   task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", z), x,
-                                               skip_cols = c(y, d), target = z))
+   task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_col), x,
+                                               skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
     
    ml_p <- mlr3::lrn(self$ml_learners$mlmethod_p)
     
@@ -247,8 +249,8 @@ private = list(
    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
    tuning_result_p = lapply(tuning_instance_p, function(x) tune_instance(tuner, x))
     
-   task_mu = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_mu_", y), x,
-                                                  skip_cols = c(d, z), target = y))
+   task_mu = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_mu_", data$y_col), x,
+                                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
     
    ml_mu <- mlr3::lrn(self$ml_learners$mlmethod_mu)
 
@@ -261,8 +263,8 @@ private = list(
    
    tuning_result_mu = lapply(tuning_instance_mu, function(x) tune_instance(tuner, x))
  
-   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", d), x,
-                                                  skip_cols = c(y, z), target = d))
+   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
+                                                  skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
     
    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 

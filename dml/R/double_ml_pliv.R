@@ -5,7 +5,8 @@
 #' @export
 
 DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
-  initialize = function(n_folds,
+  initialize = function(data, 
+                        n_folds,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list(),
@@ -32,7 +33,8 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
                                         tuner = "grid_search",
                                         resolution = 5),
                         param_tuning = NULL) {
-    super$initialize_double_ml(n_folds,
+    super$initialize_double_ml(data, 
+                               n_folds,
                                ml_learners,
                                params,
                                dml_procedure,
@@ -47,18 +49,18 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
 ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, y, d, z, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, params) {
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", y), data,
-                                 skip_cols = c(d, z), target = y)
+    task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
+                                 skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
     
     # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", z), data,
-                                 skip_cols = c(y, d), target = z)
+    task_m <- initiate_regr_task(paste0("nuis_m_", data$z_col), data$data_model,
+                                 skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
     
     # nuisance r
-    task_r <- initiate_regr_task(paste0("nuis_r_", d), data,
-                                 skip_cols = c(y, z), target = d)
+    task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
+                                 skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
       
@@ -122,9 +124,9 @@ private = list(
       r_hat = rearrange_prediction(r_hat)
     }
     
-    D <- data[ , d]
-    Y <- data[ , y]
-    Z <- data[ , z]
+    D <- data$data_model[, data$treat_col, with = FALSE]
+    Y <- data$data_model[, data$y_col, with = FALSE]
+    Z <- data$data_model[, data$z_col, with = FALSE]
     w_hat <- Z - m_hat
     u_hat <- Y - g_hat
     v_hat <- D - r_hat
@@ -138,13 +140,13 @@ private = list(
     return(list(score_a = score_a,
                 score_b = score_b))
   },
-  tune_params = function(data, smpls, y, d, z, param_set, tune_settings, ...){
+  tune_params = function(data, smpls, param_set, tune_settings, ...){
     
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
     checkmate::check_class(param_set$param_set_r, "ParamSet")
 
-    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data, x))
+    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
 
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
@@ -172,8 +174,8 @@ private = list(
     
     terminator = tune_settings$terminator
     
-    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", y), x,
-                                                skip_cols = c(d, z), target = y))
+    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
+                                                skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
     
     ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
     
@@ -187,8 +189,8 @@ private = list(
     tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
-    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", d), x,
-                                                  skip_cols = c(y, z), target = d))
+    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", data$treat_col), x,
+                                                  skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
     
     ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 
@@ -201,8 +203,8 @@ private = list(
     
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
     
-    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_",z), x,
-                                                  skip_cols = c(y, d), target = z))
+    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", data$z_col), x,
+                                                  skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
     ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
 
     tuning_instance_r = lapply(task_r, function(x) TuningInstance$new(task = x,

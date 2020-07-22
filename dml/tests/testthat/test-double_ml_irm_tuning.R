@@ -47,8 +47,14 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
 
   set.seed(i_setting)
   learner_pars <- get_default_mlmethod_irm(learner)
+  
+  Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
+                              d_cols = "d", x_cols = Xnames)
 
-  double_mlirm_obj_tuned = DoubleMLIRM$new(n_folds = n_folds,
+
+  double_mlirm_obj_tuned = DoubleMLIRM$new(data_ml, 
+                                     n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, inf_model = inf_model)
@@ -62,9 +68,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   
   double_mlirm_obj_tuned$tune_settings = tune_settings
 
-  double_mlirm_obj_tuned$tune(data_irm[[i_setting]], y = "y", d = "d")
+  double_mlirm_obj_tuned$tune()
   
-  double_mlirm_obj_tuned$fit(data_irm[[i_setting]], y = "y", d = "d")
+  double_mlirm_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlirm_obj_tuned$coef
   se_obj_tuned <- double_mlirm_obj_tuned$se
