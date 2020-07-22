@@ -52,15 +52,15 @@ private = list(
   ml_nuisance_and_score_elements = function(data, smpls, params) {
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
-                                 skip_cols = c("d", "z"), target = "y")
+                                 skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
     
     # nuisance m
     task_m <- initiate_regr_task(paste0("nuis_m_", data$z_col), data$data_model,
-                                 skip_cols = c("y", "d"), target = "z")
+                                 skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
     
     # nuisance r
     task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
-                                 skip_cols = c("y", "z"), target = "d")
+                                 skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
       
@@ -124,9 +124,9 @@ private = list(
       r_hat = rearrange_prediction(r_hat)
     }
     
-    D <- data$data_model$d
-    Y <- data$data_model$y
-    Z <- data$data_model$z
+    D <- data$data_model[, data$treat_col, with = FALSE]
+    Y <- data$data_model[, data$y_col, with = FALSE]
+    Z <- data$data_model[, data$z_col, with = FALSE]
     w_hat <- Z - m_hat
     u_hat <- Y - g_hat
     v_hat <- D - r_hat
@@ -175,7 +175,7 @@ private = list(
     terminator = tune_settings$terminator
     
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
-                                                skip_cols = c("d", "z"), target = "y"))
+                                                skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
     
     ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
     
@@ -190,7 +190,7 @@ private = list(
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", data$treat_col), x,
-                                                  skip_cols = c("y", "z"), target = "d"))
+                                                  skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
     
     ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 
@@ -204,7 +204,7 @@ private = list(
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
     
     task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", data$z_col), x,
-                                                  skip_cols = c("y", "d"), target = "z"))
+                                                  skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
     ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
 
     tuning_instance_r = lapply(task_r, function(x) TuningInstance$new(task = x,
