@@ -63,7 +63,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
                               d_cols = c("d1", "d2"), x_cols = Xnames)
 
-  
   double_mlplr_obj_tuned = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_learners = learner_list,
@@ -90,7 +89,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   # double_mlplr_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_tuned = double_mlplr_obj_tuned$boot_coef
   
-  
   # restrictions to test
     # Functional (tbd) vs OOP implementation (handling randomness in param selection!?)
   
@@ -104,8 +102,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   double_mlplr_obj_tuned$fit()
   theta_obj_tuned <- double_mlplr_obj_tuned$coef
   se_obj_tuned <- double_mlplr_obj_tuned$se
-  
-  
   
   expect_is(theta_obj_tuned, "numeric")
   expect_is(se_obj_tuned, "numeric")
