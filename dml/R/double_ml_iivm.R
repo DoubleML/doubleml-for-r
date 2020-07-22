@@ -39,15 +39,15 @@ private = list(
     
     # nuisance p
     task_p <- initiate_classif_task(paste0("nuis_p_", data$z_col), data$data_model,
-                                    skip_cols = c("y", "d"), target = "z")
+                                    skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
  
     # nuisance mu
     task_mu <- initiate_regr_task(paste0("nuis_mu_", data$y_col), data$data_model,
-                                  skip_cols = c("d", "z"), target = "y")
+                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
     
     # nuisance m
     task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
-                                     skip_cols = c("y", "z"), target = "d")
+                                     skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
     
@@ -184,9 +184,9 @@ private = list(
     }
     
     # compute residuals
-    Z <- data$data_model$z
-    D <- data$data_model$d
-    Y <- data$data_model$y
+    Z <- data$data_model[, data$z_col, with = FALSE]
+    D <- data$data_model[, data$treat_col, with = FALSE]
+    Y <- data$data_model[, data$y_col, with = FALSE]
     u0_hat = Y - mu0_hat
     u1_hat = Y - mu1_hat
     w0_hat = D - m0_hat
@@ -235,7 +235,7 @@ private = list(
    terminator = tune_settings$terminator
     
    task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_col), x,
-                                               skip_cols = c("y", "d"), target = "z"))
+                                               skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
     
    ml_p <- mlr3::lrn(self$ml_learners$mlmethod_p)
     
@@ -250,7 +250,7 @@ private = list(
    tuning_result_p = lapply(tuning_instance_p, function(x) tune_instance(tuner, x))
     
    task_mu = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_mu_", data$y_col), x,
-                                                  skip_cols = c("d", "z"), target = "y"))
+                                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
     
    ml_mu <- mlr3::lrn(self$ml_learners$mlmethod_mu)
 
@@ -264,7 +264,7 @@ private = list(
    tuning_result_mu = lapply(tuning_instance_mu, function(x) tune_instance(tuner, x))
  
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
-                                                  skip_cols = c("y", "z"), target = "d"))
+                                                  skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
     
    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 
