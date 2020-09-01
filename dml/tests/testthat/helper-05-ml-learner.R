@@ -35,7 +35,7 @@ get_default_mlmethod_plr <- function(learner, default = FALSE) {
     #                                    s = 0.09463488))
     # 
     # }
-    else if (learner == 'regr.glmnet') {
+    else if (learner == 'regr.cv_glmnet ') {
       mlmethod <- list(mlmethod_m = learner,
                        mlmethod_g = learner)
       
@@ -88,7 +88,7 @@ get_default_mlmethod_pliv <- function(learner) {
                    params_r = list(cp = 0.01, minsplit = 20))
     
   }
-  else if (learner == 'regr.glmnet') {
+  else if (learner == 'regr.cv_glmnet') {
     mlmethod <- list(mlmethod_m = learner,
                      mlmethod_g = learner,
                      mlmethod_r = learner)
@@ -106,7 +106,7 @@ get_default_mlmethod_pliv <- function(learner) {
 }
 
 get_default_mlmethod_irm <- function(learner) {
-  if (learner == 'glmnet') {
+  if (learner == 'cv_glmnet') {
     mlmethod <- list(mlmethod_m = paste0("classif.", learner),
                      mlmethod_g = paste0("regr.", learner))
     slambda = "lambda.min"
@@ -129,7 +129,7 @@ get_default_mlmethod_irm <- function(learner) {
 }
 
 get_default_mlmethod_iivm <- function(learner) {
-  if (learner == 'glmnet') {
+  if (learner == 'cv_glmnet') {
     mlmethod <- list(mlmethod_p = paste0("classif.", learner),
                      mlmethod_mu =  paste0("regr.", learner),
                      mlmethod_m = paste0("classif.", learner))
