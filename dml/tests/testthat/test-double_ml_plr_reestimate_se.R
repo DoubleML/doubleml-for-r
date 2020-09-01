@@ -6,7 +6,7 @@ library('mlr3')
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(learner = c('regr.glmnet'),
+test_cases = expand.grid(learner = c('regr.cv_glmnet'),
                          inf_model = c('IV-type', 'DML2018'),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)

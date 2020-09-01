@@ -35,7 +35,7 @@ get_default_mlmethod_plr <- function(learner, default = FALSE) {
     #                                    s = 0.09463488))
     # 
     # }
-    else if (learner == 'regr.cv_glmnet ') {
+    else if (learner == 'regr.cv_glmnet') {
       mlmethod <- list(mlmethod_m = learner,
                        mlmethod_g = learner)
       
