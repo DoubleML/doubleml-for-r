@@ -44,7 +44,7 @@ sample_splitting <- function(k, data) {
   resampling <- mlr3::ResamplingCV$new()
   resampling$param_set$values$folds <- k
   
-  dummy_task = Task$new('dummy_resampling', 'regr', data)
+  dummy_task = mlr3::Task$new('dummy_resampling', 'regr', data)
   resampling <- resampling$instantiate(dummy_task)
   
   n_iters <- resampling$iters
