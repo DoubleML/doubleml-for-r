@@ -88,8 +88,8 @@ extract_training_data = function(data, smpls) {
 }
 
 tune_instance = function(tuner, tuning_instance){
-  tuning_result = tuner$tune(tuning_instance)
-  tuning_archive = tuning_instance$archive()
+  tuning_result = tuner$optimize(tuning_instance)
+  tuning_archive = tuning_instance$archive$data()
   params = tuning_instance$result$params
   
   tuning_results = list(tuning_result = tuning_result, 
