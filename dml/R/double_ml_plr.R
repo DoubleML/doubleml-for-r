@@ -22,7 +22,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                         rsmp_tune = "cv", 
                                         measure_g = "regr.mse", 
                                         measure_m = "regr.mse",
-                                        terminator = mlr3tuning::term("evals", n_evals = 20), 
+                                        terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
                                         tuning_instance_g = NULL, 
                                         tuning_instance_m = NULL,
