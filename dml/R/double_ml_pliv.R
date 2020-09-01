@@ -179,11 +179,11 @@ private = list(
     
     ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
     
-    tuning_instance_g = lapply(task_g, function(x) TuningInstance$new(task = x,
+    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
-                                          measures = measure_g,
-                                          param_set = param_set$param_set_g,
+                                          measure = measure_g,
+                                          search_space = param_set$param_set_g,
                                           terminator = terminator))
     
     tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
@@ -194,11 +194,11 @@ private = list(
     
     ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
 
-    tuning_instance_m = lapply(task_m, function(x) TuningInstance$new(task = x,
+    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
-                                          measures = measure_m,
-                                          param_set = param_set$param_set_m,
+                                          measure = measure_m,
+                                          search_space = param_set$param_set_m,
                                           terminator = terminator))
     
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
@@ -207,11 +207,11 @@ private = list(
                                                   skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
     ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
 
-    tuning_instance_r = lapply(task_r, function(x) TuningInstance$new(task = x,
+    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
-                                          measures = measure_r,
-                                          param_set = param_set$param_set_r,
+                                          measure = measure_r,
+                                          search_space = param_set$param_set_r,
                                           terminator = terminator))
     
     tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
