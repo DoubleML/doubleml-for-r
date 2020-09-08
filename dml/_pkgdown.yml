@@ -1,0 +1,15 @@
+destination: docs
+
+template:
+  params:
+    bootswatch: flatly
+    
+    
+home:
+  title: doubleML - Double Machine Learning with R
+  links:
+  - text: Download 
+    href: https://github.com/MartinSpindler/DML/tree/master/packages/R/dml
+    
+development:
+  mode: devel

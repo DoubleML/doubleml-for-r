@@ -1,3 +1,14 @@
+# DoubleML - Double Machine Learning in R 
+
+Consider the following model 
+$$Y_i = D_i\theta_0 + g_0(X_i) + \epsilon_i.$$
+
+
+
+
+
+________________
+
 ### Debug R6 classes
 The documentation for R6 class debugging can be found here: https://r6.r-lib.org/articles/Debugging.html.
 1. Debugging with the first approach [Enabling debugging for all future instances of a class](https://r6.r-lib.org/articles/Debugging.html#enabling-debugging-for-all-future-instances-of-a-class) does not work right now with inherited classes.
