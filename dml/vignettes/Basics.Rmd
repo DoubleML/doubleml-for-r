@@ -1,0 +1,61 @@
+---
+title: "Basics"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# The basics of double/debiased machine learning
+
+## Data generating process
+
+We consider the following partially linear model
+
+\begin{align*}
+Y_i &= D_i \theta + g(X_i) + \zeta,\\
+D_i &= m(X_i) + V,
+\end{align*}
+
+with $\zeta, V \sim \mathcal{N}(0,1)$ and $X \sim \mathcal{N}_{p}(0, \Sigma)$.
+The variance-covariance matrix $\Sigma$ of the $p$-dimensional confounders $X$ is a Toeplitz-matrix
+with diagonal elements $0.7^i$.
+The true parameter :math:`\theta` is set to $0.5$.
+The non-linear functions $g()$ and $m()$ are chosen as
+
+\begin{align*}
+g(X_i) &= \frac{\exp(X_{i1})}{1+\exp(X_{i1})} + \frac{1}{4} X_{i3},\\
+m(X_i) &= \frac{\exp(X_{i3})}{1+\exp(X_{i3})}
+\end{align*}
+
+
+```{r, eval = FALSE}
+import numpy as np
+from scipy.linalg import toeplitz
+
+def generate_data(n_obs, n_vars):
+    cov_mat = toeplitz([np.power(0.7, k) for k in range(n_vars)])
+    a_1 = 0.25
+    b_1 = 0.25
+    alpha = 0.5
+    x = np.random.multivariate_normal(np.zeros(n_vars), cov_mat, size=[n_obs,])
+    d = x[:,0] + a_1 * np.divide(np.exp(x[:,2]), 1 + np.exp(x[:,2])) \
+        + np.random.standard_normal(size=[n_obs,])
+    y = alpha * d + np.divide(np.exp(x[:,2]), 1 + np.exp(x[:,2])) \
+        + b_1 * x[:,2] + np.random.standard_normal(size=[n_obs,])
+    return x, y, d
+
+np.random.seed(1234)
+n_rep = 1000
+n_obs = 500
+n_vars = 20
+
+data = list()
+
+for i_rep in range(n_rep):
+    (x, y, d) = generate_data(n_obs, n_vars)
+    data.append((x, y, d))
+```
+
+

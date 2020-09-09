@@ -2,7 +2,7 @@ destination: docs
 
 template:
   params:
-    bootswatch: flatly
+    bootswatch: lumen
     
     
 home:

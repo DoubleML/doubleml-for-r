@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>doubleML - Double Machine Learning with R • dml</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/lumen/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -48,6 +48,18 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/Basics.html">Basics</a>
+    </li>
+  </ul>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
 </div>
@@ -64,58 +76,7 @@
 <div id="doubleml---double-machine-learning-in-r" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#doubleml---double-machine-learning-in-r" class="anchor"></a>DoubleML - Double Machine Learning in R</h1></div>
-<p>Consider the following model <br><span class="math display"><em>Y</em><sub><em>i</em></sub> = <em>D</em><sub><em>i</em></sub><em>θ</em><sub>0</sub> + <em>g</em><sub>0</sub>(<em>X</em><sub><em>i</em></sub>) + <em>ϵ</em><sub><em>i</em></sub>.</span><br></p>
-<hr>
-<div id="debug-r6-classes" class="section level3">
-<h3 class="hasAnchor">
-<a href="#debug-r6-classes" class="anchor"></a>Debug R6 classes</h3>
-<p>The documentation for R6 class debugging can be found here: <a href="https://r6.r-lib.org/articles/Debugging.html" class="uri">https://r6.r-lib.org/articles/Debugging.html</a>.</p>
-<ol>
-<li>Debugging with the first approach <a href="https://r6.r-lib.org/articles/Debugging.html#enabling-debugging-for-all-future-instances-of-a-class">Enabling debugging for all future instances of a class</a> does not work right now with inherited classes.
-<ul>
-<li>This is also how you can <strong>debug initialization</strong> of a new object, e.g. by using <code>DoubleMLData$debug("initialize")</code>.</li>
-</ul>
-</li>
-<li>Debugging with the second approach <a href="https://r6.r-lib.org/articles/Debugging.html#debugging-methods-in-individual-objects">Debugging methods in individual objects</a> works via</li>
-</ol>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># Generate Data</span>
-<span class="kw">theta</span> <span class="op">&lt;-</span> <span class="fl">0.5</span>
-<span class="kw">N</span> <span class="op">&lt;-</span> <span class="fl">1000</span>
-<span class="kw">k</span> <span class="op">&lt;-</span> <span class="fl">20</span>
-<span class="kw">b</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">/</span>(<span class="fl">1</span><span class="op">:</span><span class="kw">k</span>)
-<span class="kw">sigma</span> <span class="op">&lt;-</span> <span class="kw">clusterGeneration</span>::<span class="fu"><a href="https://rdrr.io/pkg/clusterGeneration/man/genPositiveDefMat.html">genPositiveDefMat</a></span>(<span class="kw">k</span>,<span class="st">"unifcorrmat"</span>)<span class="op">$</span><span class="kw">Sigma</span>
-
-<span class="kw">X</span> <span class="op">&lt;-</span> <span class="kw">mvtnorm</span>::<span class="fu"><a href="https://rdrr.io/pkg/mvtnorm/man/Mvnorm.html">rmvnorm</a></span>(<span class="kw">N</span>, sigma=<span class="kw">sigma</span>)
-<span class="kw">G</span> <span class="op">&lt;-</span> <span class="fu">g</span>(<span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span>(<span class="kw">X</span><span class="op">%*%</span><span class="kw">b</span>))
-<span class="kw">M</span> <span class="op">&lt;-</span> <span class="fu">m</span>(<span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span>(<span class="kw">X</span><span class="op">%*%</span><span class="kw">b</span>))
-<span class="kw">d</span> <span class="op">&lt;-</span> <span class="kw">M</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="kw">N</span>)
-<span class="kw">y</span> <span class="op">&lt;-</span> <span class="kw">theta</span> <span class="op">*</span> <span class="kw">d</span> <span class="op">+</span> <span class="kw">G</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="kw">N</span>)
-
-<span class="kw">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="kw">y</span>, <span class="kw">d</span>,<span class="kw">X</span>)
-
-<span class="co"># Instatiate an object of the DoubleMLPLR class</span>
-<span class="kw">ml_learners</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(mlmethod_m = <span class="st">'regr.glmnet'</span>,
-                   mlmethod_g = <span class="st">'regr.glmnet'</span>)
-
-<span class="kw">params</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(params_m = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(s = <span class="st">"lambda.min"</span>, 
-                               family = <span class="st">"gaussian"</span>),
-               params_g = <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(s = <span class="st">"lambda.min"</span>,
-                               family = <span class="st">"gaussian"</span>))
-<span class="kw">double_mlplr_obj</span> <span class="op">=</span> <span class="kw">DoubleMLPLR</span><span class="op">$</span><span class="fu">new</span>(n_folds = <span class="fl">3</span>,
-                                   ml_learners = <span class="kw">ml_learners</span>,
-                                   params = <span class="kw">params</span>,
-                                   dml_procedure = <span class="st">'dml1'</span>,
-                                   inf_model = <span class="st">'IV-type'</span>)
-
-<span class="co"># Enable debugging for the current instance double_mlplr_obj and method fit</span>
-<span class="fu"><a href="https://rdrr.io/r/base/debug.html">debug</a></span>(<span class="kw">double_mlplr_obj</span><span class="op">$</span><span class="kw">fit</span>)
-
-<span class="co"># Call fit and arrive in debug prompt</span>
-<span class="kw">double_mlplr_obj</span><span class="op">$</span><span class="fu">fit</span>(<span class="kw">data</span>, y = <span class="st">"y"</span>, d = <span class="st">"d"</span>)
-<span class="co"># [Debugging prompt]</span>
-</pre></div>
-</div>
+<p>Getting started with Double Machine Learning in R. …</p>
 </div>
   </div>
 
