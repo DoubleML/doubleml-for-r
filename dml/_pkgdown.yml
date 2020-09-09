@@ -4,7 +4,6 @@ template:
   params:
     bootswatch: lumen
     
-    
 home:
   title: doubleML - Double Machine Learning with R
   links:
