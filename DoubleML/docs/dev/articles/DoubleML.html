@@ -103,29 +103,34 @@
 <div class="sourceCode" id="cb1"><pre class="downlit">
 <span class="kw">devtools</span>::<span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span>(<span class="st">"MartinSpindler/dml"</span>, subdir = <span class="st">"/packages/R/dml"</span>)
 </pre></div>
-<p>Load the package.</p>
+<p>Load the package after completed installation.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://github.com/MartinSpindler/DML/tree/master/packages/R/dml">DoubleML</a></span>)
 </pre></div>
 </div>
-<div id="data-ann-the-causal-model" class="section level3">
+<div id="data-and-the-causal-model" class="section level3">
 <h3 class="hasAnchor">
-<a href="#data-ann-the-causal-model" class="anchor"></a>Data ann the Causal Model</h3>
+<a href="#data-and-the-causal-model" class="anchor"></a>Data and the Causal Model</h3>
 <p>The purpose of the following case-studies is to demonstrate the core functionalities of <code>DoubleML</code>.</p>
-<p><code>DoubleML</code> provides interfaces to <code>data.table</code> as well as <code>matrix</code> and <code>data.frame</code>. The usage of the interfaces is demonstrated in the following. We load the 401(k) data set.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>    from doubleml.datasets import fetch_401K</span>
-<span id="cb3-2"><a href="#cb3-2"></a></span>
-<span id="cb3-3"><a href="#cb3-3"></a>    <span class="co"># Load data</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>    df_401k =<span class="st"> </span><span class="kw">fetch_401K</span>()</span>
-<span id="cb3-5"><a href="#cb3-5"></a>    <span class="kw">df_401k.head</span>(<span class="dv">5</span>)</span></code></pre></div>
-<p>Partially linear regression (PLR) models ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</p>
+<p><code>DoubleML</code> provides interfaces to <code>data.table</code>, <code>data.frame</code> and base R <code>matrix</code>. The usage of the interfaces is demonstrated in the following. We load the 401(k) data set.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit">
+<span class="kw">data</span> <span class="op">=</span> <span class="fu">load_401k</span>()
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="kw">data</span>)
+</pre></div>
+</div>
+<div id="partially-linear-regression-plr-models" class="section level3">
+<h3 class="hasAnchor">
+<a href="#partially-linear-regression-plr-models" class="anchor"></a>Partially linear regression (PLR) models</h3>
 <p>Exemplarily we specify a partially linear regression model (PLR). <strong>Partially linear regression (PLR)</strong> models take the form</p>
-<p>.. math::</p>
-<pre><code>Y = D \theta_0 + g_0(X) + \zeta, &amp; &amp;\mathbb{E}(\zeta | D,X) = 0,
-
-D = m_0(X) + V, &amp; &amp;\mathbb{E}(V | X) = 0,</code></pre>
-<p>where :math:<code>Y</code> is the outcome variable and :math:<code>D</code> is the policy variable of interest. The high-dimensional vector :math:<code>X = (X_1, \ldots, X_p)</code> consists of other confounding covariates, and :math:<code>\zeta</code> and :math:<code>V</code> are stochastic errors.</p>
-<p>DoubleMLData from pandas DataFrames ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</p>
+<p><span class="math display">\[\begin{align*}
+Y &amp;= D \theta_0 + g_0(X) + \zeta, &amp; &amp;\mathbb{E}(\zeta | D,X) = 0,\\
+D &amp;= m_0(X) + V, &amp; &amp;\mathbb{E}(V | X) = 0,
+\end{align*}\]</span> where <span class="math inline">\(Y\)</span> is the outcome variable and <span class="math inline">\(D\)</span> is the policy variable of interest. The high-dimensional vector <span class="math inline">\(X = (X_1, \ldots, X_p)\)</span> consists of other confounding covariates, and <span class="math inline">\(\zeta\)</span> and <span class="math inline">\(V\)</span> are stochastic errors.</p>
+</div>
+<div id="doublemldata-from-data-table" class="section level3">
+<h3 class="hasAnchor">
+<a href="#doublemldata-from-data-table" class="anchor"></a>DoubleMLData from <code>data.table</code>
+</h3>
 <p>The :class:<code>~doubleml.double_ml_data.DoubleMLData</code> class serves as data-backend and can be initialized from a :py:class:<code>pandas.DataFrame</code> by specifying the column <code>y_col='net_tfa'</code> serving as outcome variable :math:<code>Y</code>, the column(s) <code>d_cols = 'e401'</code> serving as treatment variable :math:<code>D</code> and the columns <code>x_cols=['age', 'inc', 'educ', 'fsize', 'marr', 'twoearn', 'db', 'pira', 'hown']</code> specifying the confounders.</p>
 <p>.. ipython:: python</p>
 <pre><code>from doubleml import DoubleMLData
