@@ -1,0 +1,32 @@
+Package: DoubleML
+Type: Package
+Title: Double Machine Learning
+Version: 0.1.0
+Authors@R: c(
+    person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role="aut"),
+    person("Victor", "Chernozhukov", role="aut"),
+    person("Malte", "Kurz", email = "malte.kurz@uni-hamburg.de", role=c("aut", "cre")),
+    person("Martin", "Spindler", email="martin.spindler@gmx.de", role="aut"))
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+URL: https://github.com/MartinSpindler/DML/tree/master/packages/R/dml
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    hdm,
+    stats,
+    sandwich,
+    checkmate,
+    mlr3 (>= 0.1.3),
+    mlr3learners (>= 0.1.3),
+    AER,
+    data.table
+RoxygenNote: 6.1.1
+Suggests: 
+    testthat,
+    patrick,
+    clusterGeneration,
+    mvtnorm,
+    dplyr,
+    glmnet
