@@ -7,6 +7,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
 ```
 
 
@@ -21,49 +22,39 @@ The `DoubleML` package for R can be downloaded using (R package `devtools` is re
 devtools::install_github("MartinSpindler/dml", subdir = "/packages/R/dml")
 ```
 
-Load the package. 
+Load the package after completed installation. 
 
-```{r, eval = FALSE}
+```{r}
 library(DoubleML)
 ```
 
 
-### Data ann the Causal Model 
+### Data and the Causal Model 
 
 The purpose of the following case-studies is to demonstrate the core functionalities of `DoubleML`. 
 
-`DoubleML` provides interfaces to `data.table` as well as `matrix` and `data.frame`. The usage of the interfaces is
+`DoubleML` provides interfaces to `data.table`, `data.frame` and base R `matrix`. The usage of the interfaces is
 demonstrated in the following. We load the 401(k) data set.
 
-```{r, eval = FALSE}
-
-
-
-    from doubleml.datasets import fetch_401K
-
-    # Load data
-    df_401k = fetch_401K()
-    df_401k.head(5)
+```{r}
+data = load_401k()
+head(data)
 ```
 
-Partially linear regression (PLR) models
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### Partially linear regression (PLR) models
 
 Exemplarily we specify a partially linear regression model (PLR). **Partially linear regression (PLR)** models take the
 form
 
-.. math::
+\begin{align*}
+Y &= D \theta_0 + g_0(X) + \zeta, & &\mathbb{E}(\zeta | D,X) = 0,\\
+D &= m_0(X) + V, & &\mathbb{E}(V | X) = 0,
+\end{align*}
+where $Y$ is the outcome variable and $D$ is the policy variable of interest.
+The high-dimensional vector $X = (X_1, \ldots, X_p)$ consists of other confounding covariates,
+and $\zeta$ and $V$ are stochastic errors.
 
-    Y = D \theta_0 + g_0(X) + \zeta, & &\mathbb{E}(\zeta | D,X) = 0,
-
-    D = m_0(X) + V, & &\mathbb{E}(V | X) = 0,
-
-where :math:`Y` is the outcome variable and :math:`D` is the policy variable of interest.
-The high-dimensional vector :math:`X = (X_1, \ldots, X_p)` consists of other confounding covariates,
-and :math:`\zeta` and :math:`V` are stochastic errors.
-
-DoubleMLData from pandas DataFrames
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+### DoubleMLData from `data.table`
 
 The :class:`~doubleml.double_ml_data.DoubleMLData` class serves as data-backend and can be initialized from a :py:class:`pandas.DataFrame` by
 specifying the column ``y_col='net_tfa'`` serving as outcome variable :math:`Y`, the column(s) ``d_cols = 'e401'``
