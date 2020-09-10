@@ -22,6 +22,7 @@ Imports:
     mlr3learners (>= 0.1.3),
     AER,
     data.table
+Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
     testthat,
