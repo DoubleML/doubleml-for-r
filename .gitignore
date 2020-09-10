@@ -32,4 +32,4 @@ DoubleML.Rproj
 *.Rcheck
 
 # documentation files
-/docs/
+docs/
