@@ -2,7 +2,6 @@
 #'
 #' @description
 #' Data structure for double machine learning. 
-#
 #'
 #'
 DoubleMLData <- R6Class("DoubleMLData", public = list(

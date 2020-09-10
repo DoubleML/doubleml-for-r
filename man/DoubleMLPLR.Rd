@@ -4,11 +4,73 @@
 \name{DoubleMLPLR}
 \alias{DoubleMLPLR}
 \title{DoubleMLPLR R6 class}
-\format{An object of class \code{R6ClassGenerator} of length 25.}
-\usage{
-DoubleMLPLR
-}
 \description{
 DoubleMLPLR R6 class
+
+DoubleMLPLR R6 class
 }
-\keyword{datasets}
+\section{Super class}{
+\code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLPLR}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-new}{\code{DoubleMLPLR$new()}}
+\item \href{#method-clone}{\code{DoubleMLPLR$clone()}}
+}
+}
+\if{html}{
+\out{<details ><summary>Inherited methods</summary>}
+\itemize{
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap">}\href{../../DoubleML/html/DoubleML.html#method-bootstrap}{\code{DoubleML::DoubleML$bootstrap()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint">}\href{../../DoubleML/html/DoubleML.html#method-confint}{\code{DoubleML::DoubleML$confint()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit">}\href{../../DoubleML/html/DoubleML.html#method-fit}{\code{DoubleML::DoubleML$fit()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_samples">}\href{../../DoubleML/html/DoubleML.html#method-set_samples}{\code{DoubleML::DoubleML$set_samples()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary">}\href{../../DoubleML/html/DoubleML.html#method-summary}{\code{DoubleML::DoubleML$summary()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune">}\href{../../DoubleML/html/DoubleML.html#method-tune}{\code{DoubleML::DoubleML$tune()}}\out{</span>}
+}
+\out{</details>}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-new"></a>}}
+\if{latex}{\out{\hypertarget{method-new}{}}}
+\subsection{Method \code{new()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLR$new(
+  data,
+  n_folds,
+  ml_learners,
+  params = list(params_m = list(), params_g = list()),
+  dml_procedure,
+  inf_model,
+  subgroups = NULL,
+  se_reestimate = FALSE,
+  n_rep_cross_fit = 1,
+  param_set = list(param_set_m = list(), param_set_g = list()),
+  tune_settings = list(n_folds_tune = 5, n_rep_tune = 1, rsmp_tune = "cv", measure_g =
+    "regr.mse", measure_m = "regr.mse", terminator = mlr3tuning::trm("evals", n_evals =
+    20), algorithm = "grid_search", tuning_instance_g = NULL, tuning_instance_m = NULL,
+    tuner = "grid_search", resolution = 5),
+  param_tuning = NULL
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLR$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}
