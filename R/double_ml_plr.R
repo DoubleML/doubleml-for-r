@@ -6,15 +6,15 @@
 
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   initialize = function(data, 
-                        n_folds,
+                        n_folds = 5,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list()),
-                        dml_procedure,
-                        score,
+                        dml_procedure = "dml2",
+                        score = "partialling out",
                         subgroups = NULL,
-                        se_reestimate=FALSE,
-                        n_rep_cross_fit=1,
+                        se_reestimate = FALSE,
+                        n_rep_cross_fit = 1,
                         param_set = list(param_set_m = list(),
                                            param_set_g = list()),
                         tune_settings = list(n_folds_tune = 5,
@@ -42,6 +42,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                param_set,
                                tune_settings, 
                                param_tuning)
+    
   }
 ),
 private = list(

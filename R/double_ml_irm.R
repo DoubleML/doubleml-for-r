@@ -6,15 +6,15 @@
 
 DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   initialize = function(data, 
-                        n_folds,
+                        n_folds = 5,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list()),
-                        dml_procedure,
-                        score,
+                        dml_procedure = "dml2",
+                        score = "ATE",
                         subgroups = NULL,
-                        se_reestimate=FALSE,
-                        n_rep_cross_fit=1,
+                        se_reestimate = FALSE,
+                        n_rep_cross_fit = 1,
                         param_set = NULL,
                         tune_settings = list(),
                         param_tuning = NULL) {
