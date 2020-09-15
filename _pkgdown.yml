@@ -8,8 +8,8 @@ home:
   title: doubleML - Double Machine Learning with R
   links:
   - text: Download 
-    href: https://github.com/MartinSpindler/DML/tree/master/packages/R/dml
+    href: https://github.com/DoubleML/doubleml-for-r/
     
 development:
   mode: devel
-
+  

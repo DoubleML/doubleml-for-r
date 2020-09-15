@@ -1,29 +1,87 @@
-library('R6')
-library('data.table')
-library('mlr3')
-library("mlr3learners")
+#' @title DoubleML
+#'
+#' @description 
+#' Abstract base class for DoubleML models. 
+#' 
+#' * Methods `$tune()` and `$fit()` which call internal methods for parameter tuning and estimation of the causal effects. 
+#' @param data
+#' @param n_folds
+#' @param ml_learners
+#' @param params
+#' @param dml_procedure
+#' @param inf_model
+#' @param subgroups
+#' @param n_rep_cross_fit
+#' @param coef
+#' @param se
+#' @param t
+#' @param pval
+#' @param se_reestimate
+#' @param boot_coef
+#' @param param_set
+#' @param tune_settings
+#' @param param_tuning
+#' @export
 
 DoubleML <- R6Class("DoubleML", public = list(
+  #' @field data (`DoubleMLData`)\cr 
+  #' Data object.
   data = NULL,
+  #' @field n_folds (`integer(1)`)\cr
+  #' Number of folds used for cross-fitting.
   n_folds = NULL,
+  #' @field ml_learners (`list()`)\cr
+  #' List of learners as named in mlr3 and mlr3learners packages.
   ml_learners = NULL,
+  #' @field params (`list()`)\cr
+  #' List of parameters passed to learners.
   params = NULL,
+  #' @field dml_procedure (`character(1)`)\cr
+  #' Double Machine Learning algorithm used (either "dml1" or "dml2").
   dml_procedure = NULL,
+  #' @field inf_model (`character(1)`)\cr
+  #' Score to be used for estimation. 
   inf_model = NULL,
+  #' @field subgroups (`list()`)\cr
+  #' Subgroups.
   subgroups = NULL,
+  #' @field n_rep_cross_fit (`integer(1)`)\cr
+  #' Number of repetitions for cross-fitting.
   n_rep_cross_fit = 1,
+  #' @return coef (`numeric(1)`)\cr
+  #' Final coefficient estimate.
   coef = NULL,
+  #' @return se (`numeric(1)`)\cr
+  #' Standard error.
   se = NULL,
-  t = NULL, 
+  #' @return t (`numeric(1)`)\cr
+  #' t statistic.
+  t = NULL,  
+  #' @return pval (`numeric(1)`)\cr
+  #' p-value.
   pval = NULL,
+  #' @field se_reestimate (`logical(1)`)\cr
+  #' Flag for reestimation of standard error after cross-fitting. 
   se_reestimate = FALSE,
+  #' @return boot_coef (`numeric()`)\cr
+  #' Coefficients from multiplier bootstrap. 
   boot_coef = NULL,
+  #' @field param_set (`list()`)\cr
+  #' List with parameter set from mlr3tuning of class `ParamSet`. 
   param_set = NULL, 
+  #' @field tune_settings (`list()`)\cr
+  #' List with settings for parameter tuning passed to mlr3tuning.
   tune_settings = NULL,
+  #' @return param_tuning (`list()`)\cr
+  #' List with results from parameter tuning with mlr3tuning.
   param_tuning = NULL,
+  #' @description 
+  #' Initialize instance. `DoubleML` is an abstract class and initialization is typically performed for inherited classes. 
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
+  
+  
   fit = function(se_reestimate = FALSE) {
     
     # TBD: insert check for tuned params
