@@ -9,8 +9,8 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of z on X (nuisance part m). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part r). 
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g, \code{params_m} for nuisance m, and \code{params_r} for nuisance r. 
-#' @param score Inference model for final estimation, default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. 
-#' @param se_type Method to estimate standard errors. Default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{score} and \code{se_type} are required to match. 
+#' @param score Inference model for final estimation, default \code{"partialling out"}. Alternatively, specify \code{"ivreg"}. 
+#' @param se_type Method to estimate standard errors. Default \code{"partialling out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{score} and \code{se_type} are required to match. 
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
@@ -21,7 +21,7 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
                       params = list(params_m = list(), params_r = list(),
                                     params_g = list()),
                     dml_procedure = "dml2",
-                    score = "partialling-out", se_type = "partialling-out",
+                    score = "partialling out", se_type = "partialling out",
                     bootstrap = "normal",  nRep = 500, ...) {
   
   if (is.null(smpls)) {
@@ -42,11 +42,11 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
-  if (se_type != "partialling-out" & se_type != "ivreg") {
+  if (se_type != "partialling out" & se_type != "ivreg") {
     stop("Value for se_type is not valid.")
   }
   
-  if (score != "partialling-out" & score != "ivreg") {
+  if (score != "partialling out" & score != "ivreg") {
     stop("Value for score is not valid.")
   }
  
@@ -269,7 +269,7 @@ orth_plriv_dml <- function(u_hat, v_hat, w_hat, score) { #, se_type) {
     theta <- stats::coef(res_fit)
   }
 
-   else if (score == 'partialling-out') {
+   else if (score == 'partialling out') {
      theta <- mean(u_hat*w_hat)/mean(v_hat*w_hat)
   }
 
@@ -295,7 +295,7 @@ var_plriv <- function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
   
   var <- NA
   
-  if (score == "partialling-out") {
+  if (score == "partialling out") {
   
     var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat * w_hat, na.rm = TRUE))^2  *
             colMeans( ( (u_hat - v_hat*theta)*w_hat)^2), na.rm = TRUE)
@@ -329,7 +329,7 @@ bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, score, se, bootstrap, nR
   
   boot_var <- NA
   
-  # implement multiplier bootstrap for score = "partialling-out" by default
+  # implement multiplier bootstrap for score = "partialling out" by default
   score <- (u_hat - v_hat*theta)*w_hat
   J <-  -colMeans(v_hat*w_hat, na.rm = TRUE)
   

@@ -16,7 +16,7 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         score = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          n_rep_cross_fit = c(1, 3),
                          stringsAsFactors = FALSE)

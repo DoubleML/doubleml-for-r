@@ -9,7 +9,7 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_mu1} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X for individuals with Z = 1  (nuisance part mu1) and \code{mlmethod_mu0} for individuals with Z = 0 (nuisance part mu0). Set \code{mlmethod_m1} for  classification method for regression of d on X for individuals with Z = 1 (nuisance part m1) and \code{mlmethod_m0} for observations with Z = 0 (nuisance part m0). Set \code{mlmethod_p} for classification method for propensity score (nuisance part p).
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_mu1} for predictions of nuisance part g1, \code{params_mu0} for nuisance part mu0, and so forth (names must match those in \code{mlmethod}).
-#' @param score Estimator for final estimation, default average treatment effect \code{"LATE"}. Alternatively switch to \code{"LATET"} for average treatment effect on the treated.
+#' @param score Estimator for final estimation, default average treatment effect \code{"LATE"}. Alternatively switch to \code{"LATTE"} for average treatment effect on the treated.
 #' @param se_type Method to estimate standard errors (redundant / identical to score).
 #' @param always_takers option to adapt to cases with (default) and without always-takers. If \code{FALSE}, the estimator is adapted to a setting without always-takers.
 #' @param never_takers option to adapt to cases with (default) and without never-takers. If \code{FALSE}, the estimator is adapted to a setting without never-takers.
@@ -344,14 +344,14 @@ orth_irmiv_dml <- function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sco
 
   theta <- NA
 
-  if (score == "LATE" | score == "DML2018") {
+  if (score == "LATE" | score == "partialling out") {
      theta <- 1/mean( m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
               mean(mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
   }
  
-   else if (score == "LATET") { 
+   else if (score == "LATTE") { 
      
-     # tbd: LATET
+     # tbd: LATTE
      
      # Ep <- mean(d) 
      
@@ -393,7 +393,7 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
     
   } 
   
-  # else if (score == "DML2018") {
+  # else if (score == "partialling out") {
   # 
   #      score_mat <- 1/(m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
   #                     (mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
@@ -401,9 +401,9 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
   #      var <- 1/length(d) * apply(score_mat, 2, function(x) var(x, na.rm = TRUE))
   #   }
   #   
-    else if (score == "LATET") {
+    else if (score == "LATTE") {
      
-     # tbd: LATET
+     # tbd: LATTE
   
      #    if (is.numeric(d)) {
      #      d <- as.matrix(d)
@@ -414,7 +414,7 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
      # var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta)^2, na.rm = TRUE))
      #
 
-      message ("LATET not yet implemented.")
+      message ("LATTE not yet implemented.")
       }  else {
     
     stop("Inference framework for variance estimation unknown")
@@ -447,7 +447,7 @@ bootstrap_irmiv <- function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
                                   - (1-z)*(d-m0_hat)/(1-p_hat) , na.rm = TRUE)
  }
 
- else if (score == "LATET") {
+ else if (score == "LATTE") {
 
     # if (is.numeric(d)) {
     #     d <- as.matrix(d)

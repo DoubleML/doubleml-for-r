@@ -9,7 +9,7 @@
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). 
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
 #' @param score Inference model for final estimation, default \code{"IV-type"} (...)
-#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"DML2018"} to obtain standard errors that correspond to the specified \code{score}. The options chosen for \code{score} and \code{se_type} are required to match. 
+#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"partialling out"} to obtain standard errors that correspond to the specified \code{score}. The options chosen for \code{score} and \code{se_type} are required to match. 
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
@@ -283,7 +283,7 @@ orth_plr_dml <- function(u_hat, v_hat, v_hatd, score) { #, se_type) {
 
   theta <-  NA
 
-  if (score == "DML2018") {
+  if (score == "partialling out") {
     res_fit <- stats::lm(u_hat ~ 0 + v_hat)
     theta <- stats::coef(res_fit)
   }
@@ -318,7 +318,7 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedur
   
   if (se_type == score){ 
     
-    if (score == "DML2018") {
+    if (score == "partialling out") {
   
     var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat^2, na.rm = TRUE))^2  *
             colMeans( ( (u_hat - v_hat*theta)*v_hat)^2, na.rm = TRUE) )
@@ -332,7 +332,7 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedur
   }
    
   # Q: only for "dml2"?
-  if (se_type == "ls" & score == "DML2018" & dml_procedure == "dml2") {
+  if (se_type == "ls" & score == "partialling out" & dml_procedure == "dml2") {
       res_fit <- stats::lm(u_hat ~ 0 + v_hat)
       var <- sandwich::vcovHC(res_fit)
   }
@@ -356,7 +356,7 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se, bootstrap, 
   
   boot_var <- NA
   
- if (score == "DML2018") {
+ if (score == "partialling out") {
 
     score <- (u_hat - v_hat*theta)*v_hat
     J <-  -colMeans(v_hat*v_hat, na.rm = TRUE)

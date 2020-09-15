@@ -37,12 +37,12 @@ patrick::with_parameters_test_that("Regression tests for dlm estimates for parti
 )
 
 
-context("Regression tests for dml estimates for partial linear regression model, 'DML2018'")
+context("Regression tests for dml estimates for partial linear regression model, 'partialling out'")
 
 test_cases = expand.grid(model = c('plr'),
                     learner = c('regr.lm', 'regr.glmnet'),
                     dml_procedure = c('dml1', 'dml2'),
-                    score = c('DML2018'),
+                    score = c('partialling out'),
                     stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 

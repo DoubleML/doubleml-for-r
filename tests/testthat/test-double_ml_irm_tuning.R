@@ -26,7 +26,7 @@ tune_settings = list(n_folds_tune = 3,
 
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         score = c('ATE', 'ATET'),
+                         score = c('ATE', 'ATTE'),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          n_rep_cross_fit = c(1, 3),

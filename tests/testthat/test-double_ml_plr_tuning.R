@@ -28,7 +28,7 @@ tune_settings = list(n_folds_tune = 3,
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         score = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'partialling out'),
                          n_rep_cross_fit = c(1, 3),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)

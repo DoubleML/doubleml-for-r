@@ -8,7 +8,7 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). 
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g1} for predictions of nuisance part g1, \code{params_g0} for nuisance part g0, and \code{params_m} for nuisance m.
-#' @param score Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATET"} for average treatment effect on the treated.
+#' @param score Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATTE"} for average treatment effect on the treated.
 #' @param se_type Method to estimate standard errors (redundant / identical to score).
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
@@ -109,8 +109,8 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   train_ids_g1 <- lapply(1:n_iters, function(x) resampling_g1$train_set(x))
   test_ids_g1 <- lapply(1:n_iters, function(x) resampling_g1$test_set(x))
   
-  # tbd: option to omit estimation of g1_hat_list for ATET (omit computations)
-  # Estimation only required for ATE, not for ATET
+  # tbd: option to omit estimation of g1_hat_list for ATTE (omit computations)
+  # Estimation only required for ATE, not for ATTE
   #if (score == "ATE") {
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
   #   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
@@ -280,7 +280,7 @@ orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) 
     
   }
 
-   else if (score == "ATET") {
+   else if (score == "ATTE") {
      
      theta <- mean( d*(y - g0_hat)/p_hat - m*(1-d)*u0_hat/(p_hat*(1-m))) / mean(d/p_hat)
    }
@@ -319,7 +319,7 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score
     
   }
     
-   else if (score == "ATET") {
+   else if (score == "ATTE") {
   
      var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/p_hat - m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta)^2, na.rm = TRUE))
      
@@ -352,7 +352,7 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
     }
  }
   
- if (score == "ATET") {
+ if (score == "ATTE") {
 
     score <- d*(y - g0_hat)/p_hat- m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta
     

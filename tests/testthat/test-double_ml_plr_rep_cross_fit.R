@@ -9,7 +9,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'), # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         score = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          n_rep_cross_fit = c(2, 5),
                          stringsAsFactors = FALSE)

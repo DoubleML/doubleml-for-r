@@ -30,7 +30,7 @@ tune_settings = list(n_folds_tune = 3,
 test_cases = expand.grid(learner_list = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         score = c('partialling-out'),
+                         score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
                          n_rep_cross_fit = c(1, 3),
                          stringsAsFactors = FALSE)

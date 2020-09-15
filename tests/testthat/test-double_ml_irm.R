@@ -8,7 +8,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
-                         score = c('ATE', 'ATET'),
+                         score = c('ATE', 'ATTE'),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          stringsAsFactors = FALSE)

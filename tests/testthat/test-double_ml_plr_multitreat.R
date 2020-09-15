@@ -9,7 +9,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         score = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
