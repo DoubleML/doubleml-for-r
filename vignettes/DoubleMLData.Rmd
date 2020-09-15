@@ -1,8 +1,10 @@
 ---
 title: "Data and Causal Model"
-output: 
-  html_document:
-    toc: true
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data and Causal Model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
