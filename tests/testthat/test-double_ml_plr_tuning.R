@@ -28,7 +28,7 @@ tune_settings = list(n_folds_tune = 3,
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'DML2018'),
                          n_rep_cross_fit = c(1, 3),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
@@ -52,8 +52,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   #                k = n_folds, S = 1,
   #                mlmethod = learner_pars_for_DML$mlmethod,
   #                params = learner_pars_for_DML$params,
-  #                dml_procedure = dml_procedure, inf_model = inf_model,
-  #                se_type = inf_model,
+  #                dml_procedure = dml_procedure, score = score,
+  #                se_type = score,
   #                bootstrap = "normal", nRep = n_rep_boot)
   # theta <- coef(plr_hat)
   # se <- plr_hat$se
@@ -68,7 +68,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                      ml_learners = learner_list,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model, 
+                                     score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   
   tune_ps = ParamSet$new(list(

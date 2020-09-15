@@ -14,7 +14,7 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         inf_model = c('ATE', 'ATET'),
+                         score = c('ATE', 'ATET'),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          n_rep_cross_fit = c(1, 3),
@@ -35,8 +35,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
   # irm_hat <- dml_irm(data_irm[[i_setting]], y = "y", d = "d",
   #                    k = n_folds, mlmethod = learner_pars$mlmethod,
   #                    params = learner_pars$params,
-  #                    dml_procedure = dml_procedure, inf_model = inf_model,
-  #                    se_type = inf_model,
+  #                    dml_procedure = dml_procedure, score = score,
+  #                    se_type = score,
   #                    bootstrap = "normal",  S = n_rep_cross_fit,
   #                    nRep = n_rep_boot)
   # theta <- coef(irm_hat)
@@ -56,7 +56,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
                                      ml_learners = learner_pars$mlmethod,
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, inf_model = inf_model, 
+                                     se_reestimate = se_reestimate, score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mlirm_obj_exact$fit()
   theta_obj_exact <- double_mlirm_obj_exact$coef
@@ -73,7 +73,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
                                      ml_learners = learner_pars$mlmethod,
                                      params = NULL,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, inf_model = inf_model,
+                                     se_reestimate = se_reestimate, score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mlirm_obj_null$fit()
   theta_obj_null <- double_mlirm_obj_null$coef
@@ -84,7 +84,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
                                      n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, inf_model = inf_model,
+                                     se_reestimate = se_reestimate, score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mlirm_obj_default$fit()
   theta_obj_default <- double_mlirm_obj_default$coef

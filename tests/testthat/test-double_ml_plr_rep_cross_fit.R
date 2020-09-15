@@ -9,7 +9,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'), # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'DML2018'),
                          i_setting = 1:(length(data_plr)),
                          n_rep_cross_fit = c(2, 5),
                          stringsAsFactors = FALSE)
@@ -31,14 +31,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  k = n_folds, S = n_rep_cross_fit,
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
-                 dml_procedure = dml_procedure, inf_model = inf_model,
-                 se_type = inf_model)
+                 dml_procedure = dml_procedure, score = score,
+                 se_type = score)
   theta <- coef(plr_hat)
   se <- plr_hat$se
   
   plr_hat$boot_theta <- bootstrap.DML(plr_hat, data_plr[[i_setting]], y = "y", d = "d",
                                       dml_procedure = dml_procedure,
-                                      inf_model = inf_model, se_type = inf_model,
+                                      score = score, se_type = score,
                                       bootstrap = "normal", nRep = n_rep_boot)
   
   set.seed(i_setting)
@@ -53,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
-                                     inf_model = inf_model,
+                                     score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef

@@ -8,8 +8,8 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m). 
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g1} for predictions of nuisance part g1, \code{params_g0} for nuisance part g0, and \code{params_m} for nuisance m.
-#' @param inf_model Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATET"} for average treatment effect on the treated.
-#' @param se_type Method to estimate standard errors (redundant / identical to inf_model).
+#' @param score Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATET"} for average treatment effect on the treated.
+#' @param se_type Method to estimate standard errors (redundant / identical to score).
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
@@ -19,7 +19,7 @@
 dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(params_m = list(),
                     params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "ATE", se_type = "ATE",
+                    score = "ATE", se_type = "ATE",
                     bootstrap = "normal",  nRep = 500, ...) {
   
   if (is.null(smpls)) {
@@ -36,9 +36,9 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
-  if (se_type != inf_model){
-    se_type <- inf_model
-    message("Options se_type and inf_model do not match. Set se_type to value of inf_model")
+  if (se_type != score){
+    se_type <- score
+    message("Options se_type and score do not match. Set se_type to value of score")
   }
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
@@ -111,7 +111,7 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   
   # tbd: option to omit estimation of g1_hat_list for ATET (omit computations)
   # Estimation only required for ATE, not for ATET
-  #if (inf_model == "ATE") {
+  #if (score == "ATE") {
     r_g1 <- mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
   #   # r_g <- mlr::resample(learner = ml_g, task = task_g, resampling = rin)
   #   g1_hat_list <- r_g1$data$prediction
@@ -176,7 +176,7 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
                                  u0_hat = u0_hat[, i], u1_hat = u1_hat[, i],
                                  d = d_k[, i], p_hat = p_hat_k[, i], m = m_hat_k[, i], 
                                   y = y_k[, i],
-                                 inf_model = inf_model) #, se_type)
+                                 score = score) #, se_type)
         thetas[i] <- orth_est$theta
 
     }
@@ -185,7 +185,7 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
     
     se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = d_k, p_hat = p_hat_k, m = m_hat_k, y = y_k, inf_model = inf_model))
+                            d = d_k, p_hat = p_hat_k, m = m_hat_k, y = y_k, score = score))
 
     t <- theta/se 
     
@@ -196,7 +196,7 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
       boot <- bootstrap_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
                             d = d_k, p_hat = p_hat_k, m = m_hat_k, y = y_k, 
-                            inf_model = inf_model, se = se,
+                            score = score, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -225,12 +225,12 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
 
     orth_est <- orth_irm_dml(g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, d = D, p_hat = p_hat,
-                            y = Y, m = m_hat, inf_model = inf_model)
+                            y = Y, m = m_hat, score = score)
     
     theta <- orth_est$theta
     se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = D, p_hat = p_hat, m = m_hat, y = Y, inf_model = inf_model))
+                            d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
     
     t <- theta/se 
     
@@ -242,7 +242,7 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
                             g0_hat = g0_hat, g1_hat = g1_hat, 
                             u0_hat = u0_hat, u1_hat = u1_hat, 
                             d = D, p_hat = p_hat, m = m_hat, y = Y, 
-                            inf_model = inf_model, se = se,
+                            score = score, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -271,16 +271,16 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
 #' @inheritParams var_irm
 #' @return List with estimate (\code{theta}).
 #' @export
-orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_model) { #, se_type) {
+orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) { #, se_type) {
 
   theta <- NA
 
-  if (inf_model == "ATE") {
+  if (score == "ATE") {
      theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m))
     
   }
 
-   else if (inf_model == "ATET") {
+   else if (score == "ATET") {
      
      theta <- mean( d*(y - g0_hat)/p_hat - m*(1-d)*u0_hat/(p_hat*(1-m))) / mean(d/p_hat)
    }
@@ -307,11 +307,11 @@ orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_mod
 #' @param u0_hat Residuals from \eqn{y-g(0,x)}.
 #' @param u1_hat Residuals from \eqn{y-g(1,x)}.
 #' @return Variance estimator (\code{var}).
-var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_model) {
+var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
   
   var <- NA
   
-  if (inf_model == "ATE") {
+  if (score == "ATE") {
   
   # var <- mean( 1/length(d) * colMeans(((g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m))^2), na.rm = TRUE))
   
@@ -319,7 +319,7 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_m
     
   }
     
-   else if (inf_model == "ATET") {
+   else if (score == "ATET") {
   
      var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/p_hat - m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta)^2, na.rm = TRUE))
      
@@ -339,11 +339,11 @@ var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_m
 #' @inheritParams DML
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
-bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, inf_model, se, bootstrap, nRep) {
+bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score, se, bootstrap, nRep) {
   
   boot_var <- NA
   
- if (inf_model == "ATE") {
+ if (score == "ATE") {
 
     score <- g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m) - theta
     J <- -1
@@ -352,7 +352,7 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
     }
  }
   
- if (inf_model == "ATET") {
+ if (score == "ATET") {
 
     score <- d*(y - g0_hat)/p_hat- m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta
     

@@ -16,7 +16,7 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner, "mlmethod_r"
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('partialling-out'),
+                         score = c('partialling-out'),
                          i_setting = 1:(length(data_pliv)),
                          n_rep_cross_fit = c(1, 3),
                          stringsAsFactors = FALSE)
@@ -42,8 +42,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                         k = n_folds, S = n_rep_cross_fit, 
                         mlmethod = learner_list,
                         params = learner_pars_once$params,
-                        dml_procedure = dml_procedure, inf_model = inf_model,
-                        se_type = inf_model,
+                        dml_procedure = dml_procedure, score = score,
+                        se_type = score,
                         bootstrap = "normal",  nRep = n_rep_boot)
   theta <- coef(pliv_hat)
   se <- pliv_hat$se
@@ -64,7 +64,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      params = learner_pars_exact,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model,
+                                     score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
   double_mlpliv_obj_exact$fit()
@@ -85,7 +85,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      params = NULL,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model,
+                                     score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
   double_mlpliv_obj_null$fit()
@@ -104,7 +104,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      ml_learners = learner_list,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model,
+                                     score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
   double_mlpliv_obj_default$fit()

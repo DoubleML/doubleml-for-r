@@ -26,7 +26,7 @@ tune_settings = list(n_folds_tune = 3,
 
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         inf_model = c('ATE', 'ATET'),
+                         score = c('ATE', 'ATET'),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          n_rep_cross_fit = c(1, 3),
@@ -57,7 +57,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                      n_folds = n_folds,
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, inf_model = inf_model)
+                                     se_reestimate = se_reestimate, score = score)
   
   tune_ps = ParamSet$new(list(
                           ParamDbl$new("cp", lower = 0.001, upper = 0.1),

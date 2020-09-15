@@ -7,7 +7,7 @@ library('mlr3')
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('regr.cv_glmnet'),
-                         inf_model = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'DML2018'),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -37,7 +37,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                                      params = params_OOP,
                                      dml_procedure = "dml1", 
                                      se_reestimate = FALSE,
-                                     inf_model = inf_model)
+                                     score = score)
   double_mlplr_obj_dml1$fit()
   theta_obj_dml1 <- double_mlplr_obj_dml1$coef
   se_obj_dml1 <- double_mlplr_obj_dml1$se
@@ -49,7 +49,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                                      params = params_OOP,
                                      dml_procedure = "dml1", 
                                      se_reestimate = TRUE,
-                                     inf_model = inf_model)
+                                     score = score)
   double_mlplr_obj_dml1_reestim$fit()
   theta_obj_dml1_reestim <- double_mlplr_obj_dml1_reestim$coef
   se_obj_dml1_reestim <- double_mlplr_obj_dml1_reestim$se
@@ -62,7 +62,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                                      params = params_OOP,
                                      dml_procedure = "dml2", 
                                      se_reestimate = FALSE,
-                                     inf_model = inf_model)
+                                     score = score)
   double_mlplr_obj_dml2$fit()
   theta_obj_dml2 <- double_mlplr_obj_dml2$coef
   se_obj_dml2 <- double_mlplr_obj_dml2$se
@@ -74,7 +74,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                                      params = params_OOP,
                                      dml_procedure = "dml2", 
                                      se_reestimate = TRUE,
-                                     inf_model = inf_model)
+                                     score = score)
   double_mlplr_obj_dml2_reestim$fit()
   theta_obj_dml2_reestim <- double_mlplr_obj_dml2_reestim$coef
   se_obj_dml2_reestim <- double_mlplr_obj_dml2_reestim$se

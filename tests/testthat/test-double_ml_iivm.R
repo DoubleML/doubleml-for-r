@@ -9,7 +9,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 test_cases = expand.grid(learner = c('cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('LATE'),
+                         score = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -24,8 +24,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   iivm_hat <- dml_irmiv(data_iivm[[i_setting]], y = "y", d = "d", z = "z",
                         k = 5, mlmethod = learner_pars$mlmethod,
                         params = learner_pars$params,
-                        dml_procedure = dml_procedure, inf_model = inf_model,
-                        se_type = inf_model,
+                        dml_procedure = dml_procedure, score = score,
+                        se_type = score,
                         bootstrap = "normal",  nRep = n_rep_boot)
   theta <- coef(iivm_hat)
   se <- iivm_hat$se
@@ -50,7 +50,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
-                                     inf_model = inf_model)
+                                     score = score)
   double_mliivm_obj$fit()
   theta_obj <- double_mliivm_obj$coef
   se_obj <- double_mliivm_obj$se

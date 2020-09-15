@@ -3,7 +3,7 @@ context("Regression tests for dml estimates for partial linear regression model,
 test_cases = expand.grid(model = c('plr'),
                     learner = c('regr.lm', 'regr.glmnet'),
                     dml_procedure = c('dml1', 'dml2'),
-                    inf_model = c('IV-type'),
+                    score = c('IV-type'),
                     stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -28,7 +28,7 @@ patrick::with_parameters_test_that("Regression tests for dlm estimates for parti
                        resampling = cf, mlmethod = learner_pars$mlmethod,
                        params = list(params_m = learner_pars$params$params_m,
                          params_g =  learner_pars$params$params_g),
-                       dml_procedure = dml_procedure, inf_model = inf_model)
+                       dml_procedure = dml_procedure, score = score)
     all_thetas[i_setting] <- coef(plr_hat)
   }
 
@@ -42,7 +42,7 @@ context("Regression tests for dml estimates for partial linear regression model,
 test_cases = expand.grid(model = c('plr'),
                     learner = c('regr.lm', 'regr.glmnet'),
                     dml_procedure = c('dml1', 'dml2'),
-                    inf_model = c('DML2018'),
+                    score = c('DML2018'),
                     stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -64,7 +64,7 @@ patrick::with_parameters_test_that("Regression tests for dlm estimates for parti
     plr_hat <- dml_plr(data_plm[[i_setting]], y = "y", d = "Var1",
                        resampling = cf, mlmethod = learner_pars$mlmethod,
                        params = learner_pars$params,
-                       dml_procedure = dml_procedure, inf_model = inf_model)
+                       dml_procedure = dml_procedure, score = score)
     all_thetas[i_setting] <- coef(plr_hat)
   }
 
@@ -78,7 +78,7 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
   model = 'plr'
   learner = 'regr.lm'
   dml_procedure = 'dml1'
-  inf_model = 'IV-type'
+  score = 'IV-type'
 
   learner_pars <- get_default_mlmethod_plr(learner)
 
@@ -99,7 +99,7 @@ test_that("Regression tests for dlm estimates for partial linear regression mode
                        # ResampleInstance = Instances[[i_setting]], 
                        resampling = cf, mlmethod = learner_pars$mlmethod,
                        params = learner_pars$params,
-                       dml_procedure = dml_procedure, inf_model = inf_model)
+                       dml_procedure = dml_procedure, score = score)
     all_thetas[i_setting] <- coef(plr_hat)
   }
 

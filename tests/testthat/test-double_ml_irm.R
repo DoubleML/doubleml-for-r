@@ -8,7 +8,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
-                         inf_model = c('ATE', 'ATET'),
+                         score = c('ATE', 'ATET'),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          stringsAsFactors = FALSE)
@@ -24,8 +24,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
   irm_hat <- dml_irm(data_irm[[i_setting]], y = "y", d = "d",
                      k = 5, mlmethod = learner_pars$mlmethod,
                      params = learner_pars$params,
-                     dml_procedure = dml_procedure, inf_model = inf_model,
-                     se_type = inf_model,
+                     dml_procedure = dml_procedure, score = score,
+                     se_type = score,
                      bootstrap = "normal",  nRep = n_rep_boot)
   theta <- coef(irm_hat)
   se <- irm_hat$se
@@ -44,7 +44,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                                      ml_learners = learner_pars$mlmethod,
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, inf_model = inf_model)
+                                     se_reestimate = se_reestimate, score = score)
   double_mlirm_obj$fit()
   theta_obj <- double_mlirm_obj$coef
   se_obj <- double_mlirm_obj$se
