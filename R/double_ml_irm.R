@@ -6,15 +6,15 @@
 
 DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   initialize = function(data, 
-                        n_folds,
+                        n_folds = 5,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list()),
-                        dml_procedure,
-                        inf_model,
+                        dml_procedure = "dml2",
+                        score = "ATE",
                         subgroups = NULL,
-                        se_reestimate=FALSE,
-                        n_rep_cross_fit=1,
+                        se_reestimate = FALSE,
+                        n_rep_cross_fit = 1,
                         param_set = NULL,
                         tune_settings = list(),
                         param_tuning = NULL) {
@@ -23,7 +23,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                                ml_learners,
                                params,
                                dml_procedure,
-                               inf_model,
+                               score,
                                subgroups,
                                se_reestimate,
                                n_rep_cross_fit,
@@ -116,7 +116,7 @@ private = list(
     u0_hat <- Y - g0_hat
     u1_hat <- Y - g1_hat
     
-    # fraction of treated for ATET
+    # fraction of treated for ATTE
     p_hat <- vector('numeric', length= nrow(data$data_model))
     #if (self$dml_procedure == "dml1") {
       for (i_fold in 1:self$n_folds) {
@@ -127,16 +127,16 @@ private = list(
     #  p_hat = mean(D)
     #}
     
-    if (self$inf_model == 'ATE') {
-      score_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
-      score_a = rep(-1, nrow(data$data_model))
-    } else if (self$inf_model == 'ATET') {
-      score_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
-      score_a = -D / p_hat
+    if (self$score == 'ATE') {
+      psi_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
+      psi_a = rep(-1, nrow(data$data_model))
+    } else if (self$score == 'ATTE') {
+      psi_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
+      psi_a = -D / p_hat
     }
     
-    return(list(score_a = score_a,
-                score_b = score_b))
+    return(list(psi_a = psi_a,
+                psi_b = psi_b))
   },
  tune_params = function(data, smpls, param_set, tune_settings, ...){
    checkmate::check_class(param_set$param_set_g, "ParamSet")    
@@ -211,6 +211,4 @@ private = list(
 )
 )
 
-
-#DoubleMLIRM$debug("ml_nuisance_and_score_elements")
 

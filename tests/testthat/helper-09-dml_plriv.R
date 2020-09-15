@@ -9,8 +9,8 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of z on X (nuisance part m). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part r). 
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g, \code{params_m} for nuisance m, and \code{params_r} for nuisance r. 
-#' @param inf_model Inference model for final estimation, default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. 
-#' @param se_type Method to estimate standard errors. Default \code{"partialling-out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{inf_model} and \code{se_type} are required to match. 
+#' @param score Inference model for final estimation, default \code{"partialling out"}. Alternatively, specify \code{"ivreg"}. 
+#' @param se_type Method to estimate standard errors. Default \code{"partialling out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{score} and \code{se_type} are required to match. 
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
 #' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
 #' @param ... further options passed to underlying functions.
@@ -21,7 +21,7 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
                       params = list(params_m = list(), params_r = list(),
                                     params_g = list()),
                     dml_procedure = "dml2",
-                    inf_model = "partialling-out", se_type = "partialling-out",
+                    score = "partialling out", se_type = "partialling out",
                     bootstrap = "normal",  nRep = 500, ...) {
   
   if (is.null(smpls)) {
@@ -42,12 +42,12 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
-  if (se_type != "partialling-out" & se_type != "ivreg") {
+  if (se_type != "partialling out" & se_type != "ivreg") {
     stop("Value for se_type is not valid.")
   }
   
-  if (inf_model != "partialling-out" & inf_model != "ivreg") {
-    stop("Value for inf_model is not valid.")
+  if (score != "partialling out" & score != "ivreg") {
+    stop("Value for score is not valid.")
   }
  
 
@@ -171,7 +171,7 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
 
         orth_est <- orth_plriv_dml(u_hat = u_hat[, i] , v_hat = v_hat[, i] , 
                                    w_hat = w_hat[, i], 
-                                   inf_model = inf_model) #, se_type)
+                                   score = score) #, se_type)
         thetas[i] <- orth_est$theta
     
     }
@@ -179,7 +179,7 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     theta <- mean(thetas, na.rm = TRUE)
     
     se <- sqrt(var_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat,
-                        w_hat = w_hat, inf_model = inf_model,
+                        w_hat = w_hat, score = score,
                         dml_procedure = dml_procedure))
     
     
@@ -190,7 +190,7 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     if (bootstrap != "none") {
       
       boot <- bootstrap_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat, 
-                              w_hat = w_hat, inf_model = inf_model, se = se,
+                              w_hat = w_hat, score = score, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -217,11 +217,11 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     }
 
     orth_est <- orth_plriv_dml(u_hat = u_hat, v_hat = v_hat, w_hat = w_hat, 
-                               inf_model = inf_model)
+                               score = score)
     
     theta <- orth_est$theta
     se <- sqrt(var_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat,
-                        w_hat = w_hat, inf_model = inf_model, 
+                        w_hat = w_hat, score = score, 
                         dml_procedure = dml_procedure))
     
     t <- theta/se 
@@ -231,7 +231,7 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     if (bootstrap != "none") {
       
       boot <- bootstrap_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat, 
-                              w_hat = w_hat, inf_model = inf_model, se = se,
+                              w_hat = w_hat, score = score, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -260,16 +260,16 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
 #' @inheritParams var_plriv
 #' @return List with estimate (\code{theta}).
 #' @export
-orth_plriv_dml <- function(u_hat, v_hat, w_hat, inf_model) { #, se_type) {
+orth_plriv_dml <- function(u_hat, v_hat, w_hat, score) { #, se_type) {
 
   theta <-  NA
 
-  if (inf_model == "ivreg") {
+  if (score == "ivreg") {
     res_fit <- AER::ivreg(u_hat ~ 0 + v_hat | 0 + w_hat)
     theta <- stats::coef(res_fit)
   }
 
-   else if (inf_model == 'partialling-out') {
+   else if (score == 'partialling out') {
      theta <- mean(u_hat*w_hat)/mean(v_hat*w_hat)
   }
 
@@ -291,18 +291,18 @@ orth_plriv_dml <- function(u_hat, v_hat, w_hat, inf_model) { #, se_type) {
 #' @param u_hat Residuals from \eqn{y-g(x)}.
 #' @param w_hat Residuals from \eqn{z-m(x)}.
 #' @return Variance estimator (\code{var}).
-var_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, dml_procedure) {
+var_plriv <- function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
   
   var <- NA
   
-  if (inf_model == "partialling-out") {
+  if (score == "partialling out") {
   
     var <- mean( 1/length(u_hat) * 1/(colMeans(v_hat * w_hat, na.rm = TRUE))^2  *
             colMeans( ( (u_hat - v_hat*theta)*w_hat)^2), na.rm = TRUE)
   }
    
   # Q: only for "dml2"?
-  else if (inf_model == "ivreg" & dml_procedure == "dml2") {
+  else if (score == "ivreg" & dml_procedure == "dml2") {
       res_fit <- AER::ivreg(u_hat ~ 0 + v_hat | 0 + w_hat)
       var <- sandwich::vcovHC(res_fit)
   }
@@ -325,11 +325,11 @@ var_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, dml_procedure) {
 #' @inheritParams DMLIV
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
-bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, inf_model, se, bootstrap, nRep) {
+bootstrap_plriv <- function(theta, u_hat, v_hat, w_hat, score, se, bootstrap, nRep) {
   
   boot_var <- NA
   
-  # implement multiplier bootstrap for inf_model = "partialling-out" by default
+  # implement multiplier bootstrap for score = "partialling out" by default
   score <- (u_hat - v_hat*theta)*w_hat
   J <-  -colMeans(v_hat*w_hat, na.rm = TRUE)
   

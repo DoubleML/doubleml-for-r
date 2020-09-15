@@ -9,7 +9,7 @@
 #' @param ml_learners
 #' @param params
 #' @param dml_procedure
-#' @param inf_model
+#' @param score
 #' @param subgroups
 #' @param n_rep_cross_fit
 #' @param coef
@@ -39,9 +39,9 @@ DoubleML <- R6Class("DoubleML", public = list(
   #' @field dml_procedure (`character(1)`)\cr
   #' Double Machine Learning algorithm used (either "dml1" or "dml2").
   dml_procedure = NULL,
-  #' @field inf_model (`character(1)`)\cr
-  #' Score to be used for estimation. 
-  inf_model = NULL,
+  #' @field score (`character(1)`)\cr
+  #' psi to be used for estimation. 
+  score = NULL,
   #' @field subgroups (`list()`)\cr
   #' Subgroups.
   subgroups = NULL,
@@ -102,19 +102,19 @@ DoubleML <- R6Class("DoubleML", public = list(
           self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
         
-        # ml estimation of nuisance models and computation of score elements
-        scores = private$ml_nuisance_and_score_elements(self$data,
+        # ml estimation of nuisance models and computation of psi elements
+        psis = private$ml_nuisance_and_score_elements(self$data,
                                                         private$get__smpls(),
                                                         params = private$get__params())
-        private$set__score_a(scores$score_a)
-        private$set__score_b(scores$score_b)
+        private$set__psi_a(psis$psi_a)
+        private$set__psi_b(psis$psi_b)
         
         # estimate the causal parameter(s)
         coef <- private$est_causal_pars()
         private$set__all_coef(coef)
         
-        # compute score (depends on estimated causal parameter)
-        private$compute_score()
+        # compute psi (depends on estimated causal parameter)
+        private$compute_psi()
         
         # compute standard errors for causal parameter
         se <- private$se_causal_pars()
@@ -273,9 +273,9 @@ DoubleML <- R6Class("DoubleML", public = list(
 ),
 private = list(
   smpls = NULL,
-  score = NULL,
-  score_a = NULL,
-  score_b = NULL,
+  psi = NULL,
+  psi_a = NULL,
+  psi_b = NULL,
   all_coef = NULL,
   all_se = NULL,
   n_obs = NULL,
@@ -288,7 +288,7 @@ private = list(
                         ml_learners,
                         params,
                         dml_procedure,
-                        inf_model,
+                        score,
                         subgroups, 
                         se_reestimate,
                         n_rep_cross_fit,
@@ -301,7 +301,7 @@ private = list(
     # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
     stopifnot(is.logical(se_reestimate), length(se_reestimate) == 1)
-    stopifnot(is.character(inf_model), length(inf_model) == 1)
+    stopifnot(is.character(score), length(score) == 1)
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
     stopifnot(is.list(tune_settings))
     
@@ -311,7 +311,7 @@ private = list(
     self$params <- params
     self$dml_procedure <- dml_procedure
     self$se_reestimate <- se_reestimate
-    self$inf_model <- inf_model
+    self$score <- score
     self$subgroups <- subgroups
     self$n_rep_cross_fit <- n_rep_cross_fit
     self$param_set <- param_set
@@ -325,9 +325,9 @@ private = list(
   },
   initialize_arrays = function() {
     
-    private$score = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
-    private$score_a = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
-    private$score_b = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$psi = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$psi_a = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$psi_b = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
     
     self$coef = array(NA, dim=c(private$n_treat))
     self$se = array(NA, dim=c(private$n_treat))
@@ -350,12 +350,12 @@ private = list(
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
   # self._i_rep, the index of the cross-fitting sample.
   get__smpls = function() private$smpls[[private$i_rep]],
-  get__score_a = function() private$score_a[, private$i_rep, private$i_treat],
-  set__score_a = function(value) private$score_a[, private$i_rep, private$i_treat] <- value,
-  get__score_b = function() private$score_b[, private$i_rep, private$i_treat],
-  set__score_b = function(value) private$score_b[, private$i_rep, private$i_treat] <- value,
-  get__score = function() private$score[, private$i_rep, private$i_treat],
-  set__score = function(value) private$score[, private$i_rep, private$i_treat] <- value,
+  get__psi_a = function() private$psi_a[, private$i_rep, private$i_treat],
+  set__psi_a = function(value) private$psi_a[, private$i_rep, private$i_treat] <- value,
+  get__psi_b = function() private$psi_b[, private$i_rep, private$i_treat],
+  set__psi_b = function(value) private$psi_b[, private$i_rep, private$i_treat] <- value,
+  get__psi = function() private$psi[, private$i_rep, private$i_treat],
+  set__psi = function(value) private$psi[, private$i_rep, private$i_treat] <- value,
   get__all_coef = function() private$all_coef[private$i_treat, private$i_rep],
   set__all_coef = function(value) private$all_coef[private$i_treat, private$i_rep] <- value,
   get__all_se = function() private$all_se[private$i_treat, private$i_rep],
@@ -481,8 +481,8 @@ private = list(
         test_index <- test_ids[[i_fold]]
         n_obs_in_fold = length(test_index)
         
-        J = mean(private$get__score_a()[test_index])
-        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__score()[test_index] / (
+        J = mean(private$get__psi_a()[test_index])
+        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__psi()[test_index] / (
           n_obs_in_fold * private$get__all_se() * J)
         ii = ii + n_obs_in_fold
       }
@@ -490,35 +490,35 @@ private = list(
     }
     else if (dml_procedure == "dml2") {
       
-      J = mean(private$get__score_a())
-      boot_coef = weights %*% private$get__score() / (private$n_obs * private$get__all_se() * J)
+      J = mean(private$get__psi_a())
+      boot_coef = weights %*% private$get__psi() / (private$n_obs * private$get__all_se() * J)
     }
     
     return(boot_coef)
   },
   var_est = function(inds=NULL) {
-    score_a = private$get__score_a()
-    score = private$get__score()
+    psi_a = private$get__psi_a()
+    psi = private$get__psi()
     if(!is.null(inds)) {
-      score_a = score_a[inds]
-      score = score[inds]
+      psi_a = psi_a[inds]
+      psi = psi[inds]
     }
     
-    J = mean(score_a)
-    sigma2_hat = 1/private$n_obs * mean(score^2) / (J^2)
+    J = mean(psi_a)
+    sigma2_hat = 1/private$n_obs * mean(psi^2) / (J^2)
   },
   orth_est = function(inds=NULL) {
-    score_a = private$get__score_a()
-    score_b = private$get__score_b()
+    psi_a = private$get__psi_a()
+    psi_b = private$get__psi_b()
     if(!is.null(inds)) {
-      score_a = score_a[inds]
-      score_b = score_b[inds]
+      psi_a = psi_a[inds]
+      psi_b = psi_b[inds]
     }
-    theta = -mean(score_b) / mean(score_a)
+    theta = -mean(psi_b) / mean(psi_a)
   },
-  compute_score = function() {
-    score = private$get__score_a() * private$get__all_coef() + private$get__score_b()
-    private$set__score(score)
+  compute_psi = function() {
+    psi = private$get__psi_a() * private$get__all_coef() + private$get__psi_b()
+    private$set__psi(psi)
     invisible(self)
   }
 )

@@ -9,8 +9,8 @@
 #' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
 #' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_mu1} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X for individuals with Z = 1  (nuisance part mu1) and \code{mlmethod_mu0} for individuals with Z = 0 (nuisance part mu0). Set \code{mlmethod_m1} for  classification method for regression of d on X for individuals with Z = 1 (nuisance part m1) and \code{mlmethod_m0} for observations with Z = 0 (nuisance part m0). Set \code{mlmethod_p} for classification method for propensity score (nuisance part p).
 #' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_mu1} for predictions of nuisance part g1, \code{params_mu0} for nuisance part mu0, and so forth (names must match those in \code{mlmethod}).
-#' @param inf_model Estimator for final estimation, default average treatment effect \code{"LATE"}. Alternatively switch to \code{"LATET"} for average treatment effect on the treated.
-#' @param se_type Method to estimate standard errors (redundant / identical to inf_model).
+#' @param score Estimator for final estimation, default average treatment effect \code{"LATE"}. Alternatively switch to \code{"LATTE"} for average treatment effect on the treated.
+#' @param se_type Method to estimate standard errors (redundant / identical to score).
 #' @param always_takers option to adapt to cases with (default) and without always-takers. If \code{FALSE}, the estimator is adapted to a setting without always-takers.
 #' @param never_takers option to adapt to cases with (default) and without never-takers. If \code{FALSE}, the estimator is adapted to a setting without never-takers.
 #' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
@@ -21,7 +21,7 @@
 
 dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()), 
                     dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
-                    inf_model = "LATE", se_type = "LATE",
+                    score = "LATE", se_type = "LATE",
                     bootstrap = "normal",  nRep = 500, ...) {
   
   if (is.null(smpls)) {
@@ -38,9 +38,9 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
   theta <- se <- te <- pval <- boot_se <- NA
   boot_theta <- matrix(NA, nrow = 1, ncol = nRep)
 
-  if (se_type != inf_model){
-    se_type <- inf_model
-    message("Options se_type and inf_model do not match. Set se_type to value of inf_model")
+  if (se_type != score){
+    se_type <- score
+    message("Options se_type and score do not match. Set se_type to value of score")
   }
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
@@ -245,7 +245,7 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
                                    mu1_hat = mu1_hat[, i], 
                                    m0_hat = m0_hat[, i], m1_hat = m1_hat[, i],
                                    d = d_k[, i], y = y_k[, i], z = z_k[, i],
-                                   inf_model = inf_model) #, se_type)
+                                   score = score) #, se_type)
         thetas[i] <- orth_est$theta
     
     }
@@ -254,7 +254,7 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
     
     se <- sqrt(var_irmiv(theta = theta, p_hat = p_hat, mu0_hat = mu0_hat, 
                           mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat, 
-                          d = d_k, y = y_k, z = z_k, inf_model = inf_model))
+                          d = d_k, y = y_k, z = z_k, score = score))
     
     t <- theta/se 
     
@@ -264,7 +264,7 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
       
       boot <- bootstrap_irmiv(theta = theta, p_hat = p_hat, mu0_hat = mu0_hat, 
                           mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat, 
-                          d = d_k, y = y_k, z = z_k, inf_model = inf_model, se = se,
+                          d = d_k, y = y_k, z = z_k, score = score, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -293,12 +293,12 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
                                    mu1_hat = mu1_hat, 
                                    m0_hat = m0_hat, m1_hat = m1_hat,
                                    d = D, y = Y, z = Z,
-                                   inf_model = inf_model)
+                                   score = score)
     
     theta <- orth_est$theta
     se <- sqrt(var_irmiv(theta = theta, p_hat = p_hat, mu0_hat = mu0_hat, 
                           mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat, 
-                          d = D, y = Y, z = Z, inf_model = inf_model))
+                          d = D, y = Y, z = Z, score = score))
     
     t <- theta/se 
     
@@ -308,7 +308,7 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
       
       boot <- bootstrap_irmiv(theta = theta, p_hat = p_hat, mu0_hat = mu0_hat, 
                           mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat, 
-                          d = D, y = Y, z = Z, inf_model = inf_model, se = se,
+                          d = D, y = Y, z = Z, score = score, se = se,
                               bootstrap = bootstrap, nRep = nRep)
   #    boot_se <- sqrt(boot$boot_var)
       boot_theta <- boot$boot_theta
@@ -340,18 +340,18 @@ dml_irmiv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = lis
 #' @inheritParams var_irm
 #' @return List with estimate (\code{theta}).
 #' @export
-orth_irmiv_dml <- function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, inf_model) { #, se_type) {
+orth_irmiv_dml <- function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) { #, se_type) {
 
   theta <- NA
 
-  if (inf_model == "LATE" | inf_model == "DML2018") {
+  if (score == "LATE" | score == "partialling out") {
      theta <- 1/mean( m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
               mean(mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
   }
  
-   else if (inf_model == "LATET") { 
+   else if (score == "LATTE") { 
      
-     # tbd: LATET
+     # tbd: LATTE
      
      # Ep <- mean(d) 
      
@@ -381,11 +381,11 @@ orth_irmiv_dml <- function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, inf
 #' @param u0_hat Residuals from \eqn{y-g(0,x)}.
 #' @param u1_hat Residuals from \eqn{y-g(1,x)}.
 #' @return Variance estimator (\code{var}).
-var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, inf_model) {
+var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
 
   var <- NA
 
-  if (inf_model == "LATE") {
+  if (score == "LATE") {
     
     var <- mean( 1/length(d) * 1/(colMeans((m1_hat - m0_hat + z*(d-m1_hat)/p_hat - (1-z)*(d-m0_hat)/(1-p_hat)), na.rm = TRUE))^2  *
                    colMeans( ( mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - (1-z)*(y - mu0_hat)/(1-p_hat) - 
@@ -393,7 +393,7 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
     
   } 
   
-  # else if (inf_model == "DML2018") {
+  # else if (score == "partialling out") {
   # 
   #      score_mat <- 1/(m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
   #                     (mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
@@ -401,9 +401,9 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
   #      var <- 1/length(d) * apply(score_mat, 2, function(x) var(x, na.rm = TRUE))
   #   }
   #   
-    else if (inf_model == "LATET") {
+    else if (score == "LATTE") {
      
-     # tbd: LATET
+     # tbd: LATTE
   
      #    if (is.numeric(d)) {
      #      d <- as.matrix(d)
@@ -414,7 +414,7 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
      # var <- mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta)^2, na.rm = TRUE))
      #
 
-      message ("LATET not yet implemented.")
+      message ("LATTE not yet implemented.")
       }  else {
     
     stop("Inference framework for variance estimation unknown")
@@ -434,11 +434,11 @@ var_irmiv <-  function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, 
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
 bootstrap_irmiv <- function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, 
-                            d, y, z, inf_model, se, bootstrap, nRep) {
+                            d, y, z, score, se, bootstrap, nRep) {
 
   boot_var <- NA
 
- if (inf_model == "LATE") {
+ if (score == "LATE") {
 
     score <-  mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - (1-z)*(y - mu0_hat)/(1-p_hat) - 
             (m1_hat - m0_hat + z*(d-m1_hat)/p_hat - (1-z)*(d-m0_hat)/(1-p_hat))*theta 
@@ -447,7 +447,7 @@ bootstrap_irmiv <- function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
                                   - (1-z)*(d-m0_hat)/(1-p_hat) , na.rm = TRUE)
  }
 
- else if (inf_model == "LATET") {
+ else if (score == "LATTE") {
 
     # if (is.numeric(d)) {
     #     d <- as.matrix(d)

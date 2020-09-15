@@ -6,15 +6,15 @@
 
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   initialize = function(data, 
-                        n_folds,
+                        n_folds = 5,
                         ml_learners,
                         params = list(params_m = list(),
                                       params_g = list()),
-                        dml_procedure,
-                        inf_model,
+                        dml_procedure = "dml2",
+                        score = "partialling out",
                         subgroups = NULL,
-                        se_reestimate=FALSE,
-                        n_rep_cross_fit=1,
+                        se_reestimate = FALSE,
+                        n_rep_cross_fit = 1,
                         param_set = list(param_set_m = list(),
                                            param_set_g = list()),
                         tune_settings = list(n_folds_tune = 5,
@@ -35,13 +35,14 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                                ml_learners,
                                params,
                                dml_procedure,
-                               inf_model,
+                               score,
                                subgroups,
                                se_reestimate,
                                n_rep_cross_fit, 
                                param_set,
                                tune_settings, 
                                param_tuning)
+    
   }
 ),
 private = list(
@@ -107,15 +108,15 @@ private = list(
     u_hat <- Y - g_hat
     v_hatd <- v_hat * D # tbd: handle product of numeric and binary in data.table
     
-    if (self$inf_model == 'IV-type') {
-      score_a = -v_hatd
-    } else if (self$inf_model == 'DML2018') {
-      score_a = -v_hat * v_hat
+    if (self$score == 'IV-type') {
+      psi_a = -v_hatd
+    } else if (self$score == 'partialling out') {
+      psi_a = -v_hat * v_hat
     }
-    score_b = v_hat * u_hat
+    psi_b = v_hat * u_hat
     
-    return(list(score_a = score_a,
-                score_b = score_b))
+    return(list(psi_a = psi_a,
+                psi_b = psi_b))
   }, 
   tune_params = function(data, smpls, param_set, tune_settings, ...){
     

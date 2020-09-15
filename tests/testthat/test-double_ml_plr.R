@@ -9,7 +9,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('IV-type', 'DML2018'),
+                         score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -30,8 +30,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                  k = n_folds, S = 1,
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
-                 dml_procedure = dml_procedure, inf_model = inf_model,
-                 se_type = inf_model)
+                 dml_procedure = dml_procedure, score = score,
+                 se_type = score)
   theta <- coef(plr_hat)
   se <- plr_hat$se
 
@@ -53,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
-                                     inf_model = inf_model)
+                                     score = score)
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se

@@ -15,7 +15,7 @@ learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('LATE'),
+                         score = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
                          n_rep_cross_fit = c(1, 3),
                          stringsAsFactors = FALSE)
@@ -32,8 +32,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   # iivm_hat <- dml_irmiv(data_iivm[[i_setting]], y = "y", d = "d", z = "z",
   #                       k = n_folds, mlmethod = learner_pars$mlmethod,
   #                       params = learner_pars$params,
-  #                       dml_procedure = dml_procedure, inf_model = inf_model,
-  #                       se_type = inf_model,
+  #                       dml_procedure = dml_procedure, score = score,
+  #                       se_type = score,
   #                       bootstrap = "normal",  S = n_rep_cross_fit, 
   #                       nRep = n_rep_boot)
   # theta <- coef(iivm_hat)
@@ -53,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                      params = params_OOP,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
-                                     inf_model = inf_model, 
+                                     score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mliivm_obj_exact$fit()
   theta_obj_exact <- double_mliivm_obj_exact$coef
@@ -66,7 +66,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                      params = NULL,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
-                                     inf_model = inf_model, 
+                                     score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mliivm_obj_null$fit()
   theta_obj_null <- double_mliivm_obj_null$coef
@@ -78,7 +78,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
-                                     inf_model = inf_model, 
+                                     score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   double_mliivm_obj_default$fit()
   theta_obj_default <- double_mliivm_obj_default$coef

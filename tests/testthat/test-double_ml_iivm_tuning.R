@@ -29,7 +29,7 @@ tune_settings = list(n_folds_tune = 3,
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
-                         inf_model = c('LATE'),
+                         score = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
                          n_rep_cross_fit = c(1, 3),
                          stringsAsFactors = FALSE)
@@ -52,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
                                      ml_learners = learner_pars$mlmethod,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate, 
-                                     inf_model = inf_model, 
+                                     score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   
   tune_ps = ParamSet$new(list(

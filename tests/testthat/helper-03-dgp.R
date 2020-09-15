@@ -61,7 +61,7 @@ dgp1_irm <- function(theta, N, k) {
   
   # y1 <- theta + G + err
   # y0 <- G + err
-  # ATET <- mean(y1[d==1]) - mean(y0[d==1])
+  # ATTE <- mean(y1[d==1]) - mean(y0[d==1])
   
   y <- theta * d + G + err
   
@@ -91,7 +91,7 @@ dgp1_irmiv <- function(theta, N, k) {
   
   # y1 <- theta + G + err
   # y0 <- G + err
-  # ATET <- mean(y1[d==1]) - mean(y0[d==1])
+  # ATTE <- mean(y1[d==1]) - mean(y0[d==1])
   
   
   data <- data.frame(y,d,z,X)

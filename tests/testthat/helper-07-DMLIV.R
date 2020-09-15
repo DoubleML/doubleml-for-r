@@ -20,7 +20,7 @@
 DMLIV <- function(data, y, d, z = list(), model = "plr", k = 2, S = 1, resampling = NULL,
                           mlmethod,
                           dml_procedure = "dml2", params = list(params_m = list(),
-                          params_g = list()), inf_model = "IV-type", se_type = "ls", 
+                          params_g = list()), score = "IV-type", se_type = "ls", 
                           bootstrap = "normal", nRep = 500, aggreg_median = TRUE,
                           ...){
 
@@ -126,7 +126,7 @@ DMLIV <- function(data, y, d, z = list(), model = "plr", k = 2, S = 1, resamplin
     for (j in seq(p1)) {
       
       # task <- list(data, y, d, z, resampling, mlmethod, params, dml_procedure,
-                    # inf_model, ...)
+                    # score, ...)
       # class(task) <- model
 
       # tbd: implementation of object orientation -> from here jump to plr, ...
@@ -136,7 +136,7 @@ DMLIV <- function(data, y, d, z = list(), model = "plr", k = 2, S = 1, resamplin
                     mlmethod = mlmethod, dml_procedure = dml_procedure,
                     params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]], 
                                   params_r = params$params_r[[j]]),
-                    inf_model = inf_model, se_type = se_type,
+                    score = score, se_type = se_type,
                     bootstrap = bootstrap, nRep = nRep, ...)
       
       coefficients[j] <- res_j$coefficients

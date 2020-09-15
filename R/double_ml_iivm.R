@@ -6,16 +6,16 @@
 
 DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   initialize = function(data, 
-                        n_folds,
+                        n_folds = 5,
                         ml_learners,
                         params = list(params_p = list(),
                                       params_mu = list(),
                                       params_m = list()),
-                        dml_procedure,
-                        inf_model,
+                        dml_procedure = "dml2",
+                        score = "LATE",
                         subgroups = list(always_takers = TRUE, never_takers = TRUE),
-                        se_reestimate=FALSE,
-                        n_rep_cross_fit=1,
+                        se_reestimate = FALSE,
+                        n_rep_cross_fit = 1,
                         param_set = NULL,
                         tune_settings = list(),
                         param_tuning = NULL) {
@@ -24,7 +24,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                                ml_learners,
                                params,
                                dml_procedure,
-                               inf_model,
+                               score,
                                subgroups,
                                se_reestimate,
                                n_rep_cross_fit,
@@ -193,13 +193,13 @@ private = list(
     w1_hat = D - m1_hat
     
     
-    if (self$inf_model == 'LATE') {
-      score_b = mu1_hat - mu0_hat + Z*(u1_hat)/p_hat - (1-Z)*u0_hat/(1-p_hat)
-      score_a = -1 * (m1_hat - m0_hat + Z*(w1_hat)/p_hat - (1-Z)*w0_hat/(1-p_hat))
+    if (self$score == 'LATE') {
+      psi_b = mu1_hat - mu0_hat + Z*(u1_hat)/p_hat - (1-Z)*u0_hat/(1-p_hat)
+      psi_a = -1 * (m1_hat - m0_hat + Z*(w1_hat)/p_hat - (1-Z)*w0_hat/(1-p_hat))
     }
     
-    return(list(score_a = score_a,
-                score_b = score_b))
+    return(list(psi_a = psi_a,
+                psi_b = psi_b))
   },
  tune_params = function(data, smpls, param_set, tune_settings, ...){
    checkmate::check_class(param_set$param_set_p, "ParamSet")    
@@ -297,6 +297,4 @@ private = list(
 )
 )
 
-
-#DoubleMLIIVM$debug("ml_nuisance_and_score_elements")
 
