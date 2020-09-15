@@ -116,7 +116,7 @@ private = list(
     u0_hat <- Y - g0_hat
     u1_hat <- Y - g1_hat
     
-    # fraction of treated for ATET
+    # fraction of treated for ATTE
     p_hat <- vector('numeric', length= nrow(data$data_model))
     #if (self$dml_procedure == "dml1") {
       for (i_fold in 1:self$n_folds) {
@@ -130,7 +130,7 @@ private = list(
     if (self$score == 'ATE') {
       psi_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
       psi_a = rep(-1, nrow(data$data_model))
-    } else if (self$score == 'ATET') {
+    } else if (self$score == 'ATTE') {
       psi_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
       psi_a = -D / p_hat
     }

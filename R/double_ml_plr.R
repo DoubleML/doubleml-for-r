@@ -109,7 +109,7 @@ private = list(
     
     if (self$score == 'IV-type') {
       psi_a = -v_hatd
-    } else if (self$score == 'DML2018') {
+    } else if (self$score == 'partialling out') {
       psi_a = -v_hat * v_hat
     }
     psi_b = v_hat * u_hat

@@ -132,7 +132,7 @@ private = list(
     v_hat <- D - r_hat
     
     # note that v & w are flipped in python
-    if (self$score == 'partialling-out') {
+    if (self$score == 'partialling out') {
       psi_a = -v_hat * w_hat
       psi_b = u_hat * w_hat
     }
