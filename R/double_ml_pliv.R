@@ -12,7 +12,7 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
                                       params_g = list(),
                                       params_r = list()),
                         dml_procedure,
-                        inf_model,
+                        score,
                         subgroups =  NULL,
                         se_reestimate=FALSE,
                         n_rep_cross_fit=1,
@@ -38,7 +38,7 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
                                ml_learners,
                                params,
                                dml_procedure,
-                               inf_model,
+                               score,
                                subgroups,
                                se_reestimate,
                                n_rep_cross_fit,
@@ -132,13 +132,13 @@ private = list(
     v_hat <- D - r_hat
     
     # note that v & w are flipped in python
-    if (self$inf_model == 'partialling-out') {
-      score_a = -v_hat * w_hat
-      score_b = u_hat * w_hat
+    if (self$score == 'partialling-out') {
+      psi_a = -v_hat * w_hat
+      psi_b = u_hat * w_hat
     }
     
-    return(list(score_a = score_a,
-                score_b = score_b))
+    return(list(psi_a = psi_a,
+                psi_b = psi_b))
   },
   tune_params = function(data, smpls, param_set, tune_settings, ...){
     
