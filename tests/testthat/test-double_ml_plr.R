@@ -48,12 +48,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                               d_cols = "d", x_cols = Xnames)
                   
   double_mlplr_obj = DoubleMLPLR$new(data = data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
+                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
+                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
+                                     n_folds = n_folds,
                                      score = score)
+  
+  double_mlplr_obj$set__ml_nuisance_params(g_params = learner_pars$params$params_g, 
+                                           m_params = learner_pars$params$params_m)
+
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
