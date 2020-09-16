@@ -9,7 +9,6 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   ml_m = NULL,
   g_params = NULL,
   m_params = NULL,
-
   initialize = function(data, 
                         ml_g,
                         ml_m,
@@ -36,12 +35,11 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
     self$m_params = m_params
     
   }, 
-  
-  set__ml_nuisance_params = function(g_params, m_params) {
-        self$g_params = g_params
-        self$m_params = m_params
+   
+  set__ml_nuisance_params = function(params) {
+        self$g_params = params$g_params
+        self$m_params = params$m_params
   }
-  
 ),
 private = list(
   n_nuisance = 2,
@@ -85,15 +83,15 @@ private = list(
     }
     
     else if (!is.null(self$param_tuning)){
-      ml_g <- lapply(g_params, function(x) initiate_learner(self$ml_g, 
-                                                                        x))
+      ml_g <- lapply(self$g_params, function(x) initiate_learner(self$ml_g, 
+                                                                        x[[1]]))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat)
       
-      ml_m <- lapply(m_params, function(x) initiate_learner(self$ml_m, 
-                                                                        x))
+      ml_m <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
+                                                                        x[[1]]))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prediction)
@@ -116,13 +114,18 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   }, 
-  tune_params = function(data, smpls, param_set, tune_settings, ...){
+  ml_nuisance_tuning = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
     
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
     
-    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
-
+    if (!tune_on_folds){
+      data_tune_list = list(data$data_model)
+      
+    } else {
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
+    
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
     } else {
@@ -174,8 +177,8 @@ private = list(
     
     tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
                                               tuning_result_m = tuning_result_m),
-                         g_params = extract_tuned_params(tuning_result_g), 
-                         m_params = extract_tuned_params(tuning_result_m))
+                         params = list(g_params = extract_tuned_params(tuning_result_g), 
+                                       m_params = extract_tuned_params(tuning_result_m)))
     
     return(tuning_result)
     
