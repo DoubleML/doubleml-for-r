@@ -8,7 +8,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
@@ -54,8 +53,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      n_folds = n_folds,
                                      score = score)
   
-  double_mlplr_obj$set__ml_nuisance_params(g_params = learner_pars$params$params_g, 
-                                           m_params = learner_pars$params$params_m)
+  double_mlplr_obj$set__ml_nuisance_params(params =  list(g_params = learner_pars$params$params_g, 
+                                                          m_params = learner_pars$params$params_m))
 
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef
