@@ -2,20 +2,16 @@
 DoubleML <- R6Class("DoubleML", public = list(
   data = NULL,
   n_folds = NULL,
-  ml_learners = NULL,
-  dml_procedure = NULL,
+  n_rep_cross_fit = NULL,
   score = NULL,
-  subgroups = NULL,
-  n_rep_cross_fit = 1,
-  coef = NULL,
-  se = NULL,
-  t = NULL,  
+  dml_procedure = NULL,
+  draw_sample_splitting = NULL,
+  apply_cross_fitting = NULL,
+  coef = NULL, 
+  se = NULL, 
+  t = NULL, 
   pval = NULL,
-  se_reestimate = FALSE,
-  boot_coef = NULL,
-  param_set = NULL, 
-  tune_settings = NULL,
-  param_tuning = NULL,
+  
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
@@ -37,14 +33,20 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
+        if (!is.null(self$ml_nuisance_params)){
+          private$set__ml_nuisance_params(self$ml_nuisance_params )
+        }
+        
+        
         if (private$n_treat > 1){
           self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
         
+        
+        
         # ml estimation of nuisance models and computation of psi elements
         psis = private$ml_nuisance_and_score_elements(self$data,
-                                                        private$get__smpls(),
-                                                        params = private$get__params())
+                                                        private$get__smpls())
         private$set__psi_a(psis$psi_a)
         private$set__psi_b(psis$psi_b)
         
@@ -53,10 +55,10 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$set__all_coef(coef)
         
         # compute psi (depends on estimated causal parameter)
-        private$compute_psi()
+        private$compute_score()
         
         # compute standard errors for causal parameter
-        se <- private$se_causal_pars()
+        se <- private$se_causal_pars(se_reestimate)
         private$set__all_se(se)
       }
     }
@@ -120,8 +122,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         # TBD: Pass through instances (requires prespecified tasks)
         # TBD: Handling different measures for classification and regression (logit???)
         param_tuning = private$tune_params(self$data, private$get__smpls(),
-                                                param_set = self$param_set, 
-                                                tune_settings = self$tune_settings)
+                                                 param_set, tune_settings)
         
         # here: set__params()
         private$set__params(param_tuning)
@@ -224,39 +225,26 @@ private = list(
   i_treat = NA,
   initialize_double_ml = function(data, 
                         n_folds,
-                        ml_learners,
-                        params,
-                        dml_procedure,
-                        score,
-                        subgroups, 
-                        se_reestimate,
                         n_rep_cross_fit,
-                        param_set,
-                        tune_settings, 
-                        param_tuning) {
+                        score,
+                        dml_procedure,
+                        draw_sample_splitting,
+                        apply_cross_fitting) {
     
     checkmate::check_class(data, "DoubleMLData")
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
-    # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
-    stopifnot(is.logical(se_reestimate), length(se_reestimate) == 1)
     stopifnot(is.character(score), length(score) == 1)
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
-    stopifnot(is.list(tune_settings))
-    
+
     self$data <- data
     self$n_folds <- n_folds
-    self$ml_learners <- ml_learners
-    self$params <- params
     self$dml_procedure <- dml_procedure
-    self$se_reestimate <- se_reestimate
     self$score <- score
-    self$subgroups <- subgroups
     self$n_rep_cross_fit <- n_rep_cross_fit
-    self$param_set <- param_set
-    self$tune_settings <- tune_settings
-    self$param_tuning <- param_tuning
     
+    self$draw_sample_splitting = draw_sample_splitting
+    self$apply_cross_fitting = apply_cross_fitting
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
     
@@ -320,7 +308,7 @@ private = list(
     return(params)
     },
   set__params = function(tuning_params){
-    self$params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
+    self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
     self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
   },
   split_samples = function() {
@@ -342,7 +330,6 @@ private = list(
   },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
-    se_reestimate = self$se_reestimate
     n_folds = self$n_folds
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -361,9 +348,8 @@ private = list(
     
     return(coef)
   },
-  se_causal_pars = function() {
+  se_causal_pars = function(se_reestimate) {
     dml_procedure = self$dml_procedure
-    se_reestimate = self$se_reestimate
     n_folds = self$n_folds
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -455,7 +441,7 @@ private = list(
     }
     theta = -mean(psi_b) / mean(psi_a)
   },
-  compute_psi = function() {
+  compute_score = function() {
     psi = private$get__psi_a() * private$get__all_coef() + private$get__psi_b()
     private$set__psi(psi)
     invisible(self)

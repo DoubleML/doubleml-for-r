@@ -5,49 +5,47 @@
 #' @export
 
 DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
+  ml_g = NULL,
+  ml_m = NULL,
+  g_params = NULL,
+  m_params = NULL,
+
   initialize = function(data, 
+                        ml_g,
+                        ml_m,
+                        g_params = NULL, 
+                        m_params = NULL,
                         n_folds = 5,
-                        ml_learners,
-                        params = list(params_m = list(),
-                                      params_g = list()),
-                        dml_procedure = "dml2",
-                        score = "partialling out",
-                        subgroups = NULL,
-                        se_reestimate = FALSE,
                         n_rep_cross_fit = 1,
-                        param_set = list(param_set_m = list(),
-                                           param_set_g = list()),
-                        tune_settings = list(n_folds_tune = 5,
-                                        n_rep_tune = 1, 
-                                        rsmp_tune = "cv", 
-                                        measure_g = "regr.mse", 
-                                        measure_m = "regr.mse",
-                                        terminator = mlr3tuning::trm("evals", n_evals = 20), 
-                                        algorithm = "grid_search",
-                                        tuning_instance_g = NULL, 
-                                        tuning_instance_m = NULL,
-                                        tuner = "grid_search",
-                                        resolution = 5), 
-                        param_tuning = NULL)  {
+                        score = "partialling out", 
+                        dml_procedure = "dml2",
+                        draw_sample_splitting = TRUE,
+                        apply_cross_fitting = TRUE)  {
     
     super$initialize_double_ml(data, 
-                               n_folds,
-                               ml_learners,
-                               params,
-                               dml_procedure,
-                               score,
-                               subgroups,
-                               se_reestimate,
-                               n_rep_cross_fit, 
-                               param_set,
-                               tune_settings, 
-                               param_tuning)
+                        n_folds,
+                        n_rep_cross_fit,
+                        score,
+                        dml_procedure,
+                        draw_sample_splitting,
+                        apply_cross_fitting)
     
+    self$ml_g = ml_g
+    self$ml_m = ml_m
+    self$g_params = g_params
+    self$m_params = m_params
+    
+  }, 
+  
+  set__ml_nuisance_params = function(g_params, m_params) {
+        self$g_params = g_params
+        self$m_params = m_params
   }
+  
 ),
 private = list(
   n_nuisance = 2,
-  ml_nuisance_and_score_elements = function(data, smpls, params, ...) {
+  ml_nuisance_and_score_elements = function(data, smpls, ...) {
     
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model, 
@@ -59,16 +57,16 @@ private = list(
       
     if (is.null(self$param_tuning)){
       
-      if (length(params$params_g)==0){
+      if (is.null(self$g_params)){
         message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
       }
       
-      if (length(params$params_m)==0){
+      if (is.null(self$m_params)){
         message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
       }
       
-      ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
-                               params$params_g)
+      ml_g <- initiate_learner(self$ml_g,
+                               self$g_params)
   
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
@@ -77,8 +75,8 @@ private = list(
       g_hat <- extract_prediction(r_g)$response
       
 
-      ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
-                               params$params_m)
+      ml_m <- initiate_learner(self$ml_m,
+                               self$m_params)
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
@@ -87,14 +85,14 @@ private = list(
     }
     
     else if (!is.null(self$param_tuning)){
-      ml_g <- lapply(params$params_g, function(x) initiate_learner(self$ml_learners$mlmethod_g, 
+      ml_g <- lapply(g_params, function(x) initiate_learner(self$ml_g, 
                                                                         x))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat)
       
-      ml_m <- lapply(params$params_m, function(x) initiate_learner(self$ml_learners$mlmethod_m, 
+      ml_m <- lapply(m_params, function(x) initiate_learner(self$ml_m, 
                                                                         x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -148,7 +146,7 @@ private = list(
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                 skip_cols = data$treat_col, target = data$y_col))
     
-    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
+    ml_g <- mlr3::lrn(self$ml_g)
     
     tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
@@ -163,7 +161,7 @@ private = list(
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,
                                                   skip_cols = data$y_col, target = data$treat_col))
     
-    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+    ml_m <- mlr3::lrn(self$ml_m)
 
     tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
@@ -176,8 +174,8 @@ private = list(
     
     tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
                                               tuning_result_m = tuning_result_m),
-                         params = list(params_g = extract_tuned_params(tuning_result_g), 
-                                       params_m = extract_tuned_params(tuning_result_m)))
+                         g_params = extract_tuned_params(tuning_result_g), 
+                         m_params = extract_tuned_params(tuning_result_m))
     
     return(tuning_result)
     
