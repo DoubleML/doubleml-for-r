@@ -11,6 +11,8 @@ DoubleML <- R6Class("DoubleML", public = list(
   se = NULL, 
   t = NULL, 
   pval = NULL,
+  ml_nuisance_params = NULL,
+  param_tuning = NULL,
   
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
@@ -34,7 +36,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
         
         if (!is.null(self$ml_nuisance_params)){
-          private$set__ml_nuisance_params(self$ml_nuisance_params )
+          self$set__ml_nuisance_params(self$ml_nuisance_params[[private$i_rep]][[private$i_treat]])
         }
         
         
@@ -94,41 +96,64 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   }, 
-  tune = function() {
+  tune = function(param_set, tune_on_folds = FALSE, tune_settings = list(
+                                        n_folds_tune = 5,
+                                        rsmp_tune = "cv", 
+                                        measure_g = "regr.mse", 
+                                        measure_m = "regr.mse",
+                                        terminator = mlr3tuning::trm("evals", n_evals = 20), 
+                                        algorithm = "grid_search",
+                                        tuner = "grid_search",
+                                        resolution = 5)) {
     n_obs = nrow(self$data$data_model)
-
-    # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
-    private$initialize_lists(private$n_treat, self$n_rep_cross_fit, private$n_nuisance) 
-    
+    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), private$n_treat)),self$n_rep_cross_fit) 
+    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), private$n_treat)), self$n_rep_cross_fit) 
+  
     if (is.null(private$smpls)) {
+      
+      
       private$split_samples()
     }
     
-    for (i_rep in 1:self$n_rep_cross_fit) {
-      private$i_rep = i_rep
+    
+    if (!tune_on_folds){
       
-      for (i_treat in 1:private$n_treat) {
-        private$i_treat = i_treat
+        param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                   param_set, tune_on_folds, 
+                                                   tune_settings)
         
-        if (private$n_treat > 1){
-          self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+        private$set__params(param_tuning, tune_on_folds)
+      
+      
+    } else {
+      
+      for (i_rep in 1:self$n_rep_cross_fit) {
+        private$i_rep = i_rep
+        
+        for (i_treat in 1:private$n_treat) {
+          private$i_treat = i_treat
+          
+          if (private$n_treat > 1){
+            self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+          }
+          
+          # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
+          #  ! important ! tuned params must exactly correspond to training samples
+          # TBD: user friendly way to pass (pre-)trained parameters
+          # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
+          #      e.g., in seperate function (tune_mlr3)...
+          # TBD: Pass through instances (requires prespecified tasks)
+          # TBD: Handling different measures for classification and regression (logit???)
+          param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                   param_set, tune_on_folds, 
+                                                   tune_settings)
+          
+          # here: set__params()
+          private$set__params(param_tuning, tune_on_folds)
+          
+          #self$params = self$param_tuning$params
+  
         }
-        
-        # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
-        #  ! important ! tuned params must exactly correspond to training samples
-        # TBD: user friendly way to pass (pre-)trained parameters
-        # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
-        #      e.g., in seperate function (tune_mlr3)...
-        # TBD: Pass through instances (requires prespecified tasks)
-        # TBD: Handling different measures for classification and regression (logit???)
-        param_tuning = private$tune_params(self$data, private$get__smpls(),
-                                                 param_set, tune_settings)
-        
-        # here: set__params()
-        private$set__params(param_tuning)
-        
-        #self$params = self$param_tuning$params
-
       }
     }
 
@@ -267,12 +292,6 @@ private = list(
     private$n_rep_boot = n_rep
     self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep_cross_fit))
   },
-  initialize_lists = function(n_treat,
-                              n_rep_cross_fit, 
-                              n_nuisance) {
-    self$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
-    self$param_tuning = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
-  },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
   # self._i_rep, the index of the cross-fitting sample.
@@ -297,7 +316,7 @@ private = list(
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
-  get__params = function(){
+  get__params = function(tune_on_folds){
     
     if (is.null(self$params) | all(lapply(self$params, length)==0)){
       params = list()
@@ -307,9 +326,14 @@ private = list(
     }
     return(params)
     },
-  set__params = function(tuning_params){
-    self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
-    self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+  set__params = function(tuning_params, tune_on_folds){
+    if (tune_on_folds) {
+      self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
+      self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+    } else {
+      self$ml_nuisance_params= rep(list(rep(list(rep(tuning_params$params, self$n_folds)), 
+                                    private$n_treat)), self$n_rep_cross_fit) 
+    }
   },
   split_samples = function() {
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
