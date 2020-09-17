@@ -42,7 +42,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                    .cases = test_cases, {
   
   n_rep_boot = 498    
-  n_folds = 2      
+  n_folds = 4
   
   # TBD: Functional Test Case
   
