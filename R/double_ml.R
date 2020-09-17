@@ -327,13 +327,23 @@ private = list(
     return(params)
     },
   set__params = function(tuning_params, tune_on_folds){
+    
     if (tune_on_folds) {
       self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
       self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
     } else {
-      self$ml_nuisance_params= rep(list(rep(list(rep(tuning_params$params, self$n_folds)), 
-                                    private$n_treat)), self$n_rep_cross_fit) 
-    }
+      
+      export_params = lapply(1:private$n_nuisance, function(x) rep(tuning_params$params[[x]], self$n_folds))
+      names(export_params) = names(tuning_params$params)
+      self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- export_params
+      self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+      
+      # self$set__ml_nuisance_params(tuning_params$params)
+      # self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] = NULL
+      #       self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+
+      
+      }
   },
   split_samples = function() {
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
