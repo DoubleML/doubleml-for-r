@@ -36,7 +36,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
         
         if (!is.null(self$ml_nuisance_params)){
-          self$set__ml_nuisance_params(self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
+          self$set__ml_nuisance_params(nuisance_part = NULL, treat_var = NULL, self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
         }
         
         if (private$n_treat > 1){
@@ -104,6 +104,7 @@ DoubleML <- R6Class("DoubleML", public = list(
                                         resolution = 5)) {
     n_obs = nrow(self$data$data_model)
     self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
+    names(self$ml_nuisance_params) = self$data$d_cols
     self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
   
     if (is.null(private$smpls)) {
@@ -112,16 +113,15 @@ DoubleML <- R6Class("DoubleML", public = list(
     }
     
       for (i_treat in 1:private$n_treat) {
-          private$i_treat = i_treat
+        private$i_treat = i_treat
+          
+        if (private$n_treat > 1){
+            self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+        }
           
         for (i_rep in 1:self$n_rep_cross_fit) {
           private$i_rep = i_rep
         
-         
-          if (private$n_treat > 1){
-            self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
-          }
-          
           # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
           #  ! important ! tuned params must exactly correspond to training samples
           # TBD: user friendly way to pass (pre-)trained parameters

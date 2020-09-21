@@ -36,9 +36,41 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
     
   }, 
    
-  set__ml_nuisance_params = function(params) {
-        self$g_params = params$g_params
-        self$m_params = params$m_params
+  set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
+    
+        # pass through internal parameter list (case: tuning with on_fold)
+        if (is.null(nuisance_part) & is.null(treat_var)) {
+          self$g_params = params$g_params
+          self$m_params = params$m_params
+        
+        } else {
+          
+          checkmate::check_subset(treat_var, self$data$d_cols)
+
+          if (is.null(self$g_params)){
+            self$g_params = vector("list", length = length(self$data$d_cols))
+            names(self$g_params) = self$data$d_cols
+          }
+          
+          if (is.null(self$m_params)){
+            self$m_params = vector("list", length = length(self$data$d_cols))
+            names(self$m_params) = self$data$d_cols
+          }
+          
+          if (nuisance_part == "ml_m"){
+            self$m_params[[treat_var]] = params
+            # export_params_m = list("m_params" = rep(list(list(params)), self$n_folds))
+            # self$ml_nuisance_params[[treat_var]] = rep(list(export_params_m), self$n_rep_cross_fit)
+          }
+          
+          if (nuisance_part == "ml_g"){
+            self$g_params[[treat_var]] = params
+            # export_params_m = list("g_params" = rep(list(list(params)), self$n_folds))
+            # self$ml_nuisance_params[[treat_var]] = rep(list(export_params_m), self$n_rep_cross_fit)
+          }
+
+        }
+    
   }
 ),
 private = list(
@@ -55,16 +87,16 @@ private = list(
       
     if (is.null(self$param_tuning)){
       
-      if (is.null(self$g_params)){
+      if (is.null(self$g_params[[data$treat_col]])){
         message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
       }
       
-      if (is.null(self$m_params)){
+      if (is.null(self$m_params[[data$treat_col]])){
         message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
       }
       
       ml_g <- initiate_learner(self$ml_g,
-                               self$g_params)
+                               self$g_params[[data$treat_col]])
   
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
@@ -74,7 +106,7 @@ private = list(
       
 
       ml_m <- initiate_learner(self$ml_m,
-                               self$m_params)
+                               self$m_params[[data$treat_col]])
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
