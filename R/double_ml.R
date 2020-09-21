@@ -111,11 +111,12 @@ DoubleML <- R6Class("DoubleML", public = list(
       private$split_samples()
     }
     
-      for (i_rep in 1:self$n_rep_cross_fit) {
-        private$i_rep = i_rep
-        
-        for (i_treat in 1:private$n_treat) {
+      for (i_treat in 1:private$n_treat) {
           private$i_treat = i_treat
+          
+        for (i_rep in 1:self$n_rep_cross_fit) {
+          private$i_rep = i_rep
+        
          
           if (private$n_treat > 1){
             self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
@@ -134,9 +135,12 @@ DoubleML <- R6Class("DoubleML", public = list(
                                                    param_set, tune_on_folds, 
                                                    tune_settings)
           } else {
-            param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                   param_set, tune_on_folds, 
-                                                   tune_settings)
+            
+            if (private$i_rep == 1) {
+              param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                     param_set, tune_on_folds, 
+                                                     tune_settings)
+            } 
           }
 
           # here: set__params()
