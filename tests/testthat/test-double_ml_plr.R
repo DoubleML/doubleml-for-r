@@ -53,8 +53,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      n_folds = n_folds,
                                      score = score)
   
-  double_mlplr_obj$set__ml_nuisance_params(params =  list(g_params = learner_pars$params$params_g, 
-                                                          m_params = learner_pars$params$params_m))
+  # set params for nuisance part m
+  double_mlplr_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_m)
+  
+  # set params for nuisance part g
+  double_mlplr_obj$set__ml_nuisance_params(nuisance_part = "ml_g", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_g)
 
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef
