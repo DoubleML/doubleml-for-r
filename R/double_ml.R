@@ -36,7 +36,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
         
         if (!is.null(self$ml_nuisance_params)){
-          self$set__ml_nuisance_params(self$ml_nuisance_params[[private$i_rep]][[private$i_treat]])
+          self$set__ml_nuisance_params(self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
         }
         
         if (private$n_treat > 1){
@@ -103,16 +103,14 @@ DoubleML <- R6Class("DoubleML", public = list(
                                         tuner = "grid_search",
                                         resolution = 5)) {
     n_obs = nrow(self$data$data_model)
-    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), private$n_treat)),self$n_rep_cross_fit) 
-    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), private$n_treat)), self$n_rep_cross_fit) 
+    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
+    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
   
     if (is.null(private$smpls)) {
-      
-      
+
       private$split_samples()
     }
     
-      
       for (i_rep in 1:self$n_rep_cross_fit) {
         private$i_rep = i_rep
         
@@ -321,14 +319,14 @@ private = list(
   set__params = function(tuning_params, tune_on_folds){
     
     if (tune_on_folds) {
-      self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
-      self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+      self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- tuning_params$params
+      self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
     } else {
       
       export_params = lapply(1:private$n_nuisance, function(x) rep(tuning_params$params[[x]], self$n_folds))
       names(export_params) = names(tuning_params$params)
-      self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] <- export_params
-      self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+      self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- export_params
+      self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
       
       # self$set__ml_nuisance_params(tuning_params$params)
       # self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] = NULL
