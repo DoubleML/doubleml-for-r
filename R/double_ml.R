@@ -39,12 +39,9 @@ DoubleML <- R6Class("DoubleML", public = list(
           self$set__ml_nuisance_params(self$ml_nuisance_params[[private$i_rep]][[private$i_treat]])
         }
         
-        
         if (private$n_treat > 1){
           self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
-        
-        
         
         # ml estimation of nuisance models and computation of psi elements
         psis = private$ml_nuisance_and_score_elements(self$data,
@@ -115,24 +112,13 @@ DoubleML <- R6Class("DoubleML", public = list(
       private$split_samples()
     }
     
-    
-    if (!tune_on_folds){
-      
-        param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                   param_set, tune_on_folds, 
-                                                   tune_settings)
-        
-        private$set__params(param_tuning, tune_on_folds)
-      
-      
-    } else {
       
       for (i_rep in 1:self$n_rep_cross_fit) {
         private$i_rep = i_rep
         
         for (i_treat in 1:private$n_treat) {
           private$i_treat = i_treat
-          
+         
           if (private$n_treat > 1){
             self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
           }
@@ -144,16 +130,22 @@ DoubleML <- R6Class("DoubleML", public = list(
           #      e.g., in seperate function (tune_mlr3)...
           # TBD: Pass through instances (requires prespecified tasks)
           # TBD: Handling different measures for classification and regression (logit???)
-          param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+          
+          if (tune_on_folds) {
+            param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
                                                    param_set, tune_on_folds, 
                                                    tune_settings)
-          
+          } else {
+            param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                   param_set, tune_on_folds, 
+                                                   tune_settings)
+          }
+
           # here: set__params()
           private$set__params(param_tuning, tune_on_folds)
           
           #self$params = self$param_tuning$params
   
-        }
       }
     }
 
@@ -316,7 +308,7 @@ private = list(
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
-  get__params = function(tune_on_folds){
+  get__params = function(){
     
     if (is.null(self$params) | all(lapply(self$params, length)==0)){
       params = list()

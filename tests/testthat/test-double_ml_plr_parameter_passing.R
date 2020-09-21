@@ -15,7 +15,6 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
   
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          n_rep_cross_fit = c(1, 3),
@@ -60,13 +59,15 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   
   data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
                               d_cols = c("d1", "d2"), x_cols = Xnames)
-                        
+
+  # Instantiate with parameters                        
   double_mlplr_obj_exact = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_list,
-                                     params = learner_pars_exact,
+                                     ml_g = learner_list$mlmethod_g,
+                                     ml_m = learner_list$mlmethod_m,
+                                     g_params = learner_pars_for_DML$params$params_g,
+                                     m_params = learner_pars_for_DML$params$params_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
@@ -80,17 +81,17 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
 
   
-  # pass empty set of parameters (NULL, use default values)   
+  # Instantiate without parameters (NULL, use default values) , use param setter function
   set.seed(i_setting)
   double_mlplr_obj_null = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_learners = learner_list,
-                                     params = NULL,
                                      dml_procedure = dml_procedure, 
                                      se_reestimate = se_reestimate,
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
+  double_mlplr_obj_null$set__ml_nuisance_params(
   double_mlplr_obj_null$fit()
   
   theta_obj_null <- double_mlplr_obj_null$coef
