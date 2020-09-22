@@ -15,8 +15,8 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 tune_settings = list(n_folds_tune = 3,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      measure_g = "regr.mse", 
-                      measure_m = "classif.ce",
+                      # measure_g = "regr.mse", 
+                      # measure_m = "classif.ce",
                       terminator = mlr3tuning::trm("evals", n_evals = 5), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
@@ -53,7 +53,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
 
-
   double_mlirm_obj_tuned = DoubleMLIRM$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_g = learner_pars$mlmethod$mlmethod_g,
@@ -68,8 +67,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
                   
-  double_mlirm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, 
-                              tune_settings = tune_settings)
+  double_mlirm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
   double_mlirm_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlirm_obj_tuned$coef
