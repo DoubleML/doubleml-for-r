@@ -100,6 +100,8 @@ DoubleML <- R6Class("DoubleML", public = list(
                                         measure_g = NULL, 
                                         measure_m = NULL,
                                         measure_r = NULL,
+                                        measure_p = NULL,
+                                        measure_mu = NULL,
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
                                         tuner = "grid_search",
