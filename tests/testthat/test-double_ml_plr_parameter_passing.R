@@ -51,63 +51,75 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
 
   # exact parameter provision
   learner_pars_once <- get_default_mlmethod_plr(learner, default = FALSE)
-  learner_pars_exact <- rep(list(rep(list(learner_pars_once$params), 2)), n_rep_cross_fit)
-  
-  set.seed(i_setting)
+  params_g = list("d1" = learner_pars_once$params$params_g, "d2" = learner_pars_once$params$params_g)
+  params_m = list("d1" = learner_pars_once$params$params_m, "d2" = learner_pars_once$params$params_m)
   
   Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
-  
   data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
                               d_cols = c("d1", "d2"), x_cols = Xnames)
 
-  # Instantiate with parameters                        
-  double_mlplr_obj_exact = DoubleMLPLR$new(data_ml, 
+  set.seed(i_setting)
+  double_mlplr_obj_once = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_g = learner_list$mlmethod_g,
                                      ml_m = learner_list$mlmethod_m,
-                                     g_params = learner_pars_for_DML$params$params_g,
-                                     m_params = learner_pars_for_DML$params$params_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  double_mlplr_obj_exact$fit()
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_g", params = params_g$d1)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_g", params = params_g$d2)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_m", params = params_m$d1)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_m", params = params_m$d2)
+
   
-  theta_obj_exact <- double_mlplr_obj_exact$coef
-  se_obj_exact <- double_mlplr_obj_exact$se
+  double_mlplr_obj_once$fit()
+  theta_obj_once <- double_mlplr_obj_once$coef
+  se_obj_once <- double_mlplr_obj_once$se
   
-  # bootstrap
+  # TBD: Exact Parameter Passing (external tuning)
+  # 
+  # export_params_m = list("m_params" = rep(list(list(params_m[[1]])), n_folds))
+  # export_params_g = list("g_params" = rep(list(list(params_g[[1]])), n_folds))
+  # learner_pars_exact_params = learner_pars_once$params
+  # names(learner_pars_exact_params) = c("g_params", "m_params")
+  # learner_pars_exact_params = rep(list(rep(list(learner_pars_exact_params), n_folds)), n_rep_cross_fit)
+  # 
+  # exact_ml_nuisance_params = list()
+  # exact_ml_nuisance_params[["d1"]] = learner_pars_exact_params
+  # exact_ml_nuisance_params[["d2"]] = learner_pars_exact_params
+  # 
+  # # learner_pars_exact <- rep(list(rep(list(rep(list(learner_pars_once$params), n_folds)), n_rep_cross_fit)), 2)
+  # 
+  # set.seed(i_setting)
+  # 
+  # # Instantiate with parameters                        
+  # double_mlplr_obj_exact = DoubleMLPLR$new(data_ml, 
+  #                                    n_folds = n_folds,
+  #                                    ml_g = learner_list$mlmethod_g,
+  #                                    ml_m = learner_list$mlmethod_m,
+  #                                    dml_procedure = dml_procedure, 
+  #                                    score = score,
+  #                                    n_rep_cross_fit = n_rep_cross_fit)
+  # 
+  # double_mlplr_obj_exact$set__ml_nuisance_params(treat_var = NULL, nuisance_part = NULL, params = exact_ml_nuisance_params)
+  # 
+  # double_mlplr_obj_exact$fit()
+  # 
+  # theta_obj_exact <- double_mlplr_obj_exact$coef
+  # se_obj_exact <- double_mlplr_obj_exact$se
+  # 
+  # # bootstrap
   # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
 
-  
-  # Instantiate without parameters (NULL, use default values) , use param setter function
-  set.seed(i_setting)
-  double_mlplr_obj_null = DoubleMLPLR$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_list,
-                                     dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
-                                     score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
-  
-  double_mlplr_obj_null$set__ml_nuisance_params(
-  double_mlplr_obj_null$fit()
-  
-  theta_obj_null <- double_mlplr_obj_null$coef
-  se_obj_null <- double_mlplr_obj_null$se
-  
-  # bootstrap
-  # double_mlplr_obj_null$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_null = double_mlplr_obj_null$boot_coef
-  
   # no parameters specified (use default values)   
   set.seed(i_setting)
   double_mlplr_obj_default = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_list,
+                                     ml_g = learner_list$mlmethod_g,
+                                     ml_m = learner_list$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
@@ -120,16 +132,15 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   # double_mlplr_obj_default$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_default = double_mlplr_obj_default$boot_coef
 
-  expect_equal(theta_obj_null, theta_obj_exact, tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
-  expect_equal(se_obj_null, se_obj_exact, tolerance = 1e-8)
-  expect_equal(se_obj_null, se_obj_default, tolerance = 1e-8)
+  expect_equal(theta, theta_obj_once, tolerance = 1e-8)
+  # expect_equal(se, se_obj_once, tolerance = 1e-8)
+
+  expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
+  expect_equal(se_obj_default, se_obj_once, tolerance = 1e-8)
 
   # expect_equal(boot_theta_obj_once, boot_theta_obj_exact, tolerance = 1e-8)
   # expect_equal(boot_theta_obj_null, boot_theta_obj_exact, tolerance = 1e-8)
 
-
-  
   }
 )
 
