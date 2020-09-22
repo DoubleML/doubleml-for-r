@@ -53,20 +53,20 @@ private = list(
     
     if (is.null(self$param_tuning)){
       
-       if (length(params$params_g)==0){
+       if (is.null(params$params_g[[data$treat_col]])){
           message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
        }
       
-       if (length(params$params_m)==0){
+       if (is.null(params$params_m[[data$treat_col]])){
           message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
        }
        
-       if (length(params$params_m)==0){
+       if (is.null(params$params_m)[[data$treat_col]]){
           message("Parameter of learner for nuisance part r are not tuned, results might not be valid!")
        }
     
       ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
-                               params$params_g)
+                               params$params_g[[data$treat_col]])
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
@@ -74,7 +74,7 @@ private = list(
       g_hat <- extract_prediction(r_g)$response
       
       ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
-                               params$params_m)
+                               params$params_m[[data$treat_col]])
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
@@ -82,7 +82,7 @@ private = list(
       m_hat <- extract_prediction(r_m)$response
     
       ml_r <- initiate_learner(self$ml_learners$mlmethod_r,
-                               params$params_r)
+                               params$params_r[[data$treat_col]])
       resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
@@ -92,21 +92,21 @@ private = list(
     
     else if (!is.null(self$param_tuning)){
       ml_g <- lapply(params$params_g, function(x) initiate_learner(self$ml_learners$mlmethod_g, 
-                                                                        x))
+                                                                        x[[1]]))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat)
       
       ml_m <- lapply(params$params_m, function(x) initiate_learner(self$ml_learners$mlmethod_m, 
-                                                                        x))
+                                                                        x[[1]]))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prediction)
       m_hat = rearrange_prediction(m_hat)
       
       ml_r <- lapply(params$params_r, function(x) initiate_learner(self$ml_learners$mlmethod_r, 
-                                                                        x))
+                                                                        x[[1]]))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = lapply(r_r, extract_prediction)
@@ -129,13 +129,17 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
-  tune_params = function(data, smpls, param_set, tune_settings, ...){
+  ml_nuisance_tuning  = function(data, smpls, param_set, tune_settings, ...){
     
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
     checkmate::check_class(param_set$param_set_r, "ParamSet")
 
-    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    if (!tune_on_folds){
+      data_tune_list = list(data$data_model)
+    } else {
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
 
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
