@@ -69,16 +69,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
   
   double_mliivm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
   double_mliivm_obj_tuned$fit()
-  
-  double_mliivm_obj_tuned$param_set$param_set_p = tune_ps
-  double_mliivm_obj_tuned$param_set$param_set_mu = tune_ps
-  double_mliivm_obj_tuned$param_set$param_set_m = tune_ps
-  double_mliivm_obj_tuned$tune_settings = tune_settings
 
-  double_mliivm_obj_tuned$tune()
-  
-  double_mliivm_obj_tuned$fit()
-  
   theta_obj_tuned <- double_mliivm_obj_tuned$coef
   se_obj_tuned <- double_mliivm_obj_tuned$se
 
