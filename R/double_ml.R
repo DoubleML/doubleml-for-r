@@ -97,9 +97,9 @@ DoubleML <- R6Class("DoubleML", public = list(
   tune = function(param_set, tune_on_folds = FALSE, tune_settings = list(
                                         n_folds_tune = 5,
                                         rsmp_tune = "cv", 
-                                        measure_g = "regr.mse", 
-                                        measure_m = "regr.mse",
-                                        measure_r = "regr.mse",
+                                        measure_g = NULL, 
+                                        measure_m = NULL,
+                                        measure_r = NULL,
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
                                         tuner = "grid_search",

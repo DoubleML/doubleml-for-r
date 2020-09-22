@@ -186,16 +186,24 @@ private = list(
    }
     
    if (any(class(tune_settings$measure_g) == "Measure")) {
-     measure_g = tune_settings$measure_g
-   } else {
-     measure_g = mlr3::msr(tune_settings$measure_g)
+        measure_g = tune_settings$measure_g
+      } else {
+          if (is.null(tune_settings$measure_g)){
+            measure_g = mlr3::default_measures("regr")[[1]]
+          } else {
+            measure_g = mlr3::msr(tune_settings$measure_g)
+        }
    }
     
    if (any(class(tune_settings$measure_m) == "Measure")) {
-     measure_m = tune_settings$measure_m
-   } else {
-     measure_m = mlr3::msr(tune_settings$measure_m)
-   }
+      measure_m = tune_settings$measure_m
+    } else {
+        if (is.null(tune_settings$measure_m)){
+          measure_m = mlr3::default_measures("classif")[[1]]
+        } else {
+          measure_m = mlr3::msr(tune_settings$measure_m)
+      }
+    }
     
    terminator = tune_settings$terminator
     
