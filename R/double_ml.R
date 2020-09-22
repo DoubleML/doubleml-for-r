@@ -11,6 +11,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   se = NULL, 
   t = NULL, 
   pval = NULL,
+  boot_coef = NULL,
   ml_nuisance_params = NULL,
   param_tuning = NULL,
   
