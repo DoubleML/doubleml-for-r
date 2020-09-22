@@ -5,34 +5,76 @@
 #' @export
 
 DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
+  ml_p = NULL, 
+  ml_mu = NULL, 
+  ml_m = NULL, 
+  params_p = NULL, 
+  params_mu = NULL, 
+  params_m = NULL, 
   initialize = function(data, 
+                        ml_p, 
+                        ml_mu, 
+                        ml_m, 
                         n_folds = 5,
-                        ml_learners,
-                        params = list(params_p = list(),
-                                      params_mu = list(),
-                                      params_m = list()),
-                        dml_procedure = "dml2",
-                        score = "LATE",
-                        subgroups = list(always_takers = TRUE, never_takers = TRUE),
-                        se_reestimate = FALSE,
-                        n_rep_cross_fit = 1,
-                        param_set = NULL,
-                        tune_settings = list(),
-                        param_tuning = NULL) {
+                        n_rep_cross_fit = 1, 
+                        score = "LATE", 
+                        dml_procedure = "dml2", 
+                        draw_sample_splitting = TRUE,
+                        apply_cross_fitting = TRUE) {
+    
     super$initialize_double_ml(data, 
                                n_folds,
-                               ml_learners,
-                               params,
-                               dml_procedure,
-                               score,
-                               subgroups,
-                               se_reestimate,
                                n_rep_cross_fit,
-                               param_set,
-                               tune_settings,
-                               param_tuning)
+                               score, 
+                               dml_procedure, 
+                               draw_sample_splitting, 
+                               apply_cross_fitting)
+     self$ml_p = ml_p
+     self$ml_mu = ml_mu
+     self$ml_m = ml_m
+  },
+set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
+    
+        # pass through internal parameter list (case: tuning with on_fold)
+        if (is.null(nuisance_part) & is.null(treat_var)) {
+          self$p_params = params$p_params
+          self$mu_params = params$mu_params
+          self$m_params = params$m_params
+        
+        } else {
+          
+          checkmate::check_subset(treat_var, self$data$d_cols)
+
+          if (is.null(self$p_params)){
+            self$p_params = vector("list", length = length(self$data$d_cols))
+            names(self$p_params) = self$data$d_cols
+          }
+        
+          if (is.null(self$mu_params)){
+            self$mu_params = vector("list", length = length(self$data$d_cols))
+            names(self$mu_params) = self$data$d_cols
+          }
+          
+          if (is.null(self$m_params)){
+            self$m_params = vector("list", length = length(self$data$d_cols))
+            names(self$m_params) = self$data$d_cols
+          }
+          
+          if (nuisance_part == "ml_p"){
+            self$p_params[[treat_var]] = params
+          }
+          
+          if (nuisance_part == "ml_mu"){
+            self$mu_params[[treat_var]] = params
+          }
+          
+          if (nuisance_part == "ml_m"){
+            self$m_params[[treat_var]] = params
+          }
+
+        }
   }
-),
+  ),
 private = list(
   n_nuisance = 3,
   ml_nuisance_and_score_elements = function(data, smpls, params) {
@@ -201,7 +243,7 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
- tune_params = function(data, smpls, param_set, tune_settings, ...){
+ ml_nuisance_tuning = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
    checkmate::check_class(param_set$param_set_p, "ParamSet")    
    checkmate::check_class(param_set$param_set_mu, "ParamSet")
    checkmate::check_class(param_set$param_set_m, "ParamSet")
@@ -215,23 +257,35 @@ private = list(
    }
     
    if (any(class(tune_settings$measure_p) == "Measure")) {
-     measure_p = tune_settings$measure_p
-   } else {
-     measure_p = mlr3::msr(tune_settings$measure_p)
+        measure_p = tune_settings$measure_p
+      } else {
+          if (is.null(tune_settings$measure_p)){
+            measure_p = mlr3::default_measures("classif")[[1]]
+          } else {
+            measure_p = mlr3::msr(tune_settings$measure_p)
+        }
    }
     
-   if (any(class(tune_settings$measure_mu) == "Measure")) {
-     measure_mu = tune_settings$measure_mu
-   } else {
-     measure_mu = mlr3::msr(tune_settings$measure_mu)
+   if (any(class(tune_settings$measure_g) == "Measure")) {
+        measure_g = tune_settings$measure_g
+      } else {
+          if (is.null(tune_settings$measure_g)){
+            measure_g = mlr3::default_measures("regr")[[1]]
+          } else {
+            measure_g = mlr3::msr(tune_settings$measure_g)
+        }
    }
    
    if (any(class(tune_settings$measure_m) == "Measure")) {
-     measure_m = tune_settings$measure_m
-   } else {
-     measure_m = mlr3::msr(tune_settings$measure_m)
-   }
-    
+        measure_m = tune_settings$measure_m
+      } else {
+          if (is.null(tune_settings$measure_m)){
+            measure_m = mlr3::default_measures("classif")[[1]]
+          } else {
+            measure_m = mlr3::msr(tune_settings$measure_m)
+        }
+      }
+   
    terminator = tune_settings$terminator
     
    task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_col), x,
