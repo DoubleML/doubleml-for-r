@@ -80,7 +80,7 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, ...) {
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col)

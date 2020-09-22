@@ -65,7 +65,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
 ),
 private = list(
   n_nuisance = 2,
-  ml_nuisance_and_score_elements = function(data, smpls, params, ...) {
+  ml_nuisance_and_score_elements = function(data, smpls, ...) {
     
     # nuisance m
     task_m <- initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
