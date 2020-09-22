@@ -8,9 +8,10 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   ml_p = NULL, 
   ml_mu = NULL, 
   ml_m = NULL, 
-  params_p = NULL, 
-  params_mu = NULL, 
-  params_m = NULL, 
+  p_params = NULL, 
+  mu_params = NULL, 
+  m_params = NULL, 
+  subgroups = NULL, 
   initialize = function(data, 
                         ml_p, 
                         ml_mu, 
@@ -18,6 +19,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                         n_folds = 5,
                         n_rep_cross_fit = 1, 
                         score = "LATE", 
+                        subgroups = list(always_takers = TRUE, never_takers = TRUE),
                         dml_procedure = "dml2", 
                         draw_sample_splitting = TRUE,
                         apply_cross_fitting = TRUE) {
@@ -32,6 +34,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
      self$ml_p = ml_p
      self$ml_mu = ml_mu
      self$ml_m = ml_m
+     self$subgroups = subgroups
   },
 set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
     
@@ -77,7 +80,7 @@ set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, param
   ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, ...) {
     
     # nuisance p
     task_p <- initiate_classif_task(paste0("nuis_p_", data$z_col), data$data_model,
@@ -93,27 +96,27 @@ private = list(
     
     if (is.null(self$param_tuning)){
     
-      if (length(params$params_p)==0){
+      if (length(self$p_params)==0){
         message("Parameter of learner for nuisance part p are not tuned, results might not be valid!")
       }
       
-      if (length(params$params_mu)==0){
+      if (length(self$mu_params)==0){
         message("Parameter of learner for nuisance part mu are not tuned, results might not be valid!")
       }
       
-      if (length(params$params_m)==0){
+      if (length(self$m_params)==0){
         message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
       }
           
       # get ml learner
-      ml_p <- initiate_prob_learner(self$ml_learners$mlmethod_p,
-                                    params$params_p)
+      ml_p <- initiate_prob_learner(self$ml_p,
+                                    self$p_params)
       
-      ml_mu <- initiate_learner(self$ml_learners$mlmethod_mu,
-                                 params$params_mu)
+      ml_mu <- initiate_learner(self$ml_mu,
+                                 self$mu_params)
   
-      ml_m <- initiate_prob_learner(self$ml_learners$mlmethod_m,
-                                     params$params_m)
+      ml_m <- initiate_prob_learner(self$ml_m,
+                                     self$m_params)
   
 
       resampling_p  <- mlr3::rsmp("custom")$instantiate(task_p,
@@ -172,15 +175,15 @@ private = list(
     
     else if (!is.null(self$param_tuning)){
     
-      ml_p <- lapply(params$params_p, function(x) initiate_prob_learner(self$ml_learners$mlmethod_p,
-                                                                        x))
+      ml_p <- lapply(self$p_params, function(x) initiate_prob_learner(self$ml_p,
+                                                                        x[[1]]))
       resampling_p <- initiate_resampling(task_p, smpls$train_ids, smpls$test_ids)
       r_p <- resample_dml(task_p, ml_p, resampling_p, store_models = TRUE)
       p_hat <- lapply(r_p, extract_prob_prediction)
       p_hat <- rearrange_prob_prediction(p_hat)
       
-      ml_mu <- lapply(params$params_mu, function(x) initiate_learner(self$ml_learners$mlmethod_mu,
-                                                                        x))
+      ml_mu <- lapply(self$mu_params, function(x) initiate_learner(self$ml_mu,
+                                                                        x[[1]]))
       # get conditional samples (conditioned on Z = 0 or Z = 1)
       cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
       
@@ -194,8 +197,8 @@ private = list(
       mu1_hat <- lapply(r_mu1, extract_prediction)
       mu1_hat <- rearrange_prediction(mu1_hat)             
       
-      ml_m <- lapply(params$params_m, function(x) initiate_prob_learner(self$ml_learners$mlmethod_m,
-                                                                        x))
+      ml_m <- lapply(self$m_params, function(x) initiate_prob_learner(self$ml_m,
+                                                                        x[[1]]))
       
       if (self$subgroups$always_takers == FALSE & self$subgroups$never_takers == FALSE) {
         message("If there are no always-takers and no never-takers, ATE is estimated")
@@ -248,7 +251,11 @@ private = list(
    checkmate::check_class(param_set$param_set_mu, "ParamSet")
    checkmate::check_class(param_set$param_set_m, "ParamSet")
 
-   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+   if (!tune_on_folds){
+      data_tune_list = list(data$data_model)
+    } else {
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
    
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
      CV_tune = tune_settings$rsmp_tune
@@ -266,13 +273,13 @@ private = list(
         }
    }
     
-   if (any(class(tune_settings$measure_g) == "Measure")) {
-        measure_g = tune_settings$measure_g
+   if (any(class(tune_settings$measure_mu) == "Measure")) {
+        measure_mu = tune_settings$measure_mu
       } else {
-          if (is.null(tune_settings$measure_g)){
-            measure_g = mlr3::default_measures("regr")[[1]]
+          if (is.null(tune_settings$measure_mu)){
+            measure_mu = mlr3::default_measures("regr")[[1]]
           } else {
-            measure_g = mlr3::msr(tune_settings$measure_g)
+            measure_mu = mlr3::msr(tune_settings$measure_mu)
         }
    }
    
@@ -291,7 +298,7 @@ private = list(
    task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_col), x,
                                                skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
     
-   ml_p <- mlr3::lrn(self$ml_learners$mlmethod_p)
+   ml_p <- mlr3::lrn(self$ml_p)
     
    tuning_instance_p = lapply(task_p, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_p,
@@ -306,7 +313,7 @@ private = list(
    task_mu = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_mu_", data$y_col), x,
                                                   skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
     
-   ml_mu <- mlr3::lrn(self$ml_learners$mlmethod_mu)
+   ml_mu <- mlr3::lrn(self$ml_mu)
 
    tuning_instance_mu = lapply(task_mu, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_mu,
@@ -320,7 +327,7 @@ private = list(
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
                                                   skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
     
-   ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+   ml_m <- mlr3::lrn(self$ml_m)
 
    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_m,
@@ -334,9 +341,9 @@ private = list(
    tuning_result = list(tuning_result = list(tuning_result_p = tuning_result_p, 
                                              tuning_result_mu = tuning_result_mu,
                                              tuning_result_m = tuning_result_m),
-                        params = list(params_p = extract_tuned_params(tuning_result_p),
-                                      params_mu = extract_tuned_params(tuning_result_mu),
-                                      params_m = extract_tuned_params(tuning_result_m)))
+                        params = list(p_params = extract_tuned_params(tuning_result_p),
+                                      mu_params = extract_tuned_params(tuning_result_mu),
+                                      m_params = extract_tuned_params(tuning_result_m)))
    
    return(tuning_result)
   },
