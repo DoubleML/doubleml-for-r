@@ -118,14 +118,14 @@ private = list(
   
     else if (!is.null(self$param_tuning)){
     
-      ml_m <- lapply(params$params_m, function(x) initiate_prob_learner(self$ml_m, 
+      ml_m <- lapply(self$m_params, function(x) initiate_prob_learner(self$ml_m, 
                                                                         x[[1]]))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prob_prediction)
       m_hat = rearrange_prob_prediction(m_hat)  
       
-      ml_g <- lapply(params$params_g, function(x) initiate_learner(self$ml_g, 
+      ml_g <- lapply(self$g_params, function(x) initiate_learner(self$ml_g, 
                                                                         x[[1]]))
       
       # get conditional samples (conditioned on D = 0 or D = 1)
@@ -169,11 +169,15 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
- tune_params = function(data, smpls, param_set, tune_settings, ...){
+ ml_nuisance_tuning = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
    checkmate::check_class(param_set$param_set_g, "ParamSet")    
    checkmate::check_class(param_set$param_set_m, "ParamSet")
    
-   data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+   if (!tune_on_folds){
+     data_tune_list = list(data$data_model)
+    } else {
+    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
    
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
      CV_tune = tune_settings$rsmp_tune
@@ -198,7 +202,7 @@ private = list(
    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
                                                skip_cols = data$treat_col, target = data$y_col))
     
-   ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
+   ml_g <- mlr3::lrn(self$ml_g)
     
    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
@@ -213,7 +217,7 @@ private = list(
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
                                                   skip_cols = data$y_col, target = data$treat_col))
     
-   ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+   ml_m <- mlr3::lrn(self$ml_m)
 
    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_m,
@@ -226,8 +230,8 @@ private = list(
     
    tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
                                              tuning_result_m = tuning_result_m),
-                        params = list(params_g = extract_tuned_params(tuning_result_g), 
-                                      params_m = extract_tuned_params(tuning_result_m)))
+                        params = list(g_params = extract_tuned_params(tuning_result_g), 
+                                      m_params = extract_tuned_params(tuning_result_m)))
    
    return(tuning_result)
   },
