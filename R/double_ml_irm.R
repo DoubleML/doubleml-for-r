@@ -5,31 +5,29 @@
 #' @export
 
 DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
+  ml_g = NULL, 
+  ml_m = NULL, 
+  g_params = NULL, 
+  m_params = NULL,
   initialize = function(data, 
-                        n_folds = 5,
-                        ml_learners,
-                        params = list(params_m = list(),
-                                      params_g = list()),
-                        dml_procedure = "dml2",
-                        score = "ATE",
-                        subgroups = NULL,
-                        se_reestimate = FALSE,
+                        ml_g, 
+                        ml_m, 
+                        n_folds = 5, 
                         n_rep_cross_fit = 1,
-                        param_set = NULL,
-                        tune_settings = list(),
-                        param_tuning = NULL) {
+                        score = "ATE", 
+                        dml_procedure = "dml2",
+                        draw_sample_splitting = TRUE,
+                        apply_cross_fitting = TRUE) {
+    
     super$initialize_double_ml(data, 
                                n_folds,
-                               ml_learners,
-                               params,
-                               dml_procedure,
-                               score,
-                               subgroups,
-                               se_reestimate,
                                n_rep_cross_fit,
-                               param_set,
-                               tune_settings,
-                               param_tuning)
+                               score, 
+                               dml_procedure, 
+                               draw_sample_splitting, 
+                               apply_cross_fitting)
+    self$ml_g = ml_g
+    self$ml_m = ml_m
   }
 ),
 private = list(
