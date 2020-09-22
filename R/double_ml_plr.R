@@ -12,8 +12,6 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   initialize = function(data, 
                         ml_g,
                         ml_m,
-                        g_params = NULL, 
-                        m_params = NULL,
                         n_folds = 5,
                         n_rep_cross_fit = 1,
                         score = "partialling out", 
@@ -31,9 +29,6 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
     
     self$ml_g = ml_g
     self$ml_m = ml_m
-    self$g_params = g_params
-    self$m_params = m_params
-    
   }, 
    
   set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
