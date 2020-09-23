@@ -110,13 +110,13 @@ private = list(
           
       # get ml learner
       ml_p <- initiate_prob_learner(self$ml_p,
-                                    self$p_params)
+                                    self$p_params[[data$treat_col]])
       
       ml_mu <- initiate_learner(self$ml_mu,
-                                 self$mu_params)
+                                 self$mu_params[[data$treat_col]])
   
       ml_m <- initiate_prob_learner(self$ml_m,
-                                     self$m_params)
+                                     self$m_params[[data$treat_col]])
   
 
       resampling_p  <- mlr3::rsmp("custom")$instantiate(task_p,
