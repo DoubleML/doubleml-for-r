@@ -5,51 +5,82 @@
 #' @export
 
 DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
+  ml_g = NULL, 
+  ml_m = NULL, 
+  ml_r = NULL, 
+  g_params = NULL, 
+  m_params = NULL, 
+  r_params = NULL, 
+  
   initialize = function(data, 
+                        ml_g,
+                        ml_m, 
+                        ml_r, 
                         n_folds = 5,
-                        ml_learners,
-                        params = list(params_m = list(),
-                                      params_g = list(),
-                                      params_r = list()),
+                        n_rep_cross_fit = 1, 
+                        score = "partialling out", 
                         dml_procedure = "dml2",
-                        score = "partialling out",
-                        subgroups =  NULL,
-                        se_reestimate = FALSE,
-                        n_rep_cross_fit = 1,
-                        param_set = list(params_m = list(),
-                                      params_g = list(),
-                                      params_r = list()),
-                        tune_settings = list(n_folds_tune = 5,
-                                        n_rep_tune = 1, 
-                                        rsmp_tune = "cv", 
-                                        measure_g = "regr.mse", 
-                                        measure_m = "regr.mse",
-                                        measure_r = "regr.mse",
-                                        terminator = mlr3tuning::trm("evals", n_evals = 20), 
-                                        algorithm = "grid_search",
-                                        tuning_instance_g = NULL, 
-                                        tuning_instance_m = NULL,
-                                        tuning_instance_r = NULL,
-                                        tuner = "grid_search",
-                                        resolution = 5),
-                        param_tuning = NULL) {
+                        draw_sample_splitting = TRUE, 
+                        apply_cross_fitting = TRUE) {
+    
     super$initialize_double_ml(data, 
                                n_folds,
-                               ml_learners,
-                               params,
-                               dml_procedure,
-                               score,
-                               subgroups,
-                               se_reestimate,
-                               n_rep_cross_fit,
-                               param_set,
-                               tune_settings,
-                               param_tuning)
+                               n_rep_cross_fit, 
+                               score, 
+                               dml_procedure, 
+                               draw_sample_splitting, 
+                               apply_cross_fitting)
+    
+    self$ml_g = ml_g
+    self$ml_m = ml_m
+    self$ml_r = ml_r
+  }, 
+  
+ set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
+    
+        # pass through internal parameter list (case: tuning with on_fold)
+        if (is.null(nuisance_part) & is.null(treat_var)) {
+          self$g_params = params$g_params
+          self$m_params = params$m_params
+          self$r_params = params$r_params
+        
+        } else {
+          
+          checkmate::check_subset(treat_var, self$data$d_cols)
+
+          if (is.null(self$g_params)){
+            self$g_params = vector("list", length = length(self$data$d_cols))
+            names(self$g_params) = self$data$d_cols
+          }
+          
+          if (is.null(self$m_params)){
+            self$m_params = vector("list", length = length(self$data$d_cols))
+            names(self$m_params) = self$data$d_cols
+          }
+          
+          if (is.null(self$r_params)){
+            self$r_params = vector("list", length = length(self$data$d_cols))
+            names(self$r_params) = self$data$d_cols
+          }
+          
+          if (nuisance_part == "ml_m"){
+            self$m_params[[treat_var]] = params
+          }
+          
+          if (nuisance_part == "ml_g"){
+            self$g_params[[treat_var]] = params
+          }
+          
+          if (nuisance_part == "ml_r"){
+            self$r_params[[treat_var]] = params
+          }
+
+        }
   }
-),
+  ),
 private = list(
   n_nuisance = 3,
-  ml_nuisance_and_score_elements = function(data, smpls, params) {
+  ml_nuisance_and_score_elements = function(data, smpls, ...) {
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
@@ -64,36 +95,36 @@ private = list(
     
     if (is.null(self$param_tuning)){
       
-       if (length(params$params_g)==0){
+       if (is.null(self$g_params[[data$treat_col]])){
           message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
        }
       
-       if (length(params$params_m)==0){
+       if (is.null(self$m_params[[data$treat_col]])){
           message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
        }
        
-       if (length(params$params_m)==0){
+       if (is.null(self$r_params[[data$treat_col]])){
           message("Parameter of learner for nuisance part r are not tuned, results might not be valid!")
        }
     
-      ml_g <- initiate_learner(self$ml_learners$mlmethod_g,
-                               params$params_g)
+      ml_g <- initiate_learner(self$ml_g,
+                               self$g_params[[data$treat_col]])
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
       r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- extract_prediction(r_g)$response
       
-      ml_m <- initiate_learner(self$ml_learners$mlmethod_m,
-                               params$params_m)
+      ml_m <- initiate_learner(self$ml_m,
+                               self$m_params[[data$treat_col]])
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
       r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat <- extract_prediction(r_m)$response
     
-      ml_r <- initiate_learner(self$ml_learners$mlmethod_r,
-                               params$params_r)
+      ml_r <- initiate_learner(self$ml_r,
+                               self$r_params[[data$treat_col]])
       resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
@@ -102,22 +133,22 @@ private = list(
     }
     
     else if (!is.null(self$param_tuning)){
-      ml_g <- lapply(params$params_g, function(x) initiate_learner(self$ml_learners$mlmethod_g, 
-                                                                        x))
+      ml_g <- lapply(self$g_params, function(x) initiate_learner(self$ml_g, 
+                                                                        x[[1]]))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat)
       
-      ml_m <- lapply(params$params_m, function(x) initiate_learner(self$ml_learners$mlmethod_m, 
-                                                                        x))
+      ml_m <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
+                                                                        x[[1]]))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prediction)
       m_hat = rearrange_prediction(m_hat)
       
-      ml_r <- lapply(params$params_r, function(x) initiate_learner(self$ml_learners$mlmethod_r, 
-                                                                        x))
+      ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
+                                                                        x[[1]]))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = lapply(r_r, extract_prediction)
@@ -140,13 +171,17 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
-  tune_params = function(data, smpls, param_set, tune_settings, ...){
+  ml_nuisance_tuning  = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
     
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
     checkmate::check_class(param_set$param_set_r, "ParamSet")
 
-    data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    if (!tune_on_folds){
+      data_tune_list = list(data$data_model)
+    } else {
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
 
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
@@ -157,19 +192,31 @@ private = list(
     if (any(class(tune_settings$measure_g) == "Measure")) {
       measure_g = tune_settings$measure_g
     } else {
-      measure_g = mlr3::msr(tune_settings$measure_g)
+        if (is.null(tune_settings$measure_g)){
+          measure_g = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_g = mlr3::msr(tune_settings$measure_g)
+      }
     }
     
     if (any(class(tune_settings$measure_m) == "Measure")) {
       measure_m = tune_settings$measure_m
     } else {
-      measure_m = mlr3::msr(tune_settings$measure_m)
+        if (is.null(tune_settings$measure_m)){
+          measure_m = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_m = mlr3::msr(tune_settings$measure_m)
+      }
     }
     
     if (any(class(tune_settings$measure_r) == "Measure")) {
       measure_r = tune_settings$measure_r
     } else {
-      measure_r = mlr3::msr(tune_settings$measure_r)
+        if (is.null(tune_settings$measure_r)){
+          measure_r = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_r = mlr3::msr(tune_settings$measure_r)
+      }
     }
     
     terminator = tune_settings$terminator
@@ -177,7 +224,7 @@ private = list(
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
                                                 skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
     
-    ml_g <- mlr3::lrn(self$ml_learners$mlmethod_g)
+    ml_g <- mlr3::lrn(self$ml_g)
     
     tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
@@ -192,7 +239,7 @@ private = list(
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", data$treat_col), x,
                                                   skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
     
-    ml_m <- mlr3::lrn(self$ml_learners$mlmethod_m)
+    ml_m <- mlr3::lrn(self$ml_m)
 
     tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
@@ -205,7 +252,7 @@ private = list(
     
     task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", data$z_col), x,
                                                   skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
-    ml_r <- mlr3::lrn(self$ml_learners$mlmethod_r)
+    ml_r <- mlr3::lrn(self$ml_r)
 
     tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
@@ -219,9 +266,9 @@ private = list(
     tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
                                               tuning_result_m = tuning_result_m, 
                                               tuning_result_r = tuning_result_r),
-                         params = list(params_g = extract_tuned_params(tuning_result_g), 
-                                       params_m = extract_tuned_params(tuning_result_m),
-                                       params_r = extract_tuned_params(tuning_result_r)))
+                         params = list(g_params = extract_tuned_params(tuning_result_g), 
+                                       m_params = extract_tuned_params(tuning_result_m),
+                                       r_params = extract_tuned_params(tuning_result_r)))
     
     return(tuning_result)
     

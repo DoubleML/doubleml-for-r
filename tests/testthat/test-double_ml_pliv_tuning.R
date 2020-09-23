@@ -13,19 +13,17 @@ learner = c('regr.rpart')
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner, "mlmethod_r" = learner)
   
-tune_settings = list(n_folds_tune = 3,
+tune_settings = list(n_folds_tune = 2,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
                       measure_g = "regr.mse", 
                       measure_m = "regr.mse",
-                      measure_r = "regr.mse",
-                      terminator = mlr3tuning::trm("evals", n_evals = 5), 
+                      terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
                       tuning_instance_m = NULL,
-                      tuning_instance_r = NULL,
                       tuner = "grid_search",
-                      resolution = 5)
+                      resolution = 2)
 
 test_cases = expand.grid(learner_list = learner,
                          dml_procedure = c('dml1', 'dml2'),
@@ -33,6 +31,7 @@ test_cases = expand.grid(learner_list = learner,
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
                          n_rep_cross_fit = c(1, 3),
+                         tune_on_folds = c(FALSE, TRUE),
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -66,23 +65,24 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
   double_mlpliv_obj_tuned = DoubleMLPLIV$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_list,
+                                     ml_g = learner_list$mlmethod_g,
+                                     ml_m = learner_list$mlmethod_m,
+                                     ml_r = learner_list$mlmethod_r,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  tune_ps = ParamSet$new(list(
-                          ParamDbl$new("cp", lower = 0.001, upper = 0.1),
-                          ParamInt$new("minsplit", lower = 1, upper = 10)))
+  param_grid = list(param_set_g = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    param_set_m = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    param_set_r = ParamSet$new(list( ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))))
   
-  double_mlpliv_obj_tuned$param_set$param_set_g = tune_ps
-  double_mlpliv_obj_tuned$param_set$param_set_m = tune_ps
-  double_mlpliv_obj_tuned$param_set$param_set_r = tune_ps
   
-  double_mlpliv_obj_tuned$tune_settings = tune_settings
-  
-  double_mlpliv_obj_tuned$tune()
+  double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
   double_mlpliv_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlpliv_obj_tuned$coef

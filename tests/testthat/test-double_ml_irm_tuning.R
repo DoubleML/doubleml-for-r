@@ -15,8 +15,8 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 tune_settings = list(n_folds_tune = 3,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      measure_g = "regr.mse", 
-                      measure_m = "classif.ce",
+                      # measure_g = "regr.mse", 
+                      # measure_m = "classif.ce",
                       terminator = mlr3tuning::trm("evals", n_evals = 5), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
@@ -27,6 +27,7 @@ tune_settings = list(n_folds_tune = 3,
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          score = c('ATE', 'ATTE'),
+                         tune_on_folds = c(FALSE, TRUE),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          n_rep_cross_fit = c(1, 3),
@@ -52,24 +53,21 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
 
-
   double_mlirm_obj_tuned = DoubleMLIRM$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, score = score)
+                                     ml_g = learner_pars$mlmethod$mlmethod_g,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
+                                     dml_procedure = dml_procedure,
+                                     score = score)
   
-  tune_ps = ParamSet$new(list(
-                          ParamDbl$new("cp", lower = 0.001, upper = 0.1),
-                          ParamInt$new("minsplit", lower = 1, upper = 10)))
-  
-  double_mlirm_obj_tuned$param_set$param_set_g = tune_ps
-  double_mlirm_obj_tuned$param_set$param_set_m = tune_ps
-  
-  double_mlirm_obj_tuned$tune_settings = tune_settings
-
-  double_mlirm_obj_tuned$tune()
-  
+  param_grid = list(param_set_g = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    param_set_m = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))))
+                  
+  double_mlirm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
   double_mlirm_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlirm_obj_tuned$coef

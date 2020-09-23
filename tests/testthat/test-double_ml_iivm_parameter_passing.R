@@ -40,55 +40,52 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   # se <- iivm_hat$se
   
   set.seed(i_setting)
-  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep_cross_fit)
-  set.seed(i_setting)
-  
+
   Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames, z_col = "z")
   
-  double_mliivm_obj_exact = DoubleMLIIVM$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
+  double_mliivm_obj_once =  DoubleMLIIVM$new(data_ml, 
+                                     n_folds = 5,
+                                     ml_p = learner_pars$mlmethod$mlmethod_p,
+                                     ml_mu = learner_pars$mlmethod$mlmethod_mu,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, 
-                                     score = score, 
-                                     n_rep_cross_fit = n_rep_cross_fit)
-  double_mliivm_obj_exact$fit()
-  theta_obj_exact <- double_mliivm_obj_exact$coef
-  se_obj_exact <- double_mliivm_obj_exact$se
+                                     score = score)
   
-  set.seed(i_setting)
-  double_mliivm_obj_null = DoubleMLIIVM$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = NULL,
-                                     dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, 
-                                     score = score, 
-                                     n_rep_cross_fit = n_rep_cross_fit)
-  double_mliivm_obj_null$fit()
-  theta_obj_null <- double_mliivm_obj_null$coef
-  se_obj_null <- double_mliivm_obj_null$se
+  double_mliivm_obj_once$set__ml_nuisance_params(nuisance_part = "ml_p", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_p)
+  
+  double_mliivm_obj_once$set__ml_nuisance_params(nuisance_part = "ml_mu", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_mu)
+  
+  double_mliivm_obj_once$set__ml_nuisance_params(nuisance_part = "ml_m", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_m)
+  
+  double_mliivm_obj_once$fit()
+  theta_obj_once <- double_mliivm_obj_once$coef
+  se_obj_once <- double_mliivm_obj_once$se
+
   
   set.seed(i_setting)
   double_mliivm_obj_default = DoubleMLIIVM$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
+                                     n_folds = 5,
+                                     ml_p = learner_pars$mlmethod$mlmethod_p,
+                                     ml_mu = learner_pars$mlmethod$mlmethod_mu,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, 
-                                     score = score, 
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     score = score)
   double_mliivm_obj_default$fit()
   theta_obj_default <- double_mliivm_obj_default$coef
   se_obj_default <- double_mliivm_obj_default$se  
 
   # at the moment the object result comes without a name
-  # expect_equal(theta, c(d=theta_obj_exact), tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_exact, tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
-  
+  # expect_equal(theta, c(d=theta_obj_once), tolerance = 1e-8)
+  expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
+
   
 }
 )

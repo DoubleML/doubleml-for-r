@@ -1,82 +1,20 @@
-#' @title DoubleML
-#'
-#' @description 
-#' Abstract base class for DoubleML models. 
-#' 
-#' * Methods `$tune()` and `$fit()` which call internal methods for parameter tuning and estimation of the causal effects. 
-#' @param data
-#' @param n_folds
-#' @param ml_learners
-#' @param params
-#' @param dml_procedure
-#' @param score
-#' @param subgroups
-#' @param n_rep_cross_fit
-#' @param coef
-#' @param se
-#' @param t
-#' @param pval
-#' @param se_reestimate
-#' @param boot_coef
-#' @param param_set
-#' @param tune_settings
-#' @param param_tuning
-#' @export
 
 DoubleML <- R6Class("DoubleML", public = list(
-  #' @field data (`DoubleMLData`)\cr 
-  #' Data object.
   data = NULL,
-  #' @field n_folds (`integer(1)`)\cr
-  #' Number of folds used for cross-fitting.
   n_folds = NULL,
-  #' @field ml_learners (`list()`)\cr
-  #' List of learners as named in mlr3 and mlr3learners packages.
-  ml_learners = NULL,
-  #' @field params (`list()`)\cr
-  #' List of parameters passed to learners.
-  params = NULL,
-  #' @field dml_procedure (`character(1)`)\cr
-  #' Double Machine Learning algorithm used (either "dml1" or "dml2").
-  dml_procedure = NULL,
-  #' @field score (`character(1)`)\cr
-  #' psi to be used for estimation. 
+  n_rep_cross_fit = NULL,
   score = NULL,
-  #' @field subgroups (`list()`)\cr
-  #' Subgroups.
-  subgroups = NULL,
-  #' @field n_rep_cross_fit (`integer(1)`)\cr
-  #' Number of repetitions for cross-fitting.
-  n_rep_cross_fit = 1,
-  #' @return coef (`numeric(1)`)\cr
-  #' Final coefficient estimate.
-  coef = NULL,
-  #' @return se (`numeric(1)`)\cr
-  #' Standard error.
-  se = NULL,
-  #' @return t (`numeric(1)`)\cr
-  #' t statistic.
-  t = NULL,  
-  #' @return pval (`numeric(1)`)\cr
-  #' p-value.
+  dml_procedure = NULL,
+  draw_sample_splitting = NULL,
+  apply_cross_fitting = NULL,
+  coef = NULL, 
+  se = NULL, 
+  t = NULL, 
   pval = NULL,
-  #' @field se_reestimate (`logical(1)`)\cr
-  #' Flag for reestimation of standard error after cross-fitting. 
-  se_reestimate = FALSE,
-  #' @return boot_coef (`numeric()`)\cr
-  #' Coefficients from multiplier bootstrap. 
   boot_coef = NULL,
-  #' @field param_set (`list()`)\cr
-  #' List with parameter set from mlr3tuning of class `ParamSet`. 
-  param_set = NULL, 
-  #' @field tune_settings (`list()`)\cr
-  #' List with settings for parameter tuning passed to mlr3tuning.
-  tune_settings = NULL,
-  #' @return param_tuning (`list()`)\cr
-  #' List with results from parameter tuning with mlr3tuning.
+  ml_nuisance_params = NULL,
   param_tuning = NULL,
-  #' @description 
-  #' Initialize instance. `DoubleML` is an abstract class and initialization is typically performed for inherited classes. 
+  
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
@@ -98,14 +36,17 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
+        if (!is.null(self$ml_nuisance_params)){
+          self$set__ml_nuisance_params(nuisance_part = NULL, treat_var = NULL, self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
+        }
+        
         if (private$n_treat > 1){
           self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
         
         # ml estimation of nuisance models and computation of psi elements
         psis = private$ml_nuisance_and_score_elements(self$data,
-                                                        private$get__smpls(),
-                                                        params = private$get__params())
+                                                        private$get__smpls())
         private$set__psi_a(psis$psi_a)
         private$set__psi_b(psis$psi_b)
         
@@ -114,10 +55,10 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$set__all_coef(coef)
         
         # compute psi (depends on estimated causal parameter)
-        private$compute_psi()
+        private$compute_score()
         
         # compute standard errors for causal parameter
-        se <- private$se_causal_pars()
+        se <- private$se_causal_pars(se_reestimate)
         private$set__all_se(se)
       }
     }
@@ -153,42 +94,64 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   }, 
-  tune = function() {
+  tune = function(param_set, tune_on_folds = FALSE, tune_settings = list(
+                                        n_folds_tune = 5,
+                                        rsmp_tune = "cv", 
+                                        measure_g = NULL, 
+                                        measure_m = NULL,
+                                        measure_r = NULL,
+                                        measure_p = NULL,
+                                        measure_mu = NULL,
+                                        terminator = mlr3tuning::trm("evals", n_evals = 20), 
+                                        algorithm = "grid_search",
+                                        tuner = "grid_search",
+                                        resolution = 5)) {
     n_obs = nrow(self$data$data_model)
-
-    # TBD: prepare output of parameter tuning (list[[n_rep_cross_fit]][[n_treat]][[n_folds]])
-    private$initialize_lists(private$n_treat, self$n_rep_cross_fit, private$n_nuisance) 
-    
+    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
+    names(self$ml_nuisance_params) = self$data$d_cols
+    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
+  
     if (is.null(private$smpls)) {
+
       private$split_samples()
     }
     
-    for (i_rep in 1:self$n_rep_cross_fit) {
-      private$i_rep = i_rep
-      
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
-        
+          
         if (private$n_treat > 1){
-          self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+            self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
+          
+        for (i_rep in 1:self$n_rep_cross_fit) {
+          private$i_rep = i_rep
         
-        # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
-        #  ! important ! tuned params must exactly correspond to training samples
-        # TBD: user friendly way to pass (pre-)trained parameters
-        # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
-        #      e.g., in seperate function (tune_mlr3)...
-        # TBD: Pass through instances (requires prespecified tasks)
-        # TBD: Handling different measures for classification and regression (logit???)
-        param_tuning = private$tune_params(self$data, private$get__smpls(),
-                                                param_set = self$param_set, 
-                                                tune_settings = self$tune_settings)
-        
-        # here: set__params()
-        private$set__params(param_tuning)
-        
-        #self$params = self$param_tuning$params
+          # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
+          #  ! important ! tuned params must exactly correspond to training samples
+          # TBD: user friendly way to pass (pre-)trained parameters
+          # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
+          #      e.g., in seperate function (tune_mlr3)...
+          # TBD: Pass through instances (requires prespecified tasks)
+          # TBD: Handling different measures for classification and regression (logit???)
+          
+          if (tune_on_folds) {
+            param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                   param_set, tune_on_folds, 
+                                                   tune_settings)
+          } else {
+            
+            if (private$i_rep == 1) {
+              param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                     param_set, tune_on_folds, 
+                                                     tune_settings)
+            } 
+          }
 
+          # here: set__params()
+          private$set__params(param_tuning, tune_on_folds)
+          
+          #self$params = self$param_tuning$params
+  
       }
     }
 
@@ -285,39 +248,26 @@ private = list(
   i_treat = NA,
   initialize_double_ml = function(data, 
                         n_folds,
-                        ml_learners,
-                        params,
-                        dml_procedure,
-                        score,
-                        subgroups, 
-                        se_reestimate,
                         n_rep_cross_fit,
-                        param_set,
-                        tune_settings, 
-                        param_tuning) {
+                        score,
+                        dml_procedure,
+                        draw_sample_splitting,
+                        apply_cross_fitting) {
     
     checkmate::check_class(data, "DoubleMLData")
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
-    # TODO add input checks for ml_learners
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
-    stopifnot(is.logical(se_reestimate), length(se_reestimate) == 1)
     stopifnot(is.character(score), length(score) == 1)
     stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
-    stopifnot(is.list(tune_settings))
-    
+
     self$data <- data
     self$n_folds <- n_folds
-    self$ml_learners <- ml_learners
-    self$params <- params
     self$dml_procedure <- dml_procedure
-    self$se_reestimate <- se_reestimate
     self$score <- score
-    self$subgroups <- subgroups
     self$n_rep_cross_fit <- n_rep_cross_fit
-    self$param_set <- param_set
-    self$tune_settings <- tune_settings
-    self$param_tuning <- param_tuning
     
+    self$draw_sample_splitting = draw_sample_splitting
+    self$apply_cross_fitting = apply_cross_fitting
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
     
@@ -339,12 +289,6 @@ private = list(
   initialize_boot_arrays = function(n_rep, n_rep_cross_fit) {
     private$n_rep_boot = n_rep
     self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep_cross_fit))
-  },
-  initialize_lists = function(n_treat,
-                              n_rep_cross_fit, 
-                              n_nuisance) {
-    self$params = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
-    self$param_tuning = rep(list(rep(list(vector("list", n_nuisance)), n_treat)), n_rep_cross_fit) 
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
@@ -380,9 +324,24 @@ private = list(
     }
     return(params)
     },
-  set__params = function(tuning_params){
-    self$params[[private$i_rep]][[private$i_treat]] <- tuning_params$params
-    self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+  set__params = function(tuning_params, tune_on_folds){
+    
+    if (tune_on_folds) {
+      self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- tuning_params$params
+      self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
+    } else {
+      
+      export_params = lapply(1:private$n_nuisance, function(x) rep(tuning_params$params[[x]], self$n_folds))
+      names(export_params) = names(tuning_params$params)
+      self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- export_params
+      self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
+      
+      # self$set__ml_nuisance_params(tuning_params$params)
+      # self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] = NULL
+      #       self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
+
+      
+      }
   },
   split_samples = function() {
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
@@ -403,7 +362,6 @@ private = list(
   },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
-    se_reestimate = self$se_reestimate
     n_folds = self$n_folds
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -422,9 +380,8 @@ private = list(
     
     return(coef)
   },
-  se_causal_pars = function() {
+  se_causal_pars = function(se_reestimate) {
     dml_procedure = self$dml_procedure
-    se_reestimate = self$se_reestimate
     n_folds = self$n_folds
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -516,7 +473,7 @@ private = list(
     }
     theta = -mean(psi_b) / mean(psi_a)
   },
-  compute_psi = function() {
+  compute_score = function() {
     psi = private$get__psi_a() * private$get__all_coef() + private$get__psi_b()
     private$set__psi(psi)
     invisible(self)

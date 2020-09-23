@@ -99,7 +99,7 @@ tune_instance = function(tuner, tuning_instance){
 }
   
 extract_tuned_params = function(param_results) {
-  params = lapply(param_results, function(x) x$params)
+  params = lapply(param_results, function(x) x$tuning_result$learner_param_vals)
   return(params)
 }
 

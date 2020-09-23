@@ -32,50 +32,46 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
                               d_cols = "d", x_cols = Xnames)
   
   double_mlplr_obj_dml1 = DoubleMLPLR$new(data_ml, 
+                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
+                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
+                                     dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
-                                     dml_procedure = "dml1", 
-                                     se_reestimate = FALSE,
                                      score = score)
-  double_mlplr_obj_dml1$fit()
+  double_mlplr_obj_dml1$fit(se_reestimate = FALSE)
   theta_obj_dml1 <- double_mlplr_obj_dml1$coef
   se_obj_dml1 <- double_mlplr_obj_dml1$se
   
   set.seed(i_setting)
   double_mlplr_obj_dml1_reestim = DoubleMLPLR$new(data_ml, 
+                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
+                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
+                                     dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
-                                     dml_procedure = "dml1", 
-                                     se_reestimate = TRUE,
                                      score = score)
-  double_mlplr_obj_dml1_reestim$fit()
+  double_mlplr_obj_dml1_reestim$fit(se_reestimate = TRUE)
   theta_obj_dml1_reestim <- double_mlplr_obj_dml1_reestim$coef
   se_obj_dml1_reestim <- double_mlplr_obj_dml1_reestim$se
   
   # dml2: expect same se's
   set.seed(i_setting)
   double_mlplr_obj_dml2 = DoubleMLPLR$new(data_ml, 
+                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
+                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
+                                     dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
-                                     dml_procedure = "dml2", 
-                                     se_reestimate = FALSE,
                                      score = score)
-  double_mlplr_obj_dml2$fit()
+  double_mlplr_obj_dml2$fit(se_reestimate = FALSE)
   theta_obj_dml2 <- double_mlplr_obj_dml2$coef
   se_obj_dml2 <- double_mlplr_obj_dml2$se
   
   set.seed(i_setting)
   double_mlplr_obj_dml2_reestim = DoubleMLPLR$new(data_ml, 
+                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
+                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
+                                     dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
-                                     dml_procedure = "dml2", 
-                                     se_reestimate = TRUE,
                                      score = score)
-  double_mlplr_obj_dml2_reestim$fit()
+  double_mlplr_obj_dml2_reestim$fit(se_reestimate = TRUE)
   theta_obj_dml2_reestim <- double_mlplr_obj_dml2_reestim$coef
   se_obj_dml2_reestim <- double_mlplr_obj_dml2_reestim$se
   
@@ -84,7 +80,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   expect_equal(theta_obj_dml1, theta_obj_dml1_reestim, tolerance = 1e-8)
   expect_equal(theta_obj_dml2, theta_obj_dml2_reestim, tolerance = 1e-8)
   expect_true(se_obj_dml1 != se_obj_dml1_reestim)
-  expect_equal(se_obj_dml2, se_obj_dml2_reestim, tolerance = 1e-8)
+  expect_equal(se_obj_dml2, se_obj_dml2_reestim, tolerance = 1e-4)
 }
 )
 

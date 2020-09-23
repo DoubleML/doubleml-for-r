@@ -32,12 +32,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   
     
   set.seed(i_setting)
-  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
-
-  
-  set.seed(i_setting)
-  
-  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
+  # params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
   
   Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
    
@@ -46,23 +41,36 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
 
   double_mliivm_obj = DoubleMLIIVM$new(data_ml, 
                                      n_folds = 5,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
+                                     ml_p = learner_pars$mlmethod$mlmethod_p,
+                                     ml_mu = learner_pars$mlmethod$mlmethod_mu,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, 
                                      score = score)
+  
+  double_mliivm_obj$set__ml_nuisance_params(nuisance_part = "ml_p", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_p)
+  
+  double_mliivm_obj$set__ml_nuisance_params(nuisance_part = "ml_mu", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_mu)
+  
+  double_mliivm_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_m)
+  
   double_mliivm_obj$fit()
   theta_obj <- double_mliivm_obj$coef
   se_obj <- double_mliivm_obj$se
   
   # bootstrap
-  double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  boot_theta_obj = double_mliivm_obj$boot_coef
-  
+  # double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  # boot_theta_obj = double_mliivm_obj$boot_coef
+  # 
   # at the moment the object result comes without a name
   expect_equal(theta, theta_obj, tolerance = 1e-8)
   expect_equal(se, se_obj, tolerance = 1e-8)
-  expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  # expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }
 )

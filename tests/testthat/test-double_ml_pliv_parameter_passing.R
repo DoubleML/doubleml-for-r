@@ -50,60 +50,50 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   
 
   # exact parameter provision
-  learner_pars_exact <- rep(list(rep(list(learner_pars_once$params), 1)), n_rep_cross_fit)
-  
+  # learner_pars_exact <- rep(list(rep(list(learner_pars_once$params), 1)), n_rep_cross_fit)
+  params_g = list("d" = learner_pars_once$params$params_g)
+  params_m = list("d" = learner_pars_once$params$params_m)
+  params_r = list("d" = learner_pars_once$params$params_r)
+
   set.seed(i_setting)
   Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   
   data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]], y_col = "y", 
                               d_cols = c("d"), x_cols = Xnames, z_col = "z")
   
-  double_mlpliv_obj_exact = DoubleMLPLIV$new(data_ml, 
+  double_mlpliv_obj_once = DoubleMLPLIV$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_list,
-                                     params = learner_pars_exact,
+                                     ml_g = learner_list$mlmethod_g,
+                                     ml_m = learner_list$mlmethod_m,
+                                     ml_r = learner_list$mlmethod_r,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  double_mlpliv_obj_exact$fit()
+  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", nuisance_part = "ml_g", params = params_g$d)
+  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", nuisance_part = "ml_m", params = params_m$d)
+  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", nuisance_part = "ml_r", params = params_r$d)
   
-  theta_obj_exact <- double_mlpliv_obj_exact$coef
-  se_obj_exact <- double_mlpliv_obj_exact$se
+  double_mlpliv_obj_once$fit()
+  
+  theta_obj_once <- double_mlpliv_obj_once$coef
+  se_obj_once <- double_mlpliv_obj_once$se
+  
+  ## TBD: External parameter provision
   
   # bootstrap
   # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
-
-  
   # pass empty set of parameters (NULL, use default values)   
-  set.seed(i_setting)
-  double_mlpliv_obj_null = DoubleMLPLIV$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_list,
-                                     params = NULL,
-                                     dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
-                                     score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
-  
-  double_mlpliv_obj_null$fit()
-  
-  theta_obj_null <- double_mlpliv_obj_null$coef
-  se_obj_null <- double_mlpliv_obj_null$se
-  
-  # bootstrap
-  # double_mlplr_obj_null$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  # boot_theta_obj_null = double_mlplr_obj_null$boot_coef
-  
+
   # no parameters specified (use default values)   
   set.seed(i_setting)
   double_mlpliv_obj_default = DoubleMLPLIV$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_list,
+                                     ml_g = learner_list$mlmethod_g,
+                                     ml_m = learner_list$mlmethod_m,
+                                     ml_r = learner_list$mlmethod_r,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate,
                                      score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
   
@@ -116,10 +106,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   # double_mlplr_obj_default$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_default = double_mlplr_obj_default$boot_coef
 
-  expect_equal(theta_obj_null, theta_obj_exact, tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
-  expect_equal(se_obj_null, se_obj_exact, tolerance = 1e-8)
-  expect_equal(se_obj_null, se_obj_default, tolerance = 1e-8)
+  expect_equal(theta_obj_once, theta_obj_default, tolerance = 1e-8)
+  # expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
+  # expect_equal(se_obj_null, se_obj_exact, tolerance = 1e-8)
+  expect_equal(se_obj_once, se_obj_default, tolerance = 1e-8)
 
   # expect_equal(boot_theta_obj_once, boot_theta_obj_exact, tolerance = 1e-8)
   # expect_equal(boot_theta_obj_null, boot_theta_obj_exact, tolerance = 1e-8)

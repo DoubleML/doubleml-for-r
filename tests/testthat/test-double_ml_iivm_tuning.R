@@ -32,6 +32,7 @@ test_cases = expand.grid(learner = learner,
                          score = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
                          n_rep_cross_fit = c(1, 3),
+                         tune_on_folds = c(FALSE, TRUE),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -49,25 +50,27 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
 
   double_mliivm_obj_tuned = DoubleMLIIVM$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
+                                     ml_p = learner_pars$mlmethod$mlmethod_p,
+                                     ml_mu = learner_pars$mlmethod$mlmethod_mu,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, 
                                      score = score, 
                                      n_rep_cross_fit = n_rep_cross_fit)
   
-  tune_ps = ParamSet$new(list(
-                          ParamDbl$new("cp", lower = 0.001, upper = 0.1),
-                          ParamInt$new("minsplit", lower = 1, upper = 10)))
   
-  double_mliivm_obj_tuned$param_set$param_set_p = tune_ps
-  double_mliivm_obj_tuned$param_set$param_set_mu = tune_ps
-  double_mliivm_obj_tuned$param_set$param_set_m = tune_ps
-  double_mliivm_obj_tuned$tune_settings = tune_settings
-
-  double_mliivm_obj_tuned$tune()
+  param_grid = list(param_set_p = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    param_set_mu = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2))), 
+                    param_set_m = ParamSet$new(list(
+                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                          ParamInt$new("minsplit", lower = 1, upper = 2)))) 
   
+  double_mliivm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
   double_mliivm_obj_tuned$fit()
-  
+
   theta_obj_tuned <- double_mliivm_obj_tuned$coef
   se_obj_tuned <- double_mliivm_obj_tuned$se
 

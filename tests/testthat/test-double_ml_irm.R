@@ -33,30 +33,37 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     
   set.seed(i_setting)
   params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
-  
   Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-  
   data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
                         
   double_mlirm_obj = DoubleMLIRM$new(data_ml, 
                                      n_folds = 5,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
+                                     ml_g = learner_pars$mlmethod$mlmethod_g,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, score = score)
+                                     score = score)
+    # set params for nuisance part m
+  double_mlirm_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_m)
+  
+  # set params for nuisance part g
+  double_mlirm_obj$set__ml_nuisance_params(nuisance_part = "ml_g", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_g)
   double_mlirm_obj$fit()
   theta_obj <- double_mlirm_obj$coef
   se_obj <- double_mlirm_obj$se
   
   # bootstrap
-  double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  boot_theta_obj = double_mlirm_obj$boot_coef
-  
+  # double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  # boot_theta_obj = double_mlirm_obj$boot_coef
+  # 
   # at the moment the object result comes without a name
   expect_equal(theta, theta_obj, tolerance = 1e-8)
   expect_equal(se, se_obj, tolerance = 1e-8)
-  expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  # expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
 }
 )

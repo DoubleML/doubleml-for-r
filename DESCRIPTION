@@ -28,13 +28,13 @@ Imports:
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
-    knitr, 
+    knitr,
     rmarkdown,
     testthat,
     patrick,
     clusterGeneration,
     mvtnorm,
     dplyr,
-    glmnet
+    glmnet,
+    lgr
 VignetteBuilder: knitr
-
