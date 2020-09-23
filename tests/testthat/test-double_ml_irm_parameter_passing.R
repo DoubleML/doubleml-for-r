@@ -49,52 +49,48 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
   
   data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]], y_col = "y", 
                               d_cols = c("d"), x_cols = Xnames)
-  
 
-  double_mlirm_obj_exact = DoubleMLIRM$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = params_OOP,
+  double_mlirm_obj_once = DoubleMLIRM$new(data_ml, 
+                                     n_folds = 5,
+                                     ml_g = learner_pars$mlmethod$mlmethod_g,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, score = score, 
+                                     score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
-  double_mlirm_obj_exact$fit()
-  theta_obj_exact <- double_mlirm_obj_exact$coef
-  se_obj_exact <- double_mlirm_obj_exact$se
+  
+  # set params for nuisance part m
+  double_mlirm_obj_once$set__ml_nuisance_params(nuisance_part = "ml_m", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_m)  
+  # set params for nuisance part g
+  double_mlirm_obj_once$set__ml_nuisance_params(nuisance_part = "ml_g", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_g)
+  
+  double_mlirm_obj_once$fit()
+  theta_obj_once <- double_mlirm_obj_once$coef
+  se_obj_once <- double_mlirm_obj_once$se
   
   # bootstrap
   # double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj = double_mlirm_obj$boot_coef
   
-  
-  set.seed(i_setting)
-  double_mlirm_obj_null = DoubleMLIRM$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
-                                     params = NULL,
-                                     dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
-  double_mlirm_obj_null$fit()
-  theta_obj_null <- double_mlirm_obj_null$coef
-  se_obj_null <- double_mlirm_obj_null$se
-  
   set.seed(i_setting)
   double_mlirm_obj_default = DoubleMLIRM$new(data_ml, 
-                                     n_folds = n_folds,
-                                     ml_learners = learner_pars$mlmethod,
+                                     n_folds = 5,
+                                     ml_g = learner_pars$mlmethod$mlmethod_g,
+                                     ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
-                                     se_reestimate = se_reestimate, score = score,
+                                     score = score,
                                      n_rep_cross_fit = n_rep_cross_fit)
+  
   double_mlirm_obj_default$fit()
   theta_obj_default <- double_mlirm_obj_default$coef
   se_obj_default <- double_mlirm_obj_default$se
   
   # at the moment the object result comes without a name
-  # expect_equal(theta, c(d=theta_obj_exact), tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_exact, tolerance = 1e-8)
-  expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
- 
+  # expect_equal(theta, c(d=theta_obj_once), tolerance = 1e-8)
+  expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
   # expect_equal(se, c(d=se_obj), tolerance = 1e-8)
   # expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
