@@ -12,6 +12,8 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   mu_params = NULL, 
   m_params = NULL, 
   subgroups = NULL, 
+  trimming_rule = NULL, 
+  trimming_threshold = NULL,
   initialize = function(data, 
                         ml_p, 
                         ml_mu, 
@@ -21,6 +23,8 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                         score = "LATE", 
                         subgroups = list(always_takers = TRUE, never_takers = TRUE),
                         dml_procedure = "dml2", 
+                        trimming_rule = "truncate", 
+                        trimming_threshold = 1e-12,
                         draw_sample_splitting = TRUE,
                         apply_cross_fitting = TRUE) {
     
@@ -35,6 +39,8 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
      self$ml_mu = ml_mu
      self$ml_m = ml_m
      self$subgroups = subgroups
+     self$trimming_rule = trimming_rule
+     self$trimming_threshold = trimming_threshold
   },
 set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
     
@@ -237,6 +243,10 @@ private = list(
     w0_hat = D - m0_hat
     w1_hat = D - m1_hat
     
+    if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
+      p_hat[p_hat < self$trimming_threshold] = self$trimming_threshold
+      p_hat[p_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
+    }
     
     if (self$score == 'LATE') {
       psi_b = mu1_hat - mu0_hat + Z*(u1_hat)/p_hat - (1-Z)*u0_hat/(1-p_hat)
