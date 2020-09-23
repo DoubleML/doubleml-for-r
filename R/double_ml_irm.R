@@ -9,12 +9,16 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   ml_m = NULL, 
   g_params = NULL, 
   m_params = NULL,
+  trimming_rule = NULL, 
+  trimming_threshold = NULL,
   initialize = function(data, 
                         ml_g, 
                         ml_m, 
                         n_folds = 5, 
                         n_rep_cross_fit = 1,
                         score = "ATE", 
+                        trimming_rule = "truncate", 
+                        trimming_threshold = 1e-12,
                         dml_procedure = "dml2",
                         draw_sample_splitting = TRUE,
                         apply_cross_fitting = TRUE) {
@@ -28,6 +32,8 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                                apply_cross_fitting)
     self$ml_g = ml_g
     self$ml_m = ml_m
+    self$trimming_rule = trimming_rule
+    self$trimming_threshold = trimming_threshold
   }, 
   
   set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
@@ -157,6 +163,12 @@ private = list(
     #else if (self$dml_procedure == "dml2") {
     #  p_hat = mean(D)
     #}
+    
+    if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
+      m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
+      m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
+    }
+    
     
     if (self$score == 'ATE') {
       psi_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
