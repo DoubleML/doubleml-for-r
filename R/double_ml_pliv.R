@@ -112,7 +112,7 @@ private = list(
       task_m <- initiate_regr_task(paste0("nuis_m_", data$z_cols), data$data_model,
                                    skip_cols = c(data$y_col, data$treat_col), target = data$z_cols)
     } else {
-      # several instruments: 2sls
+      # multiple instruments: 2sls
       task_m = lapply(data$z_cols, function(x) initiate_regr_task(paste0("nuis_m_", x), data$data_model,
                                    skip_cols = c(data$y_col, data$treat_col, data$z_cols[data$z_cols != x]), target = x))
     }
@@ -183,7 +183,7 @@ private = list(
       
       # TBD: 1-iv vs. multi-iv case
       if (data$n_instr() > 1) {
-        stop("Tuning not implemented for several instruments")
+        stop("Tuning not implemented for multiple instruments.")
       }
         
       ml_m <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
@@ -242,7 +242,11 @@ private = list(
     return(res)
   },
   
-  ml_nuisance_tuning_partialX = functon(data, smpls, param_set, tune_on_folds, tune_settings, ...){
+  ml_nuisance_tuning_partialX = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
+    
+    if (data$n_instr() > 1) {
+      stop("Tuning not implemented for multiple instruments.")
+    }
     
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
