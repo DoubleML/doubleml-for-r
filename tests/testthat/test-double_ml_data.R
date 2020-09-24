@@ -49,7 +49,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D4 =  double_ml_data_from_data_frame(data, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d_indx, 
-                                          z_col = z_indx)
+                                          z_cols = z_indx)
 
   # with renamed variables
   data_renamed = data
@@ -58,7 +58,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D4_renamed = double_ml_data_from_data_frame(data_renamed, x_cols = Expl_cols1, 
                                           y_col = "outc", 
                                           d_cols = "exposure", 
-                                          z_col = "instr")
+                                          z_cols = "instr")
   
   D5 = double_ml_data_from_data_frame(data, x_cols = X_cols1, 
                                           y_col = y_indx, 
@@ -71,7 +71,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D6 =  double_ml_data_from_data_frame(data, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d_indx, 
-                                          z_col = z_null)
+                                          z_cols = z_null)
   
   # Two d Variables 
   data2 = data.frame(data, d2)
@@ -80,11 +80,11 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D7 = double_ml_data_from_data_frame(data2, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d2_indx, 
-                                          z_col = z_null)
+                                          z_cols = z_null)
   D7_1d = double_ml_data_from_data_frame(data2, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d2_indx, 
-                                          z_col = z_null, 
+                                          z_cols = z_null, 
                                           use_other_treat_as_covariate = FALSE)
   D7_setd = D7$set__data_model("d2")
   
@@ -108,7 +108,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D8 = DoubleMLData$new(data, x_cols = X_cols1, 
                               y_col = y_indx, 
                               d_cols = d_indx, 
-                              z_col = z_indx)
+                              z_cols = z_indx)
   # with renamed variables
   data_renamed = copy(data)
   data_renamed = setnames(data_renamed, c("outc", "exposure", "instr", 
@@ -118,7 +118,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D8_renamed = DoubleMLData$new(data_renamed, x_cols = Expl_cols1,
                                           y_col = "outc", 
                                           d_cols = "exposure", 
-                                          z_col = "instr")
+                                          z_cols = "instr")
  
   D9 =  DoubleMLData$new(data, x_cols = X_cols1, 
                                           y_col = y_indx, 
@@ -131,12 +131,12 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D10 = DoubleMLData$new(data2, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d2_indx, 
-                                          z_col = z_null)
+                                          z_cols = z_null)
   
   D10_1d = DoubleMLData$new(data2, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d2_indx, 
-                                          z_col = z_null, 
+                                          z_cols = z_null, 
                                           use_other_treat_as_covariate = FALSE)
   D10_setd = D10$set__data_model("d2")
   # to do: check correct behavior when changing treat from d1 to d2

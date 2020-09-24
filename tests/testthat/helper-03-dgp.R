@@ -37,11 +37,12 @@ dgp1_iv <- function(theta, N, k) {
   G = g(as.vector(X%*%b))
   M = m(as.vector(X%*%b))
   z = X[,1]*b[1] + X[,2]*b[2] + rnorm(N)
+  z2 = X[,2]*b[2] + X[,3]*b[3] + rnorm(N)
   U = rnorm(N)
   d = 3*z + M + rnorm(N) - 4* U 
   y = theta * d + G + 4* U + rnorm(N)
   
-  data <- data.frame(y, d, z, X)
+  data <- data.frame(y, d, z, z2, X)
   return(data)
 }
 
