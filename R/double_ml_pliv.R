@@ -8,9 +8,11 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   ml_g = NULL, 
   ml_m = NULL, 
   ml_r = NULL, 
+  partialX = NULL, 
+  partialZ = NULL, 
   g_params = NULL, 
   m_params = NULL, 
-  r_params = NULL, 
+  r_params = NULL,
   
   initialize = function(data, 
                         ml_g,
@@ -34,6 +36,8 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
     self$ml_g = ml_g
     self$ml_m = ml_m
     self$ml_r = ml_r
+    self$partialX = TRUE
+    self$partialZ = FALSE
   }, 
   
  set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
@@ -80,18 +84,42 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   ),
 private = list(
   n_nuisance = 3,
+  
   ml_nuisance_and_score_elements = function(data, smpls, ...) {
+    if (self$partialX & !self$partialZ) {
+      res = private$ml_nuisance_and_score_elements_partialX(data, smpls, ...)
+      
+    } else if (!self$partialX & self$partialZ) {
+      res = private$ml_nuisance_and_score_elements_partialZ(data, smpls, ...)
+      
+    } else if (self$partialX & self$partialZ) {      
+      res = self$ml_nuisance_and_score_elements_partialXZ(data, smpls, ...)
+
+    }
+    
+    return(res)
+  },
+  
+  ml_nuisance_and_score_elements_partialX = function(data, smpls, ...) {
+    
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
-                                 skip_cols = c(data$treat_col, data$z_col), target = data$y_col)
+                                 skip_cols = c(data$treat_col, data$z_cols), target = data$y_col)
     
     # nuisance m
-    task_m <- initiate_regr_task(paste0("nuis_m_", data$z_col), data$data_model,
-                                 skip_cols = c(data$y_col, data$treat_col), target = data$z_col)
+    if (data$n_instr() == 1) {
+      # one instrument: just identified case
+      task_m <- initiate_regr_task(paste0("nuis_m_", data$z_cols), data$data_model,
+                                   skip_cols = c(data$y_col, data$treat_col), target = data$z_cols)
+    } else {
+      # several instruments: 2sls
+      task_m = lapply(data$z_cols, function(x) initiate_regr_task(paste0("nuis_m_", x), data$data_model,
+                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols[data$z_cols != x]), target = x))
+    }
     
     # nuisance r
     task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
-                                 skip_cols = c(data$y_col, data$z_col), target = data$treat_col)
+                                 skip_cols = c(data$y_col, data$z_cols), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
       
@@ -115,14 +143,27 @@ private = list(
       r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- extract_prediction(r_g)$response
       
-      ml_m <- initiate_learner(self$ml_m,
-                               self$m_params[[data$treat_col]])
-      resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
-                                                       smpls$train_ids,
-                                                       smpls$test_ids)
-      r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-      m_hat <- extract_prediction(r_m)$response
-    
+      if (data$n_instr() == 1) {
+        ml_m <- initiate_learner(self$ml_m,
+                                 self$m_params[[data$treat_col]])
+        resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+                                                         smpls$train_ids,
+                                                         smpls$test_ids)
+        r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+        m_hat <- extract_prediction(r_m)$response
+        
+      } else {
+        ml_m <- initiate_learner(self$ml_m,
+                                 self$m_params[[data$treat_col]])
+        resampling_m <- mlr3::rsmp("custom")$instantiate(task_m[[1]],
+                                                         smpls$train_ids,
+                                                         smpls$test_ids)
+        r_m = lapply(task_m, function(x) mlr3::resample(x, ml_m, resampling_m, store_models = TRUE))
+        m_hat = lapply(r_m, extract_prediction)
+        m_hat = vapply(m_hat, function(x) x$response, double(data$n_obs()))
+        
+      }
+      
       ml_r <- initiate_learner(self$ml_r,
                                self$r_params[[data$treat_col]])
       resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
@@ -140,6 +181,11 @@ private = list(
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat)
       
+      # TBD: 1-iv vs. multi-iv case
+      if (data$n_instr() > 1) {
+        stop("Tuning not implemented for several instruments")
+      }
+        
       ml_m <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
                                                                         x[[1]]))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
@@ -157,21 +203,46 @@ private = list(
     
     D <- data$data_model[, data$treat_col, with = FALSE]
     Y <- data$data_model[, data$y_col, with = FALSE]
-    Z <- data$data_model[, data$z_col, with = FALSE]
-    w_hat <- Z - m_hat
+    Z <- data$data_model[, data$z_cols, with = FALSE]
+    
     u_hat <- Y - g_hat
-    v_hat <- D - r_hat
+    w_hat <- D - r_hat
     
-    # note that v & w are flipped in python
-    if (self$score == 'partialling out') {
-      psi_a = -v_hat * w_hat
-      psi_b = u_hat * w_hat
+    if (data$n_instr() == 1) {
+      v_hat <- Z - m_hat
+
+      if (self$score == 'partialling out') {
+        psi_a = -w_hat * v_hat
+        psi_b = v_hat * u_hat
+      }
+      
+    } else {
+      if (self$score == 'partialling out') {
+        reg = lm(r_hat ~ m_hat)
+        r_hat_tilde = predict(reg)
+        psi_a = -w_hat * r_hat_tilde
+        psi_b = r_hat_tilde * u_hat
+      }
     }
-    
+      
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
   ml_nuisance_tuning  = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
+    if (self$partialX & !self$partialZ) {
+      res = private$ml_nuisance_tuning_partialX(data, smpls, param_set, tune_on_folds, tune_settings, ...)
+      
+    } else if (!self$partialX & self$partialZ) {
+      res = private$ml_nuisance_tuning_partialZ(data, smpls, param_set, tune_on_folds, tune_settings, ...)
+      
+    } else if (self$partialX & self$partialZ) {
+      res =  private$ml_nuisance_tuning_partialXZ(data, smpls, param_set, tune_on_folds, tune_settings, ...)
+    }
+    
+    return(res)
+  },
+  
+  ml_nuisance_tuning_partialX = functon(data, smpls, param_set, tune_on_folds, tune_settings, ...){
     
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
@@ -222,7 +293,7 @@ private = list(
     terminator = tune_settings$terminator
     
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
-                                                skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
+                                                skip_cols = c(data$treat_col, data$z_cols), target = data$y_col))
     
     ml_g <- mlr3::lrn(self$ml_g)
     
@@ -237,7 +308,7 @@ private = list(
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", data$treat_col), x,
-                                                  skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
+                                                  skip_cols = c(data$y_col, data$z_cols), target = data$treat_col))
     
     ml_m <- mlr3::lrn(self$ml_m)
 
@@ -250,8 +321,8 @@ private = list(
     
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
     
-    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", data$z_col), x,
-                                                  skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
+    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", data$z_cols), x,
+                                                  skip_cols = c(data$y_col, data$treat_col), target = data$z_cols))
     ml_r <- mlr3::lrn(self$ml_r)
 
     tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
@@ -276,3 +347,87 @@ private = list(
 )
 )
 
+
+
+# Initializer for partialX
+DoubleMLPLIV.partialX = function(data, 
+                      ml_g,
+                      ml_m, 
+                      ml_r, 
+                      n_folds = 5,
+                      n_rep_cross_fit = 1, 
+                      score = "partialling out", 
+                      dml_procedure = "dml2",
+                      draw_sample_splitting = TRUE, 
+                      apply_cross_fitting = TRUE) {
+    
+    obj = DoubleMLPLIV$new(data, 
+                           ml_g,
+                           ml_m, 
+                           ml_r, 
+                           n_folds,
+                           n_rep_cross_fit, 
+                           score, 
+                           dml_procedure,
+                           draw_sample_splitting, 
+                           apply_cross_fitting)
+
+    return(obj)
+}
+
+
+# Initializer for partialZ
+DoubleMLPLIV.partialZ = function(data, 
+                      ml_r, 
+                      n_folds = 5,
+                      n_rep_cross_fit = 1, 
+                      score = "partialling out", 
+                      dml_procedure = "dml2",
+                      draw_sample_splitting = TRUE, 
+                      apply_cross_fitting = TRUE) {
+    
+    obj = DoubleMLPLIV$new(data, 
+                           ml_g = NULL,
+                           ml_m = NULL, 
+                           ml_r, 
+                           n_folds,
+                           n_rep_cross_fit, 
+                           score, 
+                           dml_procedure,
+                           draw_sample_splitting, 
+                           apply_cross_fitting)
+    obj$partialX = FALSE
+    obj$partialZ = TRUE
+    
+    return(obj)
+}
+
+
+
+# Initializer for partialX
+DoubleMLPLIV.partialXZ = function(data, 
+                      ml_g,
+                      ml_m, 
+                      ml_r, 
+                      n_folds = 5,
+                      n_rep_cross_fit = 1, 
+                      score = "partialling out", 
+                      dml_procedure = "dml2",
+                      draw_sample_splitting = TRUE, 
+                      apply_cross_fitting = TRUE) {
+    
+    obj = DoubleMLPLIV$new(data, 
+                           ml_g,
+                           ml_m, 
+                           ml_r, 
+                           n_folds,
+                           n_rep_cross_fit, 
+                           score, 
+                           dml_procedure,
+                           draw_sample_splitting, 
+                           apply_cross_fitting)
+    obj$partialX = TRUE
+    obj$partialZ = TRUE
+    
+    return(obj)
+}
