@@ -100,6 +100,49 @@ private = list(
     return(res)
   },
   
+  ml_nuisance_and_score_elements_partialZ = function(data, smpls, ...) {
+    
+    # nuisance r
+    task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
+                                 skip_cols = c(data$y_col, data$z_cols), target = data$treat_col)
+    
+    if (is.null(self$param_tuning)){
+      
+       if (is.null(self$r_params[[data$treat_col]])){
+          message("Parameter of learner for nuisance part r are not tuned, results might not be valid!")
+       }
+    
+      ml_r <- initiate_learner(self$ml_r,
+                               self$r_params[[data$treat_col]])
+      resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
+      r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_hat <- extract_prediction(r_r)$response
+    }
+    
+    else if (!is.null(self$param_tuning)){
+      ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
+                                                                        x[[1]]))
+      resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
+      r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_hat = lapply(r_r, extract_prediction)
+      r_hat = rearrange_prediction(r_hat)
+    }
+    
+    D <- data$data_model[, data$treat_col, with = FALSE]
+    Y <- data$data_model[, data$y_col, with = FALSE]
+    Z <- data$data_model[, data$z_cols, with = FALSE]
+    
+    if (self$score == 'partialling out') {
+        psi_a = -r_hat* D
+        psi_b =  r_hat* Y
+     }
+      
+    return(list(psi_a = psi_a,
+                psi_b = psi_b))
+  },
+  
   ml_nuisance_and_score_elements_partialX = function(data, smpls, ...) {
     
     # nuisance g
@@ -228,6 +271,8 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
+  
+  
   ml_nuisance_tuning  = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
     if (self$partialX & !self$partialZ) {
       res = private$ml_nuisance_tuning_partialX(data, smpls, param_set, tune_on_folds, tune_settings, ...)
