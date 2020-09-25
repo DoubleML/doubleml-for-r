@@ -16,6 +16,7 @@ DoubleMLPLIV R6 class
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{DoubleMLPLIV$new()}}
+\item \href{#method-set__ml_nuisance_params}{\code{DoubleMLPLIV$set__ml_nuisance_params()}}
 \item \href{#method-clone}{\code{DoubleMLPLIV$clone()}}
 }
 }
@@ -38,21 +39,28 @@ DoubleMLPLIV R6 class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLIV$new(
   data,
-  n_folds,
-  ml_learners,
-  params = list(params_m = list(), params_g = list(), params_r = list()),
-  dml_procedure,
-  inf_model,
-  subgroups = NULL,
-  se_reestimate = FALSE,
+  ml_g,
+  ml_m,
+  ml_r,
+  n_folds = 5,
   n_rep_cross_fit = 1,
-  param_set = list(params_m = list(), params_g = list(), params_r = list()),
-  tune_settings = list(n_folds_tune = 5, n_rep_tune = 1, rsmp_tune = "cv", measure_g =
-    "regr.mse", measure_m = "regr.mse", measure_r = "regr.mse", terminator =
-    mlr3tuning::trm("evals", n_evals = 20), algorithm = "grid_search", tuning_instance_g
-    = NULL, tuning_instance_m = NULL, tuning_instance_r = NULL, tuner = "grid_search",
-    resolution = 5),
-  param_tuning = NULL
+  score = "partialling out",
+  dml_procedure = "dml2",
+  draw_sample_splitting = TRUE,
+  apply_cross_fitting = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-set__ml_nuisance_params"></a>}}
+\if{latex}{\out{\hypertarget{method-set__ml_nuisance_params}{}}}
+\subsection{Method \code{set__ml_nuisance_params()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLIV$set__ml_nuisance_params(
+  nuisance_part = NULL,
+  treat_var = NULL,
+  params
 )}\if{html}{\out{</div>}}
 }
 

@@ -59,7 +59,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   
   data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]], y_col = "y", 
-                              d_cols = c("d"), x_cols = Xnames, z_col = "z")
+                              d_cols = c("d"), x_cols = Xnames, z_cols = "z")
   
   double_mlpliv_obj_once = DoubleMLPLIV$new(data_ml, 
                                      n_folds = n_folds,

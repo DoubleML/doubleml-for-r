@@ -14,7 +14,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   treat_col = NULL,
   other_treat_cols = NULL,
   other_treat = NULL,
-  z_col = NULL, 
+  z_cols = NULL, 
   
   use_other_treat_as_covariate = TRUE, 
   
@@ -22,7 +22,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
                         x_cols = NULL,
                         y_col = NULL, 
                         d_cols = NULL,
-                        z_col = NULL, 
+                        z_cols = NULL, 
                         use_other_treat_as_covariate = TRUE){
     
     # TBD: Input data.frame
@@ -41,7 +41,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     self$treat_col = NULL
     self$other_treat_cols = NULL
     self$use_other_treat_as_covariate = use_other_treat_as_covariate
-    self$z_col = z_col
+    self$z_cols = z_cols
 
     # by default, we initialize to the first treatment variable
     self$set__data_model(d_cols[1], use_other_treat_as_covariate = self$use_other_treat_as_covariate) 
@@ -58,6 +58,10 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     return(length(self$d_cols))
   },
   
+  n_instr = function(){
+    return(length(self$z_cols))
+  },
+  
   n_obs = function(){
     return(dim(self$data)[1])
   },
@@ -71,7 +75,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
   }, 
   
   z = function(){
-    return(self$data[, self$z_col, with = FALSE])
+    return(self$data[, self$z_cols, with = FALSE])
   }, 
   
   d = function(){
@@ -102,7 +106,7 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
       self$other_treat_cols = NULL
     }
 
-    col_indx = c(self$x_cols, self$y_col, self$treat_col, self$other_treat_cols, self$z_col)
+    col_indx = c(self$x_cols, self$y_col, self$treat_col, self$other_treat_cols, self$z_cols)
     
     self$data_model = self$data[, col_indx, with = FALSE]
     
@@ -143,17 +147,17 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLD
   if (!is.null(z)){
     
     if (ncol(z) == 1) {
-      z_col = "z"
+      z_cols = "z"
     }
     
     else {
-      z_col = paste0("z", 1:ncol(z))
+      z_cols = paste0("z", 1:ncol(z))
     }
       
   }
     
   else {
-    z_col = NULL
+    z_cols = NULL
   }
     
   y_col = "y" 
@@ -168,12 +172,12 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLD
   
   x_cols = paste0("X", 1:ncol(X))
   
-  names(data) = c(x_cols, y_col, d_cols, z_col)
+  names(data) = c(x_cols, y_col, d_cols, z_cols)
   
   if (data_class == "DoubleMLData") {
 
   data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
-                          z_col = z_col, 
+                          z_cols = z_cols, 
                           use_other_treat_as_covariate = use_other_treat_as_covariate)
   }
   
@@ -184,7 +188,7 @@ double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLD
 # Input: Data frame, Output: DoubleMLData or data.table
 #' @export
 double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
-                                              d_cols = NULL, z_col = NULL, 
+                                              d_cols = NULL, z_cols = NULL, 
                                               data_class = "DoubleMLData", 
                                               use_other_treat_as_covariate = TRUE){
   
@@ -197,17 +201,17 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   checkmate::check_character(y_col)
   checkmate::check_character(d_cols)
   
-  if (!is.null(z_col)){
-    checkmate::check_character(z_col)
+  if (!is.null(z_cols)){
+    checkmate::check_character(z_cols)
   }
   
-  col_indx =  c(x_cols, y_col, d_cols, z_col)
+  col_indx =  c(x_cols, y_col, d_cols, z_cols)
   data = data.table::data.table(df)[, col_indx, with = FALSE]
 
   if (data_class == "DoubleMLData") {
     
     data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
-                            z_col = z_col, 
+                            z_cols = z_cols, 
                             use_other_treat_as_covariate = use_other_treat_as_covariate)
   }
   

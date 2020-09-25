@@ -12,6 +12,7 @@ Data structure for double machine learning.
 \item \href{#method-new}{\code{DoubleMLData$new()}}
 \item \href{#method-all_variables}{\code{DoubleMLData$all_variables()}}
 \item \href{#method-n_treat}{\code{DoubleMLData$n_treat()}}
+\item \href{#method-n_instr}{\code{DoubleMLData$n_instr()}}
 \item \href{#method-n_obs}{\code{DoubleMLData$n_obs()}}
 \item \href{#method-x}{\code{DoubleMLData$x()}}
 \item \href{#method-y}{\code{DoubleMLData$y()}}
@@ -31,7 +32,7 @@ Data structure for double machine learning.
   x_cols = NULL,
   y_col = NULL,
   d_cols = NULL,
-  z_col = NULL,
+  z_cols = NULL,
   use_other_treat_as_covariate = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -52,6 +53,15 @@ Data structure for double machine learning.
 \subsection{Method \code{n_treat()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$n_treat()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-n_instr"></a>}}
+\if{latex}{\out{\hypertarget{method-n_instr}{}}}
+\subsection{Method \code{n_instr()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$n_instr()}\if{html}{\out{</div>}}
 }
 
 }
