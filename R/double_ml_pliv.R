@@ -106,6 +106,10 @@ private = list(
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
                                  skip_cols = c(data$treat_col, data$z_cols), target = data$y_col)
     
+    # nuisance r
+    task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
+                                 skip_cols = c(data$y_col, data$z_cols), target = data$treat_col)
+    
     # nuisance m
     if (data$n_instr() == 1) {
       # one instrument: just identified case
@@ -116,10 +120,6 @@ private = list(
       task_m = lapply(data$z_cols, function(x) initiate_regr_task(paste0("nuis_m_", x), data$data_model,
                                    skip_cols = c(data$y_col, data$treat_col, data$z_cols[data$z_cols != x]), target = x))
     }
-    
-    # nuisance r
-    task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
-                                 skip_cols = c(data$y_col, data$z_cols), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
       
@@ -143,6 +143,14 @@ private = list(
       r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- extract_prediction(r_g)$response
       
+      ml_r <- initiate_learner(self$ml_r,
+                               self$r_params[[data$treat_col]])
+      resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
+      r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_hat <- extract_prediction(r_r)$response
+      
       if (data$n_instr() == 1) {
         ml_m <- initiate_learner(self$ml_m,
                                  self$m_params[[data$treat_col]])
@@ -153,6 +161,7 @@ private = list(
         m_hat <- extract_prediction(r_m)$response
         
       } else {
+        
         ml_m <- initiate_learner(self$ml_m,
                                  self$m_params[[data$treat_col]])
         resampling_m <- mlr3::rsmp("custom")$instantiate(task_m[[1]],
@@ -162,15 +171,22 @@ private = list(
         m_hat = lapply(r_m, extract_prediction)
         m_hat = vapply(m_hat, function(x) x$response, double(data$n_obs()))
         
+        # Projection: r_hat from projection on m_hat
+        r_tilde = r_hat - data$data_model[, data_ml$treat_col, with = FALSE]
+        m_tilde = m_hat - data$data_model[, data_ml$z_cols, with = FALSE]
+        
+        data_aux = data.table(r_tilde, m_tilde)
+        task_r_tilde = initiate_regr_task("nuis_r_tilde", data_aux, skip_cols = NULL, 
+                                            target = "r_tilde")
+        ml_r_tilde <- initiate_learner("regr.lm", params = list())
+        resampling_r_tilde <- mlr3::rsmp("custom")$instantiate(task_r_tilde,
+                                                       smpls$train_ids,
+                                                       smpls$test_ids)
+        r_r_tilde <- mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde, store_models = TRUE)
+        r_tilde_hat <- extract_prediction(r_r_tilde)$response
+        
       }
-      
-      ml_r <- initiate_learner(self$ml_r,
-                               self$r_params[[data$treat_col]])
-      resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
-                                                     smpls$train_ids,
-                                                     smpls$test_ids)
-      r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat <- extract_prediction(r_r)$response
+
     }
     
     else if (!is.null(self$param_tuning)){
@@ -199,6 +215,7 @@ private = list(
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = lapply(r_r, extract_prediction)
       r_hat = rearrange_prediction(r_hat)
+      
     }
     
     D <- data$data_model[, data$treat_col, with = FALSE]
@@ -207,7 +224,7 @@ private = list(
     
     u_hat <- Y - g_hat
     w_hat <- D - r_hat
-    
+
     if (data$n_instr() == 1) {
       v_hat <- Z - m_hat
 
@@ -218,10 +235,8 @@ private = list(
       
     } else {
       if (self$score == 'partialling out') {
-        reg = lm(r_hat ~ m_hat)
-        r_hat_tilde = predict(reg)
-        psi_a = -w_hat * r_hat_tilde
-        psi_b = r_hat_tilde * u_hat
+        psi_a = -w_hat * r_tilde_hat
+        psi_b = r_tilde_hat * u_hat
       }
     }
       
