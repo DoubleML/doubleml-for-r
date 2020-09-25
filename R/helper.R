@@ -62,9 +62,13 @@ initiate_prob_learner = function(mlmethod, params) {
 
 
 initiate_regr_task = function(id, data, skip_cols, target) {
-  indx <- !(names(data) %in% skip_cols)
-  data_sel <- data[ , indx, with = FALSE]
-  task <- mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
+  if (!is.null(skip_cols)){
+    indx <- !(names(data) %in% skip_cols)
+    data_sel <- data[ , indx, with = FALSE]
+    task <- mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
+  } else {
+    task <- mlr3::TaskRegr$new(id = id, backend = data, target = target)
+  }
   
   return(task)
 }
