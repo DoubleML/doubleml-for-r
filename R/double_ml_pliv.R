@@ -503,6 +503,61 @@ private = list(
     
     return(tuning_result)
     
+  },
+  
+   ml_nuisance_tuning_partialXZ = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
+    
+    stop("Tuning not implemented for partialXZ case.")
+    
+  },
+  
+  ml_nuisance_tuning_partialZ = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
+    
+    checkmate::check_class(param_set$param_set_r, "ParamSet")
+
+    if (!tune_on_folds){
+      data_tune_list = list(data$data_model)
+    } else {
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
+
+    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
+      CV_tune = tune_settings$rsmp_tune
+    } else {
+      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+    }
+  
+    if (any(class(tune_settings$measure_r) == "Measure")) {
+      measure_r = tune_settings$measure_r
+    } else {
+        if (is.null(tune_settings$measure_r)){
+          measure_r = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_r = mlr3::msr(tune_settings$measure_r)
+      }
+    }
+    
+    terminator = tune_settings$terminator
+    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    
+    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", data$z_cols), x,
+                                                   skip_cols = c(data$y_col, data$z_cols), target = data$treat_col))
+    ml_r <- mlr3::lrn(self$ml_r)
+
+    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
+                                          learner = ml_r,
+                                          resampling = CV_tune,
+                                          measure = measure_r,
+                                          search_space = param_set$param_set_r,
+                                          terminator = terminator))
+    
+    tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
+    
+    tuning_result = list(tuning_result = list(tuning_result_r = tuning_result_r),
+                         params = list(r_params = extract_tuned_params(tuning_result_r)))
+    
+    return(tuning_result)
+    
   }
 )
 )
