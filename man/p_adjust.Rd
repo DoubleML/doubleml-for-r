@@ -19,7 +19,7 @@ Romano-Wolf stepdown ('\code{RW}') is chosen by default.}
 }
 \value{
 A matrix with the estimated coefficients and the p-values that are
- adjusted according to the specified method.
+adjusted according to the specified method.
 }
 \description{
 Multiple hypotheses testing adjustment of p-values for double machine learning.
@@ -42,10 +42,10 @@ Objects of class \code{DML} are constructed by
 
 \references{
 J.P. Romano, M. Wolf (2005). Exact and approximate stepdown
- methods for multiple hypothesis testing. Journal of the American Statistical
- Association, 100(469), 94-108.
+methods for multiple hypothesis testing. Journal of the American Statistical
+Association, 100(469), 94-108.
 
 J.P. Romano, M. Wolf (2016). Efficient computation of adjusted
- p-values for resampling-based stepdown multiple testing. Statistics and
- Probability Letters, (113), 38-40.
+p-values for resampling-based stepdown multiple testing. Statistics and
+Probability Letters, (113), 38-40.
 }

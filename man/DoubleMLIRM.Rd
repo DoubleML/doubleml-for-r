@@ -16,6 +16,7 @@ DoubleMLIRM R6 class
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{DoubleMLIRM$new()}}
+\item \href{#method-set__ml_nuisance_params}{\code{DoubleMLIRM$set__ml_nuisance_params()}}
 \item \href{#method-clone}{\code{DoubleMLIRM$clone()}}
 }
 }
@@ -38,17 +39,29 @@ DoubleMLIRM R6 class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLIRM$new(
   data,
-  n_folds,
-  ml_learners,
-  params = list(params_m = list(), params_g = list()),
-  dml_procedure,
-  inf_model,
-  subgroups = NULL,
-  se_reestimate = FALSE,
+  ml_g,
+  ml_m,
+  n_folds = 5,
   n_rep_cross_fit = 1,
-  param_set = NULL,
-  tune_settings = list(),
-  param_tuning = NULL
+  score = "ATE",
+  trimming_rule = "truncate",
+  trimming_threshold = 1e-12,
+  dml_procedure = "dml2",
+  draw_sample_splitting = TRUE,
+  apply_cross_fitting = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-set__ml_nuisance_params"></a>}}
+\if{latex}{\out{\hypertarget{method-set__ml_nuisance_params}{}}}
+\subsection{Method \code{set__ml_nuisance_params()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLIRM$set__ml_nuisance_params(
+  nuisance_part = NULL,
+  treat_var = NULL,
+  params
 )}\if{html}{\out{</div>}}
 }
 
