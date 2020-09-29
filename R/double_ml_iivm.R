@@ -305,8 +305,8 @@ private = list(
    
    terminator = tune_settings$terminator
     
-   task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_col), x,
-                                               skip_cols = c(data$y_col, data$treat_col), target = data$z_col))
+   task_p = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_cols), x,
+                                               skip_cols = c(data$y_col, data$treat_col), target = data$z_cols))
     
    ml_p <- mlr3::lrn(self$ml_p)
     
@@ -321,7 +321,7 @@ private = list(
    tuning_result_p = lapply(tuning_instance_p, function(x) tune_instance(tuner, x))
     
    task_mu = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_mu_", data$y_col), x,
-                                                  skip_cols = c(data$treat_col, data$z_col), target = data$y_col))
+                                                  skip_cols = c(data$treat_col, data$z_cols), target = data$y_col))
     
    ml_mu <- mlr3::lrn(self$ml_mu)
 
@@ -335,7 +335,7 @@ private = list(
    tuning_result_mu = lapply(tuning_instance_mu, function(x) tune_instance(tuner, x))
  
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
-                                                  skip_cols = c(data$y_col, data$z_col), target = data$treat_col))
+                                                  skip_cols = c(data$y_col, data$z_cols), target = data$treat_col))
     
    ml_m <- mlr3::lrn(self$ml_m)
 
