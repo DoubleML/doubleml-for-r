@@ -17,3 +17,41 @@ load_401k = function() {
   #                                         d_cols = "e401")
 #   return(DoubleML_PLR_401k)
 # }
+
+
+
+DGP_pliv_CHS2015 = function(n_samples, alpha = 1, dim_x = 200, dim_z = 150){
+  # see https://assets.aeaweb.org/asset-server/articles-attachments/aer/app/10505/P2015_1022_app.pdf
+  if (dim_x < dim_z) {
+    stop("Dimension of X should be greater than dimension of Z.")
+  }
+  
+  sigma_e_u = matrix(c(1, 0.6, 0.6, 1), ncol = 2)
+  mu_e_u = rep(0, 2)
+  e_u = mvtnorm::rmvnorm(n = n_samples, mean = mu_e_u, sigma = sigma_e_u)
+  epsilon = e_u[,1]  
+  u = e_u[,2]
+  
+  sigma_x = toeplitz(0.5^(0:(dim_x - 1)))
+  mu_x = rep(0, dim_x)
+  X = mvtnorm::rmvnorm(n = n_samples, mean = mu_x, sigma = sigma_x)
+  
+  I_z = diag(x = 1, ncol = dim_z, nrow = dim_z)
+  mu_xi = rep(0, dim_z)
+  xi = mvtnorm::rmvnorm(n = n_samples, mean = mu_xi, sigma = 0.25*I_z)
+  
+  beta = 1/(1:dim_x)^2 
+  gamma = beta
+  delta = 1/(1:dim_z)^2
+  
+  zeros = matrix(0, nrow = dim_z, ncol = (dim_x - dim_z))
+  Pi = cbind(I_z, zeros)
+  
+  Z = X%*%t(Pi) + xi
+  D = X%*%gamma + Z%*% delta + u
+  Y = alpha * D + X%*%beta + epsilon
+  
+  data = data.table(X, Y, D, Z)
+  
+  return(data)
+}
