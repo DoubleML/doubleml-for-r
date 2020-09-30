@@ -32,7 +32,7 @@ DGP_pliv_CHS2015 = function(n_samples, alpha = 1, dim_x = 200, dim_z = 150){
   epsilon = e_u[,1]  
   u = e_u[,2]
   
-  sigma_x = toeplitz(0.5^(0:(dim_x - 1)))
+  sigma_x = stats::toeplitz(0.5^(0:(dim_x - 1)))
   mu_x = rep(0, dim_x)
   X = mvtnorm::rmvnorm(n = n_samples, mean = mu_x, sigma = sigma_x)
   
@@ -51,7 +51,7 @@ DGP_pliv_CHS2015 = function(n_samples, alpha = 1, dim_x = 200, dim_z = 150){
   D = X%*%gamma + Z%*% delta + u
   Y = alpha * D + X%*%beta + epsilon
   
-  data = data.table(X, Y, D, Z)
+  data = data.table("X" = X, "Y" = Y, "D" = D, "Z" = Z)
   
   return(data)
 }
