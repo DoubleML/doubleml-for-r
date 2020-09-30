@@ -172,8 +172,8 @@ private = list(
         m_hat = vapply(m_hat, function(x) x$response, double(data$n_obs()))
         
         # Projection: r_hat from projection on m_hat
-        r_tilde = r_hat - data$data_model[, data_ml$treat_col, with = FALSE]
-        m_tilde = m_hat - data$data_model[, data_ml$z_cols, with = FALSE]
+        r_tilde = r_hat - data$data_model[, data$treat_col, with = FALSE]
+        m_tilde = m_hat - data$data_model[, data$z_cols, with = FALSE]
         
         data_aux = data.table(r_tilde, m_tilde)
         task_r_tilde = initiate_regr_task("nuis_r_tilde", data_aux, skip_cols = NULL, 
@@ -329,8 +329,8 @@ private = list(
     Y <- data$data_model[, data$y_col, with = FALSE]
 
     u_hat <- Y - g_hat
-    w_hat <- D - r_hat
-
+    w_hat <- D - r_hat_tilde
+    
     if (self$score == 'partialling out') {
         psi_a = -w_hat * (r_hat - r_hat_tilde)
         psi_b = (r_hat - r_hat_tilde) * u_hat
@@ -344,7 +344,7 @@ private = list(
     
     # nuisance r
     task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
-                                 skip_cols = c(data$y_col, data$z_cols), target = data$treat_col)
+                                 skip_cols = c(data$y_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
       
@@ -565,6 +565,7 @@ private = list(
 
 
 # Initializer for partialX
+#' @export
 DoubleMLPLIV.partialX = function(data, 
                       ml_g,
                       ml_m, 
@@ -592,6 +593,7 @@ DoubleMLPLIV.partialX = function(data,
 
 
 # Initializer for partialZ
+#' @export
 DoubleMLPLIV.partialZ = function(data, 
                       ml_r, 
                       n_folds = 5,
@@ -619,7 +621,8 @@ DoubleMLPLIV.partialZ = function(data,
 
 
 
-# Initializer for partialX
+# Initializer for partialXZ
+#' @export
 DoubleMLPLIV.partialXZ = function(data, 
                       ml_g,
                       ml_m, 

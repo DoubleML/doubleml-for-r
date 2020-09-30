@@ -345,16 +345,16 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
   
  if (score == "ATE") {
 
-    score <- g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m) - theta
+    psi <- g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m) - theta
     J <- -1
-    if (!is.vector(score)) {
-      J <- rep(J, ncol(score))
+    if (!is.vector(psi)) {
+      J <- rep(J, ncol(psi))
     }
  }
   
  if (score == "ATTE") {
 
-    score <- d*(y - g0_hat)/p_hat- m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta
+    psi <- d*(y - g0_hat)/p_hat- m*(1-d)*u0_hat/(p_hat*(1-m)) - d/p_hat * theta
     
     # note that the J here is by construction always equal to -1
     J <- - colMeans(d/p_hat, na.rm=TRUE)
@@ -364,8 +364,8 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
   n <- length(d)
   pertub <- matrix(NA, nrow = 1, ncol = nRep)
   
-  if (!is.vector(score)) {
-    J <- matrix(rep(J, each=nrow(score)), nrow=nrow(score))
+  if (!is.vector(psi)) {
+    J <- matrix(rep(J, each=nrow(psi)), nrow=nrow(psi))
   }
   
   for (i in seq(nRep)) {
@@ -382,7 +382,7 @@ bootstrap_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y,
         weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
       }
       
-     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score, na.rm = TRUE))
+     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * psi, na.rm = TRUE))
     
   }
   

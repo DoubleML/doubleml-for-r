@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   double_mlplr_obj_dml1 = DoubleMLPLR$new(data_ml, 
                                      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
                                      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
-                                     dml_procedure = dml_procedure, 
+                                     dml_procedure = "dml1",
                                      n_folds = n_folds,
                                      score = score)
   double_mlplr_obj_dml1$fit(se_reestimate = FALSE)
@@ -45,7 +45,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   double_mlplr_obj_dml1_reestim = DoubleMLPLR$new(data_ml, 
                                      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
                                      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
-                                     dml_procedure = dml_procedure, 
+                                     dml_procedure = "dml1",
                                      n_folds = n_folds,
                                      score = score)
   double_mlplr_obj_dml1_reestim$fit(se_reestimate = TRUE)
@@ -57,7 +57,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   double_mlplr_obj_dml2 = DoubleMLPLR$new(data_ml, 
                                      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
                                      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
-                                     dml_procedure = dml_procedure, 
+                                     dml_procedure = "dml2", 
                                      n_folds = n_folds,
                                      score = score)
   double_mlplr_obj_dml2$fit(se_reestimate = FALSE)
@@ -68,7 +68,7 @@ patrick::with_parameters_test_that("Unit tests for se_reestimate (PLR):",
   double_mlplr_obj_dml2_reestim = DoubleMLPLR$new(data_ml, 
                                      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
                                      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
-                                     dml_procedure = dml_procedure, 
+                                     dml_procedure = "dml2",
                                      n_folds = n_folds,
                                      score = score)
   double_mlplr_obj_dml2_reestim$fit(se_reestimate = TRUE)
