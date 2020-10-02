@@ -102,9 +102,20 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   set_samples = function(smpls) {
-    # TODO place some checks for the externally provided sample splits
-    # see also python
-    self$smpls <- smpls
+    self$n_rep_cross_fit = length(smpls)
+    n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
+    n_folds_each_test_smpl = vapply(smpls, function(x) length(x$test_ids), integer(1L))
+    
+    if (!all(n_folds_each_train_smpl == n_folds_each_test_smpl)) {
+      stop("Number of folds for train and test samples do not match.")
+    }
+    
+    if (!all(n_folds_each_train_smpl == n_folds_each_train_smpl[1])) {
+      stop("Different number of folds for repeated cross-fitting.")
+    }
+    
+    self$n_folds = n_folds_each_train_smpl[1]
+    self$smpls = smpls
     
     invisible(self)
   }, 
