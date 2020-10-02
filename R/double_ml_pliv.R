@@ -179,6 +179,8 @@ private = list(
         task_r_tilde = initiate_regr_task("nuis_r_tilde", data_aux, skip_cols = NULL, 
                                             target = "r_tilde")
         ml_r_tilde <- initiate_learner("regr.lm", params = list())
+        # If Z is high-dimensional
+        # ml_r_tilde <- initiate_learner("regr.cv_glmnet", params = list())
         resampling_r_tilde <- mlr3::rsmp("custom")$instantiate(task_r_tilde,
                                                        smpls$train_ids,
                                                        smpls$test_ids)

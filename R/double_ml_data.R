@@ -3,7 +3,7 @@
 #' @description
 #' Data structure for double machine learning. 
 #'
-#'
+#' @export
 DoubleMLData <- R6Class("DoubleMLData", public = list(
    
   data = NULL, 
