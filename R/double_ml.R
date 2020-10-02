@@ -14,6 +14,7 @@ DoubleML <- R6Class("DoubleML", public = list(
   boot_coef = NULL,
   ml_nuisance_params = NULL,
   param_tuning = NULL,
+  smpls = NULL,
   
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
@@ -26,10 +27,6 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     private$initialize_arrays()
     
-    if (is.null(private$smpls)) {
-      private$split_samples()
-    }
-
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
       
@@ -87,10 +84,38 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     invisible(self)
   },
+  split_samples = function() {
+    dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
+    dummy_resampling_scheme <- rsmp("repeated_cv",
+                                    folds = self$n_folds,
+                                    repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
+    
+    train_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                        function(x) dummy_resampling_scheme$train_set(x))
+    test_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                       function(x) dummy_resampling_scheme$test_set(x))
+    smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+      train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
+      test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
+    
+    self$smpls <- smpls
+    invisible(self)
+  },
   set_samples = function(smpls) {
-    # TODO place some checks for the externally provided sample splits
-    # see also python
-    private$smpls <- smpls
+    self$n_rep_cross_fit = length(smpls)
+    n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
+    n_folds_each_test_smpl = vapply(smpls, function(x) length(x$test_ids), integer(1L))
+    
+    if (!all(n_folds_each_train_smpl == n_folds_each_test_smpl)) {
+      stop("Number of folds for train and test samples do not match.")
+    }
+    
+    if (!all(n_folds_each_train_smpl == n_folds_each_train_smpl[1])) {
+      stop("Different number of folds for repeated cross-fitting.")
+    }
+    
+    self$n_folds = n_folds_each_train_smpl[1]
+    self$smpls = smpls
     
     invisible(self)
   }, 
@@ -111,11 +136,6 @@ DoubleML <- R6Class("DoubleML", public = list(
     names(self$ml_nuisance_params) = self$data$d_cols
     self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
   
-    if (is.null(private$smpls)) {
-
-      private$split_samples()
-    }
-    
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
           
@@ -235,7 +255,6 @@ DoubleML <- R6Class("DoubleML", public = list(
   # }
 ),
 private = list(
-  smpls = NULL,
   psi = NULL,
   psi_a = NULL,
   psi_b = NULL,
@@ -267,6 +286,13 @@ private = list(
     self$n_rep_cross_fit <- n_rep_cross_fit
     
     self$draw_sample_splitting = draw_sample_splitting
+    
+    if (draw_sample_splitting) {
+      self$split_samples()
+    } else {
+      self$smpls = NULL
+    }
+    
     self$apply_cross_fitting = apply_cross_fitting
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
@@ -293,7 +319,7 @@ private = list(
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
   # self._i_rep, the index of the cross-fitting sample.
-  get__smpls = function() private$smpls[[private$i_rep]],
+  get__smpls = function() self$smpls[[private$i_rep]],
   get__psi_a = function() private$psi_a[, private$i_rep, private$i_treat],
   set__psi_a = function(value) private$psi_a[, private$i_rep, private$i_treat] <- value,
   get__psi_b = function() private$psi_b[, private$i_rep, private$i_treat],
@@ -342,23 +368,6 @@ private = list(
 
       
       }
-  },
-  split_samples = function() {
-    dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
-    dummy_resampling_scheme <- rsmp("repeated_cv",
-                                    folds = self$n_folds,
-                                    repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
-    
-    train_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
-                        function(x) dummy_resampling_scheme$train_set(x))
-    test_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
-                       function(x) dummy_resampling_scheme$test_set(x))
-    smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
-      train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
-      test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
-    
-    private$smpls <- smpls
-    invisible(self)
   },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
