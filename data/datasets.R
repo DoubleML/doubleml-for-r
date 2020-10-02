@@ -1,4 +1,5 @@
 # Function to load 401k data set
+#' @export
 load_401k = function() {
   url = 'https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta'
   data = foreign::read.dta(url)
@@ -19,7 +20,7 @@ load_401k = function() {
 # }
 
 
-
+#' @export
 DGP_pliv_CHS2015 = function(n_samples, alpha = 1, dim_x = 200, dim_z = 150){
   # see https://assets.aeaweb.org/asset-server/articles-attachments/aer/app/10505/P2015_1022_app.pdf
   if (dim_x < dim_z) {
@@ -55,3 +56,56 @@ DGP_pliv_CHS2015 = function(n_samples, alpha = 1, dim_x = 200, dim_z = 150){
   
   return(data)
 }
+
+m = function(x, nu = 0, gamma = 1){
+  y = 0.5/pi *sinh(gamma)/(cosh(gamma)-cos(x-nu))
+  return(y)
+}
+
+g = function(x){
+  y = sin(x)^2
+}
+  
+  
+#' @export
+make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X_y_d = FALSE){
+  b = 1/(1:n_features)
+  sigma = clusterGeneration::genPositiveDefMat(n_features)
+  X = mvtnorm::rmvnorm(n = n_samples, mean = rep(0, n_features), sigma = sigma$Sigma)
+  G = g(X%*%b)
+  M = m(X%*%b) 
+  d = M + rnorm(n_samples)
+  y = theta*d + G + rnorm(n_samples)
+  
+  colnames(X) = paste0("X", 1:n_features)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  
+  if (return_X_y_d) {
+    return(list("X" = X, "y" = y, "d" = d))
+  } else {
+
+    data = data.table::data.table(X, y, d)
+    return(data)
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
