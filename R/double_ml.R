@@ -88,22 +88,32 @@ DoubleML <- R6Class("DoubleML", public = list(
 
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
 
-    if (self$n_folds > 1) {
-        dummy_resampling_scheme = rsmp("repeated_cv",
-                                        folds = self$n_folds,
-                                        repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
-      } else {
-        dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
-      }
+    if (self$apply_cross_fitting) {
+      if (self$n_folds > 1) {
+          dummy_resampling_scheme = rsmp("repeated_cv",
+                                          folds = self$n_folds,
+                                          repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
+        } else {
+          dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
+        }
     
-    train_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
-                        function(x) dummy_resampling_scheme$train_set(x))
-    test_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
-                       function(x) dummy_resampling_scheme$test_set(x))
-    smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
-      train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
-      test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
-    
+      train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                          function(x) dummy_resampling_scheme$train_set(x))
+      test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                         function(x) dummy_resampling_scheme$test_set(x))
+      
+      smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+                        train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
+                        test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
+                      
+    }  else {
+      dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
+      train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
+      test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
+      
+      smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+    }
+
     self$smpls <- smpls
     invisible(self)
   },
@@ -292,14 +302,23 @@ private = list(
     self$n_rep_cross_fit <- n_rep_cross_fit
     
     self$draw_sample_splitting = draw_sample_splitting
+    self$apply_cross_fitting = apply_cross_fitting
+    
+    if (!self$apply_cross_fitting) {
+      stopifnot(self$n_folds == 2)
+      stopifnot(self$n_rep_cross_fit == 1)
+      if (self$dml_procedure == "dml1") {
+         # redirect to dml2 which works out-of-the-box; dml_procedure is of no relevance without cross-fitting
+        self$dml_procedure = "dml2"
+      }
+    }
     
     if (draw_sample_splitting) {
       self$split_samples()
     } else {
       self$smpls = NULL
     }
-    
-    self$apply_cross_fitting = apply_cross_fitting
+
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
     
