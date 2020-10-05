@@ -63,7 +63,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D5 = double_ml_data_from_data_frame(data, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d_indx)
-     # test with only 1 d, 1 X, 1 Z
+
+  # test with only 1 d, 1 X, 1 Z
   D5_1X =  double_ml_data_from_data_frame(data, x_cols = X_cols1[1], 
                                           y_col = y_indx, 
                                           d_cols = d_indx)
@@ -109,6 +110,10 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                               y_col = y_indx, 
                               d_cols = d_indx, 
                               z_cols = z_indx)
+  
+  D8_noXcols = DoubleMLData$new(data, y_col = y_indx, 
+                              d_cols = d_indx, 
+                              z_cols = z_indx)
   # with renamed variables
   data_renamed = copy(data)
   data_renamed = setnames(data_renamed, c("outc", "exposure", "instr", 
@@ -123,6 +128,12 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D9 =  DoubleMLData$new(data, x_cols = X_cols1, 
                                           y_col = y_indx, 
                                           d_cols = d_indx)
+  
+  # skip z if not X indx specified
+  data_noz = data[, which(names(data)!="z"), with = FALSE]
+  D9_noXcols =  DoubleMLData$new(data_noz,    y_col = y_indx, 
+                                          d_cols = d_indx)
+  
   
   D9_1X =  DoubleMLData$new(data, x_cols = "X1", 
                                           y_col = y_indx, 
@@ -150,6 +161,9 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   
   expect_identical(D4_renamed$data_model, D8_renamed$data_model)
   expect_equivalent(D8$data_model, D8_renamed$data_model)
+  expect_identical(D8$data_model, D8_noXcols$data_model)
+  expect_identical(D9$data_model, D9_noXcols$data_model)
+
   
   } 
 )

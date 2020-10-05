@@ -35,13 +35,26 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
         
     self$data = data
     self$data_model = NULL
-    self$x_cols = x_cols
+    
     self$y_col = y_col
     self$d_cols = d_cols
+    self$z_cols = z_cols
+    
+    if (!is.null(x_cols)) {
+      self$x_cols = x_cols
+    } else {
+        if (!is.null(self$z_cols)) {
+          y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
+          self$x_cols = setdiff(names(data), y_d_z)
+        } else {
+          y_d = union(self$y_col, self$d_cols)
+          self$x_cols = setdiff(names(data), y_d)
+        }
+    }
+
     self$treat_col = NULL
     self$other_treat_cols = NULL
     self$use_other_treat_as_covariate = use_other_treat_as_covariate
-    self$z_cols = z_cols
 
     # by default, we initialize to the first treatment variable
     self$set__data_model(d_cols[1], use_other_treat_as_covariate = self$use_other_treat_as_covariate) 
