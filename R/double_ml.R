@@ -85,10 +85,16 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   split_samples = function() {
+
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
-    dummy_resampling_scheme <- rsmp("repeated_cv",
-                                    folds = self$n_folds,
-                                    repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
+
+    if (self$n_folds > 1) {
+        dummy_resampling_scheme = rsmp("repeated_cv",
+                                        folds = self$n_folds,
+                                        repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
+      } else {
+        dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
+      }
     
     train_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
                         function(x) dummy_resampling_scheme$train_set(x))
