@@ -69,13 +69,14 @@ g = function(x){
   
 #' @export
 make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X_y_d = FALSE){
+
   b = 1/(1:n_features)
   sigma = clusterGeneration::genPositiveDefMat(n_features)
   X = mvtnorm::rmvnorm(n = n_samples, mean = rep(0, n_features), sigma = sigma$Sigma)
   G = g(X%*%b)
   M = m(X%*%b) 
-  d = M + rnorm(n_samples)
-  y = theta*d + G + rnorm(n_samples)
+  d = M + stats::rnorm(n_samples)
+  y = theta*d + G + stats::rnorm(n_samples)
   
   colnames(X) = paste0("X", 1:n_features)
   colnames(y) = "y"
@@ -88,13 +89,13 @@ make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X
     data = data.table::data.table(X, y, d)
     return(data)
   }
-  
 }
 
 
-
-
-
+# To generate data_plr.csv
+# set.seed(1234)
+# data_plr = make_plr_data()
+# data.table::fwrite(data_plr, "data/data_plr.csv")
 
 
 
