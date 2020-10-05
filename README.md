@@ -23,3 +23,11 @@ List of characteristics of implementation
     [mlr3tuning](https://mlr3tuning.mlr-org.com/)
 
   - Object oriented implemnetation based on [R6](https://r6.r-lib.org/)
+  
+  ## Getting Started: Installation
+  
+Install the R package by the command 
+
+```
+remotes::install_github("DoubleML/doubleml-for-r")
+```
