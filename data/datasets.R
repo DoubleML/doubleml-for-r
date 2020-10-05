@@ -96,6 +96,8 @@ make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X
 # set.seed(1234)
 # data_plr = make_plr_data()
 # data.table::fwrite(data_plr, "data/data_plr.csv")
+# save(data_plr, file = "data/data_plr.rda")
+
 
 
 
