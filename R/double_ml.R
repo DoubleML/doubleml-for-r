@@ -20,12 +20,24 @@ DoubleML <- R6Class("DoubleML", public = list(
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   
+  n_obs_test = function() {
+    if (self$apply_cross_fitting) {
+      n_obs_test = self$data$n_obs()
+    } else {
+        if (is.null(self$smpls)) {
+          # if there is no sample splitting specified yet backfall to n_obs
+          n_obs_test = self$data$n_obs()
+        } else {
+          test_index = self$smpls[[1]]$test_ids[[1]]
+          n_obs_test = length(test_index)
+        }
+    }
+    return(n_obs_test)
+  },
   
   fit = function(se_reestimate = FALSE) {
     
     # TBD: insert check for tuned params
-    
-    private$initialize_arrays()
     
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
@@ -132,6 +144,8 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     self$n_folds = n_folds_each_train_smpl[1]
     self$smpls = smpls
+    
+    private$initialize_arrays()
     
     invisible(self)
   }, 
@@ -322,13 +336,15 @@ private = list(
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
     
+    private$initialize_arrays()
+    
     invisible(self)
   },
   initialize_arrays = function() {
     
-    private$psi = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
-    private$psi_a = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
-    private$psi_b = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$psi = array(NA, dim=c(self$n_obs_test(), self$n_rep_cross_fit, private$n_treat))
+    private$psi_a = array(NA, dim=c(self$n_obs_test(), self$n_rep_cross_fit, private$n_treat))
+    private$psi_b = array(NA, dim=c(self$n_obs_test(), self$n_rep_cross_fit, private$n_treat))
     
     self$coef = array(NA, dim=c(private$n_treat))
     self$se = array(NA, dim=c(private$n_treat))
