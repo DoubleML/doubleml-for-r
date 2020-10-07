@@ -125,19 +125,12 @@ private = list(
       m_hat = rearrange_prediction(m_hat)
     }
     
-    if (self$apply_cross_fitting){
-      d_test = data$data_model[, data$treat_col, with = FALSE] # numeric # tbd: optimize
-      y_test = data$data_model[, data$y_col, with=FALSE] # numeric # tbd: optimize
+    d = data$data_model[, data$treat_col, with = FALSE] # numeric # tbd: optimize
+    y = data$data_model[, data$y_col, with=FALSE] # numeric # tbd: optimize
     
-    } else {
-      test_index = self$smpls[[1]]$test_ids[[1]]
-      d_test = data$data_model[test_index, data$treat_col, with = FALSE] # numeric # tbd: optimize
-      y_test = data$data_model[test_index, data$y_col, with=FALSE] # numeric # tbd: optimize
-    }
-    
-    v_hat = d_test - m_hat
-    u_hat = y_test - g_hat
-    v_hatd = v_hat * d_test # tbd: handle product of numeric and binary in data.table
+    v_hat = d - m_hat
+    u_hat = y - g_hat
+    v_hatd = v_hat * d # tbd: handle product of numeric and binary in data.table
     
     if (self$score == 'IV-type') {
       psi_a = -v_hatd
