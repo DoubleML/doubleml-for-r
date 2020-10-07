@@ -23,7 +23,7 @@ tune_settings = list(n_folds_tune = 2,
                       tuning_instance_g = NULL, 
                       tuning_instance_m = NULL,
                       tuner = "grid_search",
-                      resolution = 2)
+                      resolution = 5)
 
 test_cases = expand.grid(learner_list = learner,
                          dml_procedure = c('dml1', 'dml2'),

@@ -37,7 +37,6 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 2)
 
   set.seed(i_setting)
-  n_folds = 5
   plr_hat <- DML(data_plr_multi[[i_setting]], y = "y",  d = c('d1', 'd2'),
                  model = "plr",
                  k = n_folds, S = n_rep_cross_fit,
@@ -77,6 +76,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   theta_obj_once <- double_mlplr_obj_once$coef
   se_obj_once <- double_mlplr_obj_once$se
   
+  # Passing for non-cross-fitting case 
+  
+  if (n_rep_cross_fit == 1) {
+    
+    set.seed(i_setting)
+    double_mlplr_obj_nocf = DoubleMLPLR$new(data_ml, 
+                                       n_folds = n_folds,
+                                       ml_g = learner_list$mlmethod_g,
+                                       ml_m = learner_list$mlmethod_m,
+                                       dml_procedure = dml_procedure, 
+                                       score = score,
+                                       n_rep_cross_fit = n_rep_cross_fit,
+                                       apply_cross_fitting = FALSE)
+    
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_g", params = params_g$d1)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_g", params = params_g$d2)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_m", params = params_m$d1)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_m", params = params_m$d2)
+  
+    
+    double_mlplr_obj_nocf$fit()
+    theta_obj_nocf <- double_mlplr_obj_nocf$coef
+    se_obj_nocf <- double_mlplr_obj_nocf$se
+    
+    expect_true(is.numeric(theta_obj_nocf))
+    expect_true(is.numeric(se_obj_nocf))
+
+  }
   # TBD: Exact Parameter Passing (external tuning)
   # 
   # export_params_m = list("m_params" = rep(list(list(params_m[[1]])), n_folds))
