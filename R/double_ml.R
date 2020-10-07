@@ -161,6 +161,11 @@ DoubleML <- R6Class("DoubleML", public = list(
                                         algorithm = "grid_search",
                                         tuner = "grid_search",
                                         resolution = 5)) {
+    
+    if (!self$apply_cross_fitting){
+      stop("Parameter tuning for no-cross-fitting case not implemented.")
+    }
+    
     n_obs = nrow(self$data$data_model)
     self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
     names(self$ml_nuisance_params) = self$data$d_cols
