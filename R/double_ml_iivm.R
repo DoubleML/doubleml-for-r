@@ -358,9 +358,9 @@ private = list(
    return(tuning_result)
   },
   get_cond_smpls = function(smpls, Z) {
-    train_ids_0 <- lapply(1:self$n_folds, function(x) 
+    train_ids_0 <- lapply(1:length(smpls$train_ids), function(x) 
       smpls$train_ids[[x]][Z[smpls$train_ids[[x]]] == 0])
-    train_ids_1 <-  lapply(1:self$n_folds, function(x) 
+    train_ids_1 <-  lapply(1:length(smpls$test_ids), function(x) 
       smpls$train_ids[[x]][Z[smpls$train_ids[[x]]] == 1])
     return(list(train_ids_0=train_ids_0,
                 train_ids_1=train_ids_1))
