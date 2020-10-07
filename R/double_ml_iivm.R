@@ -186,7 +186,7 @@ private = list(
       resampling_p <- initiate_resampling(task_p, smpls$train_ids, smpls$test_ids)
       r_p <- resample_dml(task_p, ml_p, resampling_p, store_models = TRUE)
       p_hat <- lapply(r_p, extract_prob_prediction)
-      p_hat <- rearrange_prob_prediction(p_hat)
+      p_hat <- rearrange_prob_prediction(p_hat, smpls$test_ids)
       
       ml_mu <- lapply(self$mu_params, function(x) initiate_learner(self$ml_mu,
                                                                         x[[1]]))
@@ -196,12 +196,12 @@ private = list(
       resampling_mu0 <- initiate_resampling(task_mu, cond_smpls$train_ids_0, smpls$test_ids)
       r_mu0 <- resample_dml(task_mu, ml_mu, resampling_mu0, store_models = TRUE)
       mu0_hat <- lapply(r_mu0, extract_prediction)
-      mu0_hat <- rearrange_prediction(mu0_hat)
+      mu0_hat <- rearrange_prediction(mu0_hat, smpls$test_ids)
 
       resampling_mu1 <- initiate_resampling(task_mu, cond_smpls$train_ids_1, smpls$test_ids)
       r_mu1 <- resample_dml(task_mu, ml_mu, resampling_mu1, store_models = TRUE)
       mu1_hat <- lapply(r_mu1, extract_prediction)
-      mu1_hat <- rearrange_prediction(mu1_hat)             
+      mu1_hat <- rearrange_prediction(mu1_hat, smpls$test_ids)             
       
       ml_m <- lapply(self$m_params, function(x) initiate_prob_learner(self$ml_m,
                                                                         x[[1]]))
@@ -218,7 +218,7 @@ private = list(
         resampling_m0 <- initiate_resampling(task_m, cond_smpls$train_ids_0, smpls$test_ids)
         r_m0 <- resample_dml(task_m, ml_m, resampling_m0, store_models = TRUE)
         m0_hat <- lapply(r_m0, extract_prob_prediction)
-        m0_hat <- rearrange_prob_prediction(m0_hat)
+        m0_hat <- rearrange_prob_prediction(m0_hat, smpls$test_ids)
       }
       
       if (self$subgroups$never_takers == FALSE){
@@ -229,7 +229,7 @@ private = list(
         resampling_m1 <- initiate_resampling(task_m, cond_smpls$train_ids_1, smpls$test_ids)
         r_m1 <- resample_dml(task_m, ml_m, resampling_m1, store_models = TRUE)
         m1_hat <- lapply(r_m1, extract_prob_prediction)
-        m1_hat <- rearrange_prob_prediction(m1_hat)
+        m1_hat <- rearrange_prob_prediction(m1_hat, smpls$test_ids)
       }
       
     }

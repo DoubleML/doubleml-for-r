@@ -115,14 +115,14 @@ private = list(
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
-      g_hat <- rearrange_prediction(g_hat)
+      g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
       
       ml_m <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
                                                                         x[[1]]))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prediction)
-      m_hat = rearrange_prediction(m_hat)
+      m_hat = rearrange_prediction(m_hat, smpls$test_ids)
     }
     
     d = data$data_model[, data$treat_col, with = FALSE] # numeric # tbd: optimize
