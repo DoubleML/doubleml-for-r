@@ -54,7 +54,6 @@ DoubleML <- R6Class("DoubleML", public = list(
         # estimate the causal parameter(s)
         coef <- private$est_causal_pars()
         private$set__all_coef(coef)
-        
         # compute psi (depends on estimated causal parameter)
         private$compute_score()
         
@@ -378,6 +377,7 @@ private = list(
   set__psi = function(value) private$psi[, private$i_rep, private$i_treat] <- value,
   get__all_coef = function() private$all_coef[private$i_treat, private$i_rep],
   set__all_coef = function(value) private$all_coef[private$i_treat, private$i_rep] <- value,
+  set__all_dml1_coef = function(value) private$all_dml1_coef[private$i_treat, private$i_rep, ] <- value,
   get__all_se = function() private$all_se[private$i_treat, private$i_rep],
   set__all_se = function(value) private$all_se[private$i_treat, private$i_rep] <- value,
   get__boot_coef = function() {
@@ -433,7 +433,7 @@ private = list(
         thetas[i_fold] <- private$orth_est(inds=test_index)
       }
       coef <- mean(thetas, na.rm = TRUE)
-      private$all_dml1_coef = thetas
+      private$set__all_dml1_coef(thetas)
     }
     
     else if (dml_procedure == "dml2") {
