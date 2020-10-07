@@ -148,34 +148,35 @@ private = list(
       g1_hat <- rearrange_prediction(g1_hat)            
     }
     
-    D <- data$data_model[, data$treat_col, with = FALSE]
-    Y <- data$data_model[, data$y_col, with = FALSE]
-    u0_hat <- Y - g0_hat
-    u1_hat <- Y - g1_hat
     
-    # fraction of treated for ATTE
-    p_hat <- vector('numeric', length= nrow(data$data_model))
-    #if (self$dml_procedure == "dml1") {
-      for (i_fold in 1:self$n_folds) {
-        p_hat[smpls$test_ids[[i_fold]]] = mean(D[smpls$test_ids[[i_fold]]])
+     if (self$score == "ATTE") {
+      # fraction of treated for ATTE
+      p_hat <- vector('numeric', length = data$n_obs())
+      
+      #if (self$dml_procedure == "dml1") {
+      for (i_fold in 1:length(smpls$test_ids)) {
+        p_hat[smpls$test_ids[[i_fold]]] = mean( data$data_model[smpls$test_ids[[i_fold]], data$treat_col, with = FALSE] )
       }
-    #}
-    #else if (self$dml_procedure == "dml2") {
-    #  p_hat = mean(D)
-    #}
+     }
+    
+     d = data$data_model[, data$treat_col, with = FALSE] # numeric # tbd: optimize
+     y = data$data_model[, data$y_col, with=FALSE] # numeric # tbd: optimize
+
+     u0_hat <- y - g0_hat
+     u1_hat <- y - g1_hat
     
     if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
       m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
       m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
     }
-    
-    
+  
     if (self$score == 'ATE') {
-      psi_b = g1_hat - g0_hat + D*(u1_hat)/m_hat - (1-D)*u0_hat/(1-m_hat)
-      psi_a = rep(-1, nrow(data$data_model))
+      psi_b = g1_hat - g0_hat + d*(u1_hat)/m_hat - (1-d)*u0_hat/(1-m_hat)
+      psi_a = rep(-1, data$n_obs())
+      
     } else if (self$score == 'ATTE') {
-      psi_b = D*u0_hat/p_hat - m_hat*(1-D)*u0_hat/(p_hat*(1-m_hat))
-      psi_a = -D / p_hat
+      psi_b = d*u0_hat/p_hat - m_hat*(1-d)*u0_hat/(p_hat*(1-m_hat))
+      psi_a = -d / p_hat
     }
     
     return(list(psi_a = psi_a,
@@ -256,9 +257,9 @@ private = list(
    return(tuning_result)
   },
   get_cond_smpls = function(smpls, D) {
-    train_ids_0 <- lapply(1:self$n_folds, function(x) 
+    train_ids_0 <- lapply(1:length(smpls$train_ids), function(x) 
       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
-    train_ids_1 <-  lapply(1:self$n_folds, function(x) 
+    train_ids_1 <-  lapply(1:length(smpls$test_ids), function(x) 
       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
     return(list(train_ids_0=train_ids_0,
                 train_ids_1=train_ids_1))
