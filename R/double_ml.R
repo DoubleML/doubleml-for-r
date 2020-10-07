@@ -76,7 +76,10 @@ DoubleML <- R6Class("DoubleML", public = list(
     if (all(is.na(private$psi))) {
       stop("Apply fit() before bootstrap().")      
     }
-    stopifnot(self$apply_cross_fitting, "Bootstrap not implemented without cross-fitting.")
+    
+    if (!self$apply_cross_fitting) {
+      stop(self$apply_cross_fitting, "Bootstrap not implemented without cross-fitting.")
+    }
     
     private$initialize_boot_arrays(n_rep, self$n_rep_cross_fit)
     
