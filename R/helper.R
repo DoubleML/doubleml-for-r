@@ -1,6 +1,8 @@
 
 extract_prediction = function(obj_resampling) {
-  f_hat <- as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = as.data.table(obj_resampling$prediction())
+  f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
   setorder(f_hat, 'row_id')
   f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
   
@@ -16,7 +18,9 @@ rearrange_prediction = function(prediction_list){
 
 
 extract_prob_prediction = function(obj_resampling) {
-  f_hat <- as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = as.data.table(obj_resampling$prediction())
+  f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
   setorder(f_hat, 'row_id')
   f_hat <- as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
   
