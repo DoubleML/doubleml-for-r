@@ -121,7 +121,7 @@ DoubleML <- R6Class("DoubleML", public = list(
                               
     }  else {
       
-      if (self$n_folds >= 2) {
+      if (self$n_folds > 2) {
         stop("Estimation without cross-fitting not supported for n_folds > 2.")
       }
       
