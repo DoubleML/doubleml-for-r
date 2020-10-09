@@ -11,7 +11,7 @@ test_cases = expand.grid(learner = c('regr.lm'),
                          score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          apply_cross_fitting = FALSE,
-                         n_folds = 2,
+                         n_folds = c(1,2),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
