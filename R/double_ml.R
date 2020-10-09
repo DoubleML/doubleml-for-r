@@ -99,16 +99,17 @@ DoubleML <- R6Class("DoubleML", public = list(
   split_samples = function() {
 
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
+    
+     if (self$n_folds == 1 & self$apply_cross_fitting) {
+      message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+      self$apply_cross_fitting = FALSE
+    }
 
     if (self$apply_cross_fitting) {
-      if (self$n_folds > 1) {
-          dummy_resampling_scheme = rsmp("repeated_cv",
-                                          folds = self$n_folds,
-                                          repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
-        } else {
-          dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
-        }
-    
+      
+      dummy_resampling_scheme = rsmp("repeated_cv",
+                                      folds = self$n_folds,
+                                      repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
       train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
                           function(x) dummy_resampling_scheme$train_set(x))
       test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
@@ -117,16 +118,37 @@ DoubleML <- R6Class("DoubleML", public = list(
       smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
                         train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
                         test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
-                      
+                              
     }  else {
-      if (self$n_rep_cross_fit != 1) { 
-        stop("Repeated sample splitting without cross-fitting not implemented.")
-      }
-      dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
-      train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
-      test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
       
-      smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+      if (self$n_folds >= 2) {
+        stop("Estimation without cross-fitting not supported for n_folds > 2.")
+      }
+      
+      if (self$n_folds == 2) {
+
+        if (self$n_rep_cross_fit != 1) { 
+          stop("Repeated sample splitting without cross-fitting not implemented.")
+        }
+        
+        dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
+        train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
+        test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
+        
+        smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+        
+      } else if (self$n_folds == 1) {
+        dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
+      
+        train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                            function(x) dummy_resampling_scheme$train_set(x))
+        test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                           function(x) dummy_resampling_scheme$test_set(x))
+      
+        smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+                          train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
+                          test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
+      }
     }
 
     self$smpls <- smpls
@@ -146,6 +168,12 @@ DoubleML <- R6Class("DoubleML", public = list(
     }
     
     self$n_folds = n_folds_each_train_smpl[1]
+    
+     if (self$n_folds == 1 & self$apply_cross_fitting) {
+      message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+      self$apply_cross_fitting = FALSE
+    }
+    
     self$smpls = smpls
     
     private$initialize_arrays()
@@ -327,8 +355,14 @@ private = list(
     self$draw_sample_splitting = draw_sample_splitting
     self$apply_cross_fitting = apply_cross_fitting
     
+    if (self$n_folds == 1 & self$apply_cross_fitting) {
+      message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+      self$apply_cross_fitting = FALSE
+    }
+    
     if (!self$apply_cross_fitting) {
-      stopifnot(self$n_folds == 2)
+      stopifnot(self$n_folds <= 2)
+      
       if (self$dml_procedure == "dml2") {
          # redirect to dml1 which works out-of-the-box; dml_procedure is of no relevance without cross-fitting
         self$dml_procedure = "dml1"
