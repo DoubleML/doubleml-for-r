@@ -2,7 +2,7 @@
 DoubleML <- R6Class("DoubleML", public = list(
   data = NULL,
   n_folds = NULL,
-  n_rep_cross_fit = NULL,
+  n_rep = NULL,
   score = NULL,
   dml_procedure = NULL,
   draw_sample_splitting = NULL,
@@ -31,7 +31,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     # TBD: insert check for tuned params
     
-    for (i_rep in 1:self$n_rep_cross_fit) {
+    for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
       for (i_treat in 1:private$n_treat) {
@@ -81,9 +81,9 @@ DoubleML <- R6Class("DoubleML", public = list(
       stop(self$apply_cross_fitting, "Bootstrap not implemented without cross-fitting.")
     }
     
-    private$initialize_boot_arrays(n_rep, self$n_rep_cross_fit)
+    private$initialize_boot_arrays(n_rep, self$n_rep)
     
-    for (i_rep in 1:self$n_rep_cross_fit) {
+    for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
       for (i_treat in 1:private$n_treat) {
@@ -109,13 +109,13 @@ DoubleML <- R6Class("DoubleML", public = list(
       
       dummy_resampling_scheme = rsmp("repeated_cv",
                                       folds = self$n_folds,
-                                      repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
-      train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                                      repeats = self$n_rep)$instantiate(dummy_task)
+      train_ids = lapply(1:(self$n_folds * self$n_rep),
                           function(x) dummy_resampling_scheme$train_set(x))
-      test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+      test_ids = lapply(1:(self$n_folds * self$n_rep),
                          function(x) dummy_resampling_scheme$test_set(x))
       
-      smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+      smpls <- lapply(1:self$n_rep, function(i_repeat) list(
                         train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
                         test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
                               
@@ -127,7 +127,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       
       if (self$n_folds == 2) {
 
-        if (self$n_rep_cross_fit != 1) { 
+        if (self$n_rep != 1) { 
           stop("Repeated sample splitting without cross-fitting not implemented.")
         }
         
@@ -140,12 +140,12 @@ DoubleML <- R6Class("DoubleML", public = list(
       } else if (self$n_folds == 1) {
         dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
       
-        train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+        train_ids = lapply(1:(self$n_folds * self$n_rep),
                             function(x) dummy_resampling_scheme$train_set(x))
-        test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+        test_ids = lapply(1:(self$n_folds * self$n_rep),
                            function(x) dummy_resampling_scheme$test_set(x))
       
-        smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+        smpls <- lapply(1:self$n_rep, function(i_repeat) list(
                           train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
                           test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
       }
@@ -155,7 +155,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   set_samples = function(smpls) {
-    self$n_rep_cross_fit = length(smpls)
+    self$n_rep = length(smpls)
     n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
     n_folds_each_test_smpl = vapply(smpls, function(x) length(x$test_ids), integer(1L))
     
@@ -198,9 +198,9 @@ DoubleML <- R6Class("DoubleML", public = list(
     }
     
     n_obs = nrow(self$data$data_model)
-    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
+    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep)), private$n_treat) 
     names(self$ml_nuisance_params) = self$data$d_cols
-    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
+    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep)), private$n_treat) 
   
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
@@ -209,7 +209,7 @@ DoubleML <- R6Class("DoubleML", public = list(
             self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
           
-        for (i_rep in 1:self$n_rep_cross_fit) {
+        for (i_rep in 1:self$n_rep) {
           private$i_rep = i_rep
         
           # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
@@ -334,7 +334,7 @@ private = list(
   i_treat = NA,
   initialize_double_ml = function(data, 
                         n_folds,
-                        n_rep_cross_fit,
+                        n_rep,
                         score,
                         dml_procedure,
                         draw_sample_splitting,
@@ -344,13 +344,13 @@ private = list(
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
     stopifnot(is.character(score), length(score) == 1)
-    stopifnot(is.numeric(n_rep_cross_fit), length(n_rep_cross_fit) == 1)
+    stopifnot(is.numeric(n_rep), length(n_rep) == 1)
 
     self$data <- data
     self$n_folds <- n_folds
     self$dml_procedure <- dml_procedure
     self$score <- score
-    self$n_rep_cross_fit <- n_rep_cross_fit
+    self$n_rep <- n_rep
     
     self$draw_sample_splitting = draw_sample_splitting
     self$apply_cross_fitting = apply_cross_fitting
@@ -384,28 +384,28 @@ private = list(
   },
   initialize_arrays = function() {
     
-    private$psi = array(NA, dim=c(self$data$n_obs(), self$n_rep_cross_fit, private$n_treat))
-    private$psi_a = array(NA, dim=c(self$data$n_obs(), self$n_rep_cross_fit, private$n_treat))
-    private$psi_b = array(NA, dim=c(self$data$n_obs(), self$n_rep_cross_fit, private$n_treat))
+    private$psi = array(NA, dim=c(self$data$n_obs(), self$n_rep, private$n_treat))
+    private$psi_a = array(NA, dim=c(self$data$n_obs(), self$n_rep, private$n_treat))
+    private$psi_b = array(NA, dim=c(self$data$n_obs(), self$n_rep, private$n_treat))
     
     self$coef = array(NA, dim=c(private$n_treat))
     self$se = array(NA, dim=c(private$n_treat))
     
-    private$all_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit))
-    private$all_se = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit))
+    private$all_coef = array(NA, dim=c(private$n_treat, self$n_rep))
+    private$all_se = array(NA, dim=c(private$n_treat, self$n_rep))
     
     if (self$dml_procedure == "dml1") {
       if (self$apply_cross_fitting) {
-        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit, self$n_folds))
+        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep, self$n_folds))
       } else {
-        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit, 1))
+        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep, 1))
       }
     }
     
   },
-  initialize_boot_arrays = function(n_rep, n_rep_cross_fit) {
+  initialize_boot_arrays = function(n_rep, n_rep) {
     private$n_rep_boot = n_rep
-    self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep_cross_fit))
+    self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep))
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and

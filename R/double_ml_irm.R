@@ -15,7 +15,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                         ml_g, 
                         ml_m, 
                         n_folds = 5, 
-                        n_rep_cross_fit = 1,
+                        n_rep = 1,
                         score = "ATE", 
                         trimming_rule = "truncate", 
                         trimming_threshold = 1e-12,
@@ -25,7 +25,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
     
     super$initialize_double_ml(data, 
                                n_folds,
-                               n_rep_cross_fit,
+                               n_rep,
                                score, 
                                dml_procedure, 
                                draw_sample_splitting, 
