@@ -30,7 +30,7 @@ test_cases = expand.grid(learner_list = learner,
                          se_reestimate = c(FALSE),
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          tune_on_folds = c(FALSE, TRUE),
                          stringsAsFactors = FALSE)
 
@@ -70,7 +70,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                      ml_r = learner_list$mlmethod_r,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   param_grid = list(param_set_g = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),

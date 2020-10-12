@@ -11,7 +11,7 @@ test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'), # removed 're
                          se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
-                         n_rep_cross_fit = c(2, 5),
+                         n_rep = c(2, 5),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -28,7 +28,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   n_folds = 5
   plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
                  model = "plr",
-                 k = n_folds, S = n_rep_cross_fit,
+                 k = n_folds, S = n_rep,
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, score = score,
@@ -42,7 +42,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                       bootstrap = "normal", nRep = n_rep_boot)
   
   set.seed(i_setting)
-  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep_cross_fit)
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep)
   Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
   data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]], y_col = "y", 
                               d_cols = "d", x_cols = Xnames)
@@ -53,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
                                      score = score, 
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   # set params for nuisance part m
   double_mlplr_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 

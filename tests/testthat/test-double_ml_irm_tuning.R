@@ -30,7 +30,7 @@ test_cases = expand.grid(learner = learner,
                          tune_on_folds = c(FALSE, TRUE),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")

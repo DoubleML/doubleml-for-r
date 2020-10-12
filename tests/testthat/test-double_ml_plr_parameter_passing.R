@@ -17,7 +17,7 @@ test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -39,7 +39,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   set.seed(i_setting)
   plr_hat <- DML(data_plr_multi[[i_setting]], y = "y",  d = c('d1', 'd2'),
                  model = "plr",
-                 k = n_folds, S = n_rep_cross_fit,
+                 k = n_folds, S = n_rep,
                  mlmethod = learner_pars_for_DML$mlmethod,
                  params = learner_pars_for_DML$params,
                  dml_procedure = dml_procedure, score = score,
@@ -64,7 +64,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                      ml_m = learner_list$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_g", params = params_g$d1)
   double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_g", params = params_g$d2)
@@ -78,7 +78,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   
   # Passing for non-cross-fitting case 
   
-  if (n_rep_cross_fit == 1) {
+  if (n_rep == 1) {
     
     set.seed(i_setting)
     double_mlplr_obj_nocf = DoubleMLPLR$new(data_ml, 
@@ -87,7 +87,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                        ml_m = learner_list$mlmethod_m,
                                        dml_procedure = dml_procedure, 
                                        score = score,
-                                       n_rep_cross_fit = n_rep_cross_fit,
+                                       n_rep = n_rep,
                                        apply_cross_fitting = FALSE)
     
     double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_g", params = params_g$d1)
@@ -110,13 +110,13 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   # export_params_g = list("g_params" = rep(list(list(params_g[[1]])), n_folds))
   # learner_pars_exact_params = learner_pars_once$params
   # names(learner_pars_exact_params) = c("g_params", "m_params")
-  # learner_pars_exact_params = rep(list(rep(list(learner_pars_exact_params), n_folds)), n_rep_cross_fit)
+  # learner_pars_exact_params = rep(list(rep(list(learner_pars_exact_params), n_folds)), n_rep)
   # 
   # exact_ml_nuisance_params = list()
   # exact_ml_nuisance_params[["d1"]] = learner_pars_exact_params
   # exact_ml_nuisance_params[["d2"]] = learner_pars_exact_params
   # 
-  # # learner_pars_exact <- rep(list(rep(list(rep(list(learner_pars_once$params), n_folds)), n_rep_cross_fit)), 2)
+  # # learner_pars_exact <- rep(list(rep(list(rep(list(learner_pars_once$params), n_folds)), n_rep)), 2)
   # 
   # set.seed(i_setting)
   # 
@@ -127,7 +127,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   #                                    ml_m = learner_list$mlmethod_m,
   #                                    dml_procedure = dml_procedure, 
   #                                    score = score,
-  #                                    n_rep_cross_fit = n_rep_cross_fit)
+  #                                    n_rep = n_rep)
   # 
   # double_mlplr_obj_exact$set__ml_nuisance_params(treat_var = NULL, nuisance_part = NULL, params = exact_ml_nuisance_params)
   # 
@@ -148,7 +148,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                      ml_m = learner_list$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   double_mlplr_obj_default$fit()
   
