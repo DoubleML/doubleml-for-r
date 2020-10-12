@@ -197,7 +197,7 @@ private = list(
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
-      g_hat <- rearrange_prediction(g_hat)
+      g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
       
       # TBD: 1-iv vs. multi-iv case
       if (data$n_instr() > 1) {
@@ -209,14 +209,14 @@ private = list(
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prediction)
-      m_hat = rearrange_prediction(m_hat)
+      m_hat = rearrange_prediction(m_hat, smpls$test_ids)
       
       ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
                                                                         x[[1]]))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = lapply(r_r, extract_prediction)
-      r_hat = rearrange_prediction(r_hat)
+      r_hat = rearrange_prediction(r_hat, smpls$test_ids)
       
     }
     
@@ -303,14 +303,14 @@ private = list(
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
-      g_hat <- rearrange_prediction(g_hat)
+      g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
       
       ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
                                                                         x[[1]]))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = lapply(r_r, extract_prediction)
-      r_hat = rearrange_prediction(r_hat)
+      r_hat = rearrange_prediction(r_hat, smpls$test_ids)
       
       # nuisance r_tilde: Predict residuals from nuisance r, only with X
       data_aux = data.table(data$data_model, r_hat)
@@ -323,7 +323,7 @@ private = list(
       resampling_r_tilde = initiate_resampling(task_r_tilde, smpls$train_ids, smpls$test_ids)
       r_r_tilde = resample_dml(task_r_tilde, ml_r_tilde, resampling_r_tilde, store_models = TRUE)
       r_hat_tilde = lapply(r_r_tilde, extract_prediction)
-      r_hat_tilde = rearrange_prediction(r_hat_tilde)
+      r_hat_tilde = rearrange_prediction(r_hat_tilde, smpls$test_ids)
   
     }
     
@@ -369,7 +369,7 @@ private = list(
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = lapply(r_r, extract_prediction)
-      r_hat = rearrange_prediction(r_hat)
+      r_hat = rearrange_prediction(r_hat, smpls$test_ids)
     }
     
     D <- data$data_model[, data$treat_col, with = FALSE]

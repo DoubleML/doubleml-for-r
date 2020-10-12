@@ -1,13 +1,19 @@
 
 extract_prediction = function(obj_resampling) {
-  f_hat <- as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = as.data.table(obj_resampling$prediction())
+  f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
   setorder(f_hat, 'row_id')
   f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
   
   return(f_hat)
 }
 
-rearrange_prediction = function(prediction_list){
+rearrange_prediction = function(prediction_list, test_ids){
+    
+    # if (length(test_ids) > 1) {
+      # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
+    prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
     predictions <- rbindlist(prediction_list)
     setorder(predictions, 'row_id')
     predictions <- predictions$response
@@ -16,14 +22,17 @@ rearrange_prediction = function(prediction_list){
 
 
 extract_prob_prediction = function(obj_resampling) {
-  f_hat <- as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = as.data.table(obj_resampling$prediction())
+  f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
   setorder(f_hat, 'row_id')
   f_hat <- as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
   
   return(f_hat)
 }
 
-rearrange_prob_prediction = function(prediction_list){
+rearrange_prob_prediction = function(prediction_list, test_ids){
+    prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
     predictions <- rbindlist(prediction_list)
     setorder(predictions, 'row_id')
     predictions <- predictions$prob.1
@@ -123,19 +132,23 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
     task = mlr3::assert_task(as_task(task, clone = TRUE))
     checkmate::check_list(learner)
     checkmate::check_list(resampling)
-    learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
-    resampling = lapply(resampling, function(x) mlr3::assert_resampling(as_resampling(x)))
-    # mlr3::assert_flag(store_models)
-    instance = lapply(resampling, function(x) x$clone(deep = TRUE))
+    
+    # if (length(resampling) > 1) {
+      # Note: length(resampling) = 1 only if apply_cross_fitting == FALSE
+      learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
+      resampling = lapply(resampling, function(x) mlr3::assert_resampling(as_resampling(x)))
+      # mlr3::assert_flag(store_models)
+      instance = lapply(resampling, function(x) x$clone(deep = TRUE))
+      res = lapply(1:length(learner), function(x) mlr3::resample(task, learner[[x]], 
+                                                    resampling[[x]], store_models = store_models))
+    # } else {
+    #     
+    #   }
     
     # TBD: handle non-instantiated resampling (but should not be necessary -> initiate_resampling)
     # if (!any(instance$is_instantiated)) {
     #     instance = lapply(instance, function(x) x$instantiate(task))
     # }
-
-    res = lapply(1:length(learner), function(x) mlr3::resample(task, learner[[x]], 
-                                                    resampling[[x]], store_models = store_models))
-      
     return(res)
 
 }

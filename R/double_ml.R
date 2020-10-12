@@ -20,12 +20,16 @@ DoubleML <- R6Class("DoubleML", public = list(
     stop("DoubleML is an abstract class that can't be initialized.")
   },
   
-  
   fit = function(se_reestimate = FALSE) {
     
-    # TBD: insert check for tuned params
+    if (!self$apply_cross_fitting) {
+      if (se_reestimate) {
+        # redirect to se_reestimate = False; se_reestimate is of no relevance without cross-fitting
+        se_reestimate = FALSE
+      }
+    }
     
-    private$initialize_arrays()
+    # TBD: insert check for tuned params
     
     for (i_rep in 1:self$n_rep_cross_fit) {
       private$i_rep = i_rep
@@ -50,7 +54,6 @@ DoubleML <- R6Class("DoubleML", public = list(
         # estimate the causal parameter(s)
         coef <- private$est_causal_pars()
         private$set__all_coef(coef)
-        
         # compute psi (depends on estimated causal parameter)
         private$compute_score()
         
@@ -69,6 +72,15 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   bootstrap = function(method='normal', n_rep = 500) {
+    
+    if (all(is.na(private$psi))) {
+      stop("Apply fit() before bootstrap().")      
+    }
+    
+    if (!self$apply_cross_fitting) {
+      stop(self$apply_cross_fitting, "Bootstrap not implemented without cross-fitting.")
+    }
+    
     private$initialize_boot_arrays(n_rep, self$n_rep_cross_fit)
     
     for (i_rep in 1:self$n_rep_cross_fit) {
@@ -85,19 +97,60 @@ DoubleML <- R6Class("DoubleML", public = list(
     invisible(self)
   },
   split_samples = function() {
+
     dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
-    dummy_resampling_scheme <- rsmp("repeated_cv",
-                                    folds = self$n_folds,
-                                    repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
     
-    train_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
-                        function(x) dummy_resampling_scheme$train_set(x))
-    test_ids <- lapply(1:(self$n_folds * self$n_rep_cross_fit),
-                       function(x) dummy_resampling_scheme$test_set(x))
-    smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
-      train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
-      test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
-    
+     if (self$n_folds == 1 & self$apply_cross_fitting) {
+      message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+      self$apply_cross_fitting = FALSE
+    }
+
+    if (self$apply_cross_fitting) {
+      
+      dummy_resampling_scheme = rsmp("repeated_cv",
+                                      folds = self$n_folds,
+                                      repeats = self$n_rep_cross_fit)$instantiate(dummy_task)
+      train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                          function(x) dummy_resampling_scheme$train_set(x))
+      test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                         function(x) dummy_resampling_scheme$test_set(x))
+      
+      smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+                        train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
+                        test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
+                              
+    }  else {
+      
+      if (self$n_folds > 2) {
+        stop("Estimation without cross-fitting not supported for n_folds > 2.")
+      }
+      
+      if (self$n_folds == 2) {
+
+        if (self$n_rep_cross_fit != 1) { 
+          stop("Repeated sample splitting without cross-fitting not implemented.")
+        }
+        
+        dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
+        train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
+        test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
+        
+        smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+        
+      } else if (self$n_folds == 1) {
+        dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
+      
+        train_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                            function(x) dummy_resampling_scheme$train_set(x))
+        test_ids = lapply(1:(self$n_folds * self$n_rep_cross_fit),
+                           function(x) dummy_resampling_scheme$test_set(x))
+      
+        smpls <- lapply(1:self$n_rep_cross_fit, function(i_repeat) list(
+                          train_ids = train_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)],
+                          test_ids = test_ids[((i_repeat-1)*self$n_folds + 1):(i_repeat*self$n_folds)]))
+      }
+    }
+
     self$smpls <- smpls
     invisible(self)
   },
@@ -115,7 +168,15 @@ DoubleML <- R6Class("DoubleML", public = list(
     }
     
     self$n_folds = n_folds_each_train_smpl[1]
+    
+     if (self$n_folds == 1 & self$apply_cross_fitting) {
+      message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+      self$apply_cross_fitting = FALSE
+    }
+    
     self$smpls = smpls
+    
+    private$initialize_arrays()
     
     invisible(self)
   }, 
@@ -131,6 +192,11 @@ DoubleML <- R6Class("DoubleML", public = list(
                                         algorithm = "grid_search",
                                         tuner = "grid_search",
                                         resolution = 5)) {
+    
+    if (!self$apply_cross_fitting){
+      stop("Parameter tuning for no-cross-fitting case not implemented.")
+    }
+    
     n_obs = nrow(self$data$data_model)
     self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep_cross_fit)), private$n_treat) 
     names(self$ml_nuisance_params) = self$data$d_cols
@@ -259,6 +325,7 @@ private = list(
   psi_a = NULL,
   psi_b = NULL,
   all_coef = NULL,
+  all_dml1_coef = NULL,
   all_se = NULL,
   n_obs = NULL,
   n_treat = NULL,
@@ -286,30 +353,54 @@ private = list(
     self$n_rep_cross_fit <- n_rep_cross_fit
     
     self$draw_sample_splitting = draw_sample_splitting
+    self$apply_cross_fitting = apply_cross_fitting
+    
+    if (self$n_folds == 1 & self$apply_cross_fitting) {
+      message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+      self$apply_cross_fitting = FALSE
+    }
+    
+    if (!self$apply_cross_fitting) {
+      stopifnot(self$n_folds <= 2)
+      
+      if (self$dml_procedure == "dml2") {
+         # redirect to dml1 which works out-of-the-box; dml_procedure is of no relevance without cross-fitting
+        self$dml_procedure = "dml1"
+      }
+    }
     
     if (draw_sample_splitting) {
       self$split_samples()
     } else {
       self$smpls = NULL
     }
-    
-    self$apply_cross_fitting = apply_cross_fitting
+
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
+    
+    private$initialize_arrays()
     
     invisible(self)
   },
   initialize_arrays = function() {
     
-    private$psi = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
-    private$psi_a = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
-    private$psi_b = array(NA, dim=c(private$n_obs, self$n_rep_cross_fit, private$n_treat))
+    private$psi = array(NA, dim=c(self$data$n_obs(), self$n_rep_cross_fit, private$n_treat))
+    private$psi_a = array(NA, dim=c(self$data$n_obs(), self$n_rep_cross_fit, private$n_treat))
+    private$psi_b = array(NA, dim=c(self$data$n_obs(), self$n_rep_cross_fit, private$n_treat))
     
     self$coef = array(NA, dim=c(private$n_treat))
     self$se = array(NA, dim=c(private$n_treat))
     
     private$all_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit))
     private$all_se = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit))
+    
+    if (self$dml_procedure == "dml1") {
+      if (self$apply_cross_fitting) {
+        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit, self$n_folds))
+      } else {
+        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep_cross_fit, 1))
+      }
+    }
     
   },
   initialize_boot_arrays = function(n_rep, n_rep_cross_fit) {
@@ -328,6 +419,7 @@ private = list(
   set__psi = function(value) private$psi[, private$i_rep, private$i_treat] <- value,
   get__all_coef = function() private$all_coef[private$i_treat, private$i_rep],
   set__all_coef = function(value) private$all_coef[private$i_treat, private$i_rep] <- value,
+  set__all_dml1_coef = function(value) private$all_dml1_coef[private$i_treat, private$i_rep, ] <- value,
   get__all_se = function() private$all_se[private$i_treat, private$i_rep],
   set__all_se = function(value) private$all_se[private$i_treat, private$i_rep] <- value,
   get__boot_coef = function() {
@@ -376,13 +468,16 @@ private = list(
     test_ids = smpls$test_ids
     
     if (dml_procedure == "dml1") {
-      thetas <- rep(NA, n_folds)
-      for (i_fold in 1:n_folds) {
+      # Note that length(test_ids) is only not equal to self.n_folds if self$apply_cross_fitting ==False
+      thetas <- rep(NA, length(test_ids))
+      for (i_fold in 1:length(test_ids)) {
         test_index <- test_ids[[i_fold]]
         thetas[i_fold] <- private$orth_est(inds=test_index)
       }
       coef <- mean(thetas, na.rm = TRUE)
+      private$set__all_dml1_coef(thetas)
     }
+    
     else if (dml_procedure == "dml2") {
       coef <- private$orth_est()
     }
@@ -396,9 +491,10 @@ private = list(
     test_ids = smpls$test_ids
     
     if (dml_procedure == "dml1") {
-      vars <-  rep(NA, n_folds)
+      vars <-  rep(NA, length(test_ids))
       if (se_reestimate == FALSE) {
-        for (i_fold in 1:n_folds) {
+        for (i_fold in 1:length(test_ids)) {
+          # Note that length(test_ids) is only not equal to self.n_folds if self$apply_cross_fitting == False
           test_index <- test_ids[[i_fold]]
           vars[i_fold] <- private$var_est(inds=test_index)
         }
