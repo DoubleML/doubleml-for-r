@@ -81,7 +81,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       stop(self$apply_cross_fitting, "Bootstrap not implemented without cross-fitting.")
     }
     
-    private$initialize_boot_arrays(n_rep, self$n_rep)
+    private$initialize_boot_arrays(n_rep)
     
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
@@ -403,9 +403,9 @@ private = list(
     }
     
   },
-  initialize_boot_arrays = function(n_rep, n_rep) {
+  initialize_boot_arrays = function(n_rep) {
     private$n_rep_boot = n_rep
-    self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * n_rep))
+    self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * self$n_rep))
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
