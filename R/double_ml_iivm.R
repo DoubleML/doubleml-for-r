@@ -19,7 +19,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
                         ml_mu, 
                         ml_m, 
                         n_folds = 5,
-                        n_rep_cross_fit = 1, 
+                        n_rep = 1, 
                         score = "LATE", 
                         subgroups = list(always_takers = TRUE, never_takers = TRUE),
                         dml_procedure = "dml2", 
@@ -30,7 +30,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
     
     super$initialize_double_ml(data, 
                                n_folds,
-                               n_rep_cross_fit,
+                               n_rep,
                                score, 
                                dml_procedure, 
                                draw_sample_splitting, 

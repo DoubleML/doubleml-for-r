@@ -13,7 +13,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                         ml_g,
                         ml_m,
                         n_folds = 5,
-                        n_rep_cross_fit = 1,
+                        n_rep = 1,
                         score = "partialling out", 
                         dml_procedure = "dml2",
                         draw_sample_splitting = TRUE,
@@ -21,7 +21,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
     
     super$initialize_double_ml(data, 
                         n_folds,
-                        n_rep_cross_fit,
+                        n_rep,
                         score,
                         dml_procedure,
                         draw_sample_splitting,
@@ -55,13 +55,13 @@ DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
           if (nuisance_part == "ml_m"){
             self$m_params[[treat_var]] = params
             # export_params_m = list("m_params" = rep(list(list(params)), self$n_folds))
-            # self$ml_nuisance_params[[treat_var]] = rep(list(export_params_m), self$n_rep_cross_fit)
+            # self$ml_nuisance_params[[treat_var]] = rep(list(export_params_m), self$n_rep)
           }
           
           if (nuisance_part == "ml_g"){
             self$g_params[[treat_var]] = params
             # export_params_m = list("g_params" = rep(list(list(params)), self$n_folds))
-            # self$ml_nuisance_params[[treat_var]] = rep(list(export_params_m), self$n_rep_cross_fit)
+            # self$ml_nuisance_params[[treat_var]] = rep(list(export_params_m), self$n_rep)
           }
 
         }
