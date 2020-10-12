@@ -77,10 +77,6 @@ DoubleML <- R6Class("DoubleML", public = list(
       stop("Apply fit() before bootstrap().")      
     }
     
-    if (!self$apply_cross_fitting) {
-      stop(self$apply_cross_fitting, "Bootstrap not implemented without cross-fitting.")
-    }
-    
     private$initialize_boot_arrays(n_rep)
     
     for (i_rep in 1:self$n_rep) {
@@ -525,35 +521,48 @@ private = list(
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
     
+    if (apply_cross_fitting) {
+      n_obs = private$n_obs
+    } else {
+      test_index = test_ids[[1]]
+      n_obs = length(test_index)
+    }
+    
     if (method == "Bayes") {
-      weights <- stats::rexp(n_rep * private$n_obs, rate = 1) - 1
+      weights <- stats::rexp(n_rep * n_obs, rate = 1) - 1
     } else if (method == "normal") {
-      weights <- stats::rnorm(n_rep * private$n_obs)
+      weights <- stats::rnorm(n_rep * n_obs)
     } else if (method == "wild") {
-      weights <- stats::rnorm(n_rep * private$n_obs)/sqrt(2) + (stats::rnorm(n_rep * private$n_obs)^2 - 1)/2
+      weights <- stats::rnorm(n_rep * n_obs)/sqrt(2) + (stats::rnorm(n_rep * n_obs)^2 - 1)/2
     }
     
     # for alignment with the functional (loop-wise) implementation we fill by row
-    weights <- matrix(weights, nrow = n_rep, ncol = private$n_obs, byrow=TRUE)
+    weights <- matrix(weights, nrow = n_rep, ncol = n_obs, byrow=TRUE)
     
-    if (dml_procedure == "dml1") {
-      boot_coefs <- matrix(NA, nrow = n_rep, ncol = self$n_folds)
-      ii = 0
-      for (i_fold in 1:self$n_folds) {
-        test_index <- test_ids[[i_fold]]
-        n_obs_in_fold = length(test_index)
-        
-        J = mean(private$get__psi_a()[test_index])
-        boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__psi()[test_index] / (
-          n_obs_in_fold * private$get__all_se() * J)
-        ii = ii + n_obs_in_fold
+    if (self$apply_cross_fitting) {
+      if (dml_procedure == "dml1") {
+        boot_coefs <- matrix(NA, nrow = n_rep, ncol = self$n_folds)
+        ii = 0
+        for (i_fold in 1:self$n_folds) {
+          test_index <- test_ids[[i_fold]]
+          n_obs_in_fold = length(test_index)
+          
+          J = mean(private$get__psi_a()[test_index])
+          boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__psi()[test_index] / (
+            n_obs_in_fold * private$get__all_se() * J)
+          ii = ii + n_obs_in_fold
+        }
+        boot_coef = rowMeans(boot_coefs)
       }
-      boot_coef = rowMeans(boot_coefs)
-    }
-    else if (dml_procedure == "dml2") {
+      else if (dml_procedure == "dml2") {
+        
+        J = mean(private$get__psi_a())
+        boot_coef = weights %*% private$get__psi() / (n_obs * private$get__all_se() * J)
+      }
       
-      J = mean(private$get__psi_a())
-      boot_coef = weights %*% private$get__psi() / (private$n_obs * private$get__all_se() * J)
+    } else {
+      J =  mean(private$get__psi_a()[test_index])
+       boot_coef = weights %*% private$get__psi()[test_index] / (n_obs * private$get__all_se() * J)
     }
     
     return(boot_coef)
@@ -568,7 +577,8 @@ private = list(
     if (self$apply_cross_fitting) {
       n_obs = private$n_obs
     } else {
-      test_index = self$smpls[[1]]$test_ids[[1]]
+      smpls = private$get__smpls()
+      test_index = smpls$test_ids[[1]]
       n_obs = length(test_index)
     }
     J = mean(psi_a)
