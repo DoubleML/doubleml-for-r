@@ -565,9 +565,15 @@ private = list(
       psi_a = psi_a[inds]
       psi = psi[inds]
     }
-    
+    if (self$apply_cross_fitting) {
+      n_obs = private$n_obs
+    } else {
+      test_index = self$smpls[[1]]$test_ids[[1]]
+      n_obs = length(test_index)
+    }
     J = mean(psi_a)
-    sigma2_hat = 1/private$n_obs * mean(psi^2) / (J^2)
+    sigma2_hat = 1/n_obs * mean(psi^2) / (J^2)
+    return(sigma2_hat)
   },
   orth_est = function(inds=NULL) {
     psi_a = private$get__psi_a()
@@ -577,6 +583,7 @@ private = list(
       psi_b = psi_b[inds]
     }
     theta = -mean(psi_b) / mean(psi_a)
+    return(theta)
   },
   compute_score = function() {
     psi = private$get__psi_a() * private$get__all_coef() + private$get__psi_b()
