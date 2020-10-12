@@ -56,38 +56,46 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   pval_obj <- double_mlplr_obj$pval
   ci_obj <- double_mlplr_obj$confint(level = 0.95, joint = FALSE)
   
-  dml_plr_obj_external = DoubleMLPLR$new(data = data_ml, 
-                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
-                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
-                                     dml_procedure = dml_procedure, 
-                                     n_folds = n_folds,
-                                     score = score, 
-                                     draw_sample_splitting = FALSE, apply_cross_fitting = FALSE)
-
-  set.seed(i_setting)
-  # set up a task and cross-validation resampling scheme in mlr3
-  my_task = Task$new("help task", "regr", data_plr[[i_setting]])
-  my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
-  train_ids = list("train_ids" = my_sampling$train_set(1))
-  test_ids = list("test_ids" = my_sampling$test_set(1))
   
-  smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+  if (n_folds == 2) {
+    dml_plr_obj_external = DoubleMLPLR$new(data = data_ml, 
+                                       ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
+                                       ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
+                                       dml_procedure = dml_procedure, 
+                                       n_folds = n_folds,
+                                       score = score, 
+                                       draw_sample_splitting = FALSE, apply_cross_fitting = FALSE)
   
-  dml_plr_obj_external$set_samples(smpls)
-  dml_plr_obj_external$fit()
-
-  theta_external <- dml_plr_obj_external$coef
-  se_external <- dml_plr_obj_external$se
-  t_external <- dml_plr_obj_external$t
-  pval_external <- dml_plr_obj_external$pval
-  ci_external <- dml_plr_obj_external$confint(level = 0.95, joint = FALSE)
+    set.seed(i_setting)
+    # set up a task and cross-validation resampling scheme in mlr3
+    my_task = Task$new("help task", "regr", data_plr[[i_setting]])
+    my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
+    train_ids = list("train_ids" = my_sampling$train_set(1))
+    test_ids = list("test_ids" = my_sampling$test_set(1))
+    
+    smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+    
+    dml_plr_obj_external$set_samples(smpls)
+    dml_plr_obj_external$fit()
   
-  expect_identical(double_mlplr_obj$smpls, dml_plr_obj_external$smpls)  
-  expect_equal(theta_external, theta_obj, tolerance = 1e-8)
-  expect_equal(se_external, se_obj, tolerance = 1e-8)
-  expect_equal(t_external, t_obj, tolerance = 1e-8)
-  expect_equal(pval_external, pval_obj, tolerance = 1e-8)
-  expect_equal(ci_external, ci_obj, tolerance = 1e-8)
+    theta_external <- dml_plr_obj_external$coef
+    se_external <- dml_plr_obj_external$se
+    t_external <- dml_plr_obj_external$t
+    pval_external <- dml_plr_obj_external$pval
+    ci_external <- dml_plr_obj_external$confint(level = 0.95, joint = FALSE)
+    
+    expect_identical(double_mlplr_obj$smpls, dml_plr_obj_external$smpls)  
+    expect_equal(theta_external, theta_obj, tolerance = 1e-8)
+    expect_equal(se_external, se_obj, tolerance = 1e-8)
+    expect_equal(t_external, t_obj, tolerance = 1e-8)
+    expect_equal(pval_external, pval_obj, tolerance = 1e-8)
+    expect_equal(ci_external, ci_obj, tolerance = 1e-8)
+  
+  } else {
+    expect_true(is.numeric(theta_obj))
+    expect_true(is.numeric(se_obj))
+    
+  }
 
   # expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   
