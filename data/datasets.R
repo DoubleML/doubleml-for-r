@@ -69,7 +69,7 @@ g = function(x){
   
 #' @export
 make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X_y_d = FALSE){
-
+  
   b = 1/(1:n_features)
   sigma = clusterGeneration::genPositiveDefMat(n_features)
   X = mvtnorm::rmvnorm(n = n_samples, mean = rep(0, n_features), sigma = sigma$Sigma)
@@ -102,7 +102,29 @@ make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X
 
 
 
+#' @export
+make_plr_CCDDHNR2018 = function(n_samples = 500, n_features = 20, alpha = 0.5, return_X_y_d = FALSE){
 
+  cov_mat = stats::toeplitz(0.7^(0:(n_features - 1)))
+  a_1 = 0.25
+  b_1 = 0.25
+  x = mvtnorm::rmvnorm(n = n_samples, mean = rep(0, n_features), sigma = cov_mat)
+  
+  d = as.matrix( x[,1] + a_1*(exp(x[,2])/(1+exp(x[,2]))) + stats::rnorm(n_samples))
+  y = as.matrix( alpha * d + exp(x[,2])/(1+exp(x[,2])) + b_1 * x[,2] + stats::rnorm(n_samples))
+  
+  colnames(X) = paste0("X", 1:n_features)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  
+  if (return_X_y_d) {
+    return(list("X" = X, "y" = y, "d" = d))
+  } else {
+
+    data = data.table::data.table(X, y, d)
+    return(data)
+  }
+}
 
 
 
