@@ -17,7 +17,7 @@ test_cases = expand.grid(learner = learner,
                          se_reestimate = c(FALSE),
                          score = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   #                       params = learner_pars$params,
   #                       dml_procedure = dml_procedure, score = score,
   #                       se_type = score,
-  #                       bootstrap = "normal",  S = n_rep_cross_fit, 
+  #                       bootstrap = "normal",  S = n_rep, 
   #                       nRep = n_rep_boot)
   # theta <- coef(iivm_hat)
   # se <- iivm_hat$se

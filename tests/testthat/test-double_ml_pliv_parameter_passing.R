@@ -18,7 +18,7 @@ test_cases = expand.grid(learner = learner,
                          se_reestimate = c(FALSE),
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -39,7 +39,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   
   set.seed(i_setting)
   pliv_hat <- dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
-                        k = n_folds, S = n_rep_cross_fit, 
+                        k = n_folds, S = n_rep, 
                         mlmethod = learner_list,
                         params = learner_pars_once$params,
                         dml_procedure = dml_procedure, score = score,
@@ -50,7 +50,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
   
 
   # exact parameter provision
-  # learner_pars_exact <- rep(list(rep(list(learner_pars_once$params), 1)), n_rep_cross_fit)
+  # learner_pars_exact <- rep(list(rep(list(learner_pars_once$params), 1)), n_rep)
   params_g = list("d" = learner_pars_once$params$params_g)
   params_m = list("d" = learner_pars_once$params$params_m)
   params_r = list("d" = learner_pars_once$params$params_r)
@@ -68,7 +68,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      ml_r = learner_list$mlmethod_r,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", nuisance_part = "ml_g", params = params_g$d)
   double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", nuisance_part = "ml_m", params = params_m$d)
@@ -95,7 +95,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      ml_r = learner_list$mlmethod_r,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   double_mlpliv_obj_default$fit()
   

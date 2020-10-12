@@ -29,7 +29,7 @@ test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          tune_on_folds = c(FALSE, TRUE),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
@@ -70,7 +70,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                      ml_m = learner_list$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score, 
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   param_grid = list(param_set_g = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),

@@ -17,7 +17,7 @@ test_cases = expand.grid(learner = learner,
                          score = c('ATE', 'ATTE'),
                          se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
-                         n_rep_cross_fit = c(1, 3),
+                         n_rep = c(1, 3),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -37,13 +37,13 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
   #                    params = learner_pars$params,
   #                    dml_procedure = dml_procedure, score = score,
   #                    se_type = score,
-  #                    bootstrap = "normal",  S = n_rep_cross_fit,
+  #                    bootstrap = "normal",  S = n_rep,
   #                    nRep = n_rep_boot)
   # theta <- coef(irm_hat)
   # se <- irm_hat$se
 
   set.seed(i_setting)
-  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep_cross_fit)
+  params_OOP <- rep(list(rep(list(learner_pars$params), 1)), n_rep)
 
   Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d") == FALSE]
   
@@ -56,7 +56,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
                                      ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   # set params for nuisance part m
   double_mlirm_obj_once$set__ml_nuisance_params(nuisance_part = "ml_m", 
@@ -82,7 +82,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
                                      ml_m = learner_pars$mlmethod$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
-                                     n_rep_cross_fit = n_rep_cross_fit)
+                                     n_rep = n_rep)
   
   double_mlirm_obj_default$fit()
   theta_obj_default <- double_mlirm_obj_default$coef
