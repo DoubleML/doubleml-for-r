@@ -170,24 +170,7 @@ private = list(
         r_m = lapply(task_m, function(x) mlr3::resample(x, ml_m, resampling_m, store_models = TRUE))
         m_hat = lapply(r_m, extract_prediction)
         m_hat = vapply(m_hat, function(x) x$response, double(data$n_obs()))
-        
-        # Projection: r_hat from projection on m_hat
-        r_tilde = r_hat - data$data_model[, data$treat_col, with = FALSE]
-        m_tilde = m_hat - data$data_model[, data$z_cols, with = FALSE]
-        
-        data_aux = data.table(r_tilde, m_tilde)
-        task_r_tilde = initiate_regr_task("nuis_r_tilde", data_aux, skip_cols = NULL, 
-                                            target = "r_tilde")
-        ml_r_tilde <- initiate_learner("regr.lm", params = list())
-        # If Z is high-dimensional
-        # ml_r_tilde <- initiate_learner("regr.cv_glmnet", params = list())
-        resampling_r_tilde <- mlr3::rsmp("custom")$instantiate(task_r_tilde,
-                                                       smpls$train_ids,
-                                                       smpls$test_ids)
-        r_r_tilde <- mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde, store_models = TRUE)
-        r_tilde_hat <- extract_prediction(r_r_tilde)$response
-        
-      }
+     }
 
     }
     
@@ -219,17 +202,32 @@ private = list(
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
       
     }
+  
+    d = data$data_model[, data$treat_col, with = FALSE]
+    y = data$data_model[, data$y_col, with = FALSE]
+    z = data$data_model[, data$z_cols, with = FALSE]
     
-    D <- data$data_model[, data$treat_col, with = FALSE]
-    Y <- data$data_model[, data$y_col, with = FALSE]
-    Z <- data$data_model[, data$z_cols, with = FALSE]
+    u_hat = y - g_hat
+    w_hat = d - r_hat
+    v_hat = z - m_hat
     
-    u_hat <- Y - g_hat
-    w_hat <- D - r_hat
-
+    if (data$n_instr() > 1) {
+      
+      stopifnot(self$apply_cross_fitting) 
+      
+      # Projection: r_hat from projection on m_hat
+      data_aux = data.table::data.table(w_hat, v_hat)
+      task_r_tilde = initiate_regr_task("nuis_r_tilde", data_aux, skip_cols = NULL, 
+                                        target = "w_hat")
+      ml_r_tilde = initiate_learner("regr.lm", params = list())
+      resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
+      r_r_tilde <- mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
+                                  store_models = TRUE)
+      r_hat_tilde <- extract_prediction(r_r_tilde)$response
+    }
+    
+    
     if (data$n_instr() == 1) {
-      v_hat <- Z - m_hat
-
       if (self$score == 'partialling out') {
         psi_a = -w_hat * v_hat
         psi_b = v_hat * u_hat
@@ -237,8 +235,8 @@ private = list(
       
     } else {
       if (self$score == 'partialling out') {
-        psi_a = -w_hat * r_tilde_hat
-        psi_b = r_tilde_hat * u_hat
+        psi_a = -w_hat * r_hat_tilde
+        psi_b = r_hat_tilde * u_hat
       }
     }
       
