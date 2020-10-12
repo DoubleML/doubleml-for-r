@@ -521,7 +521,7 @@ private = list(
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
     
-    if (apply_cross_fitting) {
+    if (self$apply_cross_fitting) {
       n_obs = private$n_obs
     } else {
       test_index = test_ids[[1]]
