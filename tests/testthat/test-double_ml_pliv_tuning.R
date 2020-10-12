@@ -6,7 +6,12 @@ library("paradox")
 library('data.table')
 library('mlr3')
 
+requireNamespace("lgr")
+
+logger = lgr::get_logger("bbotk")
+logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
+
 
 # settings for parameter provision
 learner = c('regr.rpart')
