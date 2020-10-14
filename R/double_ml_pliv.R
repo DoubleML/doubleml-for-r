@@ -11,7 +11,8 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   partialX = NULL, 
   partialZ = NULL, 
   g_params = NULL, 
-  m_params = NULL, 
+  m_params = NULL,
+  m_params_mult_instr = NULL,
   r_params = NULL,
   
   initialize = function(data, 
@@ -40,46 +41,92 @@ DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
     self$partialZ = FALSE
   }, 
   
- set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, params) {
+ set__ml_nuisance_params = function(nuisance_part = NULL, treat_var = NULL, instr_var = NULL, 
+                                    params) {
     
-        # pass through internal parameter list (case: tuning with on_fold)
-        if (is.null(nuisance_part) & is.null(treat_var)) {
-          self$g_params = params$g_params
-          self$m_params = params$m_params
-          self$r_params = params$r_params
+      # pass through internal parameter list (case: tuning with on_fold)
+      if (is.null(nuisance_part) & is.null(treat_var)) {
+        self$g_params = params$g_params
+        self$r_params = params$r_params
+        self$m_params = params$m_params
         
-        } else {
-          
-          checkmate::check_subset(treat_var, self$data$d_cols)
-
+        if (self$partialX & self$data$n_instr()>1) {
+          self$m_params_mult_instr = params$m_params_mult_instr
+        }
+      } else {
+        checkmate::check_subset(treat_var, self$data$d_cols)
+        
+        if (self$partialX & !self$partialZ) {
           if (is.null(self$g_params)){
-            self$g_params = vector("list", length = length(self$data$d_cols))
+            self$g_params = vector("list", length = self$data$n_treat())
             names(self$g_params) = self$data$d_cols
           }
-          
-          if (is.null(self$m_params)){
-            self$m_params = vector("list", length = length(self$data$d_cols))
-            names(self$m_params) = self$data$d_cols
-          }
-          
           if (is.null(self$r_params)){
-            self$r_params = vector("list", length = length(self$data$d_cols))
+            self$r_params = vector("list", length = self$data$n_treat())
             names(self$r_params) = self$data$d_cols
           }
-          
-          if (nuisance_part == "ml_m"){
-            self$m_params[[treat_var]] = params
+          if (self$data$n_instr() == 1) {
+            if (is.null(self$m_params)){
+              self$m_params = vector("list", length = self$data$n_treat())
+              names(self$m_params) = self$data$d_cols
+            }
+          } else {
+              if (is.null(self$m_params_mult_instr)){
+                params_NULL = vector("list", length = self$data$n_treat())
+                names(params_NULL) = self$data$d_cols
+                self$m_params_mult_instr = rep(list(params_NULL), self$data$n_instr())
+                names(self$m_params_mult_instr) = self$data$z_cols
+              }
           }
-          
-          if (nuisance_part == "ml_g"){
+            if (nuisance_part == "ml_g"){
             self$g_params[[treat_var]] = params
-          }
+            }
           
-          if (nuisance_part == "ml_r"){
-            self$r_params[[treat_var]] = params
-          }
-
+            if (nuisance_part == "ml_r"){
+              self$r_params[[treat_var]] = params
+            }
+            
+            if (self$data$n_instr() == 1) {
+              if (nuisance_part == "ml_m"){
+                self$m_params[[treat_var]] = params
+              }
+            } else {
+              if (nuisance_part == "ml_m_mult_instr") {
+                self$m_params_mult_instr[[instr_var]][[treat_var]] = params
+              }
+            }
+        } else if (!self$partialX & self$partialZ) {
+            if (is.null(self$r_params)){
+              self$r_params = vector("list", length = self$data$n_treat())
+              names(self$r_params) = self$data$d_cols
+            }
+            if (nuisance_part == "ml_r"){
+              self$r_params[[treat_var]] = params
+            }
+        } else if (self$partialX & self$partialZ) {
+            if (is.null(self$g_params)){
+              self$g_params = vector("list", length = self$data$n_treat())
+              names(self$g_params) = self$data$d_cols
+            }
+            if (is.null(self$r_params)){
+              self$r_params = vector("list", length = self$data$n_treat())
+              names(self$r_params) = self$data$d_cols
+            }
+            if (is.null(self$m_params)){
+              self$m_params = vector("list", length = self$data$n_treat())
+              names(self$m_params) = self$data$d_cols
+            }
+            if (nuisance_part == "ml_g"){
+              self$g_params[[treat_var]] = params
+            }
+            if (nuisance_part == "ml_r"){
+                self$r_params[[treat_var]] = params
+            }
+            if (nuisance_part == "ml_m"){
+                self$m_params[[treat_var]] = params
+            }
         }
+     }
   }
   ),
 private = list(
