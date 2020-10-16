@@ -9,14 +9,16 @@ extract_prediction = function(obj_resampling) {
   return(f_hat)
 }
 
-rearrange_prediction = function(prediction_list, test_ids){
+rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
     
     # if (length(test_ids) > 1) {
       # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
     predictions <- rbindlist(prediction_list)
     setorder(predictions, 'row_id')
-    predictions <- predictions$response
+    if (!keep_rowids) {
+      predictions <- predictions$response
+    }
     return(predictions)
 }
 
