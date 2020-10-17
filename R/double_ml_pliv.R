@@ -335,8 +335,8 @@ private = list(
     task_g <- initiate_regr_task(paste0("nuis_g_", data$y_col), data$data_model,
                                  skip_cols = c(data$treat_col, data$z_cols), target = data$y_col)
     
-    # nuisance r: Predict d with X and Z
-    task_r <- initiate_regr_task(paste0("nuis_r_", data$treat_col), data$data_model,
+    # nuisance m: Predict d with X and Z
+    task_m <- initiate_regr_task(paste0("nuis_m_", data$treat_col), data$data_model,
                                  skip_cols = c(data$y_col), target = data$treat_col)
     
     if (is.null(self$param_tuning)){
@@ -345,7 +345,7 @@ private = list(
           message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
        }
   
-       if (is.null(self$r_params[[data$treat_col]])){
+       if (is.null(self$m_params[[data$treat_col]])){
           message("Parameter of learner for nuisance part r are not tuned, results might not be valid!")
        }
     
@@ -357,27 +357,27 @@ private = list(
       r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- extract_prediction(r_g)$response
       
+      ml_m <- initiate_learner(self$ml_m,
+                               self$m_params[[data$treat_col]])
+      resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+                                                     smpls$train_ids,
+                                                     smpls$test_ids)
+      r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      m_hat <- extract_prediction(r_m)$response
+      
+      # nuisance r_tilde: Predict residuals from nuisance r, only with X
+      data_aux = data.table(data$data_model, m_hat)
+      task_r <- initiate_regr_task("nuis_r_m_hat", data_aux,
+                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols), target = "m_hat")
+      
       ml_r <- initiate_learner(self$ml_r,
                                self$r_params[[data$treat_col]])
+      
       resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
       r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat <- extract_prediction(r_r)$response
-      
-      # nuisance r_tilde: Predict residuals from nuisance r, only with X
-      data_aux = data.table(data$data_model, r_hat)
-      task_r_tilde <- initiate_regr_task("nuis_r_hat", data_aux,
-                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols), target = "r_hat")
-      
-      ml_r_tilde <- initiate_learner(self$ml_m,
-                               self$m_params[[data$treat_col]])
-      
-      resampling_r_tilde <- mlr3::rsmp("custom")$instantiate(task_r_tilde,
-                                                     smpls$train_ids,
-                                                     smpls$test_ids)
-      r_r_tilde <- mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde, store_models = TRUE)
-      r_hat_tilde <- extract_prediction(r_r_tilde)$response
+      m_hat_tilde <- extract_prediction(r_r)$response
     }
     
     else if (!is.null(self$param_tuning)){
@@ -388,25 +388,25 @@ private = list(
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
+      ml_m <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
                                                                         x[[1]]))
-      resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
-      r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat = lapply(r_r, extract_prediction)
-      r_hat = rearrange_prediction(r_hat, smpls$test_ids)
+      resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
+      r_m  = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
+      m_hat = lapply(r_m, extract_prediction)
+      m_hat = rearrange_prediction(m_hat, smpls$test_ids)
       
       # nuisance r_tilde: Predict residuals from nuisance r, only with X
-      data_aux = data.table(data$data_model, r_hat)
-      task_r_tilde <- initiate_regr_task("nuis_r_hat", data_aux,
-                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols), target = "r_hat")
+      data_aux = data.table(data$data_model, m_hat)
+      task_r <- initiate_regr_task("nuis_r_m_hat", data_aux,
+                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols), target = "m_hat")
       
-      ml_r_tilde <- lapply(self$m_params, function(x) initiate_learner(self$ml_m, 
+      ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
                                                                         x[[1]]))
     
-      resampling_r_tilde = initiate_resampling(task_r_tilde, smpls$train_ids, smpls$test_ids)
-      r_r_tilde = resample_dml(task_r_tilde, ml_r_tilde, resampling_r_tilde, store_models = TRUE)
-      r_hat_tilde = lapply(r_r_tilde, extract_prediction)
-      r_hat_tilde = rearrange_prediction(r_hat_tilde, smpls$test_ids)
+      resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
+      r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
+      m_hat_tilde = lapply(r_r, extract_prediction)
+      m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
   
     }
     
@@ -414,11 +414,11 @@ private = list(
     Y <- data$data_model[, data$y_col, with = FALSE]
 
     u_hat <- Y - g_hat
-    w_hat <- D - r_hat_tilde
+    w_hat <- D - m_hat_tilde
     
     if (self$score == 'partialling out') {
-        psi_a = -w_hat * (r_hat - r_hat_tilde)
-        psi_b = (r_hat - r_hat_tilde) * u_hat
+        psi_a = -w_hat * (m_hat - m_hat_tilde)
+        psi_b = (m_hat - m_hat_tilde) * u_hat
     }
       
     return(list(psi_a = psi_a,
