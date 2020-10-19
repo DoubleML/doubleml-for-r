@@ -46,14 +46,19 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                      score = score)
   
   double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_g", 
-                                           treat_var = "d",
+                                            treat_var = "d",
                                             params = learner_pars$params$params_g)
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
-                                           treat_var = "d",
-                                            params = learner_pars$params$params_m)
   double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_r", 
-                                           treat_var = "d",
+                                            treat_var = "d",
                                             params = learner_pars$params$params_r)
+  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_m_mult_instr", 
+                                            treat_var = "d",
+                                            instr_var = "z",
+                                            params = learner_pars$params$params_m)
+  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_m_mult_instr", 
+                                            treat_var = "d",
+                                            instr_var = "z2",
+                                            params = learner_pars$params$params_m)    
   
   double_mlpliv_obj$fit()
   theta_obj <- double_mlpliv_obj$coef
