@@ -624,7 +624,109 @@ private = list(
   
    ml_nuisance_tuning_partialXZ = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
     
-    stop("Tuning not implemented for partialXZ case.")
+    checkmate::check_class(param_set$param_set_g, "ParamSet")    
+    checkmate::check_class(param_set$param_set_m, "ParamSet")
+    checkmate::check_class(param_set$param_set_r, "ParamSet")
+
+    if (!tune_on_folds){
+      data_tune_list = list(data$data_model)
+    } else {
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+    }
+
+    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
+      CV_tune = tune_settings$rsmp_tune
+    } else {
+      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+    }
+    
+    if (any(class(tune_settings$measure_g) == "Measure")) {
+      measure_g = tune_settings$measure_g
+    } else {
+        if (is.null(tune_settings$measure_g)){
+          measure_g = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_g = mlr3::msr(tune_settings$measure_g)
+      }
+    }
+    
+    if (any(class(tune_settings$measure_m) == "Measure")) {
+      measure_m = tune_settings$measure_m
+    } else {
+        if (is.null(tune_settings$measure_m)){
+          measure_m = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_m = mlr3::msr(tune_settings$measure_m)
+      }
+    }
+    
+    if (any(class(tune_settings$measure_r) == "Measure")) {
+      measure_r = tune_settings$measure_r
+    } else {
+        if (is.null(tune_settings$measure_r)){
+          measure_r = mlr3::default_measures("regr")[[1]]
+        } else {
+          measure_r = mlr3::msr(tune_settings$measure_r)
+      }
+    }
+    
+    terminator = tune_settings$terminator
+    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    
+    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
+                                                skip_cols = c(data$treat_col, data$z_cols), target = data$y_col))
+    ml_g = mlr3::lrn(self$ml_g)
+    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
+                                          learner = ml_g,
+                                          resampling = CV_tune,
+                                          measure = measure_g,
+                                          search_space = param_set$param_set_g,
+                                          terminator = terminator))
+    
+    tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
+    
+    ml_m = mlr3::lrn(self$ml_m) 
+    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", data$treat_col), x,
+                                 skip_cols = c(data$y_col), target = data$treat_col))
+    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+                                          learner = ml_m,
+                                          resampling = CV_tune,
+                                          measure = measure_m,
+                                          search_space = param_set$param_set_m,
+                                          terminator = terminator))
+    tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
+    
+    m_params = extract_tuned_params(tuning_result_m)
+    ml_m = lapply(m_params, function(x) initiate_learner(self$ml_m, params = x[[1]]))
+    
+    resampling_m_on_train = lapply(task_m, function(x) mlr3::rsmp("insample")$instantiate(x))
+    
+    r_m_on_train = lapply(1:length(data_tune_list), function(x) 
+                                        mlr3::resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
+    m_hat_on_train = lapply(r_m_on_train, function(x) extract_prediction(x, return_train_preds = TRUE))
+    m_hat_on_train = lapply(m_hat_on_train, function(x) x[[1]]$response)
+      
+    data_aux_list = lapply(1:length(data_tune_list), function(x) 
+                                              data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]]))
+    task_r = lapply(data_aux_list, function(x) initiate_regr_task("nuis_r_m_hat_on_train", x,
+                                                    skip_cols = c(data$y_col, data$z_cols, data$treat_col), 
+                                                    target = "m_hat_on_train"))
+    ml_r = mlr3::lrn(self$ml_r)
+    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
+                                          learner = ml_r,
+                                          resampling = CV_tune,
+                                          measure = measure_r,
+                                          search_space = param_set$param_set_r,
+                                          terminator = terminator))
+    tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
+
+    tuning_result = list(tuning_result = list(tuning_result_g = tuning_result_g, 
+                                              tuning_result_m = tuning_result_m, 
+                                              tuning_result_r = tuning_result_r),
+                         params = list(g_params = extract_tuned_params(tuning_result_g), 
+                                       m_params = extract_tuned_params(tuning_result_m),
+                                       r_params = extract_tuned_params(tuning_result_r)))
+    return(tuning_result)
     
   },
   
