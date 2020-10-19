@@ -359,25 +359,35 @@ private = list(
       
       ml_m <- initiate_learner(self$ml_m,
                                self$m_params[[data$treat_col]])
-      resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
-                                                     smpls$train_ids,
-                                                     smpls$test_ids)
-      r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-      m_hat <- extract_prediction(r_m)$response
+      resampling_m = mlr3::rsmp("custom")$instantiate(task_m, 
+                                                      smpls$train_ids, 
+                                                      smpls$test_ids)
+      r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      m_hat = extract_prediction(r_m)$response  
+      
+      resampling_m_on_train = mlr3::rsmp("custom")$instantiate(task_m,
+                                                      smpls$train_ids,
+                                                      smpls$train_ids)
+      r_m_on_train = mlr3::resample(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
+      m_hat_on_train = extract_prediction(r_m_on_train, return_train_preds = TRUE)
+      m_hat_on_train = lapply(m_hat_on_train, function(x) x$response)
       
       # nuisance r_tilde: Predict residuals from nuisance r, only with X
-      data_aux = data.table(data$data_model, m_hat)
-      task_r <- initiate_regr_task("nuis_r_m_hat", data_aux,
-                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols), target = "m_hat")
+      data_aux_list = lapply(m_hat_on_train, function(x) 
+                                              data.table(data$data_model, "m_hat_on_train" = x))
       
-      ml_r <- initiate_learner(self$ml_r,
-                               self$r_params[[data$treat_col]])
-      
-      resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
-                                                     smpls$train_ids,
-                                                     smpls$test_ids)
-      r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      m_hat_tilde <- extract_prediction(r_r)$response
+      task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
+                                                   skip_cols = data$z_cols, target = "m_hat_on_train"))
+      ml_r = initiate_learner(self$ml_r, self$r_params[[data$treat_col]])
+      resampling_r = lapply(1:self$n_folds, function(x) 
+                                                  mlr3::rsmp("custom")$instantiate(task_r[[x]], 
+                                                                                    list(smpls$train_ids[[x]]), 
+                                                                                    list(smpls$test_ids[[x]])))
+      r_r = lapply(1:self$n_folds, function(x) mlr3::resample(task_r[[x]], ml_r, 
+                                                resampling_r[[x]], store_models = TRUE))
+      m_hat_tilde = lapply(r_r, extract_prediction)
+      # merge preds from list to data.frame, map to obs
+      m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     }
     
     else if (!is.null(self$param_tuning)){
@@ -410,11 +420,11 @@ private = list(
   
     }
     
-    D <- data$data_model[, data$treat_col, with = FALSE]
-    Y <- data$data_model[, data$y_col, with = FALSE]
+    d <- data$data_model[, data$treat_col, with = FALSE]
+    y <- data$data_model[, data$y_col, with = FALSE]
 
-    u_hat <- Y - g_hat
-    w_hat <- D - m_hat_tilde
+    u_hat <- y - g_hat
+    w_hat <- d - m_hat_tilde
     
     if (self$score == 'partialling out') {
         psi_a = -w_hat * (m_hat - m_hat_tilde)

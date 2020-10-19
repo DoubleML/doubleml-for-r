@@ -1,12 +1,26 @@
 
-extract_prediction = function(obj_resampling) {
-  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-  f_hat = as.data.table(obj_resampling$prediction())
-  f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
-  setorder(f_hat, 'row_id')
-  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
+extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
   
-  return(f_hat)
+  if (!return_train_preds) {
+    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat = as.data.table(obj_resampling$prediction())
+    f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
+    setorder(f_hat, 'row_id')
+    f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
+    return(f_hat)
+    
+  } else {
+    # Access in-sample predictions
+    iters = obj_resampling$resampling$iters
+    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
+    f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
+                                                                            by = "row_id", all = TRUE))
+    f_hat_list = lapply(f_hat_list, function(x) setorder(x, "row_id"))
+    f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+                                                                   "response"= x$response)))
+    return(f_hat_list)
+  }
 }
 
 rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
