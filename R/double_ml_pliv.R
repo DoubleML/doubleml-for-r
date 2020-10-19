@@ -377,7 +377,7 @@ private = list(
                                               data.table(data$data_model, "m_hat_on_train" = x))
       
       task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
-                                                   skip_cols = c(data$y_col, data$z_cols), target = "m_hat_on_train"))
+                                                   skip_cols = c(data$y_col, data$z_cols, data$treat_col), target = "m_hat_on_train"))
       ml_r = initiate_learner(self$ml_r, self$r_params[[data$treat_col]])
       resampling_r = lapply(1:self$n_folds, function(x) 
                                                   mlr3::rsmp("custom")$instantiate(task_r[[x]], 
