@@ -38,7 +38,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
         
         if (!is.null(self$ml_nuisance_params)){
-          self$set__ml_nuisance_params(nuisance_part = NULL, treat_var = NULL, self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
+          self$set__ml_nuisance_params(nuisance_part = NULL, treat_var = NULL, params = self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
         }
         
         if (private$n_treat > 1){
@@ -444,7 +444,7 @@ private = list(
       self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- tuning_params$params
       self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
     } else {
-      
+      # TODO: set params for tune_on_folds == FALSE
       export_params = lapply(1:private$n_nuisance, function(x) rep(tuning_params$params[[x]], self$n_folds))
       names(export_params) = names(tuning_params$params)
       self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- export_params
@@ -453,8 +453,6 @@ private = list(
       # self$set__ml_nuisance_params(tuning_params$params)
       # self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] = NULL
       #       self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
-
-      
       }
   },
   est_causal_pars = function() {

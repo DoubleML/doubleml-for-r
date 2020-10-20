@@ -16,8 +16,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 # settings for parameter provision
 learner = c('regr.rpart')
 
-learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner, "mlmethod_r" = learner)
-  
 tune_settings = list(n_folds_tune = 2,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
@@ -30,18 +28,18 @@ tune_settings = list(n_folds_tune = 2,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(learner_list = learner,
-                         dml_procedure = c('dml1', 'dml2'),
+test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
                          n_rep = c(1, 3),
                          tune_on_folds = c(FALSE, TRUE),
+                         z_vars = list("z", c("z", "z2")),
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
- skip('Skip tests for tuning')
+ # skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                    .cases = test_cases, {
@@ -62,17 +60,17 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   # theta <- coef(pliv_hat)
   # se <- pliv_hat$se
 
-  
+  z_cols = unlist(z_vars[i_setting])
   set.seed(i_setting)
-  Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z", "z2") == FALSE]
   data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]], y_col = "y", 
-                              d_cols = "d", x_cols = Xnames, z_cols = "z")
+                              d_cols = "d", x_cols = Xnames, z_cols = z_cols)
 
   double_mlpliv_obj_tuned = DoubleMLPLIV$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_g = learner_list$mlmethod_g,
-                                     ml_m = learner_list$mlmethod_m,
-                                     ml_r = learner_list$mlmethod_r,
+                                     ml_g = learner,
+                                     ml_m = learner,
+                                     ml_r = learner,
                                      dml_procedure = dml_procedure, 
                                      score = score,
                                      n_rep = n_rep)
@@ -86,7 +84,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                     param_set_r = ParamSet$new(list( ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
   
-  
   double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
   double_mlpliv_obj_tuned$fit()
   
@@ -96,10 +93,48 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   # bootstrap
   # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
-
+  
   expect_is(theta_obj_tuned, "numeric")
   expect_is(se_obj_tuned, "numeric")
   
+  # if (data_ml$n_instr() == 1) {
+  #   double_mlpliv_obj_tuned_Z = DoubleMLPLIV.partialZ(data_ml, 
+  #                                      n_folds = n_folds,
+  #                                      ml_r = learner,
+  #                                      dml_procedure = dml_procedure, 
+  #                                      score = score,
+  #                                      n_rep = n_rep)
+  #   
+  #   double_mlpliv_obj_tuned_Z$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+  #   double_mlpliv_obj_tuned_Z$fit()
+  #     
+  #   theta_obj_tuned_Z <- double_mlpliv_obj_tuned_Z$coef
+  #   se_obj_tuned_Z <- double_mlpliv_obj_tuned_Z$se
+  #   
+  #   expect_is(theta_obj_tuned_Z, "numeric")
+  #   expect_is(se_obj_tuned_Z, "numeric")
+  # }
+  # 
+  if (data_ml$n_instr() > 1) {
+      double_mlpliv_obj_tuned_XZ = DoubleMLPLIV.partialXZ(data_ml, 
+                                     n_folds = n_folds,
+                                     ml_g = learner,
+                                     ml_m = learner,
+                                     ml_r = learner,
+                                     dml_procedure = dml_procedure, 
+                                     score = score,
+                                     n_rep = n_rep)
+  
+      double_mlpliv_obj_tuned_XZ$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+      double_mlpliv_obj_tuned_XZ$fit()
+    
+      theta_obj_tuned_XZ <- double_mlpliv_obj_tuned_XZ$coef
+      se_obj_tuned_XZ <- double_mlpliv_obj_tuned_XZ$se
+      
+      expect_is(theta_obj_tuned_XZ, "numeric")
+      expect_is(se_obj_tuned_XZ, "numeric")
+    }
+
   }
 )
 
