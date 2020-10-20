@@ -28,8 +28,7 @@ tune_settings = list(n_folds_tune = 2,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(learner_list = learner,
-                         dml_procedure = c('dml1', 'dml2'),
+test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
                          se_reestimate = c(FALSE),
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
@@ -40,7 +39,7 @@ test_cases = expand.grid(learner_list = learner,
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
- skip('Skip tests for tuning')
+ # skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                    .cases = test_cases, {
