@@ -20,8 +20,6 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 tune_settings = list(n_folds_tune = 2,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      # measure_g = "regr.mse", 
-                      # measure_m = "regr.mse",
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
@@ -83,7 +81,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
                   
-  double_mlplr_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+  double_mlplr_obj_tuned$tune(param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds)
   
   double_mlplr_obj_tuned$fit()
   

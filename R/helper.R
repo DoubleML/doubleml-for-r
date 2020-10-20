@@ -128,10 +128,9 @@ tune_instance = function(tuner, tuning_instance){
 }
   
 extract_tuned_params = function(param_results) {
-  params = lapply(param_results, function(x) x$tuning_result$learner_param_vals)
+  params = vapply(param_results, function(x) x$tuning_result$learner_param_vals, list(1L))
   return(params)
 }
-
 
 initiate_resampling = function(task, train_ids, test_ids){
     stopifnot(length(train_ids) == length(test_ids))
@@ -142,8 +141,6 @@ initiate_resampling = function(task, train_ids, test_ids){
     return(resampling)
 }
 
-
-
 resample_dml = function(task, learner, resampling, store_models = FALSE){
     task = mlr3::assert_task(as_task(task, clone = TRUE))
     checkmate::check_list(learner)
@@ -151,11 +148,11 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
     
     # if (length(resampling) > 1) {
       # Note: length(resampling) = 1 only if apply_cross_fitting == FALSE
-      learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
-      resampling = lapply(resampling, function(x) mlr3::assert_resampling(as_resampling(x)))
-      # mlr3::assert_flag(store_models)
-      instance = lapply(resampling, function(x) x$clone(deep = TRUE))
-      res = lapply(1:length(learner), function(x) mlr3::resample(task, learner[[x]], 
+    learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
+    resampling = lapply(resampling, function(x) mlr3::assert_resampling(as_resampling(x)))
+    # mlr3::assert_flag(store_models)
+    # instance = lapply(resampling, function(x) x$clone(deep = TRUE))
+    res = lapply(1:length(learner), function(x) mlr3::resample(task, learner[[x]], 
                                                     resampling[[x]], store_models = store_models))
     # } else {
     #     
