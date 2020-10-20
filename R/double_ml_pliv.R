@@ -370,11 +370,10 @@ private = list(
                                                       smpls$train_ids)
       r_m_on_train = mlr3::resample(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
       m_hat_on_train = extract_prediction(r_m_on_train, return_train_preds = TRUE)
-      m_hat_on_train = lapply(m_hat_on_train, function(x) x$response)
-      
-      # nuisance r_tilde: Predict residuals from nuisance r, only with X
+
+      # nuisance r_tilde: Predict predicted values from nuisance m, only with X
       data_aux_list = lapply(m_hat_on_train, function(x) 
-                                              data.table(data$data_model, "m_hat_on_train" = x))
+                                              data.table(data$data_model, "m_hat_on_train" = x$response))
       
       task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
                                                    skip_cols = c(data$y_col, data$z_cols, data$treat_col), target = "m_hat_on_train"))
@@ -386,7 +385,6 @@ private = list(
       r_r = lapply(1:self$n_folds, function(x) mlr3::resample(task_r[[x]], ml_r, 
                                                 resampling_r[[x]], store_models = TRUE))
       m_hat_tilde = lapply(r_r, extract_prediction)
-      # merge preds from list to data.frame, map to obs
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     }
     
@@ -405,19 +403,28 @@ private = list(
       m_hat = lapply(r_m, extract_prediction)
       m_hat = rearrange_prediction(m_hat, smpls$test_ids)
       
-      # nuisance r_tilde: Predict residuals from nuisance r, only with X
-      data_aux = data.table(data$data_model, m_hat)
-      task_r <- initiate_regr_task("nuis_r_m_hat", data_aux,
-                                   skip_cols = c(data$y_col, data$treat_col, data$z_cols), target = "m_hat")
+      resampling_m_on_train = initiate_resampling(task_m, smpls$train_ids, smpls$train_ids)
+      r_m_on_train = resample_dml(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
+      m_hat_on_train = vapply(r_m_on_train, function(x) 
+                                              extract_prediction(x, return_train_preds = TRUE), list(1L))
       
-      ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
-                                                                        x[[1]]))
-    
-      resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
-      r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
+      # nuisance r_tilde: Predict predicted values from nuisance m, only with X
+      data_aux_list = lapply(m_hat_on_train, function(x) 
+                                              data.table(data$data_model, "m_hat_on_train" = x$response))
+      
+      task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
+                                                    skip_cols = c(data$y_col, data$z_cols, data$treat_col),
+                                                    target = "m_hat_on_train"))
+      ml_r = lapply(self$r_params, function(x) initiate_learner(self$ml_r, x[[1]]))
+      resampling_r = lapply(1:self$n_folds, function(x) 
+                                                  mlr3::rsmp("custom")$instantiate(task_r[[x]], 
+                                                                                    list(smpls$train_ids[[x]]), 
+                                                                                    list(smpls$test_ids[[x]])))
+      r_r = lapply(1:self$n_folds, function(x) mlr3::resample(task_r[[x]], ml_r[[x]], 
+                                                resampling_r[[x]], store_models = TRUE))
+      
       m_hat_tilde = lapply(r_r, extract_prediction)
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
-  
     }
     
     d <- data$data_model[, data$treat_col, with = FALSE]
