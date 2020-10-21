@@ -177,7 +177,11 @@ DoubleML <- R6Class("DoubleML", public = list(
   tune = function(param_set, tune_on_folds = FALSE, tune_settings = list(
                                         n_folds_tune = 5,
                                         rsmp_tune = "cv", 
-                                        measure = list(),
+                                        measure = list(measure_g = NULL, 
+                                                       measure_m = NULL,
+                                                       measure_r = NULL,
+                                                       measure_p = NULL,
+                                                       measure_mu = NULL),
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
                                         tuner = "grid_search",
@@ -187,13 +191,12 @@ DoubleML <- R6Class("DoubleML", public = list(
       stop("Parameter tuning for no-cross-fitting case not implemented.")
     }
     
-    private$tune_on_folds = tune_on_folds
-    
-    if (private$tune_on_folds) {
+    if (tune_on_folds) {
       # TODO: initiate params for tune_on_folds
       params_rep = vector("list", self$n_rep)
       self$tuning_res = rep(list(params_rep), self$data$n_treat())
       names(self$tuning_res) = self$data$d_cols
+      private$fold_specific_params = TRUE
       } else {
       self$tuning_res = vector("list", self$data$n_treat())
       names(self$tuning_res) = self$data$d_cols
@@ -206,15 +209,14 @@ DoubleML <- R6Class("DoubleML", public = list(
             self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
           
-        if (private$tune_on_folds) {
+        if (tune_on_folds) {
           for (i_rep in 1:self$n_rep) {
             private$i_rep = i_rep
-        
             # TODO: user friendly way to pass (pre-)trained learners
             # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
             #      e.g., in seperate function (tune_mlr3)...
             param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                   param_set, tune_settings)
+                                                   param_set, tune_on_folds, tune_settings)
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning
             
             for (nuisance_model in names(param_tuning)) {
@@ -224,9 +226,9 @@ DoubleML <- R6Class("DoubleML", public = list(
               }
           }
         } else {
-          
+          private$i_rep = 1
           param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                     param_set, tune_settings)
+                                                     param_set, tune_on_folds, tune_settings)
           self$tuning_res[[i_treat]] = param_tuning
           
           for (nuisance_model in names(param_tuning)) {
@@ -314,7 +316,7 @@ DoubleML <- R6Class("DoubleML", public = list(
                  "valid treatment variable", paste(data$self$d_cols, collapse = " or ")))
     }
     
-    if (private$tune_on_folds) {
+    if (private$fold_specific_params) {
           self$params[[learner]][[treat_var]][[private$i_rep]] = params
      } else {
            self$params[[learner]][[treat_var]] = params
@@ -349,6 +351,7 @@ private = list(
   i_rep = NA,
   i_treat = NA,
   tune_on_folds = NULL,
+  fold_specific_params = NULL,
   initialize_double_ml = function(data, 
                         n_folds,
                         n_rep,
@@ -397,8 +400,8 @@ private = list(
       self$smpls = NULL
     }
     
-    # Set tune_on_folds = FALSE at instantiation
-    private$tune_on_folds = FALSE
+    # Set fold_specific_params = FALSE at instantiation
+    private$fold_specific_params = FALSE
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
     
@@ -458,7 +461,7 @@ private = list(
     },
   get__params = function(learner){
     # TODO: Case tune_on_folds
-    if (private$tune_on_folds) {
+    if (private$fold_specific_params) {
         params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
     } else {
       params = self$params[[learner]][[self$data$treat_col]]

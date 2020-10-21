@@ -49,7 +49,7 @@ private = list(
     task_m <- initiate_regr_task(paste0("nuis_m_", data$treat_col), data$data_model, # adjust to multi treatment case
                                    skip_cols = data$y_col, target = data$treat_col)
       
-    if (!private$tune_on_folds){
+    if (!private$fold_specific_params){
       
       if (is.null(private$get__params("ml_g"))) {
         message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
@@ -77,7 +77,6 @@ private = list(
       r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat <- extract_prediction(r_m)$response
     } else {
-      
       ml_g <- lapply(private$get__params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
                                                                  x))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
@@ -110,11 +109,11 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   }, 
-  ml_nuisance_tuning = function(data, smpls, param_set, tune_settings, ...){
+  ml_nuisance_tuning = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
     checkmate::check_class(param_set$param_set_g, "ParamSet")    
     checkmate::check_class(param_set$param_set_m, "ParamSet")
     
-    if (!private$tune_on_folds){
+    if (!tune_on_folds){
       data_tune_list = list(data$data_model)
     } else {
       data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))

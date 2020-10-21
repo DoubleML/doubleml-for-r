@@ -13,23 +13,12 @@ logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision
-learner = c('regr.rpart')
+# learner = c('regr.rpart')
+# 
+# learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
-learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
-
-tune_settings = list(n_folds_tune = 2,
-                      n_rep_tune = 1, 
-                      rsmp_tune = "cv", 
-                      terminator = mlr3tuning::trm("evals", n_evals = 2), 
-                      algorithm = "grid_search",
-                      tuning_instance_g = NULL, 
-                      tuning_instance_m = NULL,
-                      tuner = "grid_search",
-                      resolution = 5)
-
-test_cases = expand.grid(learner = learner,
+test_cases = expand.grid(learner = "regr.rpart",
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          n_rep = c(1, 3),
                          tune_on_folds = c(FALSE, TRUE),
@@ -39,7 +28,7 @@ test_cases = expand.grid(learner = learner,
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-# skip('Skip tests for tuning')
+skip('Skip tests for PLR tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                    .cases = test_cases, {
   
@@ -68,11 +57,22 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
 
   double_mlplr_obj_tuned = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_g = learner_list$mlmethod_g,
-                                     ml_m = learner_list$mlmethod_m,
+                                     ml_g = learner,
+                                     ml_m = learner,
                                      dml_procedure = dml_procedure, 
                                      score = score, 
                                      n_rep = n_rep)
+  
+  tune_sets = list(n_folds_tune = 2,
+                      n_folds_tune = 1, 
+                      rsmp_tune = "cv", 
+                      measure = list(measure_g = mlr3::default_measures("regr")[[1]],
+                                     measure_m = mlr3::default_measures("regr")[[1]]),
+                      terminator = mlr3tuning::trm("evals", n_evals = 2), 
+                      algorithm = "grid_search",
+                      tuner = "grid_search",
+                      resolution = 5)
+
   
   param_grid = list(param_set_g = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
@@ -80,8 +80,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                     param_set_m = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
-                  
-  double_mlplr_obj_tuned$tune(param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds)
+  
+  double_mlplr_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_sets)
   
   double_mlplr_obj_tuned$fit()
   
