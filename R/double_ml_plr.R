@@ -37,6 +37,7 @@ private = list(
    names(nuisance) = self$data$d_cols
    self$params = list("ml_g" = nuisance, 
                       "ml_m" = nuisance)
+   invisible(self)
   },
   
   ml_nuisance_and_score_elements = function(data, smpls, ...) {
@@ -50,15 +51,11 @@ private = list(
                                    skip_cols = data$y_col, target = data$treat_col)
       
     if (!private$fold_specific_params){
-      
-      if (is.null(private$get__params("ml_g"))) {
-        message("Parameter of learner for nuisance part g are not tuned, results might not be valid!")
+      for (i_nuis in self$params_names()){
+        if (is.null(private$get__params(i_nuis))) {
+          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
+        }
       }
-      
-      if (is.null(private$get__params("ml_m"))) {
-        message("Parameter of learner for nuisance part m are not tuned, results might not be valid!")
-      }
-      
       ml_g <- initiate_learner(self$learner$ml_g,
                                private$get__params("ml_g"))
   
