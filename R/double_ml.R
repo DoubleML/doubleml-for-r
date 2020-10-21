@@ -350,7 +350,6 @@ private = list(
   n_rep_boot = NULL,
   i_rep = NA,
   i_treat = NA,
-  tune_on_folds = NULL,
   fold_specific_params = NULL,
   initialize_double_ml = function(data, 
                         n_folds,
@@ -460,9 +459,8 @@ private = list(
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
   get__params = function(learner){
-    # TODO: Case tune_on_folds
     if (private$fold_specific_params) {
-        params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
+      params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
     } else {
       params = self$params[[learner]][[self$data$treat_col]]
     }
