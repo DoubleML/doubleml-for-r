@@ -28,7 +28,7 @@ test_cases = expand.grid(learner = "regr.rpart",
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-skip('Skip tests for PLR tuning')
+# skip('Skip tests for PLR tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                    .cases = test_cases, {
   

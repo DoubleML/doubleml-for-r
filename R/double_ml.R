@@ -220,9 +220,9 @@ DoubleML <- R6Class("DoubleML", public = list(
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning
             
             for (nuisance_model in names(param_tuning)) {
-              self$set__ml_nuisance_params(learner = nuisance_model, 
-                                                           treat_var = self$data$treat_col, 
-                                                           params = param_tuning[[nuisance_model]]$params)
+              self$set__ml_nuisance_params(learner = nuisance_model,
+                                           treat_var = self$data$treat_col, 
+                                           params = param_tuning[[nuisance_model]]$params)
               }
           }
         } else {
@@ -231,10 +231,10 @@ DoubleML <- R6Class("DoubleML", public = list(
                                                      param_set, tune_on_folds, tune_settings)
           self$tuning_res[[i_treat]] = param_tuning
           
-          for (nuisance_model in names(param_tuning)) {
+          for (nuisance_model in self$params_names()) {
             self$set__ml_nuisance_params(learner = nuisance_model, 
-                                                           treat_var = self$data$treat_col, 
-                                                           params = param_tuning[[nuisance_model]]$params[[1]])
+                                         treat_var = self$data$treat_col, 
+                                         params = param_tuning[[nuisance_model]]$params[[1]])
           }
         }
     }
