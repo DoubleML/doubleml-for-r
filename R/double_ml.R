@@ -220,7 +220,7 @@ DoubleML <- R6Class("DoubleML", public = list(
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning
             
             for (nuisance_model in names(param_tuning)) {
-              double_mlplr_obj_tuned$set__ml_nuisance_params(learner = nuisance_model, 
+              self$set__ml_nuisance_params(learner = nuisance_model, 
                                                            treat_var = self$data$treat_col, 
                                                            params = param_tuning[[nuisance_model]]$params)
               }
