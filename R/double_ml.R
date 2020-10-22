@@ -9,9 +9,10 @@ DoubleML <- R6Class("DoubleML", public = list(
   apply_cross_fitting = NULL,
   coef = NULL, 
   se = NULL, 
-  t = NULL, 
+  t_stat = NULL, 
   pval = NULL,
   boot_coef = NULL,
+  boot_t_stats = NULL,
   ml_nuisance_params = NULL,
   tuning_res = NULL,
   smpls = NULL,
@@ -63,9 +64,9 @@ DoubleML <- R6Class("DoubleML", public = list(
     
     private$agg_cross_fit()
     
-    self$t = self$coef/self$se
-    self$pval = 2 * stats::pnorm(-abs(self$t))
-    names(self$coef) = names(self$se) = names(self$t) = names(self$pval) = self$data$d_cols
+    self$t_stat = self$coef/self$se
+    self$pval = 2 * stats::pnorm(-abs(self$t_stat))
+    names(self$coef) = names(self$se) = names(self$t_stat) = names(self$pval) = self$data$d_cols
 
     invisible(self)
   },
@@ -83,8 +84,11 @@ DoubleML <- R6Class("DoubleML", public = list(
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
         
-        boot_coef = private$compute_bootstrap(method, n_rep)
+        boot_res = private$compute_bootstrap(method, n_rep)
+        boot_coef = boot_res$boot_coef
+        boot_t_stats = boot_res$boot_t_stats
         private$set__boot_coef(boot_coef)
+        private$set__boot_t_stats(boot_t_stats)
       }
     }
     
@@ -257,7 +261,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     colnames(table) <- c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
     table[, 1] <- self$coef
     table[, 2] <- self$se
-    table[, 3] <- self$t
+    table[, 3] <- self$t_stat
     table[, 4] <- self$pval
 #    ans$coefficients <- table
 #    ans$object <- object
@@ -302,7 +306,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         stop("Multiplier bootstrap has not yet been performed. First call bootstrap() and then try confint() again.")
       }
       
-      sim <- apply(abs(self$boot_coef), 2, max)
+      sim <- apply(abs(self$boot_t_stats), 2, max)
       hatc <- stats::quantile(sim, probs = 1 - a)
       
       ci[, 1] <- self$coef[parm] - hatc * self$se
@@ -329,6 +333,58 @@ DoubleML <- R6Class("DoubleML", public = list(
      } else {
            self$params[[learner]][[treat_var]] = params
     }
+  }, 
+  p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
+    if (all(is.na(self$coef))) {
+      stop("apply fit() before p_adust().")
+    }
+   
+    if (tolower(method) %in% c("rw", "romano-wolf")) {
+      if (is.null(self$boot_t_stats) | all(is.na(self$coef))){
+        stop("apply fit() & bootstrap() before p_adust().")
+      }
+      k = self$data$n_treat()
+      pinit = p_val_corrected = vector(mode = "numeric", length = k)
+      
+      boot_t_stats = self$boot_t_stats
+      t_stat = self$t_stat
+      stepdown_ind = order(abs(t_stat), decreasing = TRUE)
+      ro = order(stepdown_ind)
+      
+      for (i_d in 1:k) {
+        if (i_d == 1) {
+         sim = apply(abs(boot_t_stats), 2, max)
+         pinit[i_d] = pmin(1, mean(sim > abs(t_stat[stepdown_ind][i_d])))
+        } else {
+         sim = apply(abs(boot_t_stats[ -stepdown_ind[1:(i_d - 1)], , drop = FALSE]), 2, max )
+         pinit[i_d] = pmin(1, mean(sim > abs(t_stat[stepdown_ind][i_d])))
+        }
+      }
+      # ensure monotonicity
+      for (i_d in 1:k){
+        if (i_d == 1){
+          p_val_corrected[i_d] = pinit[i_d] 
+        } else {
+          p_val_corrected[i_d] = max(pinit[i_d], p_val_corrected[i_d-1])
+        }
+      }
+      p_val = p_val_corrected[ro]
+    } else { 
+       if (is.element(method, stats::p.adjust.methods)) {
+        p_val = stats::p.adjust(self$pval, method = method, n = self$data$n_treat())
+       } else {
+        stop(paste("Invalid method", method, "argument specified in p_adjust()."))
+      }
+    }
+    
+   if (return_matrix) {
+    res <- as.matrix(cbind(self$coef, p_val))
+    colnames(res) <- c("Estimate.", "pval")
+    return(res)
+   } else {
+     return(p_val)
+   }
+    
   }
   # TODO: implement print() method for DoubleML objects
   # print = function(digits = max(3L, getOption("digits") -
@@ -440,6 +496,7 @@ private = list(
   initialize_boot_arrays = function(n_rep) {
     private$n_rep_boot = n_rep
     self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * self$n_rep))
+    self$boot_t_stats = array(NA, dim=c(private$n_treat, n_rep * self$n_rep))
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
@@ -461,10 +518,20 @@ private = list(
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end]
     },
+  get__boot_t_stats = function() {
+    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
+    ind_end = private$i_rep * private$n_rep_boot
+    self$boot_t_stats[private$i_treat, ind_start:ind_end]
+    },
   set__boot_coef = function(value) {
     ind_start = (private$i_rep-1) * private$n_rep_boot + 1
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
+    },
+  set__boot_t_stats = function(value) {
+    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
+    ind_end = private$i_rep * private$n_rep_boot
+    self$boot_t_stats[private$i_treat, ind_start:ind_end] <- value
     },
   get__params = function(learner){
     if (private$fold_specific_params) {
@@ -558,7 +625,7 @@ private = list(
     
     if (self$apply_cross_fitting) {
       if (dml_procedure == "dml1") {
-        boot_coefs <- matrix(NA, nrow = n_rep, ncol = self$n_folds)
+        boot_coefs <- boot_t_stats <- matrix(NA, nrow = n_rep, ncol = self$n_folds)
         ii = 0
         for (i_fold in 1:self$n_folds) {
           test_index <- test_ids[[i_fold]]
@@ -566,23 +633,28 @@ private = list(
           
           J = mean(private$get__psi_a()[test_index])
           boot_coefs[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__psi()[test_index] / (
+            n_obs_in_fold * J)
+          boot_t_stats[,i_fold] <- weights[,(ii+1):(ii+n_obs_in_fold)] %*% private$get__psi()[test_index] / (
             n_obs_in_fold * private$get__all_se() * J)
           ii = ii + n_obs_in_fold
         }
         boot_coef = rowMeans(boot_coefs)
+        boot_t_stats = rowMeans(boot_t_stats)
       }
       else if (dml_procedure == "dml2") {
-        
         J = mean(private$get__psi_a())
-        boot_coef = weights %*% private$get__psi() / (n_obs * private$get__all_se() * J)
+        boot_coef = weights %*% private$get__psi() / (n_obs * J)
+        boot_t_stats = weights %*% private$get__psi() / (n_obs * private$get__all_se() * J)
       }
       
     } else {
       J =  mean(private$get__psi_a()[test_index])
-       boot_coef = weights %*% private$get__psi()[test_index] / (n_obs * private$get__all_se() * J)
+      boot_coef = weights %*% private$get__psi()[test_index] / (n_obs * private$get__all_se() * J)
+      boot_t_stats = weights %*% private$get__psi()[test_index] / (n_obs * J)
     }
     
-    return(boot_coef)
+    res = list(boot_coef = boot_coef, boot_t_stats = boot_t_stats)
+    return(res)
   },
   var_est = function(inds=NULL) {
     psi_a = private$get__psi_a()
