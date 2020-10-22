@@ -143,6 +143,8 @@ private = list(
     }
     
     terminator = tune_settings$terminator
+    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                 skip_cols = data$treat_col, target = data$y_col))
     
@@ -154,7 +156,6 @@ private = list(
                                           search_space = param_set$param_set_g,
                                           terminator = terminator))
     
-    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,

@@ -121,7 +121,6 @@ private = list(
     
     d = data$data_model[, data$treat_col, with = FALSE] # numeric # tbd: optimize
     y = data$data_model[, data$y_col, with=FALSE] # numeric # tbd: optimize
-
     u0_hat <- y - g0_hat
     u1_hat <- y - g1_hat
     
@@ -178,34 +177,31 @@ private = list(
    
    indx_g0 = lapply(data_tune_list, function(x) x[data$treat_col] == 0)
    indx_g1 = lapply(data_tune_list, function(x) x[data$treat_col] == 1)
-   data_tune_list_g0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
-   data_tune_list_g1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
+   data_tune_list_d0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
+   data_tune_list_d1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
 
-   task_g0 = lapply(data_tune_list_g0, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
+   task_g0 = lapply(data_tune_list_d0, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
                                                skip_cols = data$treat_col, target = data$y_col))
-   task_g1 = lapply(data_tune_list_g1, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
-                                               skip_cols = data$treat_col, target = data$y_col))
-    
    ml_g0 = mlr3::lrn(self$learner$ml_g)
-   ml_g1 = mlr3::lrn(self$learner$ml_g)
-
    tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g0,
                                           resampling = CV_tune,
                                           measure = measure_g,
                                           search_space = param_set$param_set_g,
                                           terminator = terminator))
+   tuning_result_g0 = lapply(tuning_instance_g0, function(x) tune_instance(tuner, x))
+   
+   task_g1 = lapply(data_tune_list_d1, function(x) initiate_regr_task(paste0("nuis_g_", data$y_col), x,
+                                               skip_cols = data$treat_col, target = data$y_col))
+   ml_g1 = mlr3::lrn(self$learner$ml_g)
    tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g1,
                                           resampling = CV_tune,
                                           measure = measure_g,
                                           search_space = param_set$param_set_g,
                                           terminator = terminator))  
-   
-   tuning_result_g0 = lapply(tuning_instance_g0, function(x) tune_instance(tuner, x))
    tuning_result_g1 = lapply(tuning_instance_g1, function(x) tune_instance(tuner, x))
 
-    
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
                                                   skip_cols = data$y_col, target = data$treat_col))
    ml_m <- mlr3::lrn(self$learner$ml_m)
