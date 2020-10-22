@@ -334,7 +334,7 @@ DoubleML <- R6Class("DoubleML", public = list(
            self$params[[learner]][[treat_var]] = params
     }
   }, 
-  p_adjust = function(method = "romano-wolf") {
+  p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
     if (all(is.na(self$coef))) {
       stop("apply fit() before p_adust().")
     }
@@ -376,7 +376,15 @@ DoubleML <- R6Class("DoubleML", public = list(
         stop(paste("Invalid method", method, "argument specified in p_adjust()."))
       }
     }
-    return(p_val)
+    
+   if (return_matrix) {
+    res <- as.matrix(cbind(self$coef, p_val))
+    colnames(res) <- c("Estimate.", "pval")
+    return(res)
+   } else {
+     return(p_val)
+   }
+    
   }
   # TODO: implement print() method for DoubleML objects
   # print = function(digits = max(3L, getOption("digits") -
