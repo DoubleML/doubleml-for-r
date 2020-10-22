@@ -136,66 +136,54 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
 
 # Input: Matrices or vectors; Output: DoubleMLData or data.table
 #' @export
-double_ml_data_from_matrix = function(X, y, d, z = NULL, data_class = "DoubleMLData", 
+double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "DoubleMLData", 
                                       use_other_treat_as_covariate = TRUE){
-
   checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
-
-  X = assure_matrix(X)
+  if (!is.null(X)) {
+    X = assure_matrix(X)
+  }
   y = assure_matrix(y)
   d = assure_matrix(d)
-  
-  
   if (is.null(z)){
-    check_matrix_row(list(X, y, d))
+    if (!is.null(X)) {
+      check_matrix_row(list(X, y, d))
+    } else {
+      check_matrix_row(list(y, d))
+    }
     data = data.table::data.table(X, y, d)
-  }
-
-  else {
+  } else {
     z = assure_matrix(z)
-    check_matrix_row(list(X, y, d, z))
+    if (!is.null(X)) {
+      check_matrix_row(list(X, y, d, z))
+    } else {
+      check_matrix_row(list(y, d, z))
+    }
     data = data.table::data.table(X, y, d, z)
   }
-  
   if (!is.null(z)){
-    
     if (ncol(z) == 1) {
       z_cols = "z"
-    }
-    
-    else {
+    } else {
       z_cols = paste0("z", 1:ncol(z))
     }
-      
-  }
-    
-  else {
+  } else {
     z_cols = NULL
   }
-    
   y_col = "y" 
-
   if (ncol(d) == 1){
     d_cols = "d"
-  }
-  
-  else {
+  } else {
     d_cols = paste0("d", 1:ncol(d))
   }
-  
   x_cols = paste0("X", 1:ncol(X))
-  
   names(data) = c(x_cols, y_col, d_cols, z_cols)
   
   if (data_class == "DoubleMLData") {
-
-  data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
-                          z_cols = z_cols, 
-                          use_other_treat_as_covariate = use_other_treat_as_covariate)
+    data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
+                            z_cols = z_cols, 
+                            use_other_treat_as_covariate = use_other_treat_as_covariate)
   }
-  
   return(data)
-  
 }
 
 # Input: Data frame, Output: DoubleMLData or data.table
@@ -204,30 +192,23 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
                                               d_cols = NULL, z_cols = NULL, 
                                               data_class = "DoubleMLData", 
                                               use_other_treat_as_covariate = TRUE){
-  
-  if ( is.null(x_cols) | is.null(y_col) | is.null(d_cols)){
-    stop("Column indices x_cols, y_col and d_cols not specified.")
+  if (is.null(y_col) | is.null(d_cols)){
+    stop("Column indices y_col and d_cols not specified.")
   }
-  
   checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
   checkmate::check_character(x_cols)
   checkmate::check_character(y_col)
   checkmate::check_character(d_cols)
-  
   if (!is.null(z_cols)){
     checkmate::check_character(z_cols)
   }
-  
   col_indx =  c(x_cols, y_col, d_cols, z_cols)
   data = data.table::data.table(df)[, col_indx, with = FALSE]
-
   if (data_class == "DoubleMLData") {
-    
     data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
                             z_cols = z_cols, 
                             use_other_treat_as_covariate = use_other_treat_as_covariate)
   }
-  
   return(data)
 }
 
