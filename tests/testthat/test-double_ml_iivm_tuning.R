@@ -12,11 +12,6 @@ logger = lgr::get_logger("bbotk")
 logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-# settings for parameter provision
-learner = c('rpart')
-
-learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m" = learner)
-
 tune_settings = list(n_folds_tune = 3,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
@@ -31,20 +26,23 @@ tune_settings = list(n_folds_tune = 3,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(learner = learner,
+learner = "rpart"
+
+test_cases = expand.grid(learner_list = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('LATE'),
+                         AT = c(TRUE, FALSE),
+                         NT = c(TRUE, FALSE),
                          i_setting = 1:(length(data_iivm)),
                          n_rep = c(1, 3),
                          tune_on_folds = c(FALSE, TRUE),
                          stringsAsFactors = FALSE)
+
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
                                    .cases = test_cases, {
   
-  learner_pars <- get_default_mlmethod_iivm(learner)
   n_rep_boot = 498
   n_folds = 2
   
@@ -55,27 +53,28 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
 
   double_mliivm_obj_tuned = DoubleMLIIVM$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_p = learner_pars$mlmethod$mlmethod_p,
-                                     ml_mu = learner_pars$mlmethod$mlmethod_mu,
-                                     ml_m = learner_pars$mlmethod$mlmethod_m,
+                                     ml_g = "regr.rpart",
+                                     ml_m = "classif.rpart",
+                                     ml_r = "classif.rpart",
+                                     subgroups = list(always_takers = AT,
+                                                      never_takers = NT),
                                      dml_procedure = dml_procedure, 
                                      score = score, 
                                      n_rep = n_rep)
   
-  
-  param_grid = list(param_set_p = ParamSet$new(list(
+  param_grid = list(param_set_m = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    param_set_mu = ParamSet$new(list(
+                    param_set_g = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))), 
-                    param_set_m = ParamSet$new(list(
+                    param_set_r = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2)))) 
   
-  double_mliivm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+  double_mliivm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_settings)
   double_mliivm_obj_tuned$fit()
-
+  
   theta_obj_tuned <- double_mliivm_obj_tuned$coef
   se_obj_tuned <- double_mliivm_obj_tuned$se
 

@@ -42,22 +42,27 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
 
   double_mliivm_obj = DoubleMLIIVM$new(data_ml, 
                                      n_folds = 5,
-                                     ml_p = learner_pars$mlmethod$mlmethod_p,
-                                     ml_mu = learner_pars$mlmethod$mlmethod_mu,
-                                     ml_m = learner_pars$mlmethod$mlmethod_m,
+                                     ml_m = "classif.cv_glmnet",
+                                     ml_g = "regr.cv_glmnet",
+                                     ml_r = "classif.cv_glmnet",
                                      dml_procedure = dml_procedure, 
                                      trimming_threshold = trimming_threshold,
                                      score = score)
   
-  double_mliivm_obj$set__ml_nuisance_params(nuisance_part = "ml_p", 
+  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_p)
-  
-  double_mliivm_obj$set__ml_nuisance_params(nuisance_part = "ml_mu", 
+  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_g0", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_mu)
+  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_g1", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_mu)
   
-  double_mliivm_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
+  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_r0", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_m)
+  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_r1", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_m)
   

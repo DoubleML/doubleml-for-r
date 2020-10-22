@@ -46,12 +46,14 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                                      score = score, 
                                      trimming_threshold = trimming_threshold)
     # set params for nuisance part m
-  double_mlirm_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
+  double_mlirm_obj$set__ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_m)
-  
   # set params for nuisance part g
-  double_mlirm_obj$set__ml_nuisance_params(nuisance_part = "ml_g", 
+  double_mlirm_obj$set__ml_nuisance_params(learner = "ml_g0", 
+                                           treat_var = "d",
+                                          params = learner_pars$params$params_g)
+  double_mlirm_obj$set__ml_nuisance_params(learner = "ml_g1", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_g)
   double_mlirm_obj$fit()

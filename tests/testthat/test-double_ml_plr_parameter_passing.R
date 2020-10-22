@@ -66,10 +66,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                      score = score,
                                      n_rep = n_rep)
   
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_g", params = params_g$d1)
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_g", params = params_g$d2)
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_m", params = params_m$d1)
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_m", params = params_m$d2)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = params_g$d1)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = params_g$d2)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = params_m$d1)
+  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = params_m$d2)
 
   
   double_mlplr_obj_once$fit()
@@ -90,10 +90,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                        n_rep = n_rep,
                                        apply_cross_fitting = FALSE)
     
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_g", params = params_g$d1)
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_g", params = params_g$d2)
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", nuisance_part = "ml_m", params = params_m$d1)
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", nuisance_part = "ml_m", params = params_m$d2)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = params_g$d1)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = params_g$d2)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = params_m$d1)
+    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = params_m$d2)
   
     
     double_mlplr_obj_nocf$fit()
@@ -129,7 +129,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   #                                    score = score,
   #                                    n_rep = n_rep)
   # 
-  # double_mlplr_obj_exact$set__ml_nuisance_params(treat_var = NULL, nuisance_part = NULL, params = exact_ml_nuisance_params)
+  # double_mlplr_obj_exact$set__ml_nuisance_params(treat_var = NULL, learner = NULL, params = exact_ml_nuisance_params)
   # 
   # double_mlplr_obj_exact$fit()
   # 

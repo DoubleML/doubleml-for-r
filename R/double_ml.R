@@ -13,8 +13,10 @@ DoubleML <- R6Class("DoubleML", public = list(
   pval = NULL,
   boot_coef = NULL,
   ml_nuisance_params = NULL,
-  param_tuning = NULL,
+  tuning_res = NULL,
   smpls = NULL,
+  learner = NULL, 
+  params = NULL,
   
   initialize = function(...) {
     stop("DoubleML is an abstract class that can't be initialized.")
@@ -29,18 +31,14 @@ DoubleML <- R6Class("DoubleML", public = list(
       }
     }
     
-    # TBD: insert check for tuned params
+    # TODO: insert check for tuned params
     
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
-        
-        if (!is.null(self$ml_nuisance_params)){
-          self$set__ml_nuisance_params(nuisance_part = NULL, treat_var = NULL, params = self$ml_nuisance_params[[private$i_treat]][[private$i_rep]])
-        }
-        
+
         if (private$n_treat > 1){
           self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
@@ -179,11 +177,11 @@ DoubleML <- R6Class("DoubleML", public = list(
   tune = function(param_set, tune_on_folds = FALSE, tune_settings = list(
                                         n_folds_tune = 5,
                                         rsmp_tune = "cv", 
-                                        measure_g = NULL, 
-                                        measure_m = NULL,
-                                        measure_r = NULL,
-                                        measure_p = NULL,
-                                        measure_mu = NULL,
+                                        measure = list(measure_g = NULL, 
+                                                       measure_m = NULL,
+                                                       measure_r = NULL,
+                                                       measure_p = NULL,
+                                                       measure_mu = NULL),
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
                                         tuner = "grid_search",
@@ -193,11 +191,17 @@ DoubleML <- R6Class("DoubleML", public = list(
       stop("Parameter tuning for no-cross-fitting case not implemented.")
     }
     
-    n_obs = nrow(self$data$data_model)
-    self$ml_nuisance_params = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep)), private$n_treat) 
-    names(self$ml_nuisance_params) = self$data$d_cols
-    self$param_tuning = rep(list(rep(list(vector("list", private$n_nuisance)), self$n_rep)), private$n_treat) 
-  
+    if (tune_on_folds) {
+      # TODO: initiate params for tune_on_folds
+      params_rep = vector("list", self$n_rep)
+      self$tuning_res = rep(list(params_rep), self$data$n_treat())
+      names(self$tuning_res) = self$data$d_cols
+      private$fold_specific_params = TRUE
+      } else {
+      self$tuning_res = vector("list", self$data$n_treat())
+      names(self$tuning_res) = self$data$d_cols
+    }
+    
       for (i_treat in 1:private$n_treat) {
         private$i_treat = i_treat
           
@@ -205,39 +209,44 @@ DoubleML <- R6Class("DoubleML", public = list(
             self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
           
-        for (i_rep in 1:self$n_rep) {
-          private$i_rep = i_rep
-        
-          # TBD: insert setter/getter function -> correct indices and names, repeated crossfitting & multitreatment
-          #  ! important ! tuned params must exactly correspond to training samples
-          # TBD: user friendly way to pass (pre-)trained parameters
-          # TBD: advanced usage passing original mlr3training objects like terminator, smpl, 
-          #      e.g., in seperate function (tune_mlr3)...
-          # TBD: Pass through instances (requires prespecified tasks)
-          # TBD: Handling different measures for classification and regression (logit???)
-          
-          if (tune_on_folds) {
+        if (tune_on_folds) {
+          for (i_rep in 1:self$n_rep) {
+            private$i_rep = i_rep
+            # TODO: user friendly way to pass (pre-)trained learners
+            # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
+            #      e.g., in seperate function (tune_mlr3)...
             param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                   param_set, tune_on_folds, 
-                                                   tune_settings)
-          } else {
+                                                   param_set, tune_on_folds, tune_settings)
+            self$tuning_res[[i_treat]][[i_rep]] = param_tuning
             
-            if (private$i_rep == 1) {
-              param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                     param_set, tune_on_folds, 
-                                                     tune_settings)
-            } 
+            for (nuisance_model in names(param_tuning)) {
+              if(!is.null(param_tuning[[nuisance_model]][[1]])) {
+                self$set__ml_nuisance_params(learner = nuisance_model,
+                                             treat_var = self$data$treat_col, 
+                                             params = param_tuning[[nuisance_model]]$params)
+              } else {
+                next
+              }
+            }
           }
-
-          # here: set__params()
-          private$set__params(param_tuning, tune_on_folds)
+        } else {
+          private$i_rep = 1
+          param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+                                                     param_set, tune_on_folds, tune_settings)
+          self$tuning_res[[i_treat]] = param_tuning
           
-          #self$params = self$param_tuning$params
-  
-      }
+          for (nuisance_model in self$params_names()) {
+            if(!is.null(param_tuning[[nuisance_model]][[1]])) {
+              self$set__ml_nuisance_params(learner = nuisance_model, 
+                                           treat_var = self$data$treat_col, 
+                                           params = param_tuning[[nuisance_model]]$params[[1]])
+            } else {
+              next
+            }
+          }
+        }
     }
-
-    invisible(self)
+  invisible(self)
   },
   summary = function(digits = max(3L, getOption("digits") - 
                                                           3L)) {
@@ -300,7 +309,28 @@ DoubleML <- R6Class("DoubleML", public = list(
       ci[, 2] <- self$coef[parm] + hatc * self$se
      }
     return(ci)
-  } # , 
+  }, 
+  params_names = function() {
+    return(names(self$params))
+  }, 
+  set__ml_nuisance_params = function(learner = NULL, treat_var = NULL, params) {
+    valid_learner = self$params_names()
+    if (!learner %in% valid_learner) {
+      stop(paste("invalid nuisance learner", learner, "\n",
+                 "valid nuisance learner", paste(valid_learner, collapse = " or ")))
+    }
+    if (!treat_var %in% self$data$d_cols) {
+      stop(paste("invalid treatment variable", treat_var, "\n",
+                 "valid treatment variable", paste(data$self$d_cols, collapse = " or ")))
+    }
+    
+    if (private$fold_specific_params) {
+          self$params[[learner]][[treat_var]][[private$i_rep]] = params
+     } else {
+           self$params[[learner]][[treat_var]] = params
+    }
+  }
+  # TODO: implement print() method for DoubleML objects
   # print = function(digits = max(3L, getOption("digits") -
   #                                                 3L)) {
   # 
@@ -328,6 +358,7 @@ private = list(
   n_rep_boot = NULL,
   i_rep = NA,
   i_treat = NA,
+  fold_specific_params = NULL,
   initialize_double_ml = function(data, 
                         n_folds,
                         n_rep,
@@ -341,8 +372,13 @@ private = list(
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
     stopifnot(is.character(score), length(score) == 1)
     stopifnot(is.numeric(n_rep), length(n_rep) == 1)
-
+  
     self$data <- data
+    
+    # initialize learners and parameters which are set model specific
+    self$learner = NULL
+    self$params = NULL
+    
     self$n_folds <- n_folds
     self$dml_procedure <- dml_procedure
     self$score <- score
@@ -370,7 +406,9 @@ private = list(
     } else {
       self$smpls = NULL
     }
-
+    
+    # Set fold_specific_params = FALSE at instantiation
+    private$fold_specific_params = FALSE
     private$n_obs = data$n_obs()
     private$n_treat = data$n_treat()
     
@@ -428,33 +466,14 @@ private = list(
     ind_end = private$i_rep * private$n_rep_boot
     self$boot_coef[private$i_treat, ind_start:ind_end] <- value
     },
-  get__params = function(){
-    
-    if (is.null(self$params) | all(lapply(self$params, length)==0)){
-      params = list()
-    }
-    else {
-      params = self$params[[private$i_rep]][[private$i_treat]]
+  get__params = function(learner){
+    if (private$fold_specific_params) {
+      params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
+    } else {
+      params = self$params[[learner]][[self$data$treat_col]]
     }
     return(params)
     },
-  set__params = function(tuning_params, tune_on_folds){
-    
-    if (tune_on_folds) {
-      self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- tuning_params$params
-      self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
-    } else {
-      # TODO: set params for tune_on_folds == FALSE
-      export_params = lapply(1:private$n_nuisance, function(x) rep(tuning_params$params[[x]], self$n_folds))
-      names(export_params) = names(tuning_params$params)
-      self$ml_nuisance_params[[private$i_treat]][[private$i_rep]] <- export_params
-      self$param_tuning[[private$i_treat]][[private$i_rep]] <- tuning_params$tuning_result
-      
-      # self$set__ml_nuisance_params(tuning_params$params)
-      # self$ml_nuisance_params[[private$i_rep]][[private$i_treat]] = NULL
-      #       self$param_tuning[[private$i_rep]][[private$i_treat]] <- tuning_params$tuning_result
-      }
-  },
   est_causal_pars = function() {
     dml_procedure = self$dml_procedure
     n_folds = self$n_folds

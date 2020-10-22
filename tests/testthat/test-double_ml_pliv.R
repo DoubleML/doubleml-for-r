@@ -48,13 +48,13 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                      dml_procedure = dml_procedure, 
                                      score = score)
   
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_g", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_g)
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_m", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_m)
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_r", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_r", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_r)
   

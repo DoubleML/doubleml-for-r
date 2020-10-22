@@ -19,8 +19,8 @@ learner = c('regr.rpart')
 tune_settings = list(n_folds_tune = 2,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      measure_g = "regr.mse", 
-                      measure_m = "regr.mse",
+                      measure = list(measure_g = "regr.mse", 
+                                     measure_m = "regr.mse"),
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
@@ -34,7 +34,7 @@ test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
                          i_setting = 1:(length(data_pliv)),
                          n_rep = c(1, 3),
                          tune_on_folds = c(FALSE, TRUE),
-                         z_vars = list("z", c("z", "z2")),
+                         z_indx = c(1,2),
                          stringsAsFactors = FALSE)
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -59,8 +59,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   #                       bootstrap = "normal",  nRep = n_rep_boot)
   # theta <- coef(pliv_hat)
   # se <- pliv_hat$se
-
-  z_cols = unlist(z_vars[i_setting])
+                           
+  z_vars = list("z", c("z", "z2"))
+  z_cols = z_vars[[z_indx]]
   set.seed(i_setting)
   Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z", "z2") == FALSE]
   data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]], y_col = "y", 

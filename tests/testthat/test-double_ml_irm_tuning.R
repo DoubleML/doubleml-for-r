@@ -72,7 +72,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
                   
-  double_mlirm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+  double_mlirm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings)
   double_mlirm_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlirm_obj_tuned$coef

@@ -45,19 +45,17 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                      dml_procedure = dml_procedure, 
                                      score = score)
   
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_g", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_g", 
                                             treat_var = "d",
                                             params = learner_pars$params$params_g)
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_r", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_r", 
                                             treat_var = "d",
                                             params = learner_pars$params$params_r)
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_m_mult_instr", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_m_z", 
                                             treat_var = "d",
-                                            instr_var = "z",
                                             params = learner_pars$params$params_m)
-  double_mlpliv_obj$set__ml_nuisance_params(nuisance_part = "ml_m_mult_instr", 
+  double_mlpliv_obj$set__ml_nuisance_params(learner = "ml_m_z2", 
                                             treat_var = "d",
-                                            instr_var = "z2",
                                             params = learner_pars$params$params_m)    
   
   double_mlpliv_obj$fit()
@@ -74,15 +72,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                      dml_procedure = dml_procedure, 
                                      score = score)
   
-  double_mlpliv_partX$set__ml_nuisance_params(nuisance_part = "ml_g", 
+  double_mlpliv_partX$set__ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_g)
-  double_mlpliv_partX$set__ml_nuisance_params(nuisance_part = "ml_m", 
-                                           treat_var = "d",
-                                            params = learner_pars$params$params_m)
-  double_mlpliv_partX$set__ml_nuisance_params(nuisance_part = "ml_r", 
+  double_mlpliv_partX$set__ml_nuisance_params(learner = "ml_r", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_r)
+  double_mlpliv_partX$set__ml_nuisance_params(learner = "ml_m_z", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_m)
+  double_mlpliv_partX$set__ml_nuisance_params(learner = "ml_m_z2", 
+                                           treat_var = "d",
+                                            params = learner_pars$params$params_m)
   
   double_mlpliv_partX$fit()
   theta_partX <- double_mlpliv_partX$coef
@@ -96,7 +97,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                      dml_procedure = dml_procedure, 
                                      score = score)
   
-  double_mlpliv_partZ$set__ml_nuisance_params(nuisance_part = "ml_r", 
+  double_mlpliv_partZ$set__ml_nuisance_params(learner = "ml_r", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_r)
   
@@ -113,18 +114,17 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                      dml_procedure = dml_procedure, 
                                      score = score)
   
-    double_mlpliv_partXZ$set__ml_nuisance_params(nuisance_part = "ml_g", 
+  double_mlpliv_partXZ$set__ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_g)
     
-    double_mlpliv_partXZ$set__ml_nuisance_params(nuisance_part = "ml_m", 
+  double_mlpliv_partXZ$set__ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
-                                            params = learner_pars$params$params_m)
+                                           params = learner_pars$params$params_m)
   
-    double_mlpliv_partXZ$set__ml_nuisance_params(nuisance_part = "ml_r", 
+  double_mlpliv_partXZ$set__ml_nuisance_params(learner = "ml_r", 
                                            treat_var = "d",
-                                            params = learner_pars$params$params_r)
-  
+                                           params = learner_pars$params$params_r)
   double_mlpliv_partXZ$fit()
   theta_partXZ <- double_mlpliv_partXZ$coef
   se_partXZ <- double_mlpliv_partXZ$se
@@ -136,7 +136,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   expect_equal(theta_partX, theta_obj, tolerance = 1e-8)
   expect_equal(se_partX, se_obj, tolerance = 1e-8)
   # expect_equal(as.vector(pliv_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
-  
 }
 )
 
