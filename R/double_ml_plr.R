@@ -45,13 +45,13 @@ private = list(
     # nuisance g
     task_g <- initiate_regr_task(paste0("nuis_g_", self$data$y_col), 
                                  self$data$data_model, 
-                                 select_cols = self$data$x_cols, 
+                                 select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                  target = self$data$y_col)
           
     # nuisance m  
     task_m <- initiate_regr_task(paste0("nuis_m_", self$data$treat_col), 
                                         self$data$data_model, 
-                                        select_cols = self$data$x_cols, 
+                                        select_cols = c(self$data$x_cols, self$data$other_treat_cols), 
                                         target = self$data$treat_col)
       
     if (!private$fold_specific_params){
@@ -152,7 +152,8 @@ private = list(
 
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col),
                                                                     x,
-                                                                    select_cols = self$data$x_cols, 
+                                                                    select_cols = c(self$data$x_cols, 
+                                                                                    self$data$other_treat_cols),
                                                                     target = self$data$y_col))
     
     ml_g <- mlr3::lrn(self$learner$ml_g)
@@ -166,7 +167,8 @@ private = list(
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,
-                                                  select_cols = self$data$x_cols, target = self$data$treat_col))
+                                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                                  target = self$data$treat_col))
     
     ml_m <- mlr3::lrn(self$learner$ml_m)
 
