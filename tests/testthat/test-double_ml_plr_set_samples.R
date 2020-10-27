@@ -1,4 +1,4 @@
-context("Unit tests for PLR with repeated cross-fitting")
+context("Unit tests for PLR with external sample provision")
 
 library("mlr3learners")
 library('data.table')
