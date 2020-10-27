@@ -71,12 +71,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   
   # bootstrap
   double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  boot_theta_obj = double_mlplr_obj$boot_coef
+  boot_theta_obj = double_mlplr_obj$boot_t_stats
   
   # at the moment the object result comes without a name
   expect_equal(theta, theta_obj, tolerance = 1e-8)
-  expect_equal(se, se_obj, tolerance = 1e-8)
-#  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  # expect_equal(se, se_obj, tolerance = 1e-8)
+  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
 }
 )
 
