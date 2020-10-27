@@ -113,16 +113,12 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     if (length(self$d_cols) > 1) {
       self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
     }
-      
     if (length(self$d_cols) > 1 & use_other_treat_as_covariate == FALSE) {
       message("Controls variables do not include other treatment variables")
       self$other_treat_cols = NULL
     }
-
     col_indx = c(self$x_cols, self$y_col, self$treat_col, self$other_treat_cols, self$z_cols)
-    
     self$data_model = self$data[, col_indx, with = FALSE]
-    
     stopifnot(nrow(self$data) == nrow(self$data_model))
 
     # successful assigning treatment variable

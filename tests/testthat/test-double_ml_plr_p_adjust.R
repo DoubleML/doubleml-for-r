@@ -11,6 +11,7 @@ test_cases = expand.grid(learner = c('regr.cv_glmnet'),
                          se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          method = c("romano-wolf", "bonferroni"),
+                         apply_cross_fitting = c(TRUE, FALSE),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -23,7 +24,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 3)
   learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 3)
   n_rep_boot = 498
-  n_folds = 5
+  
+  if (!apply_cross_fitting){
+    n_folds = 2
+  } else {
+    n_folds = 5
+  }
   
   set.seed(1)
   n = 100 #sample size
@@ -46,7 +52,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
                                      dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
-                                     score = score)
+                                     score = score, 
+                                     apply_cross_fitting = apply_cross_fitting)
   lapply(data_ml$d_cols, function(x) {
           # set params for nuisance part m
           double_mlplr_obj$set__ml_nuisance_params(learner = "ml_m", 

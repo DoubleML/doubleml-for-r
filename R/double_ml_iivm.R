@@ -52,16 +52,19 @@ private = list(
                        "ml_r1" = nuisance)
     invisible(self)
   },
-  ml_nuisance_and_score_elements = function(data, smpls, ...) {
+  ml_nuisance_and_score_elements = function(smpls, ...) {
     # nuisance m
-    task_m <- initiate_classif_task(paste0("nuis_p_", data$z_cols), data$data_model,
-                                    skip_cols = c(data$y_col, data$treat_col), target = data$z_cols)
+    task_m <- initiate_classif_task(paste0("nuis_p_", self$data$z_cols), self$data$data_model,
+                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                    target = self$data$z_cols)
     # nuisance m
-    task_g = initiate_regr_task(paste0("nuis_mu_", data$y_col), data$data_model,
-                                  skip_cols = c(data$treat_col, data$z_cols), target = data$y_col)
+    task_g = initiate_regr_task(paste0("nuis_mu_", self$data$y_col), self$data$data_model,
+                                select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                target = self$data$y_col)
     # task_r
-    task_r = initiate_classif_task(paste0("nuis_m_", data$treat_col), data$data_model,
-                                     skip_cols = c(data$y_col, data$z_cols), target = data$treat_col)
+    task_r = initiate_classif_task(paste0("nuis_m_", self$data$treat_col), self$data$data_model,
+                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                   target = self$data$treat_col)
     if (!private$fold_specific_params) {
           
           for (i_nuis in self$params_names()){
@@ -70,7 +73,7 @@ private = list(
             }
           }
       # get conditional samples (conditioned on z = 0 or z = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
+      cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model$z)
       
       # nuisance m
       ml_m = initiate_prob_learner(self$learner$ml_m, private$get__params("ml_m"))                  
@@ -101,7 +104,7 @@ private = list(
       }
       
       if (self$subgroups$always_takers == FALSE){
-        r0_hat <- rep(0, nrow(data$data_model))
+        r0_hat <- rep(0, nrow(self$data$data_model))
       } else if (self$subgroups$always_takers == TRUE){
         ml_r0 = initiate_prob_learner(self$learner$ml_r, private$get__params("ml_r0"))
         resampling_r0 <- mlr3::rsmp("custom")$instantiate(task_r,
@@ -112,7 +115,7 @@ private = list(
       }
       
       if (self$subgroups$never_takers == FALSE){
-        r1_hat <- rep(1, nrow(data$data_model))
+        r1_hat <- rep(1, nrow(self$data$data_model))
       } else if (self$subgroups$never_takers == TRUE){
         ml_r1 = initiate_prob_learner(self$learner$ml_r, private$get__params("ml_r1"))
         resampling_r1 <- mlr3::rsmp("custom")$instantiate(task_r,
@@ -123,7 +126,7 @@ private = list(
       }
     } else {
       # get conditional samples (conditioned on Z = 0 or Z = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, data$data_model$z)
+      cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model$z)
       
       # nuisance m
       ml_m = lapply(private$get__params("ml_m"), function(x) 
@@ -152,7 +155,7 @@ private = list(
         message("If there are no always-takers and no never-takers, ATE is estimated")
       }
       if (self$subgroups$always_takers == FALSE){
-        r0_hat <- rep(0, nrow(data$data_model))
+        r0_hat <- rep(0, nrow(self$data$data_model))
       } else if (self$subgroups$always_takers == TRUE){
         ml_r0 = lapply(private$get__params("ml_r0"), function(x) 
                                                   initiate_prob_learner(self$learner$ml_r, x))
@@ -162,7 +165,7 @@ private = list(
         r0_hat <- rearrange_prob_prediction(r0_hat, smpls$test_ids)
       }
       if (self$subgroups$never_takers == FALSE){
-        r1_hat <- rep(1, nrow(data$data_model))
+        r1_hat <- rep(1, nrow(self$data$data_model))
       } else if (self$subgroups$never_takers == TRUE){
         ml_r1 = lapply(private$get__params("ml_r1"), function(x) 
                                                   initiate_prob_learner(self$learner$ml_r, x))
@@ -174,9 +177,9 @@ private = list(
     }
     
     # compute residuals
-    z <- data$data_model[, data$z_cols, with = FALSE]
-    d <- data$data_model[, data$treat_col, with = FALSE]
-    y <- data$data_model[, data$y_col, with = FALSE]
+    z <- self$data$data_model[, self$data$z_cols, with = FALSE]
+    d <- self$data$data_model[, self$data$treat_col, with = FALSE]
+    y <- self$data$data_model[, self$data$y_col, with = FALSE]
     u0_hat = y - g0_hat
     u1_hat = y - g1_hat
     w0_hat = d - r0_hat
@@ -194,15 +197,15 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   },
- ml_nuisance_tuning = function(data, smpls, param_set, tune_on_folds, tune_settings, ...){
+ ml_nuisance_tuning = function(smpls, param_set, tune_on_folds, tune_settings, ...){
    checkmate::check_class(param_set$param_set_g, "ParamSet")    
    checkmate::check_class(param_set$param_set_m, "ParamSet")
    checkmate::check_class(param_set$param_set_r, "ParamSet")
 
    if (!tune_on_folds){
-      data_tune_list = list(data$data_model)
+      data_tune_list = list(self$data$data_model)
     } else {
-      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(data$data_model, x))
+      data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(self$data$data_model, x))
     }
   
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
@@ -241,14 +244,14 @@ private = list(
    terminator = tune_settings$terminator
    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     
-   indx_g0 = lapply(data_tune_list, function(x) x[data$z_cols] == 0)
-   indx_g1 = lapply(data_tune_list, function(x) x[data$z_cols] == 1)
+   indx_g0 = lapply(data_tune_list, function(x) x[self$data$z_cols] == 0)
+   indx_g1 = lapply(data_tune_list, function(x) x[self$data$z_cols] == 1)
    data_tune_list_z0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
    data_tune_list_z1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
 
-   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", data$z_cols), x,
-                                               skip_cols = c(data$y_col, data$treat_col), 
-                                               target = data$z_cols))
+   task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_p_", self$data$z_cols), x,
+                                                select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                                target = self$data$z_cols))
    ml_m <- mlr3::lrn(self$learner$ml_m)
    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
@@ -258,9 +261,9 @@ private = list(
                                           terminator = terminator))
    tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
    
-   task_g0 = lapply(data_tune_list_z0, function(x) initiate_regr_task(paste0("nuis_mu_", data$y_col), x,
-                                                     skip_cols = c(data$treat_col, data$z_cols),
-                                                     target = data$y_col))
+   task_g0 = lapply(data_tune_list_z0, function(x) initiate_regr_task(paste0("nuis_mu_", self$data$y_col), x,
+                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                                     target = self$data$y_col))
    ml_g0 <- mlr3::lrn(self$learner$ml_g)
    tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_g0,
@@ -270,9 +273,9 @@ private = list(
                                          terminator = terminator))
    tuning_result_g0 = lapply(tuning_instance_g0, function(x) tune_instance(tuner, x))
    
-   task_g1 = lapply(data_tune_list_z0, function(x) initiate_regr_task(paste0("nuis_mu_", data$y_col), x,
-                                                     skip_cols = c(data$treat_col, data$z_cols),
-                                                     target = data$y_col))
+   task_g1 = lapply(data_tune_list_z0, function(x) initiate_regr_task(paste0("nuis_mu_", self$data$y_col), x,
+                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                                     target = self$data$y_col))
    ml_g1 <- mlr3::lrn(self$learner$ml_g)
    tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_g1,
@@ -284,9 +287,9 @@ private = list(
    
    if (self$subgroups$always_takers == TRUE){
      task_r0 = lapply(data_tune_list_z0, function(x) 
-                                            initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
-                                              skip_cols = c(data$y_col, data$z_cols), 
-                                              target = data$treat_col))
+                                            initiate_classif_task(paste0("nuis_m_", self$data$treat_col), x,
+                                              select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                              target = self$data$treat_col))
      ml_r0 = mlr3::lrn(self$learner$ml_r)
      tuning_instance_r0 = lapply(task_r0, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_r0,
@@ -301,9 +304,9 @@ private = list(
    
    if (self$subgroups$never_takers == TRUE){
      task_r1 = lapply(data_tune_list_z1, function(x) 
-                                            initiate_classif_task(paste0("nuis_m_", data$treat_col), x,
-                                              skip_cols = c(data$y_col, data$z_cols), 
-                                              target = data$treat_col))
+                                            initiate_classif_task(paste0("nuis_m_", self$data$treat_col), x,
+                                              select_cols = c(self$data$x_cols, self$data$other_treat_cols),
+                                              target = self$data$treat_col))
      ml_r1 = mlr3::lrn(self$learner$ml_r)
      tuning_instance_r1 = lapply(task_r1, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_r1,

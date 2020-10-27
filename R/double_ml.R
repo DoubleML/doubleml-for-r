@@ -45,8 +45,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         }
         
         # ml estimation of nuisance models and computation of psi elements
-        psis = private$ml_nuisance_and_score_elements(self$data,
-                                                        private$get__smpls())
+        psis = private$ml_nuisance_and_score_elements(private$get__smpls())
         private$set__psi_a(psis$psi_a)
         private$set__psi_b(psis$psi_b)
         
@@ -219,8 +218,8 @@ DoubleML <- R6Class("DoubleML", public = list(
             # TODO: user friendly way to pass (pre-)trained learners
             # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
             #      e.g., in seperate function (tune_mlr3)...
-            param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
-                                                   param_set, tune_on_folds, tune_settings)
+            param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
+                                                      param_set, tune_on_folds, tune_settings)
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning
             
             for (nuisance_model in names(param_tuning)) {
@@ -235,7 +234,7 @@ DoubleML <- R6Class("DoubleML", public = list(
           }
         } else {
           private$i_rep = 1
-          param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+          param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
                                                      param_set, tune_on_folds, tune_settings)
           self$tuning_res[[i_treat]] = param_tuning
           
@@ -595,7 +594,7 @@ private = list(
     # aggregate parameters from the repeated cross-fitting
     # don't use the getter (always for one treatment variable and one sample), but the private variable
     self$coef = apply(private$all_coef, 1, function(x) stats::median(x, na.rm = TRUE))
-    self$se = sqrt(apply(private$all_se^2  - (private$all_coef - self$coef)^2, 1, 
+    self$se = sqrt(apply(private$all_se^2  + (private$all_coef - self$coef)^2, 1, 
                                            function(x) stats::median(x, na.rm = TRUE)))
     
     invisible(self)

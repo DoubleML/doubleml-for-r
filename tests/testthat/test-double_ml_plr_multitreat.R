@@ -77,7 +77,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   # bootstrap
   set.seed(i_setting)
   double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  boot_theta_obj = double_mlplr_obj$boot_coef
+  boot_theta_obj = double_mlplr_obj$boot_t_stats
   
   # joint confint
   ci_ptwise_obj = double_mlplr_obj$confint(joint = FALSE, level = 0.95)

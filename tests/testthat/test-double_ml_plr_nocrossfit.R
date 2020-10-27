@@ -52,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
-  t_obj <- double_mlplr_obj$t
+  t_obj <- double_mlplr_obj$t_stat
   pval_obj <- double_mlplr_obj$pval
   ci_obj <- double_mlplr_obj$confint(level = 0.95, joint = FALSE)
   
@@ -80,7 +80,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   
     theta_external <- dml_plr_obj_external$coef
     se_external <- dml_plr_obj_external$se
-    t_external <- dml_plr_obj_external$t
+    t_external <- dml_plr_obj_external$t_stat
     pval_external <- dml_plr_obj_external$pval
     ci_external <- dml_plr_obj_external$confint(level = 0.95, joint = FALSE)
     
