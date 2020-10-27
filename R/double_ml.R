@@ -234,7 +234,7 @@ DoubleML <- R6Class("DoubleML", public = list(
           }
         } else {
           private$i_rep = 1
-          param_tuning = private$ml_nuisance_tuning(self$data, private$get__smpls(),
+          param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
                                                      param_set, tune_on_folds, tune_settings)
           self$tuning_res[[i_treat]] = param_tuning
           
