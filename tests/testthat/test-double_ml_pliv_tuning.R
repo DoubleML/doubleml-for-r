@@ -116,7 +116,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   #   expect_is(se_obj_tuned_Z, "numeric")
   # }
   # 
-  if (data_ml$n_instr() > 1) {
+  if (data_ml$n_instr > 1) {
       double_mlpliv_obj_tuned_XZ = DoubleMLPLIV.partialXZ(data_ml, 
                                      n_folds = n_folds,
                                      ml_g = learner,
