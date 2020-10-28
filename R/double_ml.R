@@ -37,10 +37,10 @@ DoubleML <- R6Class("DoubleML", public = list(
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
-      for (i_treat in 1:private$n_treat) {
+      for (i_treat in 1:self$data$n_treat) {
         private$i_treat = i_treat
 
-        if (private$n_treat > 1){
+        if (self$data$n_treat > 1){
           self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
         
@@ -80,7 +80,7 @@ DoubleML <- R6Class("DoubleML", public = list(
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
-      for (i_treat in 1:private$n_treat) {
+      for (i_treat in 1:self$data$n_treat) {
         private$i_treat = i_treat
         
         boot_res = private$compute_bootstrap(method, n_rep)
@@ -197,18 +197,18 @@ DoubleML <- R6Class("DoubleML", public = list(
     if (tune_on_folds) {
       # TODO: initiate params for tune_on_folds
       params_rep = vector("list", self$n_rep)
-      self$tuning_res = rep(list(params_rep), self$data$n_treat())
+      self$tuning_res = rep(list(params_rep), self$data$n_treat)
       names(self$tuning_res) = self$data$d_cols
       private$fold_specific_params = TRUE
       } else {
-      self$tuning_res = vector("list", self$data$n_treat())
+      self$tuning_res = vector("list", self$data$n_treat)
       names(self$tuning_res) = self$data$d_cols
     }
     
-      for (i_treat in 1:private$n_treat) {
+      for (i_treat in 1:self$data$n_treat) {
         private$i_treat = i_treat
           
-        if (private$n_treat > 1){
+        if (self$data$n_treat > 1){
             self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
         }
           
@@ -342,7 +342,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       if (is.null(self$boot_t_stats) | all(is.na(self$coef))){
         stop("apply fit() & bootstrap() before p_adust().")
       }
-      k = self$data$n_treat()
+      k = self$data$n_treat
       pinit = p_val_corrected = vector(mode = "numeric", length = k)
       
       boot_t_stats = self$boot_t_stats
@@ -370,7 +370,7 @@ DoubleML <- R6Class("DoubleML", public = list(
       p_val = p_val_corrected[ro]
     } else { 
        if (is.element(method, stats::p.adjust.methods)) {
-        p_val = stats::p.adjust(self$pval, method = method, n = self$data$n_treat())
+        p_val = stats::p.adjust(self$pval, method = method, n = self$data$n_treat)
        } else {
         stop(paste("Invalid method", method, "argument specified in p_adjust()."))
       }
@@ -464,8 +464,8 @@ private = list(
     
     # Set fold_specific_params = FALSE at instantiation
     private$fold_specific_params = FALSE
-    private$n_obs = data$n_obs()
-    private$n_treat = data$n_treat()
+    private$n_obs = data$n_obs
+    self$data$n_treat = data$n_treat
     
     private$initialize_arrays()
     
@@ -473,29 +473,29 @@ private = list(
   },
   initialize_arrays = function() {
     
-    private$psi = array(NA, dim=c(self$data$n_obs(), self$n_rep, private$n_treat))
-    private$psi_a = array(NA, dim=c(self$data$n_obs(), self$n_rep, private$n_treat))
-    private$psi_b = array(NA, dim=c(self$data$n_obs(), self$n_rep, private$n_treat))
+    private$psi = array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat))
+    private$psi_a = array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat))
+    private$psi_b = array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat))
     
-    self$coef = array(NA, dim=c(private$n_treat))
-    self$se = array(NA, dim=c(private$n_treat))
+    self$coef = array(NA, dim=c(self$data$n_treat))
+    self$se = array(NA, dim=c(self$data$n_treat))
     
-    private$all_coef = array(NA, dim=c(private$n_treat, self$n_rep))
-    private$all_se = array(NA, dim=c(private$n_treat, self$n_rep))
+    private$all_coef = array(NA, dim=c(self$data$n_treat, self$n_rep))
+    private$all_se = array(NA, dim=c(self$data$n_treat, self$n_rep))
     
     if (self$dml_procedure == "dml1") {
       if (self$apply_cross_fitting) {
-        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep, self$n_folds))
+        private$all_dml1_coef = array(NA, dim=c(self$data$n_treat, self$n_rep, self$n_folds))
       } else {
-        private$all_dml1_coef = array(NA, dim=c(private$n_treat, self$n_rep, 1))
+        private$all_dml1_coef = array(NA, dim=c(self$data$n_treat, self$n_rep, 1))
       }
     }
     
   },
   initialize_boot_arrays = function(n_rep) {
     private$n_rep_boot = n_rep
-    self$boot_coef = array(NA, dim=c(private$n_treat, n_rep * self$n_rep))
-    self$boot_t_stats = array(NA, dim=c(private$n_treat, n_rep * self$n_rep))
+    self$boot_coef = array(NA, dim=c(self$data$n_treat, n_rep * self$n_rep))
+    self$boot_t_stats = array(NA, dim=c(self$data$n_treat, n_rep * self$n_rep))
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and

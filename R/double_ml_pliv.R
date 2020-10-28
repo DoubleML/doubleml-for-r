@@ -4,7 +4,7 @@
 #' @importFrom R6 R6Class
 #' @export
 
-DoubleMLPLIV <- R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
+DoubleMLPLIV <- R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   partialX = NULL, 
   partialZ = NULL, 
   initialize = function(data, 
@@ -46,7 +46,7 @@ private = list(
   i_instr = NULL,
   initialize_ml_nuisance_params = function() {
     if (self$partialX & !self$partialZ) {
-      if (self$data$n_instr() == 1) {
+      if (self$data$n_instr == 1) {
         valid_learner = c("ml_g", "ml_m", "ml_r")
       } else {
         valid_learner = c("ml_g", "ml_r", paste0("ml_m_", self$data$z_cols))
@@ -56,7 +56,7 @@ private = list(
     } else if (!self$partialX & self$partialZ) {
       valid_learner = c("ml_r")
     }
-    nuisance = vector("list", self$data$n_treat())
+    nuisance = vector("list", self$data$n_treat)
     names(nuisance) = self$data$d_cols
     
     self$params = rep(list(nuisance), length(valid_learner))
@@ -91,7 +91,7 @@ private = list(
                                   target = self$data$treat_col)
     
     # nuisance m
-    if (self$data$n_instr() == 1) {
+    if (self$data$n_instr == 1) {
       # one instrument: just identified case
       task_m <- initiate_regr_task(paste0("nuis_m_", self$data$z_cols), self$data$data_model,
                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
@@ -128,7 +128,7 @@ private = list(
       r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat <- extract_prediction(r_r)$response
       
-      if (self$data$n_instr() == 1) {
+      if (self$data$n_instr == 1) {
         ml_m <- initiate_learner(self$learner$ml_m,
                                private$get__params("ml_m"))
         resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
@@ -144,11 +144,11 @@ private = list(
         resampling_m = lapply(task_m, function(x) mlr3::rsmp("custom")$instantiate(x,
                                                   smpls$train_ids, smpls$test_ids))
         
-        r_m = lapply(1:self$data$n_instr(), function(x) mlr3::resample(task_m[[x]], ml_m[[x]], 
+        r_m = lapply(1:self$data$n_instr, function(x) mlr3::resample(task_m[[x]], ml_m[[x]], 
                                                     resampling_m[[x]], store_models = TRUE))
         m_hat = lapply(r_m, extract_prediction)
         #m_hat = rearrange_prediction(m_hat, smpls$test_ids)
-        m_hat = lapply(1:self$data$n_instr(), function(x) 
+        m_hat = lapply(1:self$data$n_instr, function(x) 
                                             setnames(m_hat[[x]], "response", self$data$z_cols[x]))
         m_hat = Reduce(function(x,y) data.table::merge.data.table(x,y, by = "row_id"), m_hat)
         row_id_indx = names(m_hat)!="row_id"
@@ -170,7 +170,7 @@ private = list(
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
       
       # TBD: 1-iv vs. multi-iv case
-      if (self$data$n_instr() == 1) {
+      if (self$data$n_instr == 1) {
         ml_m <- lapply(private$get__params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
                                                                                   x))
         resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
@@ -179,10 +179,10 @@ private = list(
         m_hat = rearrange_prediction(m_hat, smpls$test_ids)
         
       } else {
-        m_hat = vector("list", length = self$data$n_instr())
+        m_hat = vector("list", length = self$data$n_instr)
         names(m_hat) = self$data$z_cols
         
-        for (i_instr in 1:self$data$n_instr()) {
+        for (i_instr in 1:self$data$n_instr) {
           this_z = self$data$z_cols[i_instr]
           ml_m = lapply(private$get__params(paste0("ml_m_", this_z)), function(x) 
                                                                         initiate_learner(self$learner$ml_m, x))
@@ -192,7 +192,7 @@ private = list(
           m_hat_prelim = lapply(r_m, extract_prediction)
           m_hat[[i_instr]] = rearrange_prediction(m_hat_prelim, smpls$test_ids, keep_rowids = TRUE)
         }
-        m_hat = lapply(1:self$data$n_instr(), function(x) 
+        m_hat = lapply(1:self$data$n_instr, function(x) 
                                             setnames(m_hat[[x]], "response", self$data$z_cols[x]))
         m_hat = Reduce(function(x,y) data.table::merge.data.table(x,y, by = "row_id"), m_hat)
         row_id_indx = names(m_hat)!="row_id"
@@ -208,7 +208,7 @@ private = list(
     w_hat = d - r_hat
     v_hat = z - m_hat
     
-    if (self$data$n_instr() > 1) {
+    if (self$data$n_instr > 1) {
       
       stopifnot(self$apply_cross_fitting) 
       
@@ -224,7 +224,7 @@ private = list(
     }
     
     
-    if (self$data$n_instr() == 1) {
+    if (self$data$n_instr == 1) {
       if (self$score == 'partialling out') {
         psi_a = -w_hat * v_hat
         psi_b = v_hat * u_hat
@@ -483,7 +483,7 @@ private = list(
 
     ml_m = mlr3::lrn(self$learner$ml_m) 
     
-    if (self$data$n_instr() == 1) {
+    if (self$data$n_instr == 1) {
       task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols), x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$z_cols))
@@ -502,10 +502,10 @@ private = list(
                            "ml_r" = list(tuning_result_r, 
                                          params = extract_tuned_params(tuning_result_r)))
     } else {
-      tuning_result_m = vector("list", length = self$data$n_instr())
+      tuning_result_m = vector("list", length = self$data$n_instr)
       names(tuning_result_m) = self$data$z_cols
       
-      for (i_instr in 1:self$data$n_instr()) {
+      for (i_instr in 1:self$data$n_instr) {
         this_z = self$data$z_cols[i_instr] 
         task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols[i_instr]), x,
                                                       select_cols = c(self$data$x_cols, self$data$other_treat_cols),

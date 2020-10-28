@@ -37,7 +37,7 @@ DoubleMLIRM <- R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
 private = list(
   n_nuisance = 2,
   initialize_ml_nuisance_params = function() {
-    nuisance = vector("list", self$data$n_treat())
+    nuisance = vector("list", self$data$n_treat)
     names(nuisance) = self$data$d_cols
     self$params = list("ml_g0" = nuisance, 
                        "ml_g1" = nuisance, 
@@ -114,7 +114,7 @@ private = list(
     
     if (self$score == "ATTE") {
       # fraction of treated for ATTE
-      p_hat <- vector('numeric', length = self$data$n_obs())
+      p_hat <- vector('numeric', length = self$data$n_obs)
       for (i_fold in 1:length(smpls$test_ids)) {
         p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[smpls$test_ids[[i_fold]], self$data$treat_col, with = FALSE] )
       }
@@ -131,7 +131,7 @@ private = list(
     }
     if (self$score == 'ATE') {
       psi_b = g1_hat - g0_hat + d*(u1_hat)/m_hat - (1-d)*u0_hat/(1-m_hat)
-      psi_a = rep(-1, self$data$n_obs())
+      psi_a = rep(-1, self$data$n_obs)
     } else if (self$score == 'ATTE') {
       psi_b = d*u0_hat/p_hat - m_hat*(1-d)*u0_hat/(p_hat*(1-m_hat))
       psi_a = -d / p_hat

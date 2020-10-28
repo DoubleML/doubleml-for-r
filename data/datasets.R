@@ -99,11 +99,9 @@ make_plr_data = function(n_samples = 100, n_features = 20, theta = 0.5, return_X
 # save(data_plr, file = "data/data_plr.rda")
 
 
-
-
-
 #' @export
-make_plr_CCDDHNR2018 = function(n_samples = 500, n_features = 20, alpha = 0.5, return_X_y_d = FALSE){
+make_plr_CCDDHNR2018 = function(n_samples = 500, n_features = 20, alpha = 0.5, return_X_y_d = FALSE, 
+                                return_data_frame = FALSE){
 
   cov_mat = stats::toeplitz(0.7^(0:(n_features - 1)))
   a_1 = 0.25
@@ -113,16 +111,19 @@ make_plr_CCDDHNR2018 = function(n_samples = 500, n_features = 20, alpha = 0.5, r
   d = as.matrix( x[,1] + a_1*(exp(x[,2])/(1+exp(x[,2]))) + stats::rnorm(n_samples))
   y = as.matrix( alpha * d + exp(x[,2])/(1+exp(x[,2])) + b_1 * x[,2] + stats::rnorm(n_samples))
   
-  colnames(X) = paste0("X", 1:n_features)
+  colnames(x) = paste0("X", 1:n_features)
   colnames(y) = "y"
   colnames(d) = "d"
   
   if (return_X_y_d) {
-    return(list("X" = X, "y" = y, "d" = d))
+    return(list("X" = x, "y" = y, "d" = d))
   } else {
-
-    data = data.table::data.table(X, y, d)
-    return(data)
+      if (return_data_frame) {
+        data = data.frame(x,y,d)
+      } else {
+        data = data.table::data.table(x, y, d)
+      }
+  return(data)
   }
 }
 

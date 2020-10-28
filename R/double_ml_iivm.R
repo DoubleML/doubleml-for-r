@@ -43,7 +43,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
 private = list(
   n_nuisance = 3,
   initialize_ml_nuisance_params = function() {
-    nuisance = vector("list", self$data$n_treat())
+    nuisance = vector("list", self$data$n_treat)
     names(nuisance) = self$data$d_cols
     self$params = list("ml_g0" = nuisance, 
                        "ml_g1" = nuisance, 

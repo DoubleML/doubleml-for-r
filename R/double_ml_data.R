@@ -1,23 +1,91 @@
 #' @title DoubleMLData
 #'
 #' @description
-#' Data structure for double machine learning. 
+#' Double machine learning data-backend.
+#' 
+#' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively the following functions can be used to initialize from a collection of `matrix` objects or a `data.frame` 
+#' * [double_ml_data_from_matrix()] for initialization from `matrix` objects,
+#' * [double_ml_data_from_data_frame()][DoubleML::double_ml_data_from_data_frame()] for initialization from a `data.frame`. 
+#'
+#' @usage NULL
 #'
 #' @export
-DoubleMLData <- R6Class("DoubleMLData", public = list(
-   
-  data = NULL, 
-  data_model = NULL,
-  x_cols = NULL, 
-  y_col = NULL, 
+#' 
+#' @examples
+#' df = make_plr_CCDDHNR2018()
+#' obj_dml_data = DoubleMLData$new(df,
+#'                                y_col = "y",
+#'                                d_cols = "d")
+#'                                
+#'                                
+#' 
+DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
+  #' @field all_variables (`character()`)\cr 
+  #' All variables available in the dataset.
+  all_variables = NULL,
+
+  #' @field d_cols (`character()`)\cr 
+  #' The treatment variable(s). 
   d_cols = NULL,
+
+  #' @field data ([`data.table`][data.table::data.table()])\cr 
+  #' Data object.
+  data = NULL, 
+  
+  #' @field data_model ([`data.table`][data.table::data.table()])\cr 
+  #' Internal data object that implements the causal model as specified by the user via `y_col`, `d_cols`, `x_cols` and `z_cols`. 
+  data_model = NULL,
+  
+  #' @field n_instr (`NULL`, `integer(1)`) \cr 
+  #' The number of instruments. 
+  n_instr = NULL,
+  
+  #' @field n_obs (`integer(1)`) \cr 
+  #' The number of observations.
+  n_obs = NULL, 
+ 
+  #' @field n_treat (`integer(1)`) \cr 
+  #' The umber of treatment variables. 
+  n_treat = NULL,
+
+  #' @field other_treat_cols (`NULL`, `character()`) \cr
+  #' If `use_other_treat_as_covariate` is `TRUE`, `other_treat_cols` are the treatment variables that are not "active" in the multiple-treatment case. These variables then are internally added to the covariates `x_cols` during the fitting stage. If `use_other_treat_as_covariate` is `FALSE`, `other_treat_cols` is `NULL`. 
+  other_treat_cols = NULL,  
+
+  #' @field treat_col (`character(1)`) \cr
+  #' "Active" treatment variable in the multiple-treatment case. 
   treat_col = NULL,
-  other_treat_cols = NULL,
-  other_treat = NULL,
+
+  #' @field use_other_treat_as_covariate (`logical(1)`) \cr
+  #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
+  use_other_treat_as_covariate = TRUE, 
+
+  #' @field x_cols (`NULL`, `character()`) \cr
+  #' The covariates. If `NULL`, all variables (columns of `data`) which are neither specified as outcome variable `y_col`, nor as treatment variables `d_cols`, nor as instrumental variables `z_cols` are used as covariates. Default is `NULL`.
+  x_cols = NULL, 
+  
+  #' @field y_col (`character(1)`) \cr
+  #' The outcome variable. 
+  y_col = NULL,
+  
+  #' @field z_cols (`NULL`, `character()`) \cr
+  #' The instrumental variables. Default is `NULL`. 
   z_cols = NULL, 
   
-  use_other_treat_as_covariate = TRUE, 
-  
+  #' @description
+  #' Creates a new instance of this [R6][R6::R6Class] class.
+  #' @param data ([`data.table`][data.table::data.table()])\cr 
+  #' Data object.
+  #' @param y_col (`character(1)`) \cr
+  #' The outcome variable. 
+  #' @param d_cols (`character()`) \cr
+  #' The treatment variable(s). 
+  #' @param x_cols (`NULL`, `character()`) \cr
+  #' The covariates. If `NULL`, all variables (columns of `data`) which are neither specified as outcome variable `y_col`, nor as treatment variables `d_cols`, nor as instrumental variables `z_cols` are used as covariates. Default is `NULL`.
+  #' @param z_cols (`NULL`, `character()`) \cr
+  #' The instrumental variables. Default is `NULL`. 
+  #' @param use_other_treat_as_covariate (`logical(1)`) \cr
+  #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
   initialize = function(data = NULL, 
                         x_cols = NULL,
                         y_col = NULL, 
@@ -59,42 +127,20 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
     # by default, we initialize to the first treatment variable
     self$set__data_model(d_cols[1], use_other_treat_as_covariate = self$use_other_treat_as_covariate) 
     
+    self$all_variables = names(self$data)
+    self$n_treat = length(self$d_cols)
+    self$n_instr = length(self$z_cols)
+    self$n_obs = dim(self$data)[1]
+
     invisible(self)
-
-  },
-
-  all_variables = function(){
-    return(names(self$data))
   },
   
-  n_treat = function(){
-    return(length(self$d_cols))
-  },
-  
-  n_instr = function(){
-    return(length(self$z_cols))
-  },
-  
-  n_obs = function(){
-    return(dim(self$data)[1])
-  },
-  
-  x = function(){
-    return(self$data[, self$x_cols, with = FALSE])
-  }, 
-  
-  y = function(){
-    return(self$data[, self$y_col, with = FALSE])
-  }, 
-  
-  z = function(){
-    return(self$data[, self$z_cols, with = FALSE])
-  }, 
-  
-  d = function(){
-    return(self$data[, self$d_cols, with = FALSE])
-  },
-  
+  #' @description
+  #' Setter function for `data_model`. The function implements the causal model as specified by the user via `y_col`, `d_cols`, `x_cols` and `z_cols` and assigns the role for the treatment variables in the multiple-treatment case. 
+  #' @param treatment_var (`character()`)\cr 
+  #' Active treatment variable that will be set to `treat_col`. 
+  #' @param use_other_treat_as_covariate (`logical(1)`) \cr
+  #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
   set__data_model = function(treatment_var, use_other_treat_as_covariate = TRUE){
     
     checkmate::check_character(treatment_var, max.len = 1)
@@ -130,7 +176,102 @@ DoubleMLData <- R6Class("DoubleMLData", public = list(
 )
 
 
-# Input: Matrices or vectors; Output: DoubleMLData or data.table
+
+#' @title double_ml_data_from_data_frame
+#' 
+#' @description
+#' Initalization of DoubleMLData from `data.frame`.
+#'
+#' @param df (`data.frame()`)\cr 
+#' Data object.
+#' @param y_col (`character(1)`) \cr
+#' The outcome variable. 
+#' @param d_cols (`character()`) \cr
+#' The treatment variable(s). 
+#' @param x_cols (`NULL`, `character()`) \cr
+#' The covariates. If `NULL`, all variables (columns of `data`) which are neither specified as outcome variable `y_col`, nor as treatment variables `d_cols`, nor as instrumental variables `z_cols` are used as covariates. Default is `NULL`.
+#' @param z_cols (`NULL`, `character()`) \cr
+#' The instrumental variables. Default is `NULL`. 
+#' @param data_class (`character(1)`) \cr
+#' Class of returned object. By default, an object of class `DoubleMLData` is returned. Setting `data_class = "data.table"` returns an object of class `data.table`. 
+#' @param use_other_treat_as_covariate (`logical(1)`) \cr
+#' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
+#'
+#' @return Creates a new instance of class `DoubleMLData` by default. Class of returned object may change with input provided by option `data_class`. 
+#' 
+#' @examples
+#' df = make_plr_CCDDHNR2018(return_data_frame = TRUE)
+#' x_names = names(df)[grepl("X", names(df))]
+#' obj_dml_data = double_ml_data_from_data_frame(df = df, x_cols = x_names, 
+#'                                              y_col = "y", d_cols = "d")
+# Input: Data frame, Output: DoubleMLData or data.table
+#' @export
+double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
+                                              d_cols = NULL, z_cols = NULL, 
+                                              data_class = "DoubleMLData", 
+                                              use_other_treat_as_covariate = TRUE){
+  if (is.null(y_col) | is.null(d_cols)){
+    stop("Column indices y_col and d_cols not specified.")
+  }
+  checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
+  checkmate::check_character(x_cols)
+  checkmate::check_character(y_col)
+  checkmate::check_character(d_cols)
+  
+  if (!is.null(z_cols)){
+    checkmate::check_character(z_cols)
+  }
+  
+  if (!is.null(x_cols)) {
+    x_cols = x_cols
+  } else {
+      if (!is.null(z_cols)) {
+        y_d_z = unique(c(y_col, d_cols, z_cols))
+        x_cols = setdiff(names(df), y_d_z)
+      } else {
+        y_d = union(y_col, d_cols)
+        x_cols = setdiff(names(df), y_d)
+      }
+  }
+  col_indx =  c(x_cols, y_col, d_cols, z_cols)
+  data = data.table::data.table(df)[, col_indx, with = FALSE]
+  if (data_class == "DoubleMLData") {
+    data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
+                            z_cols = z_cols, 
+                            use_other_treat_as_covariate = use_other_treat_as_covariate)
+  }
+  return(data)
+}
+
+
+#' @title double_ml_data_from_matrix
+#' 
+#' @description
+#' Initalization of DoubleMLData from `matrix` objects. 
+#'
+#' @param X (`matrix()`) \cr
+#' Matrix of covariates.
+#' 
+#' @param y (`numeric()`) \cr
+#' Vector of outcome variable. 
+#' 
+#' @param d (`matrix()`) \cr
+#' Matrix of treatment variables. 
+#' 
+#' @param z (`matrix()`) \cr
+#' Matrix of instruments. 
+#' 
+#' @param use_other_treat_as_covariate (`logical(1)`) \cr
+#' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
+#' 
+#' @return  Creates a new instance of class `DoubleMLData`. 
+#' 
+#' @examples
+#' matrix_list = make_plr_CCDDHNR2018( return_X_y_d = TRUE)
+#' X = matrix_list$X
+#' y = matrix_list$y
+#' d = matrix_list$d
+#' obj_dml_data = double_ml_data_from_matrix(X = X, y = y, d = d)
 #' @export
 double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "DoubleMLData", 
                                       use_other_treat_as_covariate = TRUE){
@@ -181,30 +322,3 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "Do
   }
   return(data)
 }
-
-# Input: Data frame, Output: DoubleMLData or data.table
-#' @export
-double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
-                                              d_cols = NULL, z_cols = NULL, 
-                                              data_class = "DoubleMLData", 
-                                              use_other_treat_as_covariate = TRUE){
-  if (is.null(y_col) | is.null(d_cols)){
-    stop("Column indices y_col and d_cols not specified.")
-  }
-  checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
-  checkmate::check_character(x_cols)
-  checkmate::check_character(y_col)
-  checkmate::check_character(d_cols)
-  if (!is.null(z_cols)){
-    checkmate::check_character(z_cols)
-  }
-  col_indx =  c(x_cols, y_col, d_cols, z_cols)
-  data = data.table::data.table(df)[, col_indx, with = FALSE]
-  if (data_class == "DoubleMLData") {
-    data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
-                            z_cols = z_cols, 
-                            use_other_treat_as_covariate = use_other_treat_as_covariate)
-  }
-  return(data)
-}
-

@@ -33,7 +33,7 @@ private = list(
   n_nuisance = 2,
   initialize_ml_nuisance_params = function() {
     
-   nuisance = vector("list", self$data$n_treat()) 
+   nuisance = vector("list", self$data$n_treat) 
    names(nuisance) = self$data$d_cols
    self$params = list("ml_g" = nuisance, 
                       "ml_m" = nuisance)
