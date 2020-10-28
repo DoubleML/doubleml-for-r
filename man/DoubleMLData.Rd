@@ -9,7 +9,7 @@ Double machine learning data-backend.
 \code{DoubleMLData} objects can be initialized from a \link[data.table:data.table]{data.table}. Alternatively the following functions can be used to initialize from a collection of \code{matrix} objects or a \code{data.frame}
 \itemize{
 \item \code{\link[=double_ml_data_from_matrix]{double_ml_data_from_matrix()}} for initialization from \code{matrix} objects,
-\item \link[=double_ml_data_from_data_frame]{double_ml_data_from_data_frame()} for initialization from a \code{data.frame}.
+\item \code{\link[=double_ml_data_from_data_frame]{double_ml_data_from_data_frame()}} for initialization from a \code{data.frame}.
 }
 }
 \examples{
@@ -119,10 +119,7 @@ Indicates whether in the multiple-treatment case the other treatment variables s
 \subsection{Method \code{set__data_model()}}{
 Setter function for \code{data_model}. The function implements the causal model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols} and assigns the role for the treatment variables in the multiple-treatment case.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set__data_model(
-  treatment_var,
-  use_other_treat_as_covariate = TRUE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set__data_model(treatment_var)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -130,9 +127,6 @@ Setter function for \code{data_model}. The function implements the causal model 
 \describe{
 \item{\code{treatment_var}}{(\code{character()})\cr
 Active treatment variable that will be set to \code{treat_col}.}
-
-\item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
-Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }

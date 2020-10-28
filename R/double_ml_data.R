@@ -5,7 +5,7 @@
 #' 
 #' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively the following functions can be used to initialize from a collection of `matrix` objects or a `data.frame` 
 #' * [double_ml_data_from_matrix()] for initialization from `matrix` objects,
-#' * [double_ml_data_from_data_frame()][DoubleML::double_ml_data_from_data_frame()] for initialization from a `data.frame`. 
+#' * [double_ml_data_from_data_frame()] for initialization from a `data.frame`. 
 #'
 #' @usage NULL
 #'
