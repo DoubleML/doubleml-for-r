@@ -41,7 +41,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
 
         if (self$data$n_treat > 1){
-          self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+          self$data$set__data_model(self$data$d_cols[i_treat])
         }
         
         # ml estimation of nuisance models and computation of psi elements
@@ -209,7 +209,7 @@ DoubleML <- R6Class("DoubleML", public = list(
         private$i_treat = i_treat
           
         if (self$data$n_treat > 1){
-            self$data$set__data_model(self$data$d_cols[i_treat], self$data$use_other_treat_as_covariate)
+            self$data$set__data_model(self$data$d_cols[i_treat])
         }
           
         if (tune_on_folds) {

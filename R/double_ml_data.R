@@ -125,7 +125,7 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
     self$use_other_treat_as_covariate = use_other_treat_as_covariate
 
     # by default, we initialize to the first treatment variable
-    self$set__data_model(d_cols[1], use_other_treat_as_covariate = self$use_other_treat_as_covariate) 
+    self$set__data_model(d_cols[1]) 
     
     self$all_variables = names(self$data)
     self$n_treat = length(self$d_cols)
@@ -139,9 +139,7 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
   #' Setter function for `data_model`. The function implements the causal model as specified by the user via `y_col`, `d_cols`, `x_cols` and `z_cols` and assigns the role for the treatment variables in the multiple-treatment case. 
   #' @param treatment_var (`character()`)\cr 
   #' Active treatment variable that will be set to `treat_col`. 
-  #' @param use_other_treat_as_covariate (`logical(1)`) \cr
-  #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
-  set__data_model = function(treatment_var, use_other_treat_as_covariate = TRUE){
+  set__data_model = function(treatment_var){
     
     checkmate::check_character(treatment_var, max.len = 1)
     checkmate::check_subset(treatment_var, self$d_cols)
@@ -159,7 +157,7 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
     if (length(self$d_cols) > 1) {
       self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
     }
-    if (length(self$d_cols) > 1 & use_other_treat_as_covariate == FALSE) {
+    if (length(self$d_cols) > 1 & self$use_other_treat_as_covariate == FALSE) {
       message("Controls variables do not include other treatment variables")
       self$other_treat_cols = NULL
     }
