@@ -1,10 +1,66 @@
-#' DoubleMLPLR R6 class
+#' @title DoubleMLPLR
 #' 
-#' @docType class
-#' @importFrom R6 R6Class
+#' @description
+#' Double machine learning for partially linear regression models. 
+#' 
+#' @format [R6::R6Class] object inheriting from [DoubleML].
+#' 
+#' @details 
+#' Partially linear regression (PLR) models take the form \cr
+#' \eqn{Y = D\theta_0 + g_0(X) + \zeta},  \cr
+#' \eqn{D = m_0(X) + V}, \cr 
+#' with \eqn{\mathbb{E}[\zeta|D,X]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.  
+#'
+#' @usage NULL
+#' 
+#' @examples
+#' library(DoubleML)
+#' library(mlr3)
+#' library(mlr3learners)
+#' library(data.table)
+#' set.seed(2)
+#' ml_g = ml_m = "regr.ranger"
+#' obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
+#' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
+#' dml_plr_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_g",
+#'                                     params = list("num.trees" = 10, "max.depth" = 2))
+#' dml_plr_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_m", 
+#'                                    params = list("num.trees" = 10, "max.depth" = 2))
+#' dml_plr_obj$fit()
+#' dml_plr_obj$summary()
 #' @export
-
-DoubleMLPLR <- R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
+DoubleMLPLR <- R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
+  #' @description 
+  #' Creates a new instance of this R6 class. 
+  #' 
+  #' @param data (`DoubleMLData`) \cr
+  #' The `DoubleMLData` object providing the data and specifying the variables of the causal model. 
+  #' 
+  #' @param ml_g (`character(1)`) \cr
+  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
+  #' `ml_g` refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X]}.
+  #' 
+  #' @param ml_m (`character(1)`) \cr
+  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
+  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[D|X]}.
+  #' 
+  #' @param n_folds (`integer(1)`)\cr
+  #' Number of folds. Default is `5`. 
+  #' 
+  #' @param n_rep (`integer(1)`) \cr
+  #' Number of repetitions for the sample splitting. Default is `1`. 
+  #' 
+  #' @param score (`character(1)`) \cr
+  #' A `character(1)` (`"partialling out"` or `IV-type`) specifying the score function. Default is `"partialling out"`. 
+  #' 
+  #' @param dml_procedure (`character(1)`) \cr
+  #' A `character(1)` (`"dml1"` or `"dml2"`) specifying the double machine learning algorithm. Default is `"dml2"`. 
+  #' 
+  #' @param draw_sample_splitting (`logical(1)`) \cr
+  #' Indicates whether the sample splitting should be drawn during initialization of the object. Default is `TRUE`. 
+  #' 
+  #' @param apply_cross_fitting (`logical(1)`) \cr
+  #' Indicates whether cross-fitting should be applied. Default is `TRUE`.  
   initialize = function(data, 
                         ml_g,
                         ml_m,
@@ -56,12 +112,12 @@ private = list(
       
     if (!private$fold_specific_params){
       for (i_nuis in self$params_names()){
-        if (is.null(private$get__params(i_nuis))) {
+        if (is.null(self$get__params(i_nuis))) {
           message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
         }
       }
       ml_g <- initiate_learner(self$learner$ml_g,
-                               private$get__params("ml_g"))
+                               self$get__params("ml_g"))
   
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
@@ -71,21 +127,21 @@ private = list(
       
 
       ml_m <- initiate_learner(self$learner$ml_m,
-                               private$get__params("ml_m"))
+                               self$get__params("ml_m"))
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
       r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat <- extract_prediction(r_m)$response
     } else {
-      ml_g <- lapply(private$get__params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g <- lapply(self$get__params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
                                                                  x))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_m <- lapply(private$get__params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
+      ml_m <- lapply(self$get__params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
                                                                         x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -111,8 +167,8 @@ private = list(
                 psi_b = psi_b))
   }, 
   ml_nuisance_tuning = function(smpls, param_set, tune_on_folds, tune_settings, ...){
-    checkmate::check_class(param_set$param_set_g, "ParamSet")    
-    checkmate::check_class(param_set$param_set_m, "ParamSet")
+    checkmate::check_class(param_set$ml_g, "ParamSet")    
+    checkmate::check_class(param_set$ml_m, "ParamSet")
     
     if (!tune_on_folds){
       data_tune_list = list(self$data$data_model)
@@ -127,23 +183,23 @@ private = list(
       CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
     
-    if (any(class(tune_settings$measure$measure_g) == "Measure")) {
-      measure_g = tune_settings$measure$measure_g
+    if (any(class(tune_settings$measure$ml_g) == "Measure")) {
+      measure_g = tune_settings$measure$ml_g
     } else {
-        if (is.null(tune_settings$measure$measure_g)){
+        if (is.null(tune_settings$measure$ml_g)){
           measure_g = mlr3::default_measures("regr")[[1]]
         } else {
-          measure_g = mlr3::msr(tune_settings$measure$measure_g)    
+          measure_g = mlr3::msr(tune_settings$measure$ml_g)    
         }
     }
     
-    if (any(class(tune_settings$measure$measure_m) == "Measure")) {
-      measure_m = tune_settings$measure$measure_m
+    if (any(class(tune_settings$measure$ml_m) == "Measure")) {
+      measure_m = tune_settings$measure$ml_m
     } else {
-        if (is.null(tune_settings$measure$measure_m)){
+        if (is.null(tune_settings$measure$ml_m)){
           measure_m = mlr3::default_measures("regr")[[1]]
         } else {
-          measure_m = mlr3::msr(tune_settings$measure$measure_m)
+          measure_m = mlr3::msr(tune_settings$measure$ml_m)
       }
     }
     
@@ -161,7 +217,7 @@ private = list(
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measure = measure_g,
-                                          search_space = param_set$param_set_g,
+                                          search_space = param_set$ml_g,
                                           terminator = terminator))
     
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
@@ -176,16 +232,14 @@ private = list(
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,
-                                          search_space = param_set$param_set_m,
+                                          search_space = param_set$ml_m,
                                           terminator = terminator))
     
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
     
     tuning_result = list("ml_g" = list(tuning_result_g, params = extract_tuned_params(tuning_result_g)),
                          "ml_m" = list(tuning_result_m, params = extract_tuned_params(tuning_result_m)))
-    
     return(tuning_result)
-    
   }
 )
 )
