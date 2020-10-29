@@ -23,6 +23,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 3)
   learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 3)
   n_rep_boot = 498
+  
   n_folds = 5
   
   set.seed(i_setting)
@@ -76,8 +77,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   
   # bootstrap
   set.seed(i_setting)
-  double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-  boot_theta_obj = double_mlplr_obj$boot_t_stats
+  double_mlplr_obj$bootstrap(method = 'normal',  n_boot_rep = n_rep_boot)
+  boot_theta_obj = double_mlplr_obj$boot_t_stat
   
   # joint confint
   ci_ptwise_obj = double_mlplr_obj$confint(joint = FALSE, level = 0.95)

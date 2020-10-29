@@ -20,8 +20,8 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 tune_settings = list(n_folds_tune = 3,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      # measure_g = "regr.mse", 
-                      # measure_m = "classif.ce",
+                      measure = list("ml_g" = "regr.mse", 
+                                     "ml_m" = "classif.ce"),
                       terminator = mlr3tuning::trm("evals", n_evals = 5), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
@@ -47,10 +47,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   n_rep_boot = 498    
   n_folds = 2      
   
-  # TBD: Functional Test Case
-  
-  # set.seed(i_setting)
-
+  # TODO: Functional Test Case
   set.seed(i_setting)
   learner_pars <- get_default_mlmethod_irm(learner)
   
@@ -65,10 +62,10 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                      dml_procedure = dml_procedure,
                                      score = score)
   
-  param_grid = list(param_set_g = ParamSet$new(list(
+  param_grid = list("ml_g" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    param_set_m = ParamSet$new(list(
+                    "ml_m" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
                   
@@ -78,7 +75,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   theta_obj_tuned <- double_mlirm_obj_tuned$coef
   se_obj_tuned <- double_mlirm_obj_tuned$se
   
-  # bootstrap
+  # TODO: bootstrap
   # double_mlirm_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
   # boot_theta_obj_tuned = double_mlirm_obj_tuned$boot_coef
   

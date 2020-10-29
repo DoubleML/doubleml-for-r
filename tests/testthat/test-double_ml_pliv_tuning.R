@@ -19,8 +19,9 @@ learner = c('regr.rpart')
 tune_settings = list(n_folds_tune = 2,
                       n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      measure = list(measure_g = "regr.mse", 
-                                     measure_m = "regr.mse"),
+                      measure = list("ml_g" = "regr.mse", 
+                                     "ml_r"= "regr.mse", 
+                                     "ml_m" = "regr.mse"),
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
                       tuning_instance_g = NULL, 
@@ -76,16 +77,17 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                      score = score,
                                      n_rep = n_rep)
   
-  param_grid = list(param_set_g = ParamSet$new(list(
+  param_grid = list("ml_g" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    param_set_m = ParamSet$new(list(
+                    "ml_m" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    param_set_r = ParamSet$new(list( ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                    "ml_r" = ParamSet$new(list( ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
   
-  double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+  double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, 
+                               tune_settings = tune_settings)
   double_mlpliv_obj_tuned$fit()
   
   theta_obj_tuned <- double_mlpliv_obj_tuned$coef
@@ -126,7 +128,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                      score = score,
                                      n_rep = n_rep)
   
-      double_mlpliv_obj_tuned_XZ$tune(param_set = param_grid, tune_on_folds = tune_on_folds)
+      double_mlpliv_obj_tuned_XZ$tune(param_set = param_grid, tune_on_folds = tune_on_folds,
+                                       tune_settings = tune_settings)
       double_mlpliv_obj_tuned_XZ$fit()
     
       theta_obj_tuned_XZ <- double_mlpliv_obj_tuned_XZ$coef
