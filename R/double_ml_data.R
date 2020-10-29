@@ -1,24 +1,22 @@
+#' @include double_ml.R
 #' @title DoubleMLData
 #'
 #' @description
 #' Double machine learning data-backend.
 #' 
-#' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively the following functions can be used to initialize from a collection of `matrix` objects or a `data.frame` 
+#' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively `DoubleML` provides functions to initialize from a collection of `matrix` objects or a `data.frame`. The the following functions can be used to create a new instance of `DoubleMLData`. 
+#' * [DoubleMLData$new()] for initialization from a `data.table`. 
 #' * [double_ml_data_from_matrix()] for initialization from `matrix` objects,
 #' * [double_ml_data_from_data_frame()] for initialization from a `data.frame`. 
 #'
-#' @usage NULL
 #'
-#' @export
-#' 
 #' @examples
-#' df = make_plr_CCDDHNR2018()
+#' library(DoubleML)
+#' df = make_plr_CCDDHNR2018(return_type = "data.table")
 #' obj_dml_data = DoubleMLData$new(df,
 #'                                y_col = "y",
 #'                                d_cols = "d")
-#'                                
-#'                                
-#' 
+#' @export
 DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
   #' @field all_variables (`character()`)\cr 
   #' All variables available in the dataset.
@@ -176,8 +174,7 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
 
 
 #' @title double_ml_data_from_data_frame
-#' 
-#' @description
+#' @description 
 #' Initalization of DoubleMLData from `data.frame`.
 #'
 #' @param df (`data.frame()`)\cr 
@@ -198,7 +195,7 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
 #' @return Creates a new instance of class `DoubleMLData` by default. Class of returned object may change with input provided by option `data_class`. 
 #' 
 #' @examples
-#' df = make_plr_CCDDHNR2018(return_data_frame = TRUE)
+#' df = make_plr_CCDDHNR2018(return_type = "data.frame")
 #' x_names = names(df)[grepl("X", names(df))]
 #' obj_dml_data = double_ml_data_from_data_frame(df = df, x_cols = x_names, 
 #'                                              y_col = "y", d_cols = "d")
@@ -241,11 +238,10 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   return(data)
 }
 
-
 #' @title double_ml_data_from_matrix
+#' @description 
 #' 
-#' @description
-#' Initalization of DoubleMLData from `matrix` objects. 
+#' Initalization of DoubleMLData from `matrix()` objects. 
 #'
 #' @param X (`matrix()`) \cr
 #' Matrix of covariates.
@@ -265,11 +261,10 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #' @return  Creates a new instance of class `DoubleMLData`. 
 #' 
 #' @examples
-#' matrix_list = make_plr_CCDDHNR2018( return_X_y_d = TRUE)
-#' X = matrix_list$X
-#' y = matrix_list$y
-#' d = matrix_list$d
-#' obj_dml_data = double_ml_data_from_matrix(X = X, y = y, d = d)
+#' matrix_list = make_plr_CCDDHNR2018(return_type = "matrix")
+#' obj_dml_data = double_ml_data_from_matrix(X = matrix_list$X, 
+#'                                           y = matrix_list$y, 
+#'                                           d = matrix_list$d)
 #' @export
 double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "DoubleMLData", 
                                       use_other_treat_as_covariate = TRUE){
