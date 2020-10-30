@@ -29,7 +29,7 @@
 #' If `TRUE` pol
 #' @return A data object according to the choice of `return_type`.
 #' 
-#' @usage NULL
+#' NULL
 #' 
 #' @export
 fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE) {
@@ -102,7 +102,7 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
 #' If `TRUE` pol
 #' @return A data object according to the choice of `return_type`.
 #' 
-#' @usage NULL
+#' NULL
 #' @export
 fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE) {
   checkmate::check_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
@@ -179,7 +179,7 @@ g = function(x){
 #' If `TRUE` pol
 #' @return A data object according to the choice of `return_type`.
 #' 
-#' @usage NULL
+#' NULL
 #' @export
 make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
                                 return_type = "DoubleMLData"){
@@ -250,7 +250,7 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' 
 #' @return A data object according to the choice of `return_type`.
 #' 
-#' @usage NULL
+#' NULL
 #' @export
 make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5, return_type = "DoubleMLData", ...) {
   b = 1/(1:dim_x)
@@ -317,7 +317,7 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5, return_typ
 #' 
 #' @return A data object according to the choice of `return_type`.
 #' 
-#' @usage NULL
+#' NULL
 #' @export
 make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150, return_type = "DoubleMLData"){
   # see https://assets.aeaweb.org/asset-server/articles-attachments/aer/app/10505/P2015_1022_app.pdf
@@ -413,7 +413,7 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150, return_
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y`, `d` and `z` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #' 
-#' @usage NULL
+#' NULL
 #' @export
 make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5, R2_y = 0.5, 
               return_type = "DoubleMLData") {
@@ -490,7 +490,7 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5, R2_y = 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y`, `d` and `z` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #' 
-#' @usage NULL
+#' NULL
 #' @export
 make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2, 
                           return_type = "DoubleMLData") {
