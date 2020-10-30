@@ -4,7 +4,7 @@
 #' Double machine learning data-backend.
 #' 
 #' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively `DoubleML` provides functions to initialize from a collection of `matrix` objects or a `data.frame`. The the following functions can be used to create a new instance of `DoubleMLData`. 
-#' * [DoubleMLData$new()] for initialization from a `data.table`. 
+#' * `DoubleMLData$new()` for initialization from a `data.table`. 
 #' * [double_ml_data_from_matrix()] for initialization from `matrix` objects,
 #' * [double_ml_data_from_data_frame()] for initialization from a `data.frame`. 
 #'
@@ -71,16 +71,22 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
   
   #' @description
   #' Creates a new instance of this [R6][R6::R6Class] class.
+  #' 
   #' @param data ([`data.table`][data.table::data.table()])\cr 
   #' Data object.
+  #' 
   #' @param y_col (`character(1)`) \cr
   #' The outcome variable. 
+  #' 
   #' @param d_cols (`character()`) \cr
   #' The treatment variable(s). 
+  #' 
   #' @param x_cols (`NULL`, `character()`) \cr
   #' The covariates. If `NULL`, all variables (columns of `data`) which are neither specified as outcome variable `y_col`, nor as treatment variables `d_cols`, nor as instrumental variables `z_cols` are used as covariates. Default is `NULL`.
+  #' 
   #' @param z_cols (`NULL`, `character()`) \cr
   #' The instrumental variables. Default is `NULL`. 
+  #' 
   #' @param use_other_treat_as_covariate (`logical(1)`) \cr
   #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
   initialize = function(data = NULL, 
@@ -178,16 +184,22 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
 #'
 #' @param df (`data.frame()`)\cr 
 #' Data object.
+#' 
 #' @param y_col (`character(1)`) \cr
 #' The outcome variable. 
+#' 
 #' @param d_cols (`character()`) \cr
 #' The treatment variable(s). 
+#' 
 #' @param x_cols (`NULL`, `character()`) \cr
 #' The covariates. If `NULL`, all variables (columns of `data`) which are neither specified as outcome variable `y_col`, nor as treatment variables `d_cols`, nor as instrumental variables `z_cols` are used as covariates. Default is `NULL`.
+#' 
 #' @param z_cols (`NULL`, `character()`) \cr
 #' The instrumental variables. Default is `NULL`. 
+#' 
 #' @param data_class (`character(1)`) \cr
 #' Class of returned object. By default, an object of class `DoubleMLData` is returned. Setting `data_class = "data.table"` returns an object of class `data.table`. 
+#' 
 #' @param use_other_treat_as_covariate (`logical(1)`) \cr
 #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 
 #'
@@ -253,6 +265,10 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #' 
 #' @param z (`matrix()`) \cr
 #' Matrix of instruments. 
+#' 
+#' @param data_class (`character(1)`) \cr
+#' Class of returned object. By default, an object of class `DoubleMLData` is returned. Setting `data_class = "data.table"` returns an object of class `data.table`. 
+#' 
 #' 
 #' @param use_other_treat_as_covariate (`logical(1)`) \cr
 #' Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is `TRUE`. 

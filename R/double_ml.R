@@ -1,5 +1,7 @@
 #' @title DoubleML
 #' 
+#' @description
+#' Abstract base class that can't be initialized. 
 #' 
 #' @format [R6::R6Class] object.
 DoubleML <- R6::R6Class("DoubleML", public = list(
