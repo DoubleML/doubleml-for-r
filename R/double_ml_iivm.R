@@ -6,14 +6,22 @@
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #' 
 #' @details 
-#' Interactive IV regression (IIVM) models take the form \cr
-#' \eqn{Y = g_0(D,X) + \zeta},  \cr
-#' \eqn{Z = m_0(X) + V}, \cr 
+#' Interactive IV regression (IIVM) models take the form 
+#' 
+#' \eqn{Y = g_0(D,X) + \zeta},
+#' 
+#' \eqn{Z = m_0(X) + V}, 
+#' 
 #' with \eqn{\mathbb{E}[\zeta|X,Z]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable, \eqn{D \in \{0,1\}} is the binary treatment variable and \eqn{Z \in \{0,1\}} is a binary instrumental variable. Consider the functions \eqn{g_0}, \eqn{r_0} and \eqn{m_0}, where \eqn{g_0} maps the support of \eqn{(Z,X)} to \eqn{\mathbb{R}} and \eqn{r_0} and \eqn{m_0}, respectively, map the support of \eqn{(Z,X)} and \eqn{X} to \eqn{(\epsilon, 1-\epsilon)} for some \eqn{\epsilon \in (1, 1/2)}, such that 
-#' \eqn{Y = g_0(D,X) + \zeta,} \cr
-#' \eqn{D = r_0(D,X) + U,} \cr
-#' \eqn{Z = m_0(X) + V,} \cr
-#' with \eqn{\mathbb{E}[\zeta|Z,X]=0}, \eqn{\mathbb{E}[U|Z,X]=0} and \eqn{\mathbb{E}[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE), \cr
+#' 
+#' \eqn{Y = g_0(D,X) + \zeta,}
+#'  
+#' \eqn{D = r_0(D,X) + U,} 
+#' 
+#' \eqn{Z = m_0(X) + V,} 
+#' 
+#' with \eqn{\mathbb{E}[\zeta|Z,X]=0}, \eqn{\mathbb{E}[U|Z,X]=0} and \eqn{\mathbb{E}[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE), 
+#' 
 #' \eqn{\theta_0 = \frac{\mathbb{E}[g_0(1,X)] - \mathbb{E}[g_0(0,X)]}{\mathbb{E}[r(1,X)] - \mathbb{E}[r(0,X)]}.}
 #' 
 #' 

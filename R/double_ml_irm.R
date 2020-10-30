@@ -6,12 +6,18 @@
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #' 
 #' @details 
-#' Interactive regression (IRM) models take the form \cr
-#' \eqn{Y = g_0(D,X) + U},  \cr
-#' \eqn{D = m_0(X) + V}, \cr 
+#' Interactive regression (IRM) models take the form 
+#' 
+#' \eqn{Y = g_0(D,X) + U},  
+#' 
+#' \eqn{D = m_0(X) + V}, 
+#' 
 #' with \eqn{\mathbb{E}[U|X,D]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable and \eqn{D \in \{0,1\}} is the binary treatment variable. We consider estimation of the average treamtent effects when treatment effects are fully heterogeneous. Target parameters of interest in this model are the average treatment effect (ATE), 
-#' \eqn{\theta_0 = \mathbb{E}[g_0(1,X) - g_0(0,X)]} \cr 
+#' 
+#' \eqn{\theta_0 = \mathbb{E}[g_0(1,X) - g_0(0,X)]} 
+#' 
 #' and the average treament effect on the treated (ATTE), 
+#' 
 #' \eqn{\theta_0 = \mathbb{E}[g_0(1,X) - g_0(0,X)|D=1]}.
 #' 
 #' @usage NULL

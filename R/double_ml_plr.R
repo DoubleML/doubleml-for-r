@@ -6,9 +6,12 @@
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #' 
 #' @details 
-#' Partially linear regression (PLR) models take the form \cr
-#' \eqn{Y = D\theta_0 + g_0(X) + \zeta},  \cr
-#' \eqn{D = m_0(X) + V}, \cr 
+#' Partially linear regression (PLR) models take the form 
+#' 
+#' \eqn{Y = D\theta_0 + g_0(X) + \zeta,}
+#' 
+#' \eqn{D = m_0(X) + V,}
+#' 
 #' with \eqn{\mathbb{E}[\zeta|D,X]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.  
 #'
 #' @usage NULL

@@ -1,4 +1,3 @@
-#' @include double_ml.R
 #' @title DoubleMLData
 #'
 #' @description
