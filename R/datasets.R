@@ -210,7 +210,6 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
   }
 }
 
-
 #' @title make_plr_turrell2018
 #' 
 #' @description 
@@ -220,13 +219,15 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' 
 #' \eqn{y_i = \theta d_i + g_0(x_i' b) + u_i,}
 #' 
-#' with \eqn{v_i \sim \mathcal{N}(0,1)}, \eqn{u_i \sim \mathcal{N}(0,1)}, and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma} is a random symmetric, positive-definite matrix generated with [clusterGeneration::genPositiveDefMat()][clusterGeneration::genPositiveMat()]. \eqn{b} is a vector with entries \eqn{b_j=\frac{1}{j}} and the nuisance functions are given by
+#' with \eqn{v_i \sim \mathcal{N}(0,1)}, \eqn{u_i \sim \mathcal{N}(0,1)}, and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma} is a random symmetric, positive-definite matrix generated with [clusterGeneration::genPositiveDefMat()]. \eqn{b} is a vector with entries \eqn{b_j=\frac{1}{j}} and the nuisance functions are given by
 #' 
-#' \eqn{m_0(x_i) = \frac{1}{2 \pi} \frac{\sinh(\gamma)}{\cosh(\gamma) - \cos(x_i-\nu),}
+#' \eqn{m_0(x_i) = \frac{1}{2 \pi} \frac{\sinh(\gamma)}{\cosh(\gamma) - \cos(x_i-\nu)},}
 #' 
 #' \eqn{g_0(x_i) = \sin(x_i)^2.}
 #' 
-#' @references Turrell, A. (2018), Econometrics in Python part I - Double machine learning, Markov Wanderer: A blog on economics, science, coding and data. [http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/][http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/].
+#' 
+#' 
+#' @references Turrell, A. (2018), Econometrics in Python part I - Double machine learning, Markov Wanderer: A blog on economics, science, coding and data. [http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/](http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/).
 #' 
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate. 
@@ -243,14 +244,11 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @param gamma (`numeric(1)`) \cr
 #' The value of the parameter \eqn{\gamma}. Default is `1`.  
 #' 
-#' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y` and `d` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #' If `TRUE` pol
 #' 
-
 #' @return A data object according to the choice of `return_type`.
-
 #' 
 #' @usage NULL
 #' @export
