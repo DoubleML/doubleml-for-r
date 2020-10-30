@@ -234,7 +234,7 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @param dim_x (`integer(1)`) \cr
 #' The number of covariates. 
 #' 
-#' #' @param theta (`numeric(1)`) \cr
+#' @param theta (`numeric(1)`) \cr
 #' The value of the causal parameter. 
 #' 
 #' @param nu (`numeric(1)`) \cr
