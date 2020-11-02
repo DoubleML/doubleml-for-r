@@ -33,15 +33,11 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = "regr.ranger"
-#' ml_m = "classif.ranger"
-#' ml_r = "classif.ranger"
+#' ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+#' ml_m = lrn("classif.ranger", num.trees = 10, max.depth = 2)
+#' ml_r = ml_m$clone() 
 #' obj_dml_data = make_iivm_data(theta = 1)
 #' dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
-#' lapply(dml_iivm_obj$params_names(), function(x) 
-#' 
-#'               dml_iivm_obj$set__ml_nuisance_params(treat_var = "d", learner = x,
-#'                                      params = list("num.trees" = 10, "max.depth" = 2)))
 #' dml_iivm_obj$fit()
 #' dml_iivm_obj$summary()
 #' @export

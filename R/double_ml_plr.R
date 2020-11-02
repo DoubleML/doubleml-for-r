@@ -22,13 +22,10 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = ml_m = "regr.ranger"
+#' ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+#' ml_m = ml_g$clone()
 #' obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
 #' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
-#' dml_plr_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_g",
-#'                                     params = list("num.trees" = 10, "max.depth" = 2))
-#' dml_plr_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_m", 
-#'                                    params = list("num.trees" = 10, "max.depth" = 2))
 #' dml_plr_obj$fit()
 #' dml_plr_obj$summary()
 #' @export

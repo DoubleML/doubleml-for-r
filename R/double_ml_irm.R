@@ -28,14 +28,10 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = "regr.ranger"
-#' ml_m = "classif.ranger"
+#' ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+#' ml_m = lrn("classif.ranger", num.trees = 10, max.depth = 2)
 #' obj_dml_data = make_irm_data(theta = 0.5)
 #' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
-#' dml_irm_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_g",
-#'                                      params = list("num.trees" = 10, "max.depth" = 2))
-#' dml_irm_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_m", 
-#'                                      params = list("num.trees" = 10, "max.depth" = 2))
 #' dml_irm_obj$fit()
 #' dml_irm_obj$summary()
 #' @export

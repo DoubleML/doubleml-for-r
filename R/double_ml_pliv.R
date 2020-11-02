@@ -22,15 +22,11 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = ml_m = ml_r = "regr.ranger"
+#' ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+#' ml_m = ml_g$clone()
+#' ml_r = ml_g$clone()
 #' obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
 #' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
-#' dml_pliv_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_g",
-#'                                      params = list("num.trees" = 10, "max.depth" = 2))
-#' dml_pliv_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_m", 
-#'                                      params = list("num.trees" = 10, "max.depth" = 2))
-#' dml_pliv_obj$set__ml_nuisance_params(treat_var = "d", learner = "ml_r", 
-#'                                      params = list("num.trees" = 10, "max.depth" = 2))
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
 #' @export
