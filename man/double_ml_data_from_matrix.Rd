@@ -26,6 +26,9 @@ Matrix of treatment variables.}
 \item{z}{(\code{matrix()}) \cr
 Matrix of instruments.}
 
+\item{data_class}{(\code{character(1)}) \cr
+Class of returned object. By default, an object of class \code{DoubleMLData} is returned. Setting \code{data_class = "data.table"} returns an object of class \code{data.table}.}
+
 \item{use_other_treat_as_covariate}{(\code{logical(1)}) \cr
 Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
 }
@@ -33,12 +36,11 @@ Indicates whether in the multiple-treatment case the other treatment variables s
 Creates a new instance of class \code{DoubleMLData}.
 }
 \description{
-Initalization of DoubleMLData from \code{matrix} objects.
+Initalization of DoubleMLData from \code{matrix()} objects.
 }
 \examples{
-matrix_list = make_plr_CCDDHNR2018( return_X_y_d = TRUE)
-X = matrix_list$X
-y = matrix_list$y
-d = matrix_list$d
-obj_dml_data = double_ml_data_from_matrix(X = X, y = y, d = d)
+matrix_list = make_plr_CCDDHNR2018(return_type = "matrix")
+obj_dml_data = double_ml_data_from_matrix(X = matrix_list$X, 
+                                          y = matrix_list$y, 
+                                          d = matrix_list$d)
 }
