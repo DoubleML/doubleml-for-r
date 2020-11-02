@@ -214,8 +214,7 @@ private = list(
                                                                     select_cols = c(self$data$x_cols, 
                                                                                     self$data$other_treat_cols),
                                                                     target = self$data$y_col))
-    
-    ml_g <- mlr3::lrn(self$learner$ml_g)
+    ml_g = initiate_learner(self$learner$ml_g, params = list())
     tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
@@ -228,9 +227,7 @@ private = list(
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
-    
-    ml_m <- mlr3::lrn(self$learner$ml_m)
-
+    ml_m = initiate_learner(self$learner$ml_m, params = list())
     tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
