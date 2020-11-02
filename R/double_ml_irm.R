@@ -261,7 +261,9 @@ private = list(
    task_g0 = lapply(data_tune_list_d0, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$y_col))
-   ml_g0 = mlr3::lrn(self$learner$ml_g)
+   
+   ml_g0 = initiate_learner(self$learner$ml_g, params = list())
+      
    tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g0,
                                           resampling = CV_tune,
@@ -273,7 +275,7 @@ private = list(
    task_g1 = lapply(data_tune_list_d1, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$y_col))
-   ml_g1 = mlr3::lrn(self$learner$ml_g)
+   ml_g1 = initiate_learner(self$learner$ml_g, params = list())
    tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g1,
                                           resampling = CV_tune,
@@ -285,7 +287,7 @@ private = list(
    task_m = lapply(data_tune_list, function(x) initiate_classif_task(paste0("nuis_m_", self$data$treat_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
-   ml_m <- mlr3::lrn(self$learner$ml_m)
+   ml_m = initiate_prob_learner(self$learner$ml_m, params = list())
    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_m,
                                          resampling = CV_tune,

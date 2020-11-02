@@ -1,6 +1,5 @@
 
 extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
-  
   if (!return_train_preds) {
     f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
     f_hat = as.data.table(obj_resampling$prediction())
@@ -56,32 +55,45 @@ rearrange_prob_prediction = function(prediction_list, test_ids){
 }
 
 initiate_learner = function(mlmethod, params) {
-  learner <- mlr3::lrn(mlmethod)
-  
-  if (!is.null(params) & length(params) != 0){
-  learner$param_set$values <- params
+  if (any(class(mlmethod) == "LearnerRegr")) {
+    learner = mlmethod$clone()
+    if (!is.null(params)){
+      learner$param_set$values = params
+    }
+  } else {
+    learner <- mlr3::lrn(mlmethod)
+    
+    if (!is.null(params) & length(params) != 0){
+    learner$param_set$values <- params
+    }
+    
+    else if (is.null(params) | length(params) == 0){
+      message("No parameters provided for learners. Default values are used.")
+    }
   }
-  
-  else if (is.null(params) | length(params) == 0){
-    message("No parameters provided for learners. Default values are used.")
-  }
-  
   return(learner)
 }
 
 
 initiate_prob_learner = function(mlmethod, params) {
-  learner <- mlr3::lrn(mlmethod,
-                       predict_type = 'prob')
-  
-  if (!is.null(params) & length(params) != 0){
-  learner$param_set$values <- params
+  if (any(class(mlmethod) == "LearnerClassif")) {
+    learner = mlmethod$clone()
+    learner$predict_type = "prob"
+    if (!is.null(params)){
+      learner$param_set$values = params
+    }
+  } else {
+    learner <- mlr3::lrn(mlmethod,
+                         predict_type = 'prob')
+    
+    if (!is.null(params) & length(params) != 0){
+    learner$param_set$values <- params
+    }
+    
+    else if (is.null(params) | length(params) == 0){
+      message("No parameters provided for learners. Default values are used.")
+    }
   }
-  
-  else if (is.null(params) | length(params) == 0){
-    message("No parameters provided for learners. Default values are used.")
-  }
-  
   return(learner)
 }
 

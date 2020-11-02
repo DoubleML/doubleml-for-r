@@ -84,5 +84,30 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     # Functional (tbd) vs OOP implementation (handling randomness in param selection!?)
   expect_is(theta_obj_tuned, "numeric")
   expect_is(se_obj_tuned, "numeric")
+  
+  # loaded learner 
+  loaded_regr_learner = mlr3::lrn("regr.rpart", "cp" = 0.1, "minsplit" = 20)
+  loaded_classif_learner = mlr3::lrn("classif.rpart", "cp" = 0.1, "minsplit" = 20)
+  double_mlirm_obj_loaded_tuned = DoubleMLIRM$new(data_ml, 
+                                     n_folds = n_folds,
+                                     ml_g = loaded_regr_learner,
+                                     ml_m = loaded_classif_learner,
+                                     dml_procedure = dml_procedure,
+                                     score = score)
+  double_mlirm_obj_loaded_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings)
+  double_mlirm_obj_loaded_tuned$fit()
+  
+  theta_obj_loaded_tuned <- double_mlirm_obj_loaded_tuned$coef
+  se_obj_loaded_tuned <- double_mlirm_obj_loaded_tuned$se
+  
+  # TODO: bootstrap
+  # double_mlirm_obj_loaded_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+  # boot_theta_obj_loaded_tuned = double_mlirm_obj_loaded_tuned$boot_coef
+  
+  
+  # restrictions to test
+    # Functional (tbd) vs OOP implementation (handling randomness in param selection!?)
+  expect_is(theta_obj_loaded_tuned, "numeric")
+  expect_is(se_obj_loaded_tuned, "numeric")
   }
 )
