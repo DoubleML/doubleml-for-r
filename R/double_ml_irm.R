@@ -128,12 +128,11 @@ private = list(
                                  target = self$data$y_col)
     
     if (!private$fold_specific_params) {
-    
-          for (i_nuis in self$params_names()){
-            if (is.null(self$get__params(i_nuis))) {
-              message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-            }
-          }
+        # for (i_nuis in self$params_names()){
+        #   if (is.null(self$get__params(i_nuis))) {
+        #     message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
+        #   }
+        # }
       ml_m = initiate_prob_learner(self$learner$ml_m,
                                     self$get__params("ml_m"))
       ml_g0 = initiate_learner(self$learner$ml_g,
