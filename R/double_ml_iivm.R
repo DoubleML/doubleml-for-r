@@ -155,11 +155,11 @@ private = list(
                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                    target = self$data$treat_col)
     if (!private$fold_specific_params) {
-        # for (i_nuis in self$params_names()){
-        #   if (is.null(self$get__params(i_nuis))) {
-        #     message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-        #   }
-        # }
+        for (i_nuis in self$params_names()){
+          if (is.null(self$get__params(i_nuis))) {
+            message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
+          }
+        }
       # get conditional samples (conditioned on z = 0 or z = 1)
       cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model$z)
       

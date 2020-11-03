@@ -179,12 +179,11 @@ private = list(
     }
     
     if (!private$fold_specific_params) {
-      
-      # for (i_nuis in self$params_names()){
-      #   if (is.null(self$get__params(i_nuis))) {
-      #     message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-      #   }
-      # }
+      for (i_nuis in self$params_names()){
+        if (is.null(self$get__params(i_nuis))) {
+          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
+        }
+      }
       ml_g <- initiate_learner(self$learner$ml_g,
                                self$get__params("ml_g"))
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
@@ -327,11 +326,11 @@ private = list(
                                  target = self$data$treat_col)
     
      if (!private$fold_specific_params){
-      #  for (i_nuis in self$params_names()){
-      #   if (is.null(self$get__params(i_nuis))) {
-      #     message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-      #   }
-      # }
+       for (i_nuis in self$params_names()){
+        if (is.null(self$get__params(i_nuis))) {
+          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
+        }
+      }
       ml_g <- initiate_learner(self$learner$ml_g,
                                self$get__params("ml_g"))
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
@@ -432,11 +431,11 @@ private = list(
                                  target = self$data$treat_col)
     
     if (!private$fold_specific_params) {
-      #  for (i_nuis in self$params_names()){
-      #   if (is.null(self$get__params(i_nuis))) {
-      #     message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-      #   }
-      # }
+       for (i_nuis in self$params_names()){
+        if (is.null(self$get__params(i_nuis))) {
+          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
+        }
+      }
       ml_r <- initiate_learner(self$learner$ml_r,
                                self$get__params("ml_r"))
       resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,

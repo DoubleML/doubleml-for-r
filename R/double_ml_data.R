@@ -169,7 +169,7 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
     stopifnot(nrow(self$data) == nrow(self$data_model))
 
     # successful assigning treatment variable
-    # message(paste0("Set treatment variable d to ", treatment_var, "."))
+    message(paste0("Set treatment variable d to ", treatment_var, "."))
 
     invisible(self)
   }
