@@ -27,7 +27,6 @@ Imports:
     mlr3tuning (>= 0.3.0),
     paradox (>= 0.4.0),
     AER,
-    foreign,
     utils,
     clusterGeneration
 Roxygen: list(markdown = TRUE, r6 = TRUE)
@@ -42,7 +41,8 @@ Suggests:
     glmnet,
     lgr,
     ggplot2,
-    ranger
+    ranger,
+    foreign
 VignetteBuilder: knitr
 Collate: 
     'double_ml.R'
