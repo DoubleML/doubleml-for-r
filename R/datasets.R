@@ -367,8 +367,8 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150, return_
  if (return_type == "matrix") {
     return(list("X" = X, "y" = Y, "d" = D, "z" = Z))
   } else {
-    colnames(X) = paste0("x", 1:dim_x)
-    colnames(Z) = paste0("z", 1:dim_z)
+    colnames(X) = paste0("X", 1:dim_x)
+    colnames(Z) = paste0("Z", 1:dim_z)
     colnames(Y) = "y"
     colnames(D) = "d"
     
