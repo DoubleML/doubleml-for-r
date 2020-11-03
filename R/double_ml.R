@@ -107,6 +107,39 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   initialize = function() {
     stop("DoubleML is an abstract class that can't be initialized.")
   },
+  #' @description 
+  #' Print DoubleML objects. 
+  print = function() {
+    class_name = class(self)[1]
+    header = paste0("================= ", class_name, " Object ==================\n")
+    data_info = paste0("Outcome variable: ", self$data$y_col, "\n", 
+                    "Treatment variable(s): ", paste0(self$data$d_cols, collapse = ", "), "\n", 
+                    "Covariates: ",  paste0(self$data$x_cols, collapse = ", "), "\n", 
+                    "Instrument(s): ", paste0(self$data$z_cols, collapse = ", "), "\n", 
+                    "No. Observations: ", self$data$n_obs, "\n")
+    score_info = paste0("Score function: ", self$score, "\n", 
+                     "DML algorithm: ", self$dml_procedure, "\n")
+    learner_info = character(length(self$learner))
+    for (i_lrn in 1:length(self$learner)) {
+      if (any(class(self$learner[[i_lrn]]) == "Learner")) {
+        learner_info[i_lrn] = paste0(self$learner_names()[[i_lrn]], ": ", self$learner[[i_lrn]]$id, "\n")
+      } else {
+        learner_info[i_lrn] = paste0(self$learner_names()[[i_lrn]], ": ", self$learner[i_lrn], "\n")
+      }
+    }
+    resampling_info = paste0(" No. folds: ", self$n_folds, "\n", 
+                          "No. repeated sample splits: ", self$n_rep, "\n", 
+                          "Apply cross-fitting: ", self$apply_cross_fitting, "\n")
+    res = cat(" ", header, "\n", 
+              "\n------------------ Data summary      ------------------\n", data_info, 
+              "\n------------------ Score & algorithm ------------------\n",  score_info, 
+              "\n------------------ Machine learner   ------------------\n", learner_info, 
+              "\n------------------ Resampling        ------------------\n", resampling_info, 
+              "\n------------------ Fit summary       ------------------\n ")
+    self$summary()
+    
+    return(res)
+  },
   
   #' @description 
   #' Estimate DoubleML models. 
@@ -158,7 +191,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
     self$t_stat = self$coef/self$se
     self$pval = 2 * stats::pnorm(-abs(self$t_stat))
     names(self$coef) = names(self$se) = names(self$t_stat) = names(self$pval) = self$data$d_cols
-
+    
     invisible(self)
   },
   
@@ -359,7 +392,8 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
               if(!is.null(param_tuning[[nuisance_model]][[1]])) {
                 self$set__ml_nuisance_params(learner = nuisance_model,
                                              treat_var = self$data$treat_col, 
-                                             params = param_tuning[[nuisance_model]]$params)
+                                             params = param_tuning[[nuisance_model]]$params, 
+                                             set_fold_specific = FALSE)
               } else {
                 next
               }
@@ -375,7 +409,8 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
             if(!is.null(param_tuning[[nuisance_model]][[1]])) {
               self$set__ml_nuisance_params(learner = nuisance_model, 
                                            treat_var = self$data$treat_col, 
-                                           params = param_tuning[[nuisance_model]]$params[[1]])
+                                           params = param_tuning[[nuisance_model]]$params[[1]], 
+                                           set_fold_specific = FALSE)
             } else {
               next
             }
@@ -391,28 +426,34 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' The number of significant digits to use when printing. 
   summary = function(digits = max(3L, getOption("digits") - 
                                                           3L)) {
-    ans <- NULL
-    k <- length(self$coef)
-    table <- matrix(NA, ncol = 4, nrow = k)
-    rownames(table) <- names(self$coef)
-    colnames(table) <- c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
-    table[, 1] <- self$coef
-    table[, 2] <- self$se
-    table[, 3] <- self$t_stat
-    table[, 4] <- self$pval
-#    ans$coefficients <- table
-#    ans$object <- object
     
-    if (length(k)) {
-      print("Estimates and significance testing of the effect of target variables")
-      res <- as.matrix(stats::printCoefmat(table, digits = digits, P.values = TRUE, has.Pvalue = TRUE))
+    if (is.na(self$coef)) {
+      print("fit() not yet called.")
+    } else {
+      ans <- NULL
+      k <- length(self$coef)
+      table <- matrix(NA, ncol = 4, nrow = k)
+      rownames(table) <- names(self$coef)
+      colnames(table) <- c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
+      table[, 1] <- self$coef
+      table[, 2] <- self$se
+      table[, 3] <- self$t_stat
+      table[, 4] <- self$pval
+  #    ans$coefficients <- table
+  #    ans$object <- object
+      private$summary_table = table
+      
+      if (length(k)) {
+        print("Estimates and significance testing of the effect of target variables")
+        res <- as.matrix(stats::printCoefmat(private$summary_table, digits = digits, P.values = TRUE, has.Pvalue = TRUE))
+        cat("\n")
+      } 
+      else {
+        cat("No coefficients\n")
+      }
       cat("\n")
-    } 
-    else {
-      cat("No coefficients\n")
+      invisible(res)
     }
-    cat("\n")
-    invisible(res)
   },
   #' @description 
   #' Confidence intervals for DoubleML models. 
@@ -480,6 +521,8 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' @description 
   #' Set hyperparameters for the nuisance models of DoubleML models. 
   #' 
+  #' Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific. 
+  #' 
   #' @param learner (`character(1)`) \cr
   #' The nuisance model/learner (see method `params_names`)
   #' 
@@ -487,10 +530,14 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' The treatment varaible (hyperparameters can be set treatment-variable specific).
   #' 
   #' @param params (named `list()`) \cr
-  #' A named `list()` with estimator parameters (used for all folds). 
+  #' A named `list()` with estimator parameters. Parameters are used for all folds by default. Alternatively, parameters can be passed in a fold-specific way if option  `fold_specific`is `TRUE`. In this case, the outer list needs to be of length `n_rep` and the inner list of length `n_folds`.
   #' 
+  #' @param set_fold_specific (`logical(1)`) \cr
+  #' Indicates if the parameters passed in `params` should be passed in fold-specific way. Default is `FALSE`. If `TRUE`, the outer list needs to be of length `n_rep` and the inner list of length `n_folds`. Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific. 
+  #'
   #' @return self
-  set__ml_nuisance_params = function(learner = NULL, treat_var = NULL, params) {
+  set__ml_nuisance_params = function(learner = NULL, treat_var = NULL, params, set_fold_specific = FALSE) {
+    
     valid_learner = self$params_names()
     if (!learner %in% valid_learner) {
       stop(paste("invalid nuisance learner", learner, "\n",
@@ -501,10 +548,22 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
                  "valid treatment variable", paste(data$self$d_cols, collapse = " or ")))
     }
     
-    if (private$fold_specific_params) {
-          self$params[[learner]][[treat_var]][[private$i_rep]] = params
-     } else {
-           self$params[[learner]][[treat_var]] = params
+    if (!set_fold_specific) {
+      if (private$fold_specific_params) {
+            self$params[[learner]][[treat_var]][[private$i_rep]] = params
+       } else {
+             self$params[[learner]][[treat_var]] = params
+       }
+    } else {
+      if (length(params) != self$n_rep) {
+        stop("Length of (outer) parameter list does not match n_rep.")
+      } 
+      if (!all(lapply(params, length) == self$n_folds)) {
+        stop("Length of (inner) parameter list does not match n_folds.")
+      } 
+      
+      private$fold_specific_params = set_fold_specific
+      self$params[[learner]][[treat_var]] = params
     }
   }, 
   #' @description 
@@ -605,6 +664,7 @@ private = list(
   i_rep = NA,
   i_treat = NA,
   fold_specific_params = NULL,
+  summary_table = NULL,
   initialize_double_ml = function(data, 
                         n_folds,
                         n_rep,
