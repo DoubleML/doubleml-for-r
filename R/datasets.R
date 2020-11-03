@@ -74,7 +74,8 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
 #' * black: dummy variable; itindicates a person of black race (=1).
 #' * hispanic:  dummy variable; itindicates a person of hispanic race (=1).
 #' * othrace: dummy variable; itindicates a non-white, non-black, not-hispanic person (=1).
-#' * dep: the number of dependents of each claimant;
+#' * dep1: dummy variable; indicates if the number of dependents of each claimant is equal to 1 (=1). 
+#' * dep2: dummy variable; indicates if the number of dependents of each claimant is equal to 2 (=1).
 #' * q1-q6: six dummy variables indicating the quarter of experimentduring which each claimant enrolled.
 #' * recall:  takes the value of 1 if the claimant answered ``yes'' when was asked if he/she had any expectation to be recalled
 #' * agelt35: takes the value of 1 if the claimant's age is lessthan 35 and 0 otherwise.
@@ -105,6 +106,17 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
 #' 
 #' @return A data object according to the choice of `return_type`.
 #' 
+#' @examples 
+#' library(DoubleML)
+#' df_bonus = fetch_bonus(return_type = "data.table")
+#' obj_dml_data_bonus = DoubleMLData$new(df_bonus, 
+#'                                      y_col = "inuidur1", 
+#'                                      d_cols = "tg", 
+#'                                      x_cols = c("female", "black", "othrace", "dep1", "dep2",
+#'                                                 "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54",
+#'                                                   "durable", "lusd", "husd"))
+#' obj_dml_data_bonus
+#' 
 #' @export
 fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE) {
   checkmate::check_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
@@ -115,7 +127,12 @@ fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE
   data = raw_data[ind,]
   data$tg = (data$tg %in% c(0,4))
   data$inuidur1 = log(data$inuidur1)
-  data$dep = as.factor(data$dep)
+  
+  data$dep1 = as.integer(data$dep == 1)
+  data$dep2 = as.integer(data$dep == 2)
+  col_indx = names(data) != "dep"
+  data = data[, col_indx]
+  # data$dep = as.factor(data$dep)
   
   if (polynomial_features) {
     stop("Not implemented yet.")
@@ -129,7 +146,7 @@ fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE
        dt = data.table::as.data.table(data)
        y_col = "inuidur1"
        d_cols = "tg"
-       x_cols = c("female", "black", "othrace", "dep", "q2", "q3", "q4", "q5", "q6", 
+       x_cols = c("female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6", 
                   "agelt35", "agegt54", "durable", "lusd", "husd")
        data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
        return(data)
@@ -178,8 +195,7 @@ g = function(x){
 #' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y` and `d` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
-#' If `TRUE` pol
-#' @return A data object according to the choice of `return_type`.
+#' #' @return A data object according to the choice of `return_type`.
 #' 
 #' @export
 make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
@@ -247,7 +263,6 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y` and `d` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
-#' If `TRUE` pol
 #' 
 #' @return A data object according to the choice of `return_type`.
 #' 
