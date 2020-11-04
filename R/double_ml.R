@@ -333,9 +333,6 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' @param param_set (named `list()`) \cr
   #' A named `list` with a parameter grid for each nuisance model/learner (see method `learner_names()`). The parameter grid must be an object of class [ParamSet][paradox::ParamSet].   
   #'
-  #' @param tune_on_folds (`logical(1)`) \cr
-  #' Indicates whether the tuning should be done fold-specific or globally. Default is `FALSE`. 
-  #' 
   #' @param tune_settings (named `list()`) \cr
   #' A named `list()` with argument passed to the hyperparameter-tuning with [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects. `tune_settings` has entries 
   #' * `rsmp_tune` \cr [Resampling][mlr3::Resampling] or option passed to [rsmpl()][mlr3::mlr_sugar] to initialize a [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`. Default is `"cv"` (cross-validation). 
@@ -345,8 +342,12 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' * `algorithm` (`character(1)`) \cr The key passed to the respective dictionary to specify the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to [tnr()][mlr3tuning::tnr()]. Default is `grid_search`. 
   #' * `resolution` (`character(1)`) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to [tnr()][mlr3tuning::tnr()]. Default is `5`. 
   #' 
+  #' @param tune_on_folds (`logical(1)`) \cr
+  #' Indicates whether the tuning should be done fold-specific or globally. Default is `FALSE`. 
+  #' 
+  #' 
   #' @return self
-  tune = function(param_set, tune_on_folds = FALSE, tune_settings = list(
+  tune = function(param_set, tune_settings = list(
                                         n_folds_tune = 5,
                                         rsmp_tune = "cv", 
                                         measure = list(ml_g = NULL, 
@@ -354,7 +355,8 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
                                                        ml_r = NULL),
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
-                                        resolution = 5)) {
+                                        resolution = 5), 
+                             tune_on_folds = FALSE) {
     
     if (!self$apply_cross_fitting){
       stop("Parameter tuning for no-cross-fitting case not implemented.")
@@ -385,7 +387,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
             # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
             #      e.g., in seperate function (tune_mlr3)...
             param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
-                                                      param_set, tune_on_folds, tune_settings)
+                                                      param_set, tune_settings,  tune_on_folds)
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning
             
             for (nuisance_model in names(param_tuning)) {
@@ -402,7 +404,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
         } else {
           private$i_rep = 1
           param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
-                                                     param_set, tune_on_folds, tune_settings)
+                                                     param_set, tune_settings,  tune_on_folds)
           self$tuning_res[[i_treat]] = param_tuning
           
           for (nuisance_model in self$params_names()) {

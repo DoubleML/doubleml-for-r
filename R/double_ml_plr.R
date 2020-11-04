@@ -166,7 +166,7 @@ private = list(
     return(list(psi_a = psi_a,
                 psi_b = psi_b))
   }, 
-  ml_nuisance_tuning = function(smpls, param_set, tune_on_folds, tune_settings, ...){
+  ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     checkmate::check_class(param_set$ml_g, "ParamSet")    
     checkmate::check_class(param_set$ml_m, "ParamSet")
     

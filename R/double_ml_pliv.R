@@ -468,7 +468,7 @@ private = list(
   },
   
   
-  ml_nuisance_tuning  = function(smpls, param_set, tune_on_folds, tune_settings, ...){
+  ml_nuisance_tuning  = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     if (self$partialX & !self$partialZ) {
       res = private$ml_nuisance_tuning_partialX(smpls, param_set, tune_on_folds, tune_settings, ...)
       
@@ -482,7 +482,7 @@ private = list(
     return(res)
   },
   
-  ml_nuisance_tuning_partialX = function(smpls, param_set, tune_on_folds, tune_settings, ...){
+  ml_nuisance_tuning_partialX = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     checkmate::check_class(param_set$ml_g, "ParamSet")    
     checkmate::check_class(param_set$ml_m, "ParamSet")
     checkmate::check_class(param_set$ml_r, "ParamSet")
@@ -602,7 +602,7 @@ private = list(
     
   },
   
-   ml_nuisance_tuning_partialXZ = function(smpls, param_set, tune_on_folds, tune_settings, ...){
+   ml_nuisance_tuning_partialXZ = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     
     checkmate::check_class(param_set$ml_g, "ParamSet")    
     checkmate::check_class(param_set$ml_m, "ParamSet")
@@ -704,7 +704,7 @@ private = list(
     return(tuning_result)
   },
   
-  ml_nuisance_tuning_partialZ = function(smpls, param_set, tune_on_folds, tune_settings, ...){
+  ml_nuisance_tuning_partialZ = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     
     checkmate::check_class(param_set$ml_r, "ParamSet")
 
