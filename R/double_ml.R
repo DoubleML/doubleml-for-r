@@ -689,7 +689,7 @@ private = list(
     
     self$n_folds <- n_folds
     self$dml_procedure <- dml_procedure
-    self$score <- score
+    self$score <- private$check_score(score)
     self$n_rep <- n_rep
     
     self$draw_sample_splitting = draw_sample_splitting

@@ -420,8 +420,20 @@ private = list(
       smpls$train_ids[[x]][Z[smpls$train_ids[[x]]] == 1])
     return(list(train_ids_0=train_ids_0,
                 train_ids_1=train_ids_1))
+  },
+  check_score = function(score){
+    if (is.character(score)) {
+      valid_score = c("LATE")
+      if (! (score %in% valid_score)) {
+        stop(paste("Invalid score", score, "\n valid score", list(valid_score)))
+      }
+    } else if (!is.function(score)) {
+      stop("Score should be either a character or a function.")
+    }
+    return(score)
   }
 )
 )
+
 
 

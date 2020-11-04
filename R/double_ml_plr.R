@@ -237,6 +237,17 @@ private = list(
     tuning_result = list("ml_g" = list(tuning_result_g, params = extract_tuned_params(tuning_result_g)),
                          "ml_m" = list(tuning_result_m, params = extract_tuned_params(tuning_result_m)))
     return(tuning_result)
+  },
+  check_score = function(score){
+    if (is.character(score)) {
+      valid_score = c("IV-type", "partialling out")
+      if (! (score %in% valid_score)) {
+        stop(paste("Invalid score", score, "\n valid score", list(valid_score)))
+      }
+    } else if (!is.function(score)) {
+      stop("Score should be either a character or a function.")
+    }
+    return(score)
   }
 )
 )
