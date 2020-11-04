@@ -64,8 +64,10 @@ DoubleMLIRM <- R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   #' @param n_rep (`integer(1)`) \cr
   #' Number of repetitions for the sample splitting. Default is `1`. 
   #' 
-  #' @param score (`character(1)`) \cr
-  #' A `character(1)` (`"ATE"` or `ATTE`) specifying the score function. Default is `"ATE"`. 
+  #' @param score (`character(1)`, `function()`) \cr
+  #' A `character(1)` (`"ATE"` or `ATTE`) or a `function()` specifying the score function. If a `function()` 
+  #' is provided, it must be of the form `function(y, d, g0_hat, g1_hat, m_hat, smpls)` and the returned output 
+  #' must be a named `list()` with elements `psi_a` and `psi_b`. Default is `"ATE"`. 
   #' 
   #' @param trimming_rule (`character(1)`) \cr
   #' A `character(1)` (`"truncate"` is the only choice) specifying the trimming approach. Default is `"truncate"`. 
@@ -215,7 +217,7 @@ private = list(
       }
       psis = list(psi_a = psi_a, psi_b = psi_b)
     } else if (is.function(self$score)) {
-      psis = self$score(y, d, g_hat0, g_hat1, m_hat, smpls)
+      psis = self$score(y, d, g0_hat, g1_hat, m_hat, smpls)
     }
     return(psis)
   },

@@ -82,8 +82,8 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' p-values for the causal parameter(s) after calling `fit()`. 
   pval = NULL, 
   
-  #' @field score (`character(1)`) \cr
-  #' A `character(1)` specifying the score function. 
+  #' @field score (`character(1)`, `function()`) \cr
+  #' A `character(1)` or `function()` specifying the score function. 
   score = NULL, 
   
   #' @field se (`numeric()`) \cr

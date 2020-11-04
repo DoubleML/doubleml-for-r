@@ -78,8 +78,11 @@ DoubleMLIIVM <-R6:: R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   #' @param n_rep (`integer(1)`) \cr
   #' Number of repetitions for the sample splitting. Default is `1`. 
   #' 
-  #' @param score (`character(1)`) \cr
-  #' A `character(1)` (`"LATE"` is the only choice) specifying the score function. Default is `"ATE"`. 
+  #' @param score (`character(1)`, `function()`) \cr
+  #' A `character(1)` (`"LATE"` is the only choice) specifying the score function. 
+  #' If a `function()` is provided, it must be of the form 
+  #' `function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls)` and the returned output 
+  #' must be a named `list()` with elements `psi_a` and `psi_b`. Default is `"LATE"`. 
   #' 
   #' @param subgroups (named `list(2)`) \cr
   #' Named `list(2)` with options to adapt to cases with and without the subgroups of always-takers and never-takes. The entry `always_takers`(`logical(1)`) speficies whether there are always takers in the sample. The entry `never_takers` (`logical(1)`) speficies whether there are never takers in the sample. Default is `list(always_takers = TRUE, never_takers = TRUE)`.
@@ -287,7 +290,7 @@ private = list(
       }
       psis = list(psi_a = psi_a, psi_b = psi_b)
     } else if (is.function(self$score)) {
-      psis = self$score(y, z, d, g_hat0, g_hat1, m_hat, r_hat0, r_hat1, smpls)
+      psis = self$score(y, z, d, g0_hat, g1_hat1, m_hat, r0_hat, r1_hat, smpls)
     }
     return(psis)
   },

@@ -69,8 +69,10 @@ DoubleMLPLIV <- R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   #' @param n_rep (`integer(1)`) \cr
   #' Number of repetitions for the sample splitting. Default is `1`. 
   #' 
-  #' @param score (`character(1)`) \cr
-  #' A `character(1)` (`"partialling out"` is the only choice) specifying the score function. Default is `"partialling out"`. 
+  #' @param score (`character(1)`, `function()`) \cr
+  #' A `character(1)` (`"partialling out"` is the only choice) or a `function()` specifying the score function.
+  #' If a `function()` is provided, it must be of the form `function(y, z, d, g_hat, m_hat, r_hat, smpls)` and
+  #' the returned output must be a named `list()` with elements `psi_a` and `psi_b`. Default is `"partialling out"`. 
   #' 
   #' @param dml_procedure (`character(1)`) \cr
   #' A `character(1)` (`"dml1"` or `"dml2"`) specifying the double machine learning algorithm. Default is `"dml2"`. 
