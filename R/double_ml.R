@@ -117,8 +117,14 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
                     "Covariates: ",  paste0(self$data$x_cols, collapse = ", "), "\n", 
                     "Instrument(s): ", paste0(self$data$z_cols, collapse = ", "), "\n", 
                     "No. Observations: ", self$data$n_obs, "\n")
-    score_info = paste0("Score function: ", self$score, "\n", 
-                     "DML algorithm: ", self$dml_procedure, "\n")
+    
+    if (is.character(self$score)) {
+      score_info = paste0("Score function: ", self$score, "\n", 
+                         "DML algorithm: ", self$dml_procedure, "\n")
+    } else if (is.function(self$score)) {
+      score_info =  paste0("Score function: User specified score function \n", 
+                           "DML algorithm: ", self$dml_procedure, "\n")
+    }
     learner_info = character(length(self$learner))
     for (i_lrn in 1:length(self$learner)) {
       if (any(class(self$learner[[i_lrn]]) == "Learner")) {
@@ -678,7 +684,6 @@ private = list(
     checkmate::check_class(data, "DoubleMLData")
     stopifnot(is.numeric(n_folds), length(n_folds) == 1)
     stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
-    stopifnot(is.character(score), length(score) == 1)
     stopifnot(is.numeric(n_rep), length(n_rep) == 1)
   
     self$data <- data

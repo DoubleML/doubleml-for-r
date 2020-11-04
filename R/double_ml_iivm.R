@@ -277,13 +277,19 @@ private = list(
       m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
       m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
     }
-    if (self$score == 'LATE') {
-      psi_b = g1_hat - g0_hat + z*(u1_hat)/m_hat - (1-z)*u0_hat/(1-m_hat)
-      psi_a = -1 * (r1_hat - r0_hat + z*(w1_hat)/m_hat - (1-z)*w0_hat/(1-m_hat))
-    }
+    score = self$score
+    private$check_score(score)
     
-    return(list(psi_a = psi_a,
-                psi_b = psi_b))
+    if (is.character(self$score)) {
+      if (self$score == 'LATE') {
+        psi_b = g1_hat - g0_hat + z*(u1_hat)/m_hat - (1-z)*u0_hat/(1-m_hat)
+        psi_a = -1 * (r1_hat - r0_hat + z*(w1_hat)/m_hat - (1-z)*w0_hat/(1-m_hat))
+      }
+      psis = list(psi_a = psi_a, psi_b = psi_b)
+    } else if (is.function(self$score)) {
+      psis = self$score(y, z, d, g_hat0, g_hat1, m_hat, r_hat0, r_hat1, smpls)
+    }
+    return(psis)
   },
  ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
    checkmate::check_class(param_set$ml_g, "ParamSet")    

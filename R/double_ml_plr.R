@@ -156,15 +156,22 @@ private = list(
     u_hat = y - g_hat
     v_hatd = v_hat * d # tbd: handle product of numeric and binary in data.table
     
-    if (self$score == 'IV-type') {
-      psi_a = -v_hatd
-    } else if (self$score == 'partialling out') {
-      psi_a = -v_hat * v_hat
-    }
-    psi_b = v_hat * u_hat
+    score = self$score
+    private$check_score(score)
     
-    return(list(psi_a = psi_a,
-                psi_b = psi_b))
+    if (is.character(self$score)) {
+      if (self$score == 'IV-type') {
+        psi_a = -v_hatd
+      } else if (self$score == 'partialling out') {
+        psi_a = -v_hat * v_hat
+      }
+      psi_b = v_hat * u_hat
+      psis = list(psi_a = psi_a, 
+                  psi_b = psi_b)
+    } else if (is.function(self$score)) {
+      psis = self$score(y, d, g_hat, m_hat, smpls)
+    }
+    return(psis)
   }, 
   ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     checkmate::check_class(param_set$ml_g, "ParamSet")    

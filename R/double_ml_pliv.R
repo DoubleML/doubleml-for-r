@@ -295,22 +295,31 @@ private = list(
       r_hat_tilde <- extract_prediction(r_r_tilde)$response
     }
     
+    score = self$score
+    private$check_score(score)
     
-    if (self$data$n_instr == 1) {
-      if (self$score == 'partialling out') {
-        psi_a = -w_hat * v_hat
-        psi_b = v_hat * u_hat
+    if (is.character(self$score)) {
+      if (self$data$n_instr == 1) {
+        if (self$score == 'partialling out') {
+          psi_a = -w_hat * v_hat
+          psi_b = v_hat * u_hat
+        }
+      } else {
+        if (self$score == 'partialling out') {
+          psi_a = -w_hat * r_hat_tilde
+          psi_b = r_hat_tilde * u_hat
+        }
       }
-      
-    } else {
-      if (self$score == 'partialling out') {
-        psi_a = -w_hat * r_hat_tilde
-        psi_b = r_hat_tilde * u_hat
+    psis = list(psi_a = psi_a, 
+                psi_b = psi_b)
+    } else if (is.function(self$score)) {
+      if (self$data$n_instr > 1) {
+        stop("Callable score not implemented for DoubleMLPLIV with partialX=TRUE and partialZ=FALSE 
+              with several instruments")
       }
+      psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
     }
-      
-    return(list(psi_a = psi_a,
-                psi_b = psi_b))
+    return(psis)
   },
   
   ml_nuisance_and_score_elements_partialXZ = function(smpls, ...) {
@@ -413,14 +422,22 @@ private = list(
 
     u_hat <- y - g_hat
     w_hat <- d - m_hat_tilde
+
+    score = self$score
+    private$check_score(score)
     
-    if (self$score == 'partialling out') {
-        psi_a = -w_hat * (m_hat - m_hat_tilde)
-        psi_b = (m_hat - m_hat_tilde) * u_hat
+    if (is.character(self$score)) {
+      if (self$score == 'partialling out') {
+          psi_a = -w_hat * (m_hat - m_hat_tilde)
+          psi_b = (m_hat - m_hat_tilde) * u_hat
+      }
+      psis = list(psi_a = psi_a,
+                  psi_b = psi_b)
+    } else if (is.function(self$score)) {
+      stop("Callable score not implemented for DoubleMLPLIV with partialX=TRUE and partialZ=TRUE.")
+      # psis = self$score(y, d, g_hat, m_hat, m_hat_tilde) 
     }
-      
-    return(list(psi_a = psi_a,
-                psi_b = psi_b))
+    return(psis)
   },
   
   ml_nuisance_and_score_elements_partialZ = function(smpls, ...) {
@@ -454,17 +471,24 @@ private = list(
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
     }
     
-    D <- self$data$data_model[, self$data$treat_col, with = FALSE]
-    Y <- self$data$data_model[, self$data$y_col, with = FALSE]
-    Z <- self$data$data_model[, self$data$z_cols, with = FALSE]
+    d <- self$data$data_model[, self$data$treat_col, with = FALSE]
+    y <- self$data$data_model[, self$data$y_col, with = FALSE]
+    z <- self$data$data_model[, self$data$z_cols, with = FALSE]
     
-    if (self$score == 'partialling out') {
-        psi_a = -r_hat* D
-        psi_b =  r_hat* Y
-     }
-      
-    return(list(psi_a = psi_a,
-                psi_b = psi_b))
+    score = self$score
+    private$check_score(score)
+    
+    if (is.character(self$score)) {
+      if (self$score == 'partialling out') {
+          psi_a = -r_hat* d
+          psi_b =  r_hat* y
+       }
+      psis = list(psi_a = psi_a, psi_b = psi_b)
+    } else if (is.function(self$score)) {
+      stop("Callable score not implemented for DoubleMLPLIV with partialX=FALSE and partialZ=TRUE.")
+      # psis = self$score(y, z, d, r_hat)
+    }
+    return(psis)
   },
   
   

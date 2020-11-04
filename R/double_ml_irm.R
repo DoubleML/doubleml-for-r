@@ -201,16 +201,23 @@ private = list(
       m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
       m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
     }
-    if (self$score == 'ATE') {
-      psi_b = g1_hat - g0_hat + d*(u1_hat)/m_hat - (1-d)*u0_hat/(1-m_hat)
-      psi_a = rep(-1, self$data$n_obs)
-    } else if (self$score == 'ATTE') {
-      psi_b = d*u0_hat/p_hat - m_hat*(1-d)*u0_hat/(p_hat*(1-m_hat))
-      psi_a = -d / p_hat
-    }
     
-    return(list(psi_a = psi_a,
-                psi_b = psi_b))
+    score = self$score
+    private$check_score(score)
+  
+    if (is.character(self$score)) {
+      if (self$score == 'ATE') {
+        psi_b = g1_hat - g0_hat + d*(u1_hat)/m_hat - (1-d)*u0_hat/(1-m_hat)
+        psi_a = rep(-1, self$data$n_obs)
+      } else if (self$score == 'ATTE') {
+        psi_b = d*u0_hat/p_hat - m_hat*(1-d)*u0_hat/(p_hat*(1-m_hat))
+        psi_a = -d / p_hat
+      }
+      psis = list(psi_a = psi_a, psi_b = psi_b)
+    } else if (is.function(self$score)) {
+      psis = self$score(y, d, g_hat0, g_hat1, m_hat, smpls)
+    }
+    return(psis)
   },
  ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
    checkmate::check_class(param_set$ml_g, "ParamSet")    
