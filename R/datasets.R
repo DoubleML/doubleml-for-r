@@ -202,12 +202,18 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
                                 return_type = "DoubleMLData"){
   checkmate::check_choice(return_type, c("data.table", "matrix", "data.frame", "DoubleMLData"))
   cov_mat = stats::toeplitz(0.7^(0:(dim_x - 1)))
+  a_0 = 1
   a_1 = 0.25
+  s_1 = 1
+  
+  b_0 = 1
   b_1 = 0.25
+  s_2 = 1
+  
   x = mvtnorm::rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
   
-  d = as.matrix( x[,1] + a_1*(exp(x[,2])/(1+exp(x[,2]))) + stats::rnorm(n_obs))
-  y = as.matrix( alpha * d + exp(x[,2])/(1+exp(x[,2])) + b_1 * x[,2] + stats::rnorm(n_obs))
+  d = as.matrix(a_0*x[,1] + a_1*(exp(x[,3])/(1+exp(x[,3]))) + s_1*stats::rnorm(n_obs))
+  y = as.matrix( alpha * d + b_0* exp(x[,1])/(1+exp(x[,1])) + b_1 * x[,3] + s_2*stats::rnorm(n_obs))
   
   colnames(x) = paste0("X", 1:dim_x)
   colnames(y) = "y"
