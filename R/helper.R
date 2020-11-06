@@ -1,22 +1,22 @@
 
 extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
   if (!return_train_preds) {
-    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat = as.data.table(obj_resampling$prediction())
+    f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat = data.table::as.data.table(obj_resampling$prediction())
     f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
-    setorder(f_hat, 'row_id')
-    f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
+    data.table::setorder(f_hat, 'row_id')
+    f_hat <- data.table::as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
     return(f_hat)
     
   } else {
     # Access in-sample predictions
     iters = obj_resampling$resampling$iters
-    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
+    f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat_list = lapply(1:iters, function(x) data.table::as.data.table(obj_resampling$predictions()[[x]]))
     f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
                                                                             by = "row_id", all = TRUE))
-    f_hat_list = lapply(f_hat_list, function(x) setorder(x, "row_id"))
-    f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+    f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
+    f_hat_list = lapply(f_hat_list, function(x) data.table::as.data.table(list("row_id" = x$row_id, 
                                                                    "response"= x$response)))
     return(f_hat_list)
   }
@@ -27,7 +27,7 @@ rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
     # if (length(test_ids) > 1) {
       # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions <- rbindlist(prediction_list)
+    predictions <- data.table::rbindlist(prediction_list)
     setorder(predictions, 'row_id')
     if (!keep_rowids) {
       predictions <- predictions$response
@@ -37,18 +37,18 @@ rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
 
 
 extract_prob_prediction = function(obj_resampling) {
-  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-  f_hat = as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = data.table::as.data.table(obj_resampling$prediction())
   f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
-  setorder(f_hat, 'row_id')
-  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+  data.table::setorder(f_hat, 'row_id')
+  f_hat <- data.table::as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
   
   return(f_hat)
 }
 
 rearrange_prob_prediction = function(prediction_list, test_ids){
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions <- rbindlist(prediction_list)
+    predictions <- data.table::rbindlist(prediction_list)
     setorder(predictions, 'row_id')
     predictions <- predictions$prob.1
     return(predictions)
