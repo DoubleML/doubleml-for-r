@@ -125,7 +125,7 @@ fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE
   
   ind = (raw_data$tg == 0 | raw_data$tg == 4)
   data = raw_data[ind,]
-  data$tg = (data$tg %in% c(0,4))
+  data$tg[(data$tg==4)] = 1
   data$inuidur1 = log(data$inuidur1)
   
   data$dep1 = as.integer(data$dep == 1)
