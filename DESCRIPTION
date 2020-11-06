@@ -18,15 +18,12 @@ Depends:
 Imports: 
     R6 (>= 2.4.1),
     data.table (>= 1.12.8),
-    hdm,
     stats,
-    sandwich,
     checkmate,
     mlr3 (>= 0.5.0),
     mlr3learners (>= 0.3.0),
     mlr3tuning (>= 0.3.0),
     paradox (>= 0.4.0),
-    AER,
     utils,
     clusterGeneration
 Roxygen: list(markdown = TRUE, r6 = TRUE)
@@ -42,7 +39,10 @@ Suggests:
     lgr,
     ggplot2,
     ranger,
-    foreign
+    foreign,
+    hdm,
+    sandwich,
+    AER
 VignetteBuilder: knitr
 Collate: 
     'double_ml.R'

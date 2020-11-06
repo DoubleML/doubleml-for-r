@@ -496,13 +496,13 @@ private = list(
   
   ml_nuisance_tuning  = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     if (self$partialX & !self$partialZ) {
-      res = private$ml_nuisance_tuning_partialX(smpls, param_set, tune_on_folds, tune_settings, ...)
+      res = private$ml_nuisance_tuning_partialX(smpls, param_set, tune_settings, tune_on_folds, ...)
       
     } else if (!self$partialX & self$partialZ) {
-      res = private$ml_nuisance_tuning_partialZ(smpls, param_set, tune_on_folds, tune_settings, ...)
+      res = private$ml_nuisance_tuning_partialZ(smpls, param_set, tune_settings, tune_on_folds, ...)
       
     } else if (self$partialX & self$partialZ) {
-      res =  private$ml_nuisance_tuning_partialXZ(smpls, param_set, tune_on_folds, tune_settings, ...)
+      res =  private$ml_nuisance_tuning_partialXZ(smpls, param_set, tune_settings, tune_on_folds, ...)
     }
     
     return(res)
