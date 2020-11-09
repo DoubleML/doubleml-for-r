@@ -65,7 +65,7 @@ and $\zeta$ and $V$ are stochastic errors.
 
 ## The data-backend `DoubleMLData`
 
-`DoubleML` provides interfaces to objects of class [`data.table`](https://rdatatable.gitlab.io/data.table/) as well as R base classes `data.frame` and `matrix`. Details on the data-backend and the interfaces can be found in the user guide. The `DoubleMLData` class serves as data-backend and can be initialized from a dataframe by specifying the column `y_col="inuidur1"` serving as outcome variable $Y$, the column(s) `d_cols = "tg"` serving as treatment variable $D$ and the columns `x_cols=["female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54", "durable", "lusd", "husd"]` specifying the confounders. Alternatively a matrix interface can be used as shown below for the simulated data.
+`DoubleML` provides interfaces to objects of class [`data.table`](https://rdatatable.gitlab.io/data.table/) as well as R base classes `data.frame` and `matrix`. Details on the data-backend and the interfaces can be found in the user guide. The `DoubleMLData` class serves as data-backend and can be initialized from a dataframe by specifying the column `y_col="inuidur1"` serving as outcome variable $Y$, the column(s) `d_cols = "tg"` serving as treatment variable $D$ and the columns `x_cols=c("female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54", "durable", "lusd", "husd")` specifying the confounders. Alternatively a matrix interface can be used as shown below for the simulated data.
 
 
 ```{r}
