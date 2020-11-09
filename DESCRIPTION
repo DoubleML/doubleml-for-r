@@ -25,7 +25,8 @@ Imports:
     mlr3tuning (>= 0.3.0),
     paradox (>= 0.4.0),
     utils,
-    clusterGeneration
+    clusterGeneration,
+    foreign (<= 0.8-76)
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
@@ -39,7 +40,6 @@ Suggests:
     lgr,
     ggplot2,
     ranger,
-    foreign,
     hdm,
     sandwich,
     AER
