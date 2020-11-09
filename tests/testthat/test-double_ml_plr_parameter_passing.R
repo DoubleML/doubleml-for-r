@@ -66,10 +66,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                      score = score,
                                      n_rep = n_rep)
   
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = params_g$d1)
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = params_g$d2)
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = params_m$d1)
-  double_mlplr_obj_once$set__ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = params_m$d2)
+  double_mlplr_obj_once$set_ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = params_g$d1)
+  double_mlplr_obj_once$set_ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = params_g$d2)
+  double_mlplr_obj_once$set_ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = params_m$d1)
+  double_mlplr_obj_once$set_ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = params_m$d2)
 
   
   double_mlplr_obj_once$fit()
@@ -90,10 +90,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
                                        n_rep = n_rep,
                                        apply_cross_fitting = FALSE)
     
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = params_g$d1)
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = params_g$d2)
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = params_m$d1)
-    double_mlplr_obj_nocf$set__ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = params_m$d2)
+    double_mlplr_obj_nocf$set_ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = params_g$d1)
+    double_mlplr_obj_nocf$set_ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = params_g$d2)
+    double_mlplr_obj_nocf$set_ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = params_m$d1)
+    double_mlplr_obj_nocf$set_ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = params_m$d2)
   
     
     double_mlplr_obj_nocf$fit()
@@ -106,35 +106,31 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   }
   # TBD: Exact Parameter Passing (external tuning)
   # 
-  # export_params_m = list("m_params" = rep(list(list(params_m[[1]])), n_folds))
-  # export_params_g = list("g_params" = rep(list(list(params_g[[1]])), n_folds))
-  # learner_pars_exact_params = learner_pars_once$params
-  # names(learner_pars_exact_params) = c("g_params", "m_params")
-  # learner_pars_exact_params = rep(list(rep(list(learner_pars_exact_params), n_folds)), n_rep)
-  # 
-  # exact_ml_nuisance_params = list()
-  # exact_ml_nuisance_params[["d1"]] = learner_pars_exact_params
-  # exact_ml_nuisance_params[["d2"]] = learner_pars_exact_params
-  # 
-  # # learner_pars_exact <- rep(list(rep(list(rep(list(learner_pars_once$params), n_folds)), n_rep)), 2)
-  # 
-  # set.seed(i_setting)
-  # 
-  # # Instantiate with parameters                        
-  # double_mlplr_obj_exact = DoubleMLPLR$new(data_ml, 
-  #                                    n_folds = n_folds,
-  #                                    ml_g = learner_list$mlmethod_g,
-  #                                    ml_m = learner_list$mlmethod_m,
-  #                                    dml_procedure = dml_procedure, 
-  #                                    score = score,
-  #                                    n_rep = n_rep)
-  # 
-  # double_mlplr_obj_exact$set__ml_nuisance_params(treat_var = NULL, learner = NULL, params = exact_ml_nuisance_params)
-  # 
-  # double_mlplr_obj_exact$fit()
-  # 
-  # theta_obj_exact <- double_mlplr_obj_exact$coef
-  # se_obj_exact <- double_mlplr_obj_exact$se
+  export_params_exact = rep(list(rep(list(params_g$d1), n_folds)), n_rep)
+
+  set.seed(i_setting)
+  # Instantiate with parameters
+  double_mlplr_obj_exact = DoubleMLPLR$new(data_ml,
+                                     n_folds = n_folds,
+                                     ml_g = learner_list$mlmethod_g,
+                                     ml_m = learner_list$mlmethod_m,
+                                     dml_procedure = dml_procedure,
+                                     score = score,
+                                     n_rep = n_rep)
+
+  double_mlplr_obj_exact$set_ml_nuisance_params(treat_var = "d1", learner = "ml_g", params = export_params_exact, 
+                                                  set_fold_specific = TRUE)
+  double_mlplr_obj_exact$set_ml_nuisance_params(treat_var = "d1", learner = "ml_m", params = export_params_exact, 
+                                                  set_fold_specific = TRUE)
+  double_mlplr_obj_exact$set_ml_nuisance_params(treat_var = "d2", learner = "ml_g", params = export_params_exact, 
+                                                  set_fold_specific = TRUE)
+  double_mlplr_obj_exact$set_ml_nuisance_params(treat_var = "d2", learner = "ml_m", params = export_params_exact, 
+                                                  set_fold_specific = TRUE)
+   
+  double_mlplr_obj_exact$fit()
+   
+  theta_obj_exact <- double_mlplr_obj_exact$coef
+  se_obj_exact <- double_mlplr_obj_exact$se
   # 
   # # bootstrap
   # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
@@ -164,6 +160,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
 
   expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
   expect_equal(se_obj_default, se_obj_once, tolerance = 1e-8)
+  expect_equal(theta_obj_exact, theta_obj_default, tolerance = 1e-8)
+  expect_equal(se_obj_exact, se_obj_default, tolerance = 1e-8)
 
   # expect_equal(boot_theta_obj_once, boot_theta_obj_exact, tolerance = 1e-8)
   # expect_equal(boot_theta_obj_null, boot_theta_obj_exact, tolerance = 1e-8)

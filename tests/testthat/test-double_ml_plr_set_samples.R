@@ -38,15 +38,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      n_rep = n_rep)
   
   # set params for nuisance part m
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_m", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_m)
   
   # set params for nuisance part g
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_g", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_g)
-  
+  set.seed(123)
   double_mlplr_obj$fit()
   theta_obj <- double_mlplr_obj$coef
   se_obj <- double_mlplr_obj$se
@@ -60,18 +60,18 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      score = score, 
                                      draw_sample_splitting = FALSE)
   
-  double_mlplr_obj_external$set__samples(SAMPLES)
+  double_mlplr_obj_external$set_samples(SAMPLES)
   
   # set params for nuisance part m
-  double_mlplr_obj_external$set__ml_nuisance_params(learner = "ml_m", 
+  double_mlplr_obj_external$set_ml_nuisance_params(learner = "ml_m", 
                                                   treat_var = "d",
                                                   params = learner_pars$params$params_m)
   
   # set params for nuisance part g
-  double_mlplr_obj_external$set__ml_nuisance_params(learner = "ml_g", 
+  double_mlplr_obj_external$set_ml_nuisance_params(learner = "ml_g", 
                                             treat_var = "d",
                                             params = learner_pars$params$params_g)
-  
+  set.seed(123)
   double_mlplr_obj_external$fit()
   theta_obj_external <- double_mlplr_obj_external$coef
   se_obj_external <- double_mlplr_obj_external$se

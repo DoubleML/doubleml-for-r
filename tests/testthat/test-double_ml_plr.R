@@ -21,7 +21,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 1)
   learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
   n_rep_boot = 498
-  
+
   set.seed(i_setting)
   n_folds = 5
   plr_hat <- DML(data_plr[[i_setting]], y = "y", d = "d",
@@ -52,12 +52,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      score = score)
   
   # set params for nuisance part m
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_m", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                            params = learner_pars$params$params_m)
   
   # set params for nuisance part g
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_g", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                            params = learner_pars$params$params_g)
 

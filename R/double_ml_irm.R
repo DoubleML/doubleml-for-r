@@ -131,16 +131,16 @@ private = list(
     
     if (!private$fold_specific_params) {
         for (i_nuis in self$params_names()){
-          if (is.null(self$get__params(i_nuis))) {
+          if (is.null(self$get_params(i_nuis))) {
             message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
           }
         }
       ml_m = initiate_prob_learner(self$learner$ml_m,
-                                    self$get__params("ml_m"))
+                                    self$get_params("ml_m"))
       ml_g0 = initiate_learner(self$learner$ml_g,
-                               self$get__params("ml_g1"))
+                               self$get_params("ml_g1"))
       ml_g1 = initiate_learner(self$learner$ml_g,
-                               self$get__params("ml_g1"))
+                               self$get_params("ml_g1"))
 
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
@@ -163,16 +163,16 @@ private = list(
       r_g1 <- mlr3::resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
       g1_hat = extract_prediction(r_g1)$response
     } else {
-      ml_m <- lapply(self$get__params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
+      ml_m <- lapply(self$get_params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
                                                                                     x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prob_prediction)
       m_hat = rearrange_prob_prediction(m_hat, smpls$test_ids) 
       
-      ml_g0 <- lapply(self$get__params("ml_g0"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g0 <- lapply(self$get_params("ml_g0"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                   x))
-      ml_g1 <- lapply(self$get__params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g1 <- lapply(self$get_params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                   x))
       # get conditional samples (conditioned on D = 0 or D = 1)
       cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])

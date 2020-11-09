@@ -20,7 +20,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   
   learner_pars <- get_default_mlmethod_iivm(learner)
   n_rep_boot = 498
-  
+
   set.seed(i_setting)
   iivm_hat <- dml_irmiv(data_iivm[[i_setting]], y = "y", d = "d", z = "z",
                         k = 5, mlmethod = learner_pars$mlmethod,
@@ -49,20 +49,20 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                      trimming_threshold = trimming_threshold,
                                      score = score)
   
-  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_m", 
+  double_mliivm_obj$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_p)
-  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_g0", 
+  double_mliivm_obj$set_ml_nuisance_params(learner = "ml_g0", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_mu)
-  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_g1", 
+  double_mliivm_obj$set_ml_nuisance_params(learner = "ml_g1", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_mu)
   
-  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_r0", 
+  double_mliivm_obj$set_ml_nuisance_params(learner = "ml_r0", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_m)
-  double_mliivm_obj$set__ml_nuisance_params(learner = "ml_r1", 
+  double_mliivm_obj$set_ml_nuisance_params(learner = "ml_r1", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_m)
   

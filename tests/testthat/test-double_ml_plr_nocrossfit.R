@@ -40,12 +40,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      apply_cross_fitting = apply_cross_fitting)
   
   # set params for nuisance part m
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_m", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_m)
   
   # set params for nuisance part g
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_g", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_g)
 
@@ -75,7 +75,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     
-    dml_plr_obj_external$set__samples(smpls)
+    dml_plr_obj_external$set_samples(smpls)
     dml_plr_obj_external$fit()
   
     theta_external <- dml_plr_obj_external$coef

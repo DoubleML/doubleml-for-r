@@ -70,9 +70,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      score = score,
                                      n_rep = n_rep)
   
-  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", learner = "ml_g", params = params_g$d)
-  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", learner = "ml_m", params = params_m$d)
-  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", learner = "ml_r", params = params_r$d)
+  double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_g", params = params_g$d)
+  double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_m", params = params_m$d)
+  double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_r", params = params_r$d)
   
   double_mlpliv_obj_once$fit()
   

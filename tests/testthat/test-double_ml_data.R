@@ -37,7 +37,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   D3 = double_ml_data_from_matrix(X2, y, d2)
   D3_1d = double_ml_data_from_matrix(X2, y, d2, use_other_treat_as_covariate = FALSE)
 
-  D3_setd = D3$set__data_model("d2")
+  D3_setd = D3$set_data_model("d2")
 
   # Input: Data frame, assign columns by names
   d_indx = "d"
@@ -87,7 +87,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                           d_cols = d2_indx, 
                                           z_cols = z_null, 
                                           use_other_treat_as_covariate = FALSE)
-  D7_setd = D7$set__data_model("d2")
+  D7_setd = D7$set_data_model("d2")
   
   expect_error(double_ml_data_from_data_frame(data))
   
@@ -149,7 +149,7 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                           d_cols = d2_indx, 
                                           z_cols = z_null, 
                                           use_other_treat_as_covariate = FALSE)
-  D10_setd = D10$set__data_model("d2")
+  D10_setd = D10$set_data_model("d2")
   # to do: check correct behavior when changing treat from d1 to d2
   
   expect_identical(D1$data_model, D8$data_model) # order of columns currently only enforced for data_model
