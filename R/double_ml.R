@@ -13,10 +13,6 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' Estimates of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()` with `dml_procedure = "dml1"`.  
   all_dml1_coef = NULL, 
   
-  #' @field all_dml1_se (`array()`) \cr
-  #' Standard errors of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()` with `dml_procedure = "dml1"`.  
-  all_dml1_se = NULL, 
-  
   #' @field all_se (`matrix()`) \cr 
   #' Standard errors of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()`. 
   all_se = NULL, 
@@ -150,21 +146,10 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' @description 
   #' Estimate DoubleML models. 
   #' 
-  #' @param se_reestimate (`logical(1)`) 
-  #' Indicates whether standard errors should be reestimated (only relevant for `dml_procedure = "dml1"`). Default is `FALSE`. 
-  #' 
   #' @return self
-  fit = function(se_reestimate = FALSE) {
-    
-    if (!self$apply_cross_fitting) {
-      if (se_reestimate) {
-        # redirect to se_reestimate = False; se_reestimate is of no relevance without cross-fitting
-        se_reestimate = FALSE
-      }
-    }
+  fit = function() {
     
     # TODO: insert check for tuned params
-    
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
@@ -187,7 +172,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
         private$compute_score()
         
         # compute standard errors for causal parameter
-        se <- private$se_causal_pars(se_reestimate)
+        se <- private$se_causal_pars()
         private$set__all_se(se)
       }
     }
@@ -435,7 +420,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   summary = function(digits = max(3L, getOption("digits") - 
                                                           3L)) {
     
-    if (is.na(self$coef)) {
+    if (all(is.na(self$coef))) {
       print("fit() not yet called.")
     } else {
       ans <- NULL
@@ -743,12 +728,8 @@ private = list(
     if (self$dml_procedure == "dml1") {
       if (self$apply_cross_fitting) {
         self$all_dml1_coef = array(NA, dim=c(self$data$n_treat, self$n_rep, self$n_folds))
-        self$all_dml1_se = array(NA, dim=c(self$data$n_treat, self$n_rep, self$n_folds))
-
       } else {
         self$all_dml1_coef = array(NA, dim=c(self$data$n_treat, self$n_rep, 1))
-        self$all_dml1_se = array(NA, dim=c(self$data$n_treat, self$n_rep, 1))
-
       }
     }
     
@@ -769,9 +750,8 @@ private = list(
   get__psi = function() self$psi[, private$i_rep, private$i_treat],
   set__psi = function(value) self$psi[, private$i_rep, private$i_treat] <- value,
   get__all_coef = function() self$all_coef[private$i_treat, private$i_rep],
-  set__all_coef = function(value) self$all_coef[private$i_treat, private$i_rep] <- value,
   set__all_dml1_coef = function(value) self$all_dml1_coef[private$i_treat, private$i_rep, ] <- value,
-  set__all_dml1_se = function(value) self$all_dml1_se[private$i_treat, private$i_rep, ] <- value,
+  set__all_coef = function(value) self$all_coef[private$i_treat, private$i_rep] <- value,
   get__all_se = function() self$all_se[private$i_treat, private$i_rep],
   set__all_se = function(value) self$all_se[private$i_treat, private$i_rep] <- value,
   get__boot_coef = function() {
@@ -817,28 +797,14 @@ private = list(
     
     return(coef)
   },
-  se_causal_pars = function(se_reestimate) {
-    dml_procedure = self$dml_procedure
-    n_folds = self$n_folds
-    smpls = private$get__smpls()
-    test_ids = smpls$test_ids
+  se_causal_pars = function() {
     
-    if (dml_procedure == "dml1") {
-      vars = rep(NA, length(test_ids))
-      if (se_reestimate) {
-        se = sqrt(private$var_est())
-      } else {
-        for (i_fold in 1:length(test_ids)) {
-          # Note that length(test_ids) is only not equal to self.n_folds if self$apply_cross_fitting == False
-          test_index = test_ids[[i_fold]]
-          vars[i_fold] = private$var_est(inds=test_index)
-        }
-        se = sqrt(mean(vars)) 
-        private$set__all_dml1_se(vars)
-      } 
-    }
-    else if (dml_procedure == "dml2") {
+    if (self$apply_cross_fitting) {
       se = sqrt(private$var_est())
+    } else {
+      smpls = private$get__smpls()
+      test_ids = smpls$test_ids
+      se = sqrt(private$var_est(inds=test_ids[[1]]))
     }
     
     return(se)
