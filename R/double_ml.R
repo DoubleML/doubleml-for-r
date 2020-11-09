@@ -798,15 +798,14 @@ private = list(
     return(coef)
   },
   se_causal_pars = function() {
-    
     if (self$apply_cross_fitting) {
       se = sqrt(private$var_est())
     } else {
       smpls = private$get__smpls()
       test_ids = smpls$test_ids
-      se = sqrt(private$var_est(inds=test_ids[[1]]))
+      test_index = test_ids[[1]]
+      se = sqrt(private$var_est(test_index))
     }
-    
     return(se)
   },
   agg_cross_fit = function() {
@@ -886,9 +885,7 @@ private = list(
     if (self$apply_cross_fitting) {
       n_obs = self$data$n_obs
     } else {
-      smpls = private$get__smpls()
-      test_index = smpls$test_ids[[1]]
-      n_obs = length(test_index)
+      n_obs = length(inds)
     }
     J = mean(psi_a)
     sigma2_hat = 1/n_obs * mean(psi^2) / (J^2)
