@@ -129,15 +129,15 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
         learner_info[i_lrn] = paste0(self$learner_names()[[i_lrn]], ": ", self$learner[i_lrn], "\n")
       }
     }
-    resampling_info = paste0(" No. folds: ", self$n_folds, "\n", 
+    resampling_info = paste0("No. folds: ", self$n_folds, "\n", 
                           "No. repeated sample splits: ", self$n_rep, "\n", 
                           "Apply cross-fitting: ", self$apply_cross_fitting, "\n")
-    res = cat(" ", header, "\n", 
+    res = cat(header, "\n", 
               "\n------------------ Data summary      ------------------\n", data_info, 
               "\n------------------ Score & algorithm ------------------\n",  score_info, 
               "\n------------------ Machine learner   ------------------\n", learner_info, 
               "\n------------------ Resampling        ------------------\n", resampling_info, 
-              "\n------------------ Fit summary       ------------------\n ")
+              "\n------------------ Fit summary       ------------------\n ", sep="")
     self$summary()
     
     return(res)
