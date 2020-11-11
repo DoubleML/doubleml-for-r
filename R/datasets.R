@@ -1,4 +1,4 @@
-#' @title fetch_401k
+#' @title Data set on financial wealth and 401(k) plan participation.
 #' 
 #' @description 
 #' Data set on financial wealth and 401(k) plan participation. An internet connection is required to sucessfully download the data set.
@@ -58,7 +58,7 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
 }
 
 
-#' @title fetch_bonus
+#' @title Data set on the Pennsylvania Reemployment Bonus experiment.
 #' 
 #' @description 
 #' Data set on the Pennsylvania Reemploymnent Bonus experiment. An internet connection is required to sucessfully download the data set.
@@ -166,7 +166,7 @@ g = function(x){
 }
 
 
-#' @title make_plr_CCDHNR2018
+#' @title Generates data from a partially linear regression model used in Chernozhukov et al. (2018)
 #' 
 #' @description 
 #'  Generates data from a partially linear regression model used in Chernozhukov et al. (2018) for Figure 1.
@@ -233,7 +233,7 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
   }
 }
 
-#' @title make_plr_turrell2018
+#' @title Generates data from a partially linear regression model used in a blog article by Turrell (2018).
 #' 
 #' @description 
 #' Generates data from a partially linear regression model used in a blog article by Turrell (2018). The data generating process is defined as
@@ -302,7 +302,7 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5, return_typ
 }
 
 
-#' @title make_pliv_CHS2015
+#' @title Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015).
 #' 
 #' @description 
 #' Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015). The data generating process is defined as 
@@ -396,7 +396,7 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150, return_
 }
 
 
-#' @title make_irm_data
+#' @title Generates data from a interactive regression (IRM) model.
 #' 
 #' @description
 #' Generates data from a interactive regression (IRM) model. The data generating process is defined as
@@ -473,7 +473,7 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5, R2_y = 
 }
 
 
-#' @title make_iivm_data
+#' @title Generates data from a interactive IV regression (IIVM) model.
 #' 
 #' @description
 #' Generates data from a interactive IV regression (IIVM) model. The data generating process is defined as

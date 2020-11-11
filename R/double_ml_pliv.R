@@ -1,4 +1,4 @@
-#' @title DoubleMLPIV
+#' @title Double machine learning for partially linear IV regression models
 #' 
 #' @description
 #' Double machine learning for partially linear IV regression models. 

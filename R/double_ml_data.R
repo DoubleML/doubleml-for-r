@@ -1,4 +1,4 @@
-#' @title DoubleMLData
+#' @title Double machine learning data-backend
 #'
 #' @description
 #' Double machine learning data-backend.
@@ -178,7 +178,8 @@ DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
 
 
 
-#' @title double_ml_data_from_data_frame
+#' @title Wrapper for Double machine learning data-backend initialization from data.frame. 
+#' 
 #' @description 
 #' Initalization of DoubleMLData from `data.frame`.
 #'
@@ -249,7 +250,8 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   return(data)
 }
 
-#' @title double_ml_data_from_matrix
+#' @title Wrapper for Double machine learning data-backend initialization from matrix.
+#' 
 #' @description 
 #' 
 #' Initalization of DoubleMLData from `matrix()` objects. 

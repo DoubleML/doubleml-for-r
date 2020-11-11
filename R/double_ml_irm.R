@@ -1,4 +1,4 @@
-#' @title DoubleMLIRM
+#' @title Double machine learning for interactive regression models
 #' 
 #' @description
 #' Double machine learning for interactive regression models. 

@@ -1,4 +1,4 @@
-#' @title DoubleML
+#' @title Abstract class DoubleML
 #' 
 #' @description
 #' Abstract base class that can't be initialized. 

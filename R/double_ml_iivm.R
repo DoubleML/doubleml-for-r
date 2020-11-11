@@ -1,4 +1,4 @@
-#' @title DoubleMLIIVM
+#' @title Double machine learning for interactive IV regression models
 #' 
 #' @description
 #' Double machine learning for interactive IV regression models. 

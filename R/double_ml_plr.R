@@ -1,4 +1,4 @@
-#' @title DoubleMLPLR
+#' @title Double machine learning for partially linear regression models
 #' 
 #' @description
 #' Double machine learning for partially linear regression models. 
