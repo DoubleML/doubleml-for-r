@@ -148,9 +148,6 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
     }
     
     theta <- mean(thetas, na.rm = TRUE)
-    
-    orth_est <- orth_plr_dml(u_hat = u_hat_se, v_hat = v_hat_se, v_hatd = v_hatd_se, score = score)
-
     se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat_se, v_hat = v_hat_se,
                         v_hatd = v_hatd_se, score = score, se_type = se_type,
                         dml_procedure = dml_procedure))
