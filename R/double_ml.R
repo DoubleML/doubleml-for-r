@@ -3,7 +3,10 @@
 #' @description
 #' Abstract base class that can't be initialized. 
 #' 
+#' 
 #' @format [R6::R6Class] object.
+#' 
+#' @family DoubleML
 DoubleML <- R6::R6Class("DoubleML", public = list(
   #' @field all_coef (`matrix()`) \cr 
   #' Estimates of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()`. 
@@ -97,7 +100,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' @field tuning_res (named `list()`) \cr
   #' Results from hyperparameter tuning. 
   tuning_res = NULL, 
-  
+
   #' @description 
   #' DoubleML is an abstract class that can't be initialized. 
   initialize = function() {
@@ -651,8 +654,6 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   # }
 ),
 private = list(
-  n_obs = NULL,
-  n_treat = NULL,
   n_rep_boot = NULL,
   i_rep = NA,
   i_treat = NA,

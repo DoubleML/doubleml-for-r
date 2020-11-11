@@ -5,6 +5,8 @@
 #' 
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #' 
+#' @family DoubleML
+#' 
 #' @details 
 #' Interactive IV regression (IIVM) models take the form 
 #' 
@@ -60,16 +62,16 @@ DoubleMLIIVM <-R6:: R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   #' @param data (`DoubleMLData`) \cr
   #' The `DoubleMLData` object providing the data and specifying the variables of the causal model.
   #' 
-  #' @param ml_g (`character(1)`) \cr
-  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
+  #' @param ml_g (`character(1)`, [`LearnerRegr`][mlr3::LearnerRegr]) \cr
+  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.   \cr
   #' `ml_g` refers to the nuisance function \eqn{g_0(Z,X) = \mathbb{E}[Y|X,Z]}.
   #' 
-  #' @param ml_m (`character(1)`) \cr
-  #' A `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"classif.cv_glmnet"`. \cr
+  #' @param ml_m (`character(1)`, [`LearnerClassif`][mlr3::LearnerClassif]) \cr
+  #' A `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner, possibly with specified parameters, for example `lrn(classif.cv_glmnet, s = "lambda.min")`. \cr
   #' `ml_m` refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[Z|X]}.
   #' 
-  #' @param ml_r (`character(1)`) \cr
-  #' A `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"classif.cv_glmnet"`. \cr
+  #' @param ml_r (`character(1)`, [`LearnerClassif`][mlr3::LearnerClassif]) \cr
+  #' A `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner, possibly with specified parameters, for example `lrn(classif.cv_glmnet, s = "lambda.min")`. \cr
   #' `ml_r` refers to the nuisance function \eqn{r_0(Z,X) = \mathbb{E}[D|X,Z]}.
   #' 
   #' @param n_folds (`integer(1)`)\cr
@@ -158,11 +160,6 @@ private = list(
                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                    target = self$data$treat_col)
     if (!private$fold_specific_params) {
-        for (i_nuis in self$params_names()){
-          if (is.null(self$get_params(i_nuis))) {
-            message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-          }
-        }
       # get conditional samples (conditioned on z = 0 or z = 1)
       cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model$z)
       

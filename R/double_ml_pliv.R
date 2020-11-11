@@ -5,6 +5,8 @@
 #' 
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #' 
+#' @family DoubleML
+#' 
 #' @details 
 #' Partially linear IV regression (PLIV) models take the form 
 #' 
@@ -45,17 +47,17 @@ DoubleMLPLIV <- R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   #' @param data (`DoubleMLData`) \cr
   #' The `DoubleMLData` object providing the data and specifying the variables of the causal model.
   #' 
-  #' @param ml_g (`character(1)`) \cr
-  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
+  #' @param ml_g (`character(1)`, [`LearnerRegr`][mlr3::LearnerRegr]) \cr
+  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.  \cr
   #' `ml_g` refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X]}.
   #' 
-  #' @param ml_m (`character(1)`) \cr
-  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
+  #' @param ml_m (`character(1)`, [`LearnerRegr`][mlr3::LearnerRegr]) \cr
+  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.  \cr
   #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.
   #' 
-  #' @param ml_r (`character(1)`) \cr
-  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_m` refers to the nuisance function \eqn{r_0(X) = E[D|X]}.
+  #' @param ml_r (`character(1)`, [`LearnerRegr`][mlr3::LearnerRegr]) \cr
+  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.  \cr
+  #' `ml_r` refers to the nuisance function \eqn{r_0(X) = E[D|X]}.
   #' 
   #' @param partialX (`logical(1)`)  \cr
   #' Indicates whether covariates \eqn{X} should be partialled out. Default is `TRUE`. 
@@ -181,11 +183,6 @@ private = list(
     }
     
     if (!private$fold_specific_params) {
-      for (i_nuis in self$params_names()){
-        if (is.null(self$get_params(i_nuis))) {
-          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-        }
-      }
       ml_g <- initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
@@ -337,11 +334,6 @@ private = list(
                                  target = self$data$treat_col)
     
      if (!private$fold_specific_params){
-       for (i_nuis in self$params_names()){
-        if (is.null(self$get_params(i_nuis))) {
-          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-        }
-      }
       ml_g <- initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
@@ -450,11 +442,6 @@ private = list(
                                  target = self$data$treat_col)
     
     if (!private$fold_specific_params) {
-       for (i_nuis in self$params_names()){
-        if (is.null(self$get_params(i_nuis))) {
-          message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
-        }
-      }
       ml_r <- initiate_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
       resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
