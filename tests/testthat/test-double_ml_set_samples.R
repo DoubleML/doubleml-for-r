@@ -55,12 +55,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      score = score)
   
   # set params for nuisance part m
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_m", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_m)
   
   # set params for nuisance part g
-  double_mlplr_obj$set__ml_nuisance_params(learner = "ml_g", 
+  double_mlplr_obj$set_ml_nuisance_params(learner = "ml_g", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_g)
 

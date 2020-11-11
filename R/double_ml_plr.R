@@ -114,12 +114,12 @@ private = list(
       
     if (!private$fold_specific_params){
       for (i_nuis in self$params_names()){
-        if (is.null(self$get__params(i_nuis))) {
+        if (is.null(self$get_params(i_nuis))) {
           message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
         }
       }
       ml_g <- initiate_learner(self$learner$ml_g,
-                               self$get__params("ml_g"))
+                               self$get_params("ml_g"))
   
       resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
@@ -129,21 +129,21 @@ private = list(
       
 
       ml_m <- initiate_learner(self$learner$ml_m,
-                               self$get__params("ml_m"))
+                               self$get_params("ml_m"))
       resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
       r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat <- extract_prediction(r_m)$response
     } else {
-      ml_g <- lapply(self$get__params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g <- lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
                                                                  x))
       resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat <- lapply(r_g, extract_prediction)
       g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_m <- lapply(self$get__params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
+      ml_m <- lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
                                                                         x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)

@@ -157,7 +157,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
         private$i_treat = i_treat
 
         if (self$data$n_treat > 1){
-          self$data$set__data_model(self$data$d_cols[i_treat])
+          self$data$set_data_model(self$data$d_cols[i_treat])
         }
         
         # ml estimation of nuisance models and computation of psi elements
@@ -290,7 +290,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' A nested `list()`. The outer lists needs to provide an entry per repeated sample splitting (length of the list is set as `n_rep`). The inner list is a named `list()` with names `train_ids` and `test_ids`. The entries in `train_ids` and `test_ids` must be partitions per fold (length of `train_ids` and `test_ids` is set as `n_folds`).
   #' 
   #' @return self
-  set__samples = function(smpls) {
+  set_samples = function(smpls) {
     self$n_rep = length(smpls)
     n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
     n_folds_each_test_smpl = vapply(smpls, function(x) length(x$test_ids), integer(1L))
@@ -368,7 +368,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
         private$i_treat = i_treat
           
         if (self$data$n_treat > 1){
-            self$data$set__data_model(self$data$d_cols[i_treat])
+            self$data$set_data_model(self$data$d_cols[i_treat])
         }
           
         if (tune_on_folds) {
@@ -383,7 +383,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
             
             for (nuisance_model in names(param_tuning)) {
               if(!is.null(param_tuning[[nuisance_model]][[1]])) {
-                self$set__ml_nuisance_params(learner = nuisance_model,
+                self$set_ml_nuisance_params(learner = nuisance_model,
                                              treat_var = self$data$treat_col, 
                                              params = param_tuning[[nuisance_model]]$params, 
                                              set_fold_specific = FALSE)
@@ -400,7 +400,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
           
           for (nuisance_model in self$params_names()) {
             if(!is.null(param_tuning[[nuisance_model]][[1]])) {
-              self$set__ml_nuisance_params(learner = nuisance_model, 
+              self$set_ml_nuisance_params(learner = nuisance_model, 
                                            treat_var = self$data$treat_col, 
                                            params = param_tuning[[nuisance_model]]$params[[1]], 
                                            set_fold_specific = FALSE)
@@ -529,7 +529,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' Indicates if the parameters passed in `params` should be passed in fold-specific way. Default is `FALSE`. If `TRUE`, the outer list needs to be of length `n_rep` and the inner list of length `n_folds`. Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific. 
   #'
   #' @return self
-  set__ml_nuisance_params = function(learner = NULL, treat_var = NULL, params, set_fold_specific = FALSE) {
+  set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params, set_fold_specific = FALSE) {
     
     valid_learner = self$params_names()
     if (!learner %in% valid_learner) {
@@ -626,7 +626,7 @@ DoubleML <- R6::R6Class("DoubleML", public = list(
   #' The nuisance model/learner (see method `params_names()`)
   #' 
   #' @return named `list()`with paramers for the nuisance model/learner.
-  get__params = function(learner){
+  get_params = function(learner){
     if (private$fold_specific_params) {
       params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
     } else {

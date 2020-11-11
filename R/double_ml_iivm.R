@@ -159,7 +159,7 @@ private = list(
                                    target = self$data$treat_col)
     if (!private$fold_specific_params) {
         for (i_nuis in self$params_names()){
-          if (is.null(self$get__params(i_nuis))) {
+          if (is.null(self$get_params(i_nuis))) {
             message(paste("Parameter of learner for nuisance part", i_nuis, "are not tuned, results might not be valid!"))
           }
         }
@@ -167,7 +167,7 @@ private = list(
       cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model$z)
       
       # nuisance m
-      ml_m = initiate_prob_learner(self$learner$ml_m, self$get__params("ml_m"))                  
+      ml_m = initiate_prob_learner(self$learner$ml_m, self$get_params("ml_m"))                  
       resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
                                                         smpls$train_ids,
                                                         smpls$test_ids)
@@ -175,14 +175,14 @@ private = list(
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # nuisance g
-      ml_g0 = initiate_learner(self$learner$ml_g, self$get__params("ml_g0"))
+      ml_g0 = initiate_learner(self$learner$ml_g, self$get_params("ml_g0"))
       resampling_g0 <- mlr3::rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_0,
                                                          smpls$test_ids)
       r_g0 <- mlr3::resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat = extract_prediction(r_g0)$response
       
-      ml_g1 = initiate_learner(self$learner$ml_g, self$get__params("ml_g1"))
+      ml_g1 = initiate_learner(self$learner$ml_g, self$get_params("ml_g1"))
       resampling_g1 <- mlr3::rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_1,
                                                          smpls$test_ids)
@@ -197,7 +197,7 @@ private = list(
       if (self$subgroups$always_takers == FALSE){
         r0_hat <- rep(0, nrow(self$data$data_model))
       } else if (self$subgroups$always_takers == TRUE){
-        ml_r0 = initiate_prob_learner(self$learner$ml_r, self$get__params("ml_r0"))
+        ml_r0 = initiate_prob_learner(self$learner$ml_r, self$get_params("ml_r0"))
         resampling_r0 <- mlr3::rsmp("custom")$instantiate(task_r,
                                                           cond_smpls$train_ids_0,
                                                           smpls$test_ids)
@@ -208,7 +208,7 @@ private = list(
       if (self$subgroups$never_takers == FALSE){
         r1_hat <- rep(1, nrow(self$data$data_model))
       } else if (self$subgroups$never_takers == TRUE){
-        ml_r1 = initiate_prob_learner(self$learner$ml_r, self$get__params("ml_r1"))
+        ml_r1 = initiate_prob_learner(self$learner$ml_r, self$get_params("ml_r1"))
         resampling_r1 <- mlr3::rsmp("custom")$instantiate(task_r,
                                                            cond_smpls$train_ids_1,
                                                            smpls$test_ids)
@@ -220,7 +220,7 @@ private = list(
       cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model$z)
       
       # nuisance m
-      ml_m = lapply(self$get__params("ml_m"), function(x) 
+      ml_m = lapply(self$get_params("ml_m"), function(x) 
                                                   initiate_prob_learner(self$learner$ml_m, x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -228,14 +228,14 @@ private = list(
       m_hat = rearrange_prob_prediction(m_hat, smpls$test_ids)
       
       # nuisance g
-      ml_g0 = lapply(self$get__params("ml_g0"), function(x) 
+      ml_g0 = lapply(self$get_params("ml_g0"), function(x) 
                                                     initiate_learner(self$learner$ml_g, x))
       resampling_g0 <- initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
       r_g0 <- resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat <- lapply(r_g0, extract_prediction)
       g0_hat <- rearrange_prediction(g0_hat, smpls$test_ids)
 
-      ml_g1 = lapply(self$get__params("ml_g1"), function(x) 
+      ml_g1 = lapply(self$get_params("ml_g1"), function(x) 
                                                   initiate_learner(self$learner$ml_g, x))
       resampling_g1 <- initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
       r_g1 <- resample_dml(task_g, ml_g1, resampling_g1, store_models = TRUE)
@@ -248,7 +248,7 @@ private = list(
       if (self$subgroups$always_takers == FALSE){
         r0_hat <- rep(0, nrow(self$data$data_model))
       } else if (self$subgroups$always_takers == TRUE){
-        ml_r0 = lapply(self$get__params("ml_r0"), function(x) 
+        ml_r0 = lapply(self$get_params("ml_r0"), function(x) 
                                                   initiate_prob_learner(self$learner$ml_r, x))
         resampling_r0 <- initiate_resampling(task_r, cond_smpls$train_ids_0, smpls$test_ids)
         r_r0 <- resample_dml(task_r, ml_r0, resampling_r0, store_models = TRUE)
@@ -258,7 +258,7 @@ private = list(
       if (self$subgroups$never_takers == FALSE){
         r1_hat <- rep(1, nrow(self$data$data_model))
       } else if (self$subgroups$never_takers == TRUE){
-        ml_r1 = lapply(self$get__params("ml_r1"), function(x) 
+        ml_r1 = lapply(self$get_params("ml_r1"), function(x) 
                                                   initiate_prob_learner(self$learner$ml_r, x))
         resampling_r1 <- initiate_resampling(task_r, cond_smpls$train_ids_1, smpls$test_ids)
         r_r1 <- resample_dml(task_r, ml_r1, resampling_r1, store_models = TRUE)
