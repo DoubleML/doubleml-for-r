@@ -126,7 +126,7 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
     se_i <- NA
     
     v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
-    v_hat_se <- u_hat_se <- v_hatd_se <- d_k_se <- matrix(NA, nrow = max(n), ncol = 1)
+    v_hat_se <- u_hat_se <- v_hatd_se <- matrix(NA, nrow = max(n), ncol = 1)
     
     for (i in 1:n_iters) {
         # test_index = test_index_list[[i]]
@@ -144,7 +144,6 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
                                  v_hatd = v_hatd[, i], 
                                  score = score) #, se_type)
         thetas[i] <- orth_est$theta
-    
     }
     
     theta <- mean(thetas, na.rm = TRUE)

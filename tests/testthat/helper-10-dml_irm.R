@@ -72,9 +72,9 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   # # m_hat_list <- mlr::getRRPredictionList(r_m)
   # m_hat_list <- lapply(m_hat_list, function(x) x$response)
   # # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
-  m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$prob[, "1"])
+  # m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$prob[, "1"])
+  m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
 
-   
   # nuisance g0: E[Y|D=0, X]
   g_indx <- names(data) != d
   data_g <- data[ , g_indx, drop = FALSE]
@@ -97,10 +97,10 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   # # g_hat_list <- mlr::getRRPredictionList(r_g)
   # #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
   # g0_hat_list <- lapply(g0_hat_list, function(x) x$response)
-  g0_hat_list <- lapply(r_g0$data$prediction, function(x) x$test$response)
-
-  # 
-    # nuisance g1: E[Y|D=1, X]
+  # g0_hat_list <- lapply(r_g0$data$prediction, function(x) x$test$response)
+  g0_hat_list <- lapply(r_g0$data$predictions(), function(x) x$response)
+   
+  # nuisance g1: E[Y|D=1, X]
   task_g1 <- mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
   ml_g1 <- mlr3::lrn(mlmethod$mlmethod_g)
   ml_g1$param_set$values <- params$params_g # tbd: check if parameter passing really works
@@ -119,7 +119,8 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   #   #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
   #   g1_hat_list <- lapply(g1_hat_list, function(x) x$response)
   # # }
-  g1_hat_list <- lapply(r_g1$data$prediction, function(x) x$test$response)
+  # g1_hat_list <- lapply(r_g1$data$prediction, function(x) x$test$response)
+  g1_hat_list <- lapply(r_g1$data$predictions(), function(x) x$response)
 
   
   if ( (resampling_m$iters != resampling_g0$iters) ||
@@ -157,36 +158,36 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
     se_i <- NA
     
     g0_hat <- g1_hat <- u0_hat <- u1_hat <- m_hat_k <- d_k <- p_hat_k <- y_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
-
+    g0_hat_se <- g1_hat_se <- u0_hat_se <- u1_hat_se <- m_hat_k_se <- p_hat_k_se <- matrix(NA, nrow = n, ncol = 1)
+    
     for (i in 1:n_iters) {
         # test_index = test_index_list[[i]]
         test_index = test_ids[[i]]
+        g0_hat[, i] <- g0_hat_se[test_index, 1] <- g0_hat_list[[i]]
+        g1_hat[, i] <- g1_hat_se[test_index, 1] <- g1_hat_list[[i]]
 
-        g0_hat[, i] <- g0_hat_list[[i]]
-        g1_hat[, i] <- g1_hat_list[[i]]
-        
-        m_hat_k[, i] <- m_hat_list[[i]]
+        m_hat_k[, i] <- m_hat_k_se[test_index, 1] <- m_hat_list[[i]]
         d_k[, i] <- D[test_index]
-        p_hat_k[, i] <- mean(D[test_index])
+        p_hat_k[, i] <- p_hat_k_se[test_index, 1] <- mean(D[test_index])
         y_k[, i] <- Y[test_index]
-        u0_hat[, i]  <- Y[test_index] - g0_hat[, i]
-        u1_hat[, i] <- Y[test_index] - g1_hat[, i]
-    
-        orth_est <- orth_irm_dml(g0_hat = g0_hat[, i], g1_hat = g1_hat[, i], 
+        u0_hat[, i]  <- u0_hat_se[test_index, 1] <- Y[test_index] - g0_hat[, i]
+        u1_hat[, i] <- u1_hat_se[test_index, 1] <- Y[test_index] - g1_hat[, i]
+
+
+        orth_est <- orth_irm_dml(g0_hat = g0_hat[, i], g1_hat = g1_hat[, i],
                                  u0_hat = u0_hat[, i], u1_hat = u1_hat[, i],
-                                 d = d_k[, i], p_hat = p_hat_k[, i], m = m_hat_k[, i], 
-                                  y = y_k[, i],
+                                 d = d_k[, i], p_hat = p_hat_k[, i], m = m_hat_k[, i],
+                                 y = y_k[, i],
                                  score = score) #, se_type)
         thetas[i] <- orth_est$theta
-
     }
     
     theta <- mean(thetas, na.rm = TRUE)
     
-    se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat, g1_hat = g1_hat, 
-                            u0_hat = u0_hat, u1_hat = u1_hat, 
-                            d = d_k, p_hat = p_hat_k, m = m_hat_k, y = y_k, score = score))
-
+    se <- sqrt(var_irm(theta = theta, g0_hat = g0_hat_se, g1_hat = g1_hat_se,
+                            u0_hat = u0_hat_se, u1_hat = u1_hat_se,
+                            d = D , p_hat = p_hat_k_se, m = m_hat_k_se, y = Y, score = score))
+  
     t <- theta/se 
     
     pval <-  2 * stats::pnorm(-abs(t))
@@ -273,16 +274,19 @@ dml_irm <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
 #' @export
 orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) { #, se_type) {
 
+  obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
+  
+  if (any(lapply(obj_list, length) != length(g0_hat))) {
+    stop("dimensions don't match.")
+  }
   theta <- NA
 
   if (score == "ATE") {
-     theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m))
-    
+     theta <- mean(g1_hat - g0_hat + d*(u1_hat)/m - (1-d)*u0_hat/(1-m), na.rm = TRUE)
   }
 
    else if (score == "ATTE") {
-     
-     theta <- mean( d*(y - g0_hat)/p_hat - m*(1-d)*u0_hat/(p_hat*(1-m))) / mean(d/p_hat)
+     theta <- mean( d*(y - g0_hat)/p_hat - m*(1-d)*u0_hat/(p_hat*(1-m)), na.rm=TRUE) / mean(d/p_hat, na.rm=TRUE)
    }
   
   else {
@@ -309,6 +313,11 @@ orth_irm_dml <- function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) 
 #' @return Variance estimator (\code{var}).
 var_irm <- function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
   
+  obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
+  
+  if (any(lapply(obj_list, length) != length(g0_hat))) {
+    stop("dimensions don't match.")
+  }
   var <- NA
   
   if (score == "ATE") {

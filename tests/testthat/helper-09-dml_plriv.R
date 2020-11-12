@@ -73,7 +73,8 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # # g_hat_list <- mlr::getRRPredictionList(r_g)
   # #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
   # g_hat_list <- lapply(g_hat_list, function(x) x$response)
-  g_hat_list <- lapply(r_g$data$prediction, function(x) x$test$response)
+  # g_hat_list <- lapply(r_g$data$prediction, function(x) x$test$response)
+  g_hat_list <- lapply(r_g$data$predictions(), function(x) x$response)
 
   # nuisance m: E[Z|X]
   m_indx <- names(data) != y & names(data) != d
@@ -96,7 +97,8 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # # m_hat_list <- mlr::getRRPredictionList(r_m)
   # m_hat_list <- lapply(m_hat_list, function(x) x$response)
   # # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
-  m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$response)
+  # m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$response)
+  m_hat_list <- lapply(r_m$data$predictions(), function(x) x$response)
 
 
   # nuisance r: E[D|X]
@@ -120,7 +122,9 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # # m_hat_list <- mlr::getRRPredictionList(r_m)
   # r_hat_list <- lapply(r_hat_list, function(x) x$response)
   # # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
-  r_hat_list <- lapply(r_r$data$prediction, function(x) x$test$response)
+  # r_hat_list <- lapply(r_r$data$prediction, function(x) x$test$response)
+  r_hat_list <- lapply(r_r$data$predictions(), function(x) x$response)
+
 
 
   # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
@@ -156,6 +160,8 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     se_i <- NA
     
     v_hat <- u_hat <- w_hat <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+    v_hat_se <- u_hat_se <- w_hat_se <- matrix(NA, nrow = max(n), ncol = 1)
+
     
     for (i in 1:n_iters) {
         # test_index = test_index_list[[i]]
@@ -165,9 +171,9 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
         g_hat <- g_hat_list[[i]]
         r_hat <- r_hat_list[[i]]
 
-        v_hat[, i] <- D[test_index] - r_hat
-        u_hat[, i]  <- Y[test_index] - g_hat
-        w_hat[, i] <- Z[test_index] - m_hat
+        v_hat[, i] <- v_hat_se[test_index, ] <- D[test_index] - r_hat
+        u_hat[, i]  <- u_hat_se[test_index, ] <- Y[test_index] - g_hat
+        w_hat[, i] <- w_hat_se[test_index, ] <- Z[test_index] - m_hat
 
         orth_est <- orth_plriv_dml(u_hat = u_hat[, i] , v_hat = v_hat[, i] , 
                                    w_hat = w_hat[, i], 
@@ -178,8 +184,8 @@ dml_plriv <- function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     
     theta <- mean(thetas, na.rm = TRUE)
     
-    se <- sqrt(var_plriv(theta = theta, u_hat = u_hat, v_hat = v_hat,
-                        w_hat = w_hat, score = score,
+    se <- sqrt(var_plriv(theta = theta, u_hat = u_hat_se, v_hat = v_hat_se,
+                        w_hat = w_hat_se, score = score,
                         dml_procedure = dml_procedure))
     
     
