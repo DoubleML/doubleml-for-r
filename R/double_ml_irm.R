@@ -37,7 +37,7 @@
 #' dml_irm_obj$fit()
 #' dml_irm_obj$summary()
 #' @export
-DoubleMLIRM <- R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
+DoubleMLIRM = R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   #' @field trimming_rule (`character(1)`) \cr
   #' A `character(1)` specifying the trimming approach. 
   trimming_rule = NULL, 
@@ -123,11 +123,11 @@ private = list(
   },
   ml_nuisance_and_score_elements = function(smpls, ...) {
     # nuisance m
-    task_m <- initiate_classif_task(paste0("nuis_m_", self$data$treat_col), self$data$data_model,
+    task_m = initiate_classif_task(paste0("nuis_m_", self$data$treat_col), self$data$data_model,
                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                     target = self$data$treat_col)
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
+    task_g = initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                  target = self$data$y_col)
     
@@ -139,53 +139,53 @@ private = list(
       ml_g1 = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g1"))
 
-      resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+      resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
+      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
       
-      resampling_g0 <- mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g0 = mlr3::rsmp("custom")$instantiate(task_g,
                                                         cond_smpls$train_ids_0,
                                                         smpls$test_ids)
-      r_g0 <- mlr3::resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
+      r_g0 = mlr3::resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat = extract_prediction(r_g0)$response
       
-      resampling_g1  <- mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g1  = mlr3::rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_1,
                                                          smpls$test_ids)
-      r_g1 <- mlr3::resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
+      r_g1 = mlr3::resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
       g1_hat = extract_prediction(r_g1)$response
     } else {
-      ml_m <- lapply(self$get_params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
+      ml_m = lapply(self$get_params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
                                                                                     x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = lapply(r_m, extract_prob_prediction)
       m_hat = rearrange_prob_prediction(m_hat, smpls$test_ids) 
       
-      ml_g0 <- lapply(self$get_params("ml_g0"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g0 = lapply(self$get_params("ml_g0"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                   x))
-      ml_g1 <- lapply(self$get_params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g1 = lapply(self$get_params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                   x))
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls <- private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
-      resampling_g0 <- initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
-      r_g0 <- resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat <- lapply(r_g0, extract_prediction)
-      g0_hat <- rearrange_prediction(g0_hat, smpls$test_ids)
-      resampling_g1 <- initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
-      r_g1 <- resample_dml(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat <- lapply(r_g1, extract_prediction)
-      g1_hat <- rearrange_prediction(g1_hat, smpls$test_ids)            
+      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
+      resampling_g0 = initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
+      r_g0 = resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
+      g0_hat = lapply(r_g0, extract_prediction)
+      g0_hat = rearrange_prediction(g0_hat, smpls$test_ids)
+      resampling_g1 = initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
+      r_g1 = resample_dml(task_g, ml_g1, resampling_g1, store_models = TRUE)
+      g1_hat = lapply(r_g1, extract_prediction)
+      g1_hat = rearrange_prediction(g1_hat, smpls$test_ids)            
     }
     
     if (self$score == "ATTE") {
       # fraction of treated for ATTE
-      p_hat <- vector('numeric', length = self$data$n_obs)
+      p_hat = vector('numeric', length = self$data$n_obs)
       for (i_fold in 1:length(smpls$test_ids)) {
         p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[smpls$test_ids[[i_fold]], self$data$treat_col, with = FALSE] )
       }
@@ -193,8 +193,8 @@ private = list(
     
     d = self$data$data_model[, self$data$treat_col, with = FALSE] # numeric # tbd: optimize
     y = self$data$data_model[, self$data$y_col, with=FALSE] # numeric # tbd: optimize
-    u0_hat <- y - g0_hat
-    u1_hat <- y - g1_hat
+    u0_hat = y - g0_hat
+    u1_hat = y - g1_hat
     
     if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
       m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
@@ -304,9 +304,9 @@ private = list(
    return(tuning_result)
   },
   get_cond_smpls = function(smpls, D) {
-    train_ids_0 <- lapply(1:length(smpls$train_ids), function(x) 
+    train_ids_0 = lapply(1:length(smpls$train_ids), function(x) 
                                                       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
-    train_ids_1 <-  lapply(1:length(smpls$test_ids), function(x) 
+    train_ids_1 =  lapply(1:length(smpls$test_ids), function(x) 
                                                       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
     return(list(train_ids_0=train_ids_0,
                 train_ids_1=train_ids_1))

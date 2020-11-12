@@ -5,7 +5,7 @@ extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
     f_hat = data.table::as.data.table(obj_resampling$prediction())
     f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
     data.table::setorder(f_hat, 'row_id')
-    f_hat <- data.table::as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
+    f_hat = data.table::as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
     return(f_hat)
     
   } else {
@@ -27,10 +27,10 @@ rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
     # if (length(test_ids) > 1) {
       # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions <- data.table::rbindlist(prediction_list)
+    predictions = data.table::rbindlist(prediction_list)
     data.table::setorder(predictions, 'row_id')
     if (!keep_rowids) {
-      predictions <- predictions$response
+      predictions = predictions$response
     }
     return(predictions)
 }
@@ -41,16 +41,16 @@ extract_prob_prediction = function(obj_resampling) {
   f_hat = data.table::as.data.table(obj_resampling$prediction())
   f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
   data.table::setorder(f_hat, 'row_id')
-  f_hat <- data.table::as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+  f_hat = data.table::as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
   
   return(f_hat)
 }
 
 rearrange_prob_prediction = function(prediction_list, test_ids){
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions <- data.table::rbindlist(prediction_list)
+    predictions = data.table::rbindlist(prediction_list)
     data.table::setorder(predictions, 'row_id')
-    predictions <- predictions$prob.1
+    predictions = predictions$prob.1
     return(predictions)
 }
 
@@ -61,10 +61,10 @@ initiate_learner = function(mlmethod, params) {
       learner$param_set$values = params
     }
   } else {
-    learner <- mlr3::lrn(mlmethod)
+    learner = mlr3::lrn(mlmethod)
     
     if (!is.null(params) & length(params) != 0){
-    learner$param_set$values <- params
+    learner$param_set$values = params
     }
     
     else if (is.null(params) | length(params) == 0){
@@ -83,11 +83,11 @@ initiate_prob_learner = function(mlmethod, params) {
       learner$param_set$values = params
     }
   } else {
-    learner <- mlr3::lrn(mlmethod,
+    learner = mlr3::lrn(mlmethod,
                          predict_type = 'prob')
     
     if (!is.null(params) & length(params) != 0){
-    learner$param_set$values <- params
+    learner$param_set$values = params
     }
     
     else if (is.null(params) | length(params) == 0){
@@ -100,11 +100,11 @@ initiate_prob_learner = function(mlmethod, params) {
 
 initiate_regr_task = function(id, data, select_cols, target) {
   if (!is.null(select_cols)){
-    indx <- (names(data) %in% c(select_cols, target))
-    data_sel <- data[ , indx, with = FALSE]
-    task <- mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
+    indx = (names(data) %in% c(select_cols, target))
+    data_sel = data[ , indx, with = FALSE]
+    task = mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
   } else {
-    task <- mlr3::TaskRegr$new(id = id, backend = data, target = target)
+    task = mlr3::TaskRegr$new(id = id, backend = data, target = target)
   }
   
   return(task)
@@ -112,10 +112,10 @@ initiate_regr_task = function(id, data, select_cols, target) {
 
 
 initiate_classif_task = function(id, data, select_cols, target) {
-  indx <- (names(data) %in% c(select_cols, target))
-  data_sel <- data[ , indx, with = FALSE]
-  data_sel[, target] <- factor(data_sel[, target])
-  task <- mlr3::TaskClassif$new(id = id, backend = data_sel,
+  indx = (names(data) %in% c(select_cols, target))
+  data_sel = data[ , indx, with = FALSE]
+  data_sel[, target] = factor(data_sel[, target])
+  task = mlr3::TaskClassif$new(id = id, backend = data_sel,
                                 target = target, positive = "1")
   return(task)
 }
@@ -178,7 +178,7 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
 }
 
 
-format.perc <- function (probs, digits) {
+format.perc = function (probs, digits) {
   paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
         "%" ) }
 

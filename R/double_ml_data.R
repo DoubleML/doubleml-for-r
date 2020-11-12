@@ -16,7 +16,7 @@
 #'                                y_col = "y",
 #'                                d_cols = "d")
 #' @export
-DoubleMLData <- R6::R6Class("DoubleMLData", public = list(
+DoubleMLData = R6::R6Class("DoubleMLData", public = list(
   #' @field all_variables (`character()`)\cr 
   #' All variables available in the dataset.
   all_variables = NULL,

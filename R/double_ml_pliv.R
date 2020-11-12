@@ -32,7 +32,7 @@
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
 #' @export
-DoubleMLPLIV <- R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
+DoubleMLPLIV = R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   #' @field partialX (`logical(1)`)  \cr
   #' Indicates whether covariates \eqn{X} should be partialled out. 
   partialX = NULL,
@@ -104,7 +104,8 @@ DoubleMLPLIV <- R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
                                dml_procedure, 
                                draw_sample_splitting, 
                                apply_cross_fitting)
-    
+    checkmate::check_logical(partialX, len = 1)
+    checkmate::check_logical(partialZ, len = 1)
     self$partialX = partialX
     self$partialZ = partialZ
     
@@ -158,19 +159,19 @@ private = list(
   ml_nuisance_and_score_elements_partialX = function(smpls, ...) {
     
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
+    task_g = initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                  target = self$data$y_col)
     
     # nuisance r
-    task_r <- initiate_regr_task(paste0("nuis_r_", self$data$treat_col), self$data$data_model,
+    task_r = initiate_regr_task(paste0("nuis_r_", self$data$treat_col), self$data$data_model,
                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                   target = self$data$treat_col)
     
     # nuisance m
     if (self$data$n_instr == 1) {
       # one instrument: just identified case
-      task_m <- initiate_regr_task(paste0("nuis_m_", self$data$z_cols), self$data$data_model,
+      task_m = initiate_regr_task(paste0("nuis_m_", self$data$z_cols), self$data$data_model,
                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                    target = self$data$z_cols)
     } else {
@@ -183,30 +184,30 @@ private = list(
     }
     
     if (!private$fold_specific_params) {
-      ml_g <- initiate_learner(self$learner$ml_g,
+      ml_g = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
-      resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g = mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat <- extract_prediction(r_g)$response
+      r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+      g_hat = extract_prediction(r_g)$response
       
-      ml_r <- initiate_learner(self$learner$ml_r,
+      ml_r = initiate_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
-      resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
+      resampling_r = mlr3::rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
-      r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat <- extract_prediction(r_r)$response
+      r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_hat = extract_prediction(r_r)$response
       
       if (self$data$n_instr == 1) {
-        ml_m <- initiate_learner(self$learner$ml_m,
+        ml_m = initiate_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
-        resampling_m <- mlr3::rsmp("custom")$instantiate(task_m,
+        resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
                                                          smpls$train_ids,
                                                          smpls$test_ids)
-        r_m <- mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-        m_hat <- extract_prediction(r_m)$response
+        r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+        m_hat = extract_prediction(r_m)$response
         
       } else {
         ml_m = lapply(self$data$z_cols, function (i_instr) 
@@ -226,14 +227,14 @@ private = list(
         m_hat = m_hat[, row_id_indx, with = FALSE]
       }
     } else {
-      ml_g <- lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g = lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                 x))
-      resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
-      r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat <- lapply(r_g, extract_prediction)
-      g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
+      resampling_g = initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
+      r_g = resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
+      g_hat = lapply(r_g, extract_prediction)
+      g_hat = rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_r <- lapply(self$get_params("ml_r"), function(x) initiate_learner(self$learner$ml_r, 
+      ml_r = lapply(self$get_params("ml_r"), function(x) initiate_learner(self$learner$ml_r, 
                                                                                 x))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
@@ -242,7 +243,7 @@ private = list(
       
       # TBD: 1-iv vs. multi-iv case
       if (self$data$n_instr == 1) {
-        ml_m <- lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
+        ml_m = lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
                                                                                   x))
         resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
         r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -289,9 +290,9 @@ private = list(
                                         target = "w_hat")
       ml_r_tilde = mlr3::lrn("regr.lm")
       resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
-      r_r_tilde <- mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
+      r_r_tilde = mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
                                   store_models = TRUE)
-      r_hat_tilde <- extract_prediction(r_r_tilde)$response
+      r_hat_tilde = extract_prediction(r_r_tilde)$response
     }
     
     score = self$score
@@ -324,25 +325,25 @@ private = list(
   ml_nuisance_and_score_elements_partialXZ = function(smpls, ...) {
     
     # nuisance g
-    task_g <- initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
+    task_g = initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                  target = self$data$y_col)
     
     # nuisance m: Predict d with X and Z
-    task_m <- initiate_regr_task(paste0("nuis_m_", self$data$treat_col), self$data$data_model,
+    task_m = initiate_regr_task(paste0("nuis_m_", self$data$treat_col), self$data$data_model,
                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols), 
                                  target = self$data$treat_col)
     
      if (!private$fold_specific_params){
-      ml_g <- initiate_learner(self$learner$ml_g,
+      ml_g = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
-      resampling_g <- mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g = mlr3::rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_g <- mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat <- extract_prediction(r_g)$response
+      r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+      g_hat = extract_prediction(r_g)$response
       
-      ml_m <- initiate_learner(self$learner$ml_m,
+      ml_m = initiate_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
       resampling_m = mlr3::rsmp("custom")$instantiate(task_m, 
                                                       smpls$train_ids, 
@@ -373,14 +374,14 @@ private = list(
       m_hat_tilde = lapply(r_r, extract_prediction)
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     } else {
-      ml_g <- lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g = lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                 x))
-      resampling_g <- initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
-      r_g <- resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat <- lapply(r_g, extract_prediction)
-      g_hat <- rearrange_prediction(g_hat, smpls$test_ids)
+      resampling_g = initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
+      r_g = resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
+      g_hat = lapply(r_g, extract_prediction)
+      g_hat = rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_m <- lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
+      ml_m = lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
                                                                                 x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m  = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
@@ -411,11 +412,11 @@ private = list(
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     }
     
-    d <- self$data$data_model[, self$data$treat_col, with = FALSE]
-    y <- self$data$data_model[, self$data$y_col, with = FALSE]
+    d = self$data$data_model[, self$data$treat_col, with = FALSE]
+    y = self$data$data_model[, self$data$y_col, with = FALSE]
 
-    u_hat <- y - g_hat
-    w_hat <- d - m_hat_tilde
+    u_hat = y - g_hat
+    w_hat = d - m_hat_tilde
 
     score = self$score
     private$check_score(score)
@@ -437,22 +438,22 @@ private = list(
   ml_nuisance_and_score_elements_partialZ = function(smpls, ...) {
     
     # nuisance r
-    task_r <- initiate_regr_task(paste0("nuis_r_", self$data$treat_col), self$data$data_model,
+    task_r = initiate_regr_task(paste0("nuis_r_", self$data$treat_col), self$data$data_model,
                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols), 
                                  target = self$data$treat_col)
     
     if (!private$fold_specific_params) {
-      ml_r <- initiate_learner(self$learner$ml_r,
+      ml_r = initiate_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
-      resampling_r <- mlr3::rsmp("custom")$instantiate(task_r,
+      resampling_r = mlr3::rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
-      r_r <- mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat <- extract_prediction(r_r)$response
+      r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_hat = extract_prediction(r_r)$response
     }
     
     else if (!is.null(self$param_tuning)){
-      ml_r <- lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
+      ml_r = lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
                                                                         x[[1]]))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
@@ -460,9 +461,9 @@ private = list(
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
     }
     
-    d <- self$data$data_model[, self$data$treat_col, with = FALSE]
-    y <- self$data$data_model[, self$data$y_col, with = FALSE]
-    z <- self$data$data_model[, self$data$z_cols, with = FALSE]
+    d = self$data$data_model[, self$data$treat_col, with = FALSE]
+    y = self$data$data_model[, self$data$y_col, with = FALSE]
+    z = self$data$data_model[, self$data$z_cols, with = FALSE]
     
     score = self$score
     private$check_score(score)
