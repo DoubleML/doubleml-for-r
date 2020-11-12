@@ -668,11 +668,13 @@ private = list(
                         apply_cross_fitting) {
     
     checkmate::check_class(data, "DoubleMLData")
-    stopifnot(is.numeric(n_folds), length(n_folds) == 1)
-    stopifnot(is.character(dml_procedure), length(dml_procedure) == 1)
-    stopifnot(is.numeric(n_rep), length(n_rep) == 1)
-  
-    self$data <- data
+    checkmate::check_numeric(n_folds, lower = 1, len = 1)
+    checkmate::check_numeric(n_rep, lower = 1, len = 1)
+    checkmate::check_logical(draw_sample_splitting, len = 1)
+    checkmate::check_logical(apply_cross_fitting, len = 1)
+    checkmate::check_character(dml_procedure, len = 1)
+    
+    self$data = data
     
     # initialize learners and parameters which are set model specific
     self$learner = NULL
