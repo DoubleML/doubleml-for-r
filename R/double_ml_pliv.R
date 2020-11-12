@@ -781,7 +781,6 @@ private = list(
 )
 
 # Initializer for partialX
-#' @export
 DoubleMLPLIV.partialX = function(data, 
                       ml_g,
                       ml_m, 
@@ -810,7 +809,6 @@ DoubleMLPLIV.partialX = function(data,
 }
 
 # Initializer for partialZ
-#' @export
 DoubleMLPLIV.partialZ = function(data, 
                       ml_r, 
                       n_folds = 5,
@@ -837,7 +835,6 @@ DoubleMLPLIV.partialZ = function(data,
 }
 
 # Initializer for partialXZ
-#' @export
 DoubleMLPLIV.partialXZ = function(data, 
                       ml_g,
                       ml_m, 
