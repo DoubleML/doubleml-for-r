@@ -6,9 +6,8 @@ library('mlr3')
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),
+test_cases = expand.grid(learner = c('regr.lm', 'regr.glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
                          stringsAsFactors = FALSE)

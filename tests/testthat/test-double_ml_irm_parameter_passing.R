@@ -15,7 +15,6 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
                          score = c('ATE', 'ATTE'),
-                         se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          n_rep = c(1, 3),
                          stringsAsFactors = FALSE)

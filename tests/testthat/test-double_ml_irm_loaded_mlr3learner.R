@@ -8,7 +8,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
                          score = c('ATE', 'ATTE'),
-                         se_reestimate = c(FALSE),
                          i_setting = 1:(length(data_irm)),
                          trimming_threshold = 0,
                          stringsAsFactors = FALSE)

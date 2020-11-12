@@ -8,7 +8,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c("regr.cv_glmnet"),
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          method = c("romano-wolf", "bonferroni"),
                          apply_cross_fitting = c(TRUE, FALSE),

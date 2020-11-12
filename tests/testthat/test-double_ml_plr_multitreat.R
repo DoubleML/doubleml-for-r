@@ -8,7 +8,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
@@ -56,7 +55,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   if (learner == "regr.lm") {
     DoubleML_learner = lrn(learner)
   } else if (learner == "regr.cv_glmnet") {
-    DoubleML_learner = lrn(learner, learner_pars$params$params_g)
+    DoubleML_learner = lrn(learner, s = "lambda.min", family = "gaussian")
   }
   
   double_mlplr_obj = DoubleMLPLR$new(data_ml, 
