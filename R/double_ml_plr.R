@@ -251,6 +251,14 @@ private = list(
       }
     }
     return(score)
+  },
+  check_data = function(obj_dml_data) {
+    if (!is.null(obj_dml_data$z_cols)) {
+      stop(paste("Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "), 
+                 "has been set as instrumental variable(s).\n", 
+                  "To fit a partially linear IV regression model use DoubleMLPLIV instead of DoubleMLPLR."))
+    }
+    return()
   }
 )
 )
