@@ -17,7 +17,7 @@ The purpose of the following case-studies is to demonstrate the core functionali
 
 ## Installation 
 
-The `DoubleML` package for R can be downloaded using (requires previous installation of the [`remotes` package](https://remotes.r-lib.org/index.html)).
+The **DoubleML** package for R can be downloaded using (requires previous installation of the [`remotes` package](https://remotes.r-lib.org/index.html)).
 
 ```{r, eval = FALSE}
 remotes::install_github("DoubleML/doubleml-for-r")
@@ -29,7 +29,7 @@ Load the package after completed installation.
 library(DoubleML)
 ```
 
-The python package `DoubleML` is avaiable via the github repository. For more information, please visit our user guide. 
+The python package `DoubleML` is available via the github repository. For more information, please visit our user guide. 
 
 ## Data
 

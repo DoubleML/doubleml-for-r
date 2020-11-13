@@ -1,0 +1,49 @@
+---
+title: "Installing DoubleML"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Installing DoubleML}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+## Installation 
+
+Please note that the current version of the `DoubleML` package for R is still under development and that the code might be subject to changes. 
+
+### Installation from CRAN
+
+**Note**: We plan to push a first release of the DoubleML package to CRAN very soon. Until then the installation of a released version is only possible from the [DoubleML GitHub repository](https://github.com/DoubleML/doubleml-for-r). The steps for installation from GitHub are explained below. 
+
+For installation from CRAN type
+```{r, eval = FALSE}
+install.packages("DoubleML")
+```
+
+Load the package after completed installation. 
+
+```{r, message=FALSE, warning=FALSE}
+library(DoubleML)
+```
+
+### Installation from GitHub
+
+The `DoubleML` package for R can be downloaded using (previous installation of the [`remotes` package](https://remotes.r-lib.org/index.html) is required).
+
+```{r, eval = FALSE}
+remotes::install_github("DoubleML/doubleml-for-r")
+```
+
+Load the package after completed installation. 
+
+```{r, message=FALSE, warning=FALSE}
+library(DoubleML)
+```
+
+The python package `DoubleML` is avaiable via the github repository. For more information, please visit our [user guide](http:http://doubleml.org/). 
