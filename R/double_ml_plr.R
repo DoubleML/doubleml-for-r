@@ -82,6 +82,7 @@ DoubleMLPLR = R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
                         draw_sample_splitting,
                         apply_cross_fitting)
     
+    
     self$learner = list("ml_g" = ml_g, 
                         "ml_m" = ml_m)
     private$initialize_ml_nuisance_params()
