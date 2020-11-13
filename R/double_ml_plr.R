@@ -37,13 +37,15 @@ DoubleMLPLR = R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   #' @param data (`DoubleMLData`) \cr
   #' The `DoubleMLData` object providing the data and specifying the variables of the causal model. 
   #' 
-  #' @param ml_g (`character(1)`, [`LearnerRegr`][mlr3::LearnerRegr]) \cr
-  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. Alternatively, an object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.  \cr
+  #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`,) \cr
+  #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. 
+  #' Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
   #' `ml_g` refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X]}.
   #' 
-  #' @param ml_m (`character(1)`, [`LearnerRegr`][mlr3::LearnerRegr]) \cr
-  #' A `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`.  Alternatively, an object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. \cr
+  #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`,) \cr
+  #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
   #' `ml_m` refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[D|X]}.
+ 
   #' 
   #' @param n_folds (`integer(1)`)\cr
   #' Number of folds. Default is `5`. 
