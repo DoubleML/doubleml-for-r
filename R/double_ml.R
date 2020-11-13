@@ -296,6 +296,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' 
   #' @return self
   set_samples = function(smpls) {
+    checkmate::assert_list(smpls)
     self$n_rep = length(smpls)
     n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
     n_folds_each_test_smpl = vapply(smpls, function(x) length(x$test_ids), integer(1L))
