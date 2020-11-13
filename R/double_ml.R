@@ -195,16 +195,16 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' @param method (`character(1)`) \cr
   #' A `character(1)` (`"Bayes"`, `"normal"` or `"wild"`) specifying the multiplier bootstrap method. 
   #' 
-  #' @param n_boot_rep (`integer(1)`) \cr
+  #' @param n_rep_boot (`integer(1)`) \cr
   #' The number of bootstrap replications. 
   #' 
   #' @return self
-  bootstrap = function(method='normal', n_boot_rep = 500) {
+  bootstrap = function(method='normal', n_rep_boot = 500) {
     
     if (all(is.na(self$psi))) {
       stop("Apply fit() before bootstrap().")      
     }
-    private$initialize_boot_arrays(n_boot_rep)
+    private$initialize_boot_arrays(n_rep_boot)
     
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
@@ -212,7 +212,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
       for (i_treat in 1:self$data$n_treat) {
         private$i_treat = i_treat
         
-        boot_res = private$compute_bootstrap(method, n_boot_rep)
+        boot_res = private$compute_bootstrap(method, n_rep_boot)
         boot_coef = boot_res$boot_coef
         boot_t_stat = boot_res$boot_t_stat
         private$set__boot_coef(boot_coef)
@@ -828,7 +828,7 @@ private = list(
     
     invisible(self)
   },
-  compute_bootstrap = function(method, n_boot_rep) {
+  compute_bootstrap = function(method, n_rep_boot) {
     dml_procedure = self$dml_procedure
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -841,21 +841,21 @@ private = list(
     }
     
     if (method == "Bayes") {
-      weights = stats::rexp(n_boot_rep * n_obs, rate = 1) - 1
+      weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
     } else if (method == "normal") {
-      weights = stats::rnorm(n_boot_rep * n_obs)
+      weights = stats::rnorm(n_rep_boot * n_obs)
     } else if (method == "wild") {
-      weights = stats::rnorm(n_boot_rep * n_obs)/sqrt(2) + (stats::rnorm(n_boot_rep * n_obs)^2 - 1)/2
+      weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
     } else {
       stop("invalid boot method")
     }
     
     # for alignment with the functional (loop-wise) implementation we fill by row
-    weights = matrix(weights, nrow = n_boot_rep, ncol = n_obs, byrow=TRUE)
+    weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
     
     if (self$apply_cross_fitting) {
       if (dml_procedure == "dml1") {
-        boot_coefs = boot_t_stat = matrix(NA, nrow = n_boot_rep, ncol = self$n_folds)
+        boot_coefs = boot_t_stat = matrix(NA, nrow = n_rep_boot, ncol = self$n_folds)
         ii = 0
         for (i_fold in 1:self$n_folds) {
           test_index = test_ids[[i_fold]]
