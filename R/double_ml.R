@@ -353,9 +353,6 @@ DoubleML = R6::R6Class("DoubleML", public = list(
                                         algorithm = "grid_search",
                                         resolution = 5), 
                              tune_on_folds = FALSE) {
-    checkmate::assert_count(n_folds_tune, positive = TRUE)
-    checkmate::assert(checkmate::check_character(terminator),
-                      checkmate::check_class(terminator, "Terminator"))
     checkmate::assert_list(param_set)
     valid_learner = self$learner_names()
     if (! (all(names(param_set) %in% valid_learner))) {
@@ -363,14 +360,34 @@ DoubleML = R6::R6Class("DoubleML", public = list(
                  "\n param_grids must be a named list with elements named", 
                   paste0(valid_learner, collapse = ", ")))
     }
+    for (i_grid in seq_len(length(param_set))){
+      checkmate::assert_class(param_set[[i_grid]], "ParamSet")
+    }
     
+    required_settings = c("n_folds_tune", "rsmp_tune", "measure", "terminator", "algorithm", "resolution")
+    if (! all(required_settings %in% names(tune_settings))) {
+      missing_setting = required_settings[which(! (required_settings %in% names(tune_settings)))]
+      stop(paste("Invalid tune_settings\n", 
+                  paste0(missing_setting, collapse = ", "), "is missing.\n",
+                  "Tune settngs require specification of", toString(required_settings), "."))
+    }
+    
+    checkmate::assert_count(tune_settings$n_folds_tune, positive = TRUE)
+    checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
+                      checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
+    checkmate::assert_list(tune_settings$measure)
+    checkmate::assert(checkmate::check_character(tune_settings$terminator),
+                      checkmate::check_class(tune_settings$terminator, "Terminator"))
+    checkmate::assert_character(tune_settings$algorithm, len = 1)
+    checkmate::assert_count(tune_settings$resolution, positive = TRUE)
+  
+    checkmate::assert_logical(tune_on_folds, len = 1)
     
     if (!self$apply_cross_fitting){
       stop("Parameter tuning for no-cross-fitting case not implemented.")
     }
     
     if (tune_on_folds) {
-      # TODO: initiate params for tune_on_folds
       params_rep = vector("list", self$n_rep)
       self$tuning_res = rep(list(params_rep), self$data$n_treat)
       names(self$tuning_res) = self$data$d_cols
