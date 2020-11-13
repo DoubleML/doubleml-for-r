@@ -204,7 +204,6 @@ DoubleML = R6::R6Class("DoubleML", public = list(
     if (all(is.na(self$psi))) {
       stop("Apply fit() before bootstrap().")      
     }
-    
     private$initialize_boot_arrays(n_boot_rep)
     
     for (i_rep in 1:self$n_rep) {
@@ -674,25 +673,26 @@ private = list(
     # initialize learners and parameters which are set model specific
     self$learner = NULL
     self$params = NULL
+    # Set fold_specific_params = FALSE at instantiation
+    private$fold_specific_params = FALSE
     
     # check resampling specifications
     checkmate::assert_count(n_folds)
     checkmate::assert_count(n_rep)
     checkmate::assert_logical(apply_cross_fitting, len = 1)
-
+    checkmate::assert_logical(draw_sample_splitting, len = 1)
+    
     # set resampling specifications
     self$n_folds = n_folds
     self$n_rep = n_rep
     self$apply_cross_fitting = apply_cross_fitting
+    self$draw_sample_splitting = draw_sample_splitting
 
     # check and set dml_procedure and score
     checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))
     self$dml_procedure = dml_procedure
     self$score = private$check_score(score)
-    
-    checkmate::assert_logical(draw_sample_splitting, len = 1)
-    self$draw_sample_splitting = draw_sample_splitting
-    
+  
     if (self$n_folds == 1 & self$apply_cross_fitting) {
       message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
       self$apply_cross_fitting = FALSE
@@ -708,17 +708,20 @@ private = list(
       }
     }
     
+    # perform sample splitting
     if (self$draw_sample_splitting) {
       self$split_samples()
     } else {
       self$smpls = NULL
     }
     
-    # Set fold_specific_params = FALSE at instantiation
-    private$fold_specific_params = FALSE
-    
+    # initialize arrays according to obj_dml_data and the resampling settings
     private$initialize_arrays()
     
+    # also initialize bootstrap arrays with the default number of bootstrap replications
+    private$initialize_boot_arrays(n_rep_boot = 500)
+    
+     # initialize instance attributes which are later used for iterating
     invisible(self)
   },
   initialize_arrays = function() {
@@ -742,10 +745,10 @@ private = list(
     }
     
   },
-  initialize_boot_arrays = function(n_rep) {
-    private$n_rep_boot = n_rep
-    self$boot_coef = array(NA, dim=c(self$data$n_treat, n_rep * self$n_rep))
-    self$boot_t_stat = array(NA, dim=c(self$data$n_treat, n_rep * self$n_rep))
+  initialize_boot_arrays = function(n_rep_boot) {
+    private$n_rep_boot = n_rep_boot
+    self$boot_coef = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
+    self$boot_t_stat = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
