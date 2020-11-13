@@ -768,6 +768,8 @@ private = list(
     
   },
   check_score = function(score){
+    checkmate::assert(checkmate::check_class(score, "character"),
+                      checkmate::check_class(score, "function"))
     if (is.character(score)) {
       valid_score = c("partialling out")
       if (! (score %in% valid_score)) {

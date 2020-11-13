@@ -666,29 +666,32 @@ private = list(
                         dml_procedure,
                         draw_sample_splitting,
                         apply_cross_fitting) {
-    
+    # check and pick up obj_dml_data
     checkmate::assert_class(data, "DoubleMLData")
-    checkmate::assert_count(n_folds)
-    checkmate::assert_count(n_rep)
-    checkmate::assert(check_class(score, "character"),
-                      check_class(score, "function"))
-    checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))    
-    checkmate::assert_logical(draw_sample_splitting, len = 1)
-    checkmate::assert_logical(apply_cross_fitting, len = 1)
-
+    private$check_data(data)
     self$data = data
     
     # initialize learners and parameters which are set model specific
     self$learner = NULL
     self$params = NULL
     
+    # check resampling specifications
+    checkmate::assert_count(n_folds)
+    checkmate::assert_count(n_rep)
+    checkmate::assert_logical(apply_cross_fitting, len = 1)
+
+    # set resampling specifications
     self$n_folds = n_folds
+    self$n_rep = n_rep
+    self$apply_cross_fitting = apply_cross_fitting
+
+    # check and set dml_procedure and score
+    checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))
     self$dml_procedure = dml_procedure
     self$score = private$check_score(score)
-    self$n_rep = n_rep
     
+    checkmate::assert_logical(draw_sample_splitting, len = 1)
     self$draw_sample_splitting = draw_sample_splitting
-    self$apply_cross_fitting = apply_cross_fitting
     
     if (self$n_folds == 1 & self$apply_cross_fitting) {
       message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
@@ -696,8 +699,9 @@ private = list(
     }
     
     if (!self$apply_cross_fitting) {
-      stopifnot(self$n_folds <= 2)
-      
+      if(self$n_folds > 2) {
+        stop("Estimation without cross-fitting not supported for n_folds > 2.")
+      }
       if (self$dml_procedure == "dml2") {
          # redirect to dml1 which works out-of-the-box; dml_procedure is of no relevance without cross-fitting
         self$dml_procedure = "dml1"
@@ -712,7 +716,6 @@ private = list(
     
     # Set fold_specific_params = FALSE at instantiation
     private$fold_specific_params = FALSE
-    self$data$n_treat = data$n_treat
     
     private$initialize_arrays()
     

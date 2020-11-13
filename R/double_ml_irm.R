@@ -312,6 +312,8 @@ private = list(
                 train_ids_1=train_ids_1))
   },
   check_score = function(score){
+    checkmate::assert(checkmate::check_class(score, "character"),
+                      checkmate::check_class(score, "function"))
     if (is.character(score)) {
       valid_score = c("ATE", "ATTE")
       if (! (score %in% valid_score)) {
