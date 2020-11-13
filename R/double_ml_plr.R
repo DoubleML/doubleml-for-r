@@ -244,7 +244,7 @@ private = list(
     return(tuning_result)
   },
   check_score = function(score){
-    checkmate::assert(checkmate::check_class(score, "character"),
+    checkmate::assert(checkmate::check_character(score),
                       checkmate::check_class(score, "function"))
     if (is.character(score)) {
       valid_score = c("IV-type", "partialling out")
