@@ -407,7 +407,6 @@ DoubleML = R6::R6Class("DoubleML", public = list(
         if (tune_on_folds) {
           for (i_rep in 1:self$n_rep) {
             private$i_rep = i_rep
-            # TODO: user friendly way to pass (pre-)trained learners
             # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
             #      e.g., in seperate function (tune_mlr3)...
             param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
@@ -563,16 +562,13 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #'
   #' @return self
   set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params, set_fold_specific = FALSE) {
-    
     valid_learner = self$params_names()
-    if (!learner %in% valid_learner) {
-      stop(paste("invalid nuisance learner", learner, "\n",
-                 "valid nuisance learner", paste(valid_learner, collapse = " or ")))
-    }
-    if (!treat_var %in% self$data$d_cols) {
-      stop(paste("invalid treatment variable", treat_var, "\n",
-                 "valid treatment variable", paste(data$self$d_cols, collapse = " or ")))
-    }
+    checkmate::assert_character(learner, len = 1)
+    checkmate::assert_choice(learner, valid_learner) 
+  
+    checkmate::assert_choice(treat_var, self$data$d_cols)
+    checkmate::assert_list(params)
+    checkmate::assert_logical(set_fold_specific, len = 1)
     
     if (!set_fold_specific) {
       if (private$fold_specific_params) {
@@ -660,7 +656,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' 
   #' @return named `list()`with paramers for the nuisance model/learner.
   get_params = function(learner){
-    valid_learner = self$learner_names()
+    valid_learner = self$params_names()
     checkmate::assert_character(learner, len = 1)
     checkmate::assert_choice(learner, valid_learner) 
     
