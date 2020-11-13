@@ -2,7 +2,7 @@
 % Please edit documentation in R/double_ml_plr.R
 \name{DoubleMLPLR}
 \alias{DoubleMLPLR}
-\title{DoubleMLPLR}
+\title{Double machine learning for partially linear regression models}
 \format{
 \link[R6:R6Class]{R6::R6Class} object inheriting from \link{DoubleML}.
 }
@@ -31,6 +31,14 @@ dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 dml_plr_obj$fit()
 dml_plr_obj$summary()
 }
+\seealso{
+Other DoubleML: 
+\code{\link{DoubleMLIIVM}},
+\code{\link{DoubleMLIRM}},
+\code{\link{DoubleMLPLIV}},
+\code{\link{DoubleML}}
+}
+\concept{DoubleML}
 \section{Super class}{
 \code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLPLR}
 }
@@ -47,12 +55,13 @@ dml_plr_obj$summary()
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap">}\href{../../DoubleML/html/DoubleML.html#method-bootstrap}{\code{DoubleML::DoubleML$bootstrap()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint">}\href{../../DoubleML/html/DoubleML.html#method-confint}{\code{DoubleML::DoubleML$confint()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit">}\href{../../DoubleML/html/DoubleML.html#method-fit}{\code{DoubleML::DoubleML$fit()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get__params">}\href{../../DoubleML/html/DoubleML.html#method-get__params}{\code{DoubleML::DoubleML$get__params()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params">}\href{../../DoubleML/html/DoubleML.html#method-get_params}{\code{DoubleML::DoubleML$get_params()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names">}\href{../../DoubleML/html/DoubleML.html#method-learner_names}{\code{DoubleML::DoubleML$learner_names()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust">}\href{../../DoubleML/html/DoubleML.html#method-p_adjust}{\code{DoubleML::DoubleML$p_adjust()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names">}\href{../../DoubleML/html/DoubleML.html#method-params_names}{\code{DoubleML::DoubleML$params_names()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set__ml_nuisance_params">}\href{../../DoubleML/html/DoubleML.html#method-set__ml_nuisance_params}{\code{DoubleML::DoubleML$set__ml_nuisance_params()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set__samples">}\href{../../DoubleML/html/DoubleML.html#method-set__samples}{\code{DoubleML::DoubleML$set__samples()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print">}\href{../../DoubleML/html/DoubleML.html#method-print}{\code{DoubleML::DoubleML$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params">}\href{../../DoubleML/html/DoubleML.html#method-set_ml_nuisance_params}{\code{DoubleML::DoubleML$set_ml_nuisance_params()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_samples">}\href{../../DoubleML/html/DoubleML.html#method-set_samples}{\code{DoubleML::DoubleML$set_samples()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples">}\href{../../DoubleML/html/DoubleML.html#method-split_samples}{\code{DoubleML::DoubleML$split_samples()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary">}\href{../../DoubleML/html/DoubleML.html#method-summary}{\code{DoubleML::DoubleML$summary()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune">}\href{../../DoubleML/html/DoubleML.html#method-tune}{\code{DoubleML::DoubleML$tune()}}\out{</span>}
@@ -84,12 +93,13 @@ Creates a new instance of this R6 class.
 \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the data and specifying the variables of the causal model.}
 
-\item{\code{ml_g}}{(\code{character(1)}) \cr
-A \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
+\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)},) \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X]}.}
 
-\item{\code{ml_m}}{(\code{character(1)}) \cr
-A \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
+\item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)},) \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}. Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[D|X]}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
@@ -98,8 +108,10 @@ Number of folds. Default is \code{5}.}
 \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for the sample splitting. Default is \code{1}.}
 
-\item{\code{score}}{(\code{character(1)}) \cr
-A \code{character(1)} (\code{"partialling out"} or \code{IV-type}) specifying the score function. Default is \code{"partialling out"}.}
+\item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
+A \code{character(1)} (\code{"partialling out"} or \code{IV-type}) or a \verb{function()} specifying the score function.
+If a \verb{function()} is provided, it must be of the form \verb{function(y, d, g_hat, m_hat, smpls)} and
+the returned output must be a named \code{list()} with elements \code{psi_a} and \code{psi_b}. Default is \code{"partialling out"}.}
 
 \item{\code{dml_procedure}}{(\code{character(1)}) \cr
 A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine learning algorithm. Default is \code{"dml2"}.}

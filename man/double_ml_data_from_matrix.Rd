@@ -2,7 +2,7 @@
 % Please edit documentation in R/double_ml_data.R
 \name{double_ml_data_from_matrix}
 \alias{double_ml_data_from_matrix}
-\title{double_ml_data_from_matrix}
+\title{Wrapper for Double machine learning data-backend initialization from matrix.}
 \usage{
 double_ml_data_from_matrix(
   X = NULL,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{make_iivm_data}
 \alias{make_iivm_data}
-\title{make_iivm_data}
+\title{Generates data from a interactive IV regression (IIVM) model.}
 \usage{
 make_iivm_data(
   n_obs = 500,

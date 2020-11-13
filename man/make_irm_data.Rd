@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{make_irm_data}
 \alias{make_irm_data}
-\title{make_irm_data}
+\title{Generates data from a interactive regression (IRM) model.}
 \usage{
 make_irm_data(
   n_obs = 500,

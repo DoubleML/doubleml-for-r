@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{make_plr_CCDDHNR2018}
 \alias{make_plr_CCDDHNR2018}
-\title{make_plr_CCDHNR2018}
+\title{Generates data from a partially linear regression model used in Chernozhukov et al. (2018)}
 \usage{
 make_plr_CCDDHNR2018(
   n_obs = 500,
@@ -23,10 +23,7 @@ The value of the causal parameter.}
 
 \item{return_type}{(\code{character(1)}) \cr
 If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y} and \code{d} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.
-If \code{TRUE} pol}
-}
-\value{
-A data object according to the choice of \code{return_type}.
+#' @return A data object according to the choice of \code{return_type}.}
 }
 \description{
 Generates data from a partially linear regression model used in Chernozhukov et al. (2018) for Figure 1.

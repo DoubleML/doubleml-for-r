@@ -2,13 +2,21 @@
 % Please edit documentation in R/double_ml.R
 \name{DoubleML}
 \alias{DoubleML}
-\title{DoubleML}
+\title{Abstract class DoubleML}
 \format{
 \link[R6:R6Class]{R6::R6Class} object.
 }
 \description{
 Abstract base class that can't be initialized.
 }
+\seealso{
+Other DoubleML: 
+\code{\link{DoubleMLIIVM}},
+\code{\link{DoubleMLIRM}},
+\code{\link{DoubleMLPLIV}},
+\code{\link{DoubleMLPLR}}
+}
+\concept{DoubleML}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -17,9 +25,6 @@ Estimates of the causal parameter(s) for the \code{n_rep} different sample split
 
 \item{\code{all_dml1_coef}}{(\code{array()}) \cr
 Estimates of the causal parameter(s) for the \code{n_rep} different sample splits after calling \code{fit()} with \code{dml_procedure = "dml1"}.}
-
-\item{\code{all_dml1_se}}{(\code{array()}) \cr
-Standard errors of the causal parameter(s) for the \code{n_rep} different sample splits after calling \code{fit()} with \code{dml_procedure = "dml1"}.}
 
 \item{\code{all_se}}{(\code{matrix()}) \cr
 Standard errors of the causal parameter(s) for the \code{n_rep} different sample splits after calling \code{fit()}.}
@@ -70,8 +75,8 @@ Value of the score function component \eqn{\psi_b(W;\eta)} after calling \code{f
 \item{\code{pval}}{(\code{numeric()}) \cr
 p-values for the causal parameter(s) after calling \code{fit()}.}
 
-\item{\code{score}}{(\code{character(1)}) \cr
-A \code{character(1)} specifying the score function.}
+\item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
+A \code{character(1)} or \verb{function()} specifying the score function.}
 
 \item{\code{se}}{(\code{numeric()}) \cr
 Standard errors for the causal parameter(s) after calling \code{fit()}.}
@@ -91,18 +96,19 @@ Results from hyperparameter tuning.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{DoubleML$new()}}
+\item \href{#method-print}{\code{DoubleML$print()}}
 \item \href{#method-fit}{\code{DoubleML$fit()}}
 \item \href{#method-bootstrap}{\code{DoubleML$bootstrap()}}
 \item \href{#method-split_samples}{\code{DoubleML$split_samples()}}
-\item \href{#method-set__samples}{\code{DoubleML$set__samples()}}
+\item \href{#method-set_samples}{\code{DoubleML$set_samples()}}
 \item \href{#method-tune}{\code{DoubleML$tune()}}
 \item \href{#method-summary}{\code{DoubleML$summary()}}
 \item \href{#method-confint}{\code{DoubleML$confint()}}
 \item \href{#method-learner_names}{\code{DoubleML$learner_names()}}
 \item \href{#method-params_names}{\code{DoubleML$params_names()}}
-\item \href{#method-set__ml_nuisance_params}{\code{DoubleML$set__ml_nuisance_params()}}
+\item \href{#method-set_ml_nuisance_params}{\code{DoubleML$set_ml_nuisance_params()}}
 \item \href{#method-p_adjust}{\code{DoubleML$p_adjust()}}
-\item \href{#method-get__params}{\code{DoubleML$get__params()}}
+\item \href{#method-get_params}{\code{DoubleML$get_params()}}
 \item \href{#method-clone}{\code{DoubleML$clone()}}
 }
 }
@@ -117,22 +123,24 @@ DoubleML is an abstract class that can't be initialized.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
+\subsection{Method \code{print()}}{
+Print DoubleML objects.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$print()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-fit}{}}}
 \subsection{Method \code{fit()}}{
 Estimate DoubleML models.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit(se_reestimate = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{se_reestimate}}{(\code{logical(1)})
-Indicates whether standard errors should be reestimated (only relevant for \code{dml_procedure = "dml1"}). Default is \code{FALSE}.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 self
 }
@@ -143,7 +151,7 @@ self
 \subsection{Method \code{bootstrap()}}{
 Multiplier bootstrap for DoubleML models.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$bootstrap(method = "normal", n_boot_rep = 500)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$bootstrap(method = "normal", n_rep_boot = 500)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -152,7 +160,7 @@ Multiplier bootstrap for DoubleML models.
 \item{\code{method}}{(\code{character(1)}) \cr
 A \code{character(1)} (\code{"Bayes"}, \code{"normal"} or \code{"wild"}) specifying the multiplier bootstrap method.}
 
-\item{\code{n_boot_rep}}{(\code{integer(1)}) \cr
+\item{\code{n_rep_boot}}{(\code{integer(1)}) \cr
 The number of bootstrap replications.}
 }
 \if{html}{\out{</div>}}
@@ -177,14 +185,14 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set__samples"></a>}}
-\if{latex}{\out{\hypertarget{method-set__samples}{}}}
-\subsection{Method \code{set__samples()}}{
+\if{html}{\out{<a id="method-set_samples"></a>}}
+\if{latex}{\out{\hypertarget{method-set_samples}{}}}
+\subsection{Method \code{set_samples()}}{
 Set the sample splitting for DoubleML models.
 
 The attributes \code{n_folds} and \code{n_rep} are derived from the provided partition.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set__samples(smpls)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_samples(smpls)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -209,10 +217,10 @@ The hyperparameter-tuning is performed using the tuning methods provided in the 
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
   param_set,
-  tune_on_folds = FALSE,
   tune_settings = list(n_folds_tune = 5, rsmp_tune = "cv", measure = list(ml_g = NULL,
     ml_m = NULL, ml_r = NULL), terminator = mlr3tuning::trm("evals", n_evals = 20),
-    algorithm = "grid_search", resolution = 5)
+    algorithm = "grid_search", resolution = 5),
+  tune_on_folds = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -221,9 +229,6 @@ The hyperparameter-tuning is performed using the tuning methods provided in the 
 \describe{
 \item{\code{param_set}}{(named \code{list()}) \cr
 A named \code{list} with a parameter grid for each nuisance model/learner (see method \code{learner_names()}). The parameter grid must be an object of class \link[paradox:ParamSet]{ParamSet}.}
-
-\item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
-Indicates whether the tuning should be done fold-specific or globally. Default is \code{FALSE}.}
 
 \item{\code{tune_settings}}{(named \code{list()}) \cr
 A named \code{list()} with argument passed to the hyperparameter-tuning with \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up \link[mlr3tuning:TuningInstanceSingleCrit]{TuningInstance} objects. \code{tune_settings} has entries
@@ -235,6 +240,9 @@ A named \code{list()} with argument passed to the hyperparameter-tuning with \hr
 \item \code{algorithm} (\code{character(1)}) \cr The key passed to the respective dictionary to specify the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{algorithm} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}. Default is \code{grid_search}.
 \item \code{resolution} (\code{character(1)}) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}. Default is \code{5}.
 }}
+
+\item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
+Indicates whether the tuning should be done fold-specific or globally. Default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -314,12 +322,19 @@ Returns the names of the nuisance models with hyperparameters.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set__ml_nuisance_params"></a>}}
-\if{latex}{\out{\hypertarget{method-set__ml_nuisance_params}{}}}
-\subsection{Method \code{set__ml_nuisance_params()}}{
+\if{html}{\out{<a id="method-set_ml_nuisance_params"></a>}}
+\if{latex}{\out{\hypertarget{method-set_ml_nuisance_params}{}}}
+\subsection{Method \code{set_ml_nuisance_params()}}{
 Set hyperparameters for the nuisance models of DoubleML models.
+
+Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set__ml_nuisance_params(learner = NULL, treat_var = NULL, params)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_ml_nuisance_params(
+  learner = NULL,
+  treat_var = NULL,
+  params,
+  set_fold_specific = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -332,7 +347,10 @@ The nuisance model/learner (see method \code{params_names})}
 The treatment varaible (hyperparameters can be set treatment-variable specific).}
 
 \item{\code{params}}{(named \code{list()}) \cr
-A named \code{list()} with estimator parameters (used for all folds).}
+A named \code{list()} with estimator parameters. Parameters are used for all folds by default. Alternatively, parameters can be passed in a fold-specific way if option  \code{fold_specific}is \code{TRUE}. In this case, the outer list needs to be of length \code{n_rep} and the inner list of length \code{n_folds}.}
+
+\item{\code{set_fold_specific}}{(\code{logical(1)}) \cr
+Indicates if the parameters passed in \code{params} should be passed in fold-specific way. Default is \code{FALSE}. If \code{TRUE}, the outer list needs to be of length \code{n_rep} and the inner list of length \code{n_folds}. Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific.}
 }
 \if{html}{\out{</div>}}
 }
@@ -365,12 +383,12 @@ Indicates if the output is returned as a matrix with corresponding coefficient n
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get__params"></a>}}
-\if{latex}{\out{\hypertarget{method-get__params}{}}}
-\subsection{Method \code{get__params()}}{
+\if{html}{\out{<a id="method-get_params"></a>}}
+\if{latex}{\out{\hypertarget{method-get_params}{}}}
+\subsection{Method \code{get_params()}}{
 Get hyperparameters for the nuisance model of DoubleML models.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$get__params(learner)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$get_params(learner)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

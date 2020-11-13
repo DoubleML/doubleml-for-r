@@ -2,7 +2,7 @@
 % Please edit documentation in R/double_ml_iivm.R
 \name{DoubleMLIIVM}
 \alias{DoubleMLIIVM}
-\title{DoubleMLIIVM}
+\title{Double machine learning for interactive IV regression models}
 \format{
 \link[R6:R6Class]{R6::R6Class} object inheriting from \link{DoubleML}.
 }
@@ -34,14 +34,22 @@ library(mlr3)
 library(mlr3learners)
 library(data.table)
 set.seed(2)
-ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
-ml_m = lrn("classif.ranger", num.trees = 10, max.depth = 2)
-ml_r = ml_m$clone() 
-obj_dml_data = make_iivm_data(theta = 1)
+ml_g = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+ml_m = lrn("classif.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+ml_r = ml_m$clone()
+obj_dml_data = make_iivm_data(theta = 0.5, n_obs=1000, alpha_x = 1, dim_x=20)
 dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 dml_iivm_obj$fit()
 dml_iivm_obj$summary()
 }
+\seealso{
+Other DoubleML: 
+\code{\link{DoubleMLIRM}},
+\code{\link{DoubleMLPLIV}},
+\code{\link{DoubleMLPLR}},
+\code{\link{DoubleML}}
+}
+\concept{DoubleML}
 \section{Super class}{
 \code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLIIVM}
 }
@@ -72,12 +80,13 @@ The threshold used for timming.}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap">}\href{../../DoubleML/html/DoubleML.html#method-bootstrap}{\code{DoubleML::DoubleML$bootstrap()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint">}\href{../../DoubleML/html/DoubleML.html#method-confint}{\code{DoubleML::DoubleML$confint()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit">}\href{../../DoubleML/html/DoubleML.html#method-fit}{\code{DoubleML::DoubleML$fit()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get__params">}\href{../../DoubleML/html/DoubleML.html#method-get__params}{\code{DoubleML::DoubleML$get__params()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params">}\href{../../DoubleML/html/DoubleML.html#method-get_params}{\code{DoubleML::DoubleML$get_params()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names">}\href{../../DoubleML/html/DoubleML.html#method-learner_names}{\code{DoubleML::DoubleML$learner_names()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust">}\href{../../DoubleML/html/DoubleML.html#method-p_adjust}{\code{DoubleML::DoubleML$p_adjust()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names">}\href{../../DoubleML/html/DoubleML.html#method-params_names}{\code{DoubleML::DoubleML$params_names()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set__ml_nuisance_params">}\href{../../DoubleML/html/DoubleML.html#method-set__ml_nuisance_params}{\code{DoubleML::DoubleML$set__ml_nuisance_params()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set__samples">}\href{../../DoubleML/html/DoubleML.html#method-set__samples}{\code{DoubleML::DoubleML$set__samples()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print">}\href{../../DoubleML/html/DoubleML.html#method-print}{\code{DoubleML::DoubleML$print()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params">}\href{../../DoubleML/html/DoubleML.html#method-set_ml_nuisance_params}{\code{DoubleML::DoubleML$set_ml_nuisance_params()}}\out{</span>}
+\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_samples">}\href{../../DoubleML/html/DoubleML.html#method-set_samples}{\code{DoubleML::DoubleML$set_samples()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples">}\href{../../DoubleML/html/DoubleML.html#method-split_samples}{\code{DoubleML::DoubleML$split_samples()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary">}\href{../../DoubleML/html/DoubleML.html#method-summary}{\code{DoubleML::DoubleML$summary()}}\out{</span>}
 \item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune">}\href{../../DoubleML/html/DoubleML.html#method-tune}{\code{DoubleML::DoubleML$tune()}}\out{</span>}
@@ -113,16 +122,19 @@ Creates a new instance of this R6 class.
 \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the data and specifying the variables of the causal model.}
 
-\item{\code{ml_g}}{(\code{character(1)}) \cr
-A \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
+\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(Z,X) = \mathbb{E}[Y|X,Z]}.}
 
-\item{\code{ml_m}}{(\code{character(1)}) \cr
-A \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"classif.cv_glmnet"}. \cr
+\item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
+An object of the class \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner, possibly with specified parameters, for example \code{lrn(classif.cv_glmnet, s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[Z|X]}.}
 
-\item{\code{ml_r}}{(\code{character(1)}) \cr
-A \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"classif.cv_glmnet"}. \cr
+\item{\code{ml_r}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
+An object of the class \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner, possibly with specified parameters, for example \code{lrn(classif.cv_glmnet, s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_r} refers to the nuisance function \eqn{r_0(Z,X) = \mathbb{E}[D|X,Z]}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
@@ -131,8 +143,11 @@ Number of folds. Default is \code{5}.}
 \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for the sample splitting. Default is \code{1}.}
 
-\item{\code{score}}{(\code{character(1)}) \cr
-A \code{character(1)} (\code{"LATE"} is the only choice) specifying the score function. Default is \code{"ATE"}.}
+\item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
+A \code{character(1)} (\code{"LATE"} is the only choice) specifying the score function.
+If a \verb{function()} is provided, it must be of the form
+\verb{function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls)} and the returned output
+must be a named \code{list()} with elements \code{psi_a} and \code{psi_b}. Default is \code{"LATE"}.}
 
 \item{\code{subgroups}}{(named \code{list(2)}) \cr
 Named \code{list(2)} with options to adapt to cases with and without the subgroups of always-takers and never-takes. The entry \code{always_takers}(\code{logical(1)}) speficies whether there are always takers in the sample. The entry \code{never_takers} (\code{logical(1)}) speficies whether there are never takers in the sample. Default is \code{list(always_takers = TRUE, never_takers = TRUE)}.}

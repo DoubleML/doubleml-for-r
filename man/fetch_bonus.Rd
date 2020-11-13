@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{fetch_bonus}
 \alias{fetch_bonus}
-\title{fetch_bonus}
+\title{Data set on the Pennsylvania Reemployment Bonus experiment.}
 \usage{
 fetch_bonus(return_type = "DoubleMLData", polynomial_features = FALSE)
 }
@@ -30,7 +30,8 @@ Variable description, based on the supplementary material of Chernozhukov et al.
 \item black: dummy variable; itindicates a person of black race (=1).
 \item hispanic:  dummy variable; itindicates a person of hispanic race (=1).
 \item othrace: dummy variable; itindicates a non-white, non-black, not-hispanic person (=1).
-\item dep: the number of dependents of each claimant;
+\item dep1: dummy variable; indicates if the number of dependents of each claimant is equal to 1 (=1).
+\item dep2: dummy variable; indicates if the number of dependents of each claimant is equal to 2 (=1).
 \item q1-q6: six dummy variables indicating the quarter of experimentduring which each claimant enrolled.
 \item recall:  takes the value of 1 if the claimant answered ``yes'' when was asked if he/she had any expectation to be recalled
 \item agelt35: takes the value of 1 if the claimant's age is lessthan 35 and 0 otherwise.
@@ -48,6 +49,18 @@ Variable description, based on the supplementary material of Chernozhukov et al.
 The supplementary data of the study by Chernozhukov et al. (2018) is available at \url{https://academic.oup.com/ectj/article/21/1/C1/5056401#supplementary-data}.
 
 The supplementary data of the study by Bilias (2000) is available at \url{http://qed.econ.queensu.ca/jae/2000-v15.6/bilias/}.
+}
+\examples{
+library(DoubleML)
+df_bonus = fetch_bonus(return_type = "data.table")
+obj_dml_data_bonus = DoubleMLData$new(df_bonus, 
+                                     y_col = "inuidur1", 
+                                     d_cols = "tg", 
+                                     x_cols = c("female", "black", "othrace", "dep1", "dep2",
+                                                "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54",
+                                                  "durable", "lusd", "husd"))
+obj_dml_data_bonus
+
 }
 \references{
 Bilias Y. (2000), Sequential Testing of Duration Data: The Case of Pennsylvania ‘Reemployment Bonus’ Experiment. Journal of Applied Econometrics, 15(6): 575-594.

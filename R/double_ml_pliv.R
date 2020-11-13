@@ -24,7 +24,7 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+#' ml_g = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
 #' ml_m = ml_g$clone()
 #' ml_r = ml_g$clone()
 #' obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)

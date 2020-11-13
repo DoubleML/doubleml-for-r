@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{fetch_401k}
 \alias{fetch_401k}
-\title{fetch_401k}
+\title{Data set on financial wealth and 401(k) plan participation.}
 \usage{
 fetch_401k(return_type = "DoubleMLData", polynomial_features = FALSE)
 }

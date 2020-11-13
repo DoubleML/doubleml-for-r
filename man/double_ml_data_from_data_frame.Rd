@@ -2,7 +2,7 @@
 % Please edit documentation in R/double_ml_data.R
 \name{double_ml_data_from_data_frame}
 \alias{double_ml_data_from_data_frame}
-\title{double_ml_data_from_data_frame}
+\title{Wrapper for Double machine learning data-backend initialization from data.frame.}
 \usage{
 double_ml_data_from_data_frame(
   df,

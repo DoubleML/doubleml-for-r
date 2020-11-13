@@ -2,7 +2,7 @@
 % Please edit documentation in R/double_ml_data.R
 \name{DoubleMLData}
 \alias{DoubleMLData}
-\title{DoubleMLData}
+\title{Double machine learning data-backend}
 \description{
 Double machine learning data-backend.
 
@@ -68,7 +68,7 @@ The instrumental variables. Default is \code{NULL}.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{DoubleMLData$new()}}
-\item \href{#method-set__data_model}{\code{DoubleMLData$set__data_model()}}
+\item \href{#method-set_data_model}{\code{DoubleMLData$set_data_model()}}
 \item \href{#method-clone}{\code{DoubleMLData$clone()}}
 }
 }
@@ -113,12 +113,12 @@ Indicates whether in the multiple-treatment case the other treatment variables s
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set__data_model"></a>}}
-\if{latex}{\out{\hypertarget{method-set__data_model}{}}}
-\subsection{Method \code{set__data_model()}}{
+\if{html}{\out{<a id="method-set_data_model"></a>}}
+\if{latex}{\out{\hypertarget{method-set_data_model}{}}}
+\subsection{Method \code{set_data_model()}}{
 Setter function for \code{data_model}. The function implements the causal model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols} and assigns the role for the treatment variables in the multiple-treatment case.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set__data_model(treatment_var)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set_data_model(treatment_var)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

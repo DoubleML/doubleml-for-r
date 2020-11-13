@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{make_plr_turrell2018}
 \alias{make_plr_turrell2018}
-\title{make_plr_turrell2018}
+\title{Generates data from a partially linear regression model used in a blog article by Turrell (2018).}
 \usage{
 make_plr_turrell2018(
   n_obs = 100,
@@ -24,8 +24,7 @@ The number of covariates.}
 The value of the causal parameter.}
 
 \item{return_type}{(\code{character(1)}) \cr
-If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y} and \code{d} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.
-If \code{TRUE} pol}
+If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y} and \code{d} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
 
 \item{nu}{(\code{numeric(1)}) \cr
 The value of the parameter \eqn{\nu}. Default is \code{0}.}

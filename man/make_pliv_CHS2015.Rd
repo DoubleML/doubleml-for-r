@@ -2,7 +2,7 @@
 % Please edit documentation in R/datasets.R
 \name{make_pliv_CHS2015}
 \alias{make_pliv_CHS2015}
-\title{make_pliv_CHS2015}
+\title{Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015).}
 \usage{
 make_pliv_CHS2015(
   n_obs,
