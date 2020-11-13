@@ -629,6 +629,10 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' 
   #' @return named `list()`with paramers for the nuisance model/learner.
   get_params = function(learner){
+    valid_learner = self$learner_names()
+    checkmate::assert_character(learner, len = 1)
+    checkmate::assert_choice(learner, valid_learner) 
+    
     if (private$fold_specific_params) {
       params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
     } else {
@@ -636,21 +640,6 @@ DoubleML = R6::R6Class("DoubleML", public = list(
     }
     return(params)
     }
-  # TODO: implement print() method for DoubleML objects
-  # print = function(digits = max(3L, getOption("digits") -
-  #                                                 3L)) {
-  # 
-  #   if (length(self$coef)) {
-  #     cat("Coefficients:\n")
-  #     print.default(format(self$coef, digits = digits), print.gap = 2L,
-  #                   quote = FALSE)
-  #   }
-  #   else {
-  #     cat("No coefficients\n")
-  #   }
-  #   cat("\n")
-  #   invisible(self$coef)
-  # }
 ),
 private = list(
   n_rep_boot = NULL,
