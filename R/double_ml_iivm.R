@@ -292,10 +292,6 @@ private = list(
     return(psis)
   },
  ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
-   checkmate::check_class(param_set$ml_g, "ParamSet")    
-   checkmate::check_class(param_set$ml_m, "ParamSet")
-   checkmate::check_class(param_set$ml_r, "ParamSet")
-
    if (!tune_on_folds){
       data_tune_list = list(self$data$data_model)
     } else {

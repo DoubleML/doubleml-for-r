@@ -172,22 +172,17 @@ private = list(
     return(psis)
   }, 
   ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
-    checkmate::check_class(param_set$ml_g, "ParamSet")    
-    checkmate::check_class(param_set$ml_m, "ParamSet")
-    
     if (!tune_on_folds){
       data_tune_list = list(self$data$data_model)
     } else {
       data_tune_list = lapply(smpls$train_ids, function(x) 
                                                 extract_training_data(self$data$data_model, x))
     }
-    
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
     } else {
       CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
-    
     if (any(class(tune_settings$measure$ml_g) == "Measure")) {
       measure_g = tune_settings$measure$ml_g
     } else {
@@ -197,7 +192,6 @@ private = list(
           measure_g = mlr3::msr(tune_settings$measure$ml_g)    
         }
     }
-    
     if (any(class(tune_settings$measure$ml_m) == "Measure")) {
       measure_m = tune_settings$measure$ml_m
     } else {
