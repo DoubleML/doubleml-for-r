@@ -2,14 +2,55 @@ destination: docs
 
 template:
   params:
-    bootswatch: lumen
+    bootswatch: flatly
     
 home:
-  title: doubleML - Double Machine Learning with R
+  title: DoubleML - Double Machine Learning with R
   links:
   - text: Download 
     href: https://github.com/DoubleML/doubleml-for-r/
     
 development:
   mode: devel
+
+toc:
+  depth: 3
   
+navbar: 
+  structure: 
+    left:  [home, userguide, install, reference]
+    right: [github]
+  components: 
+    home: ~
+    userguide:
+      text: User Guide
+      icon: fa fa-file-alt
+      href: http://doubleml.org/
+
+reference:
+  - title: Double machine learning data class
+    contents:
+      - DoubleMLData
+      - double_ml_data_from_data_frame
+      - double_ml_data_from_matrix
+  - title: Abstract base class for double machine learning models
+    contents: 
+      - DoubleML
+  - title: Double machine learning models
+    contents:
+      - DoubleMLPLR
+      - DoubleMLPLIV
+      - DoubleMLIRM
+      - DoubleMLIIVM
+  - title: Datasets module
+    contents:
+      - fetch_401k
+      - fetch_bonus
+  - title: Datasets generators
+    contents:
+      - make_plr_CCDDHNR2018
+      - make_pliv_CHS2015
+      - make_irm_data
+      - make_iivm_data
+      - make_plr_turrell2018
+

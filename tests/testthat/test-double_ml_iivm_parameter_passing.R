@@ -14,7 +14,6 @@ learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m
 
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('LATE'),
                          i_setting = 1:(length(data_iivm)),
                          n_rep = c(1, 3),
@@ -53,19 +52,19 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                      dml_procedure = dml_procedure, 
                                      score = score)
   
-  double_mliivm_obj_once$set__ml_nuisance_params(learner = "ml_m", 
+  double_mliivm_obj_once$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_p)
-  double_mliivm_obj_once$set__ml_nuisance_params(learner = "ml_g0", 
+  double_mliivm_obj_once$set_ml_nuisance_params(learner = "ml_g0", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_mu)
-  double_mliivm_obj_once$set__ml_nuisance_params(learner = "ml_g1", 
+  double_mliivm_obj_once$set_ml_nuisance_params(learner = "ml_g1", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_mu)
-  double_mliivm_obj_once$set__ml_nuisance_params(learner = "ml_r0", 
+  double_mliivm_obj_once$set_ml_nuisance_params(learner = "ml_r0", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_m)
-  double_mliivm_obj_once$set__ml_nuisance_params(learner = "ml_r1", 
+  double_mliivm_obj_once$set_ml_nuisance_params(learner = "ml_r1", 
                                            treat_var = "d",
                                             params = learner_pars$params$params_m)
   

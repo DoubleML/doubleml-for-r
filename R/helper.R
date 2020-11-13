@@ -1,23 +1,22 @@
 
 extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
-  
   if (!return_train_preds) {
-    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat = as.data.table(obj_resampling$prediction())
+    f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat = data.table::as.data.table(obj_resampling$prediction())
     f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
-    setorder(f_hat, 'row_id')
-    f_hat <- as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
+    data.table::setorder(f_hat, 'row_id')
+    f_hat = data.table::as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
     return(f_hat)
     
   } else {
     # Access in-sample predictions
     iters = obj_resampling$resampling$iters
-    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
+    f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat_list = lapply(1:iters, function(x) data.table::as.data.table(obj_resampling$predictions()[[x]]))
     f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
                                                                             by = "row_id", all = TRUE))
-    f_hat_list = lapply(f_hat_list, function(x) setorder(x, "row_id"))
-    f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+    f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
+    f_hat_list = lapply(f_hat_list, function(x) data.table::as.data.table(list("row_id" = x$row_id, 
                                                                    "response"= x$response)))
     return(f_hat_list)
   }
@@ -28,71 +27,84 @@ rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
     # if (length(test_ids) > 1) {
       # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions <- rbindlist(prediction_list)
-    setorder(predictions, 'row_id')
+    predictions = data.table::rbindlist(prediction_list)
+    data.table::setorder(predictions, 'row_id')
     if (!keep_rowids) {
-      predictions <- predictions$response
+      predictions = predictions$response
     }
     return(predictions)
 }
 
 
 extract_prob_prediction = function(obj_resampling) {
-  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-  f_hat = as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = data.table::as.data.table(obj_resampling$prediction())
   f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
-  setorder(f_hat, 'row_id')
-  f_hat <- as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+  data.table::setorder(f_hat, 'row_id')
+  f_hat = data.table::as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
   
   return(f_hat)
 }
 
 rearrange_prob_prediction = function(prediction_list, test_ids){
     prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions <- rbindlist(prediction_list)
-    setorder(predictions, 'row_id')
-    predictions <- predictions$prob.1
+    predictions = data.table::rbindlist(prediction_list)
+    data.table::setorder(predictions, 'row_id')
+    predictions = predictions$prob.1
     return(predictions)
 }
 
 initiate_learner = function(mlmethod, params) {
-  learner <- mlr3::lrn(mlmethod)
-  
-  if (!is.null(params) & length(params) != 0){
-  learner$param_set$values <- params
+  if (any(class(mlmethod) == "LearnerRegr")) {
+    learner = mlmethod$clone()
+    if (!is.null(params)){
+      learner$param_set$values = params
+    }
+  } else {
+    learner = mlr3::lrn(mlmethod)
+    
+    if (!is.null(params) & length(params) != 0){
+    learner$param_set$values = params
+    }
+    
+    else if (is.null(params) | length(params) == 0){
+      message("No parameters provided for learners. Default values are used.")
+    }
   }
-  
-  else if (is.null(params) | length(params) == 0){
-    message("No parameters provided for learners. Default values are used.")
-  }
-  
   return(learner)
 }
 
 
 initiate_prob_learner = function(mlmethod, params) {
-  learner <- mlr3::lrn(mlmethod,
-                       predict_type = 'prob')
-  
-  if (!is.null(params) & length(params) != 0){
-  learner$param_set$values <- params
+  if (any(class(mlmethod) == "LearnerClassif")) {
+    learner = mlmethod$clone()
+    learner$predict_type = "prob"
+    if (!is.null(params)){
+      learner$param_set$values = params
+    }
+  } else {
+    learner = mlr3::lrn(mlmethod,
+                         predict_type = 'prob')
+    
+    if (!is.null(params) & length(params) != 0){
+    learner$param_set$values = params
+    }
+    
+    else if (is.null(params) | length(params) == 0){
+      message("No parameters provided for learners. Default values are used.")
+    }
   }
-  
-  else if (is.null(params) | length(params) == 0){
-    message("No parameters provided for learners. Default values are used.")
-  }
-  
   return(learner)
 }
 
 
 initiate_regr_task = function(id, data, select_cols, target) {
   if (!is.null(select_cols)){
-    indx <- (names(data) %in% c(select_cols, target))
-    data_sel <- data[ , indx, with = FALSE]
-    task <- mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
+    indx = (names(data) %in% c(select_cols, target))
+    data_sel = data[ , indx, with = FALSE]
+    task = mlr3::TaskRegr$new(id = id, backend = data_sel, target = target)
   } else {
-    task <- mlr3::TaskRegr$new(id = id, backend = data, target = target)
+    task = mlr3::TaskRegr$new(id = id, backend = data, target = target)
   }
   
   return(task)
@@ -100,10 +112,10 @@ initiate_regr_task = function(id, data, select_cols, target) {
 
 
 initiate_classif_task = function(id, data, select_cols, target) {
-  indx <- (names(data) %in% c(select_cols, target))
-  data_sel <- data[ , indx, with = FALSE]
-  data_sel[, target] <- factor(data_sel[, target])
-  task <- mlr3::TaskClassif$new(id = id, backend = data_sel,
+  indx = (names(data) %in% c(select_cols, target))
+  data_sel = data[ , indx, with = FALSE]
+  data_sel[, target] = factor(data_sel[, target])
+  task = mlr3::TaskClassif$new(id = id, backend = data_sel,
                                 target = target, positive = "1")
   return(task)
 }
@@ -141,14 +153,14 @@ initiate_resampling = function(task, train_ids, test_ids){
 }
 
 resample_dml = function(task, learner, resampling, store_models = FALSE){
-    task = mlr3::assert_task(as_task(task, clone = TRUE))
+    task = mlr3::assert_task(mlr3::as_task(task, clone = TRUE))
     checkmate::check_list(learner)
     checkmate::check_list(resampling)
     
     # if (length(resampling) > 1) {
       # Note: length(resampling) = 1 only if apply_cross_fitting == FALSE
-    learner = lapply(learner, function(x) mlr3::assert_learner(as_learner(x, clone = TRUE)))
-    resampling = lapply(resampling, function(x) mlr3::assert_resampling(as_resampling(x)))
+    learner = lapply(learner, function(x) mlr3::assert_learner(mlr3::as_learner(x, clone = TRUE)))
+    resampling = lapply(resampling, function(x) mlr3::assert_resampling(mlr3::as_resampling(x)))
     # mlr3::assert_flag(store_models)
     # instance = lapply(resampling, function(x) x$clone(deep = TRUE))
     res = lapply(1:length(learner), function(x) mlr3::resample(task, learner[[x]], 
@@ -166,7 +178,7 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
 }
 
 
-format.perc <- function (probs, digits) {
+format.perc = function (probs, digits) {
   paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
         "%" ) }
 
@@ -176,11 +188,9 @@ assure_matrix = function(x){
   if (is.vector(x)){
     x = matrix(x, ncol = 1)
   }
-  
   else {
     checkmate::check_matrix(x)
   }
-  
   return(x)
   
 }

@@ -15,7 +15,6 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner, "mlmethod_r"
   
 test_cases = expand.grid(learner = learner,
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('partialling out'),
                          i_setting = 1:(length(data_pliv)),
                          n_rep = c(1, 3),
@@ -70,9 +69,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
                                      score = score,
                                      n_rep = n_rep)
   
-  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", learner = "ml_g", params = params_g$d)
-  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", learner = "ml_m", params = params_m$d)
-  double_mlpliv_obj_once$set__ml_nuisance_params(treat_var = "d", learner = "ml_r", params = params_r$d)
+  double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_g", params = params_g$d)
+  double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_m", params = params_m$d)
+  double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_r", params = params_r$d)
   
   double_mlpliv_obj_once$fit()
   

@@ -13,18 +13,20 @@ License: MIT + file LICENSE
 URL: https://github.com/DoubleML/doubleml-for-r/
 Encoding: UTF-8
 LazyData: true
+Depends: 
+    R (>= 3.5.0)
 Imports: 
     R6 (>= 2.4.1),
     data.table (>= 1.12.8),
-    hdm,
     stats,
-    sandwich,
     checkmate,
     mlr3 (>= 0.5.0),
     mlr3learners (>= 0.3.0),
     mlr3tuning (>= 0.3.0),
     paradox (>= 0.4.0),
-    AER
+    utils,
+    clusterGeneration,
+    foreign (<= 0.8-76)
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
@@ -32,9 +34,22 @@ Suggests:
     rmarkdown,
     testthat,
     patrick,
-    clusterGeneration,
     mvtnorm,
     dplyr,
     glmnet,
-    lgr
+    lgr,
+    ggplot2,
+    ranger,
+    hdm,
+    sandwich,
+    AER
 VignetteBuilder: knitr
+Collate: 
+    'double_ml.R'
+    'double_ml_data.R'
+    'double_ml_iivm.R'
+    'double_ml_irm.R'
+    'double_ml_pliv.R'
+    'double_ml_plr.R'
+    'helper.R'
+    'datasets.R'

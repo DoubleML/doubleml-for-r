@@ -64,8 +64,7 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   # # g_hat_list <- mlr::getRRPredictionList(r_g)
   # #g_hat_list <- lapply(g_hat_list$test, extract_test_pred)
   # g_hat_list <- lapply(g_hat_list, function(x) x$response)
-  g_hat_list <- lapply(r_g$data$prediction, function(x) x$test$response)
-
+  g_hat_list <- lapply(r_g$data$predictions(), function(x) x$response)
   # nuisance m
   m_indx <- names(data) != y
   data_m <- data[, m_indx, drop = FALSE]
@@ -88,7 +87,7 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
   # # m_hat_list <- mlr::getRRPredictionList(r_m)
   # m_hat_list <- lapply(m_hat_list, function(x) x$response)
   # # m_hat_list <-lapply(m_hat_list$test,  extract_test_pred)
-  m_hat_list <- lapply(r_m$data$prediction, function(x) x$test$response)
+  m_hat_list <- lapply(r_m$data$predictions(), function(x) x$response)
 
 
   # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
@@ -127,6 +126,7 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
     se_i <- NA
     
     v_hat <- u_hat <- v_hatd <- d_k <- matrix(NA, nrow = max(n_k), ncol = n_iters)
+    v_hat_se <- u_hat_se <- v_hatd_se <- matrix(NA, nrow = max(n), ncol = 1)
     
     for (i in 1:n_iters) {
         # test_index = test_index_list[[i]]
@@ -136,21 +136,19 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
         g_hat <- g_hat_list[[i]]
 
         d_k[, i] <- D[test_index]
-        v_hat[, i] <- D[test_index] - m_hat
-        u_hat[, i]  <- Y[test_index] - g_hat
-        v_hatd[, i]  <- v_hat[, i]*D[test_index]
+        v_hat[, i] <- v_hat_se[test_index, ] <- D[test_index] - m_hat
+        u_hat[, i]  <- u_hat_se[test_index, ] <- Y[test_index] - g_hat
+        v_hatd[, i]  <- v_hatd_se[test_index, ] <- v_hat[, i]*D[test_index]
 
         orth_est <- orth_plr_dml(u_hat = u_hat[, i] , v_hat = v_hat[, i] ,
                                  v_hatd = v_hatd[, i], 
                                  score = score) #, se_type)
         thetas[i] <- orth_est$theta
-    
     }
     
     theta <- mean(thetas, na.rm = TRUE)
-    
-    se <- sqrt(var_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat,
-                        v_hatd = v_hatd, score = score, se_type = se_type,
+    se <- sqrt(var_plr(theta = theta, d = D, u_hat = u_hat_se, v_hat = v_hat_se,
+                        v_hatd = v_hatd_se, score = score, se_type = se_type,
                         dml_procedure = dml_procedure))
     
     t <- theta/se

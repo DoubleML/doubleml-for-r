@@ -2,23 +2,73 @@
 % Please edit documentation in R/double_ml_data.R
 \name{DoubleMLData}
 \alias{DoubleMLData}
-\title{DoubleMLData}
+\title{Double machine learning data-backend}
 \description{
-Data structure for double machine learning.
+Double machine learning data-backend.
+
+\code{DoubleMLData} objects can be initialized from a \link[data.table:data.table]{data.table}. Alternatively \code{DoubleML} provides functions to initialize from a collection of \code{matrix} objects or a \code{data.frame}. The the following functions can be used to create a new instance of \code{DoubleMLData}.
+\itemize{
+\item \code{DoubleMLData$new()} for initialization from a \code{data.table}.
+\item \code{\link[=double_ml_data_from_matrix]{double_ml_data_from_matrix()}} for initialization from \code{matrix} objects,
+\item \code{\link[=double_ml_data_from_data_frame]{double_ml_data_from_data_frame()}} for initialization from a \code{data.frame}.
+}
+}
+\examples{
+library(DoubleML)
+df = make_plr_CCDDHNR2018(return_type = "data.table")
+obj_dml_data = DoubleMLData$new(df,
+                               y_col = "y",
+                               d_cols = "d")
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{all_variables}}{(\code{character()})\cr
+All variables available in the dataset.}
+
+\item{\code{d_cols}}{(\code{character()})\cr
+The treatment variable(s).}
+
+\item{\code{data}}{(\code{\link[data.table:data.table]{data.table}})\cr
+Data object.}
+
+\item{\code{data_model}}{(\code{\link[data.table:data.table]{data.table}})\cr
+Internal data object that implements the causal model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols}.}
+
+\item{\code{n_instr}}{(\code{NULL}, \code{integer(1)}) \cr
+The number of instruments.}
+
+\item{\code{n_obs}}{(\code{integer(1)}) \cr
+The number of observations.}
+
+\item{\code{n_treat}}{(\code{integer(1)}) \cr
+The umber of treatment variables.}
+
+\item{\code{other_treat_cols}}{(\code{NULL}, \code{character()}) \cr
+If \code{use_other_treat_as_covariate} is \code{TRUE}, \code{other_treat_cols} are the treatment variables that are not "active" in the multiple-treatment case. These variables then are internally added to the covariates \code{x_cols} during the fitting stage. If \code{use_other_treat_as_covariate} is \code{FALSE}, \code{other_treat_cols} is \code{NULL}.}
+
+\item{\code{treat_col}}{(\code{character(1)}) \cr
+"Active" treatment variable in the multiple-treatment case.}
+
+\item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
+Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
+
+\item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
+The covariates. If \code{NULL}, all variables (columns of \code{data}) which are neither specified as outcome variable \code{y_col}, nor as treatment variables \code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates. Default is \code{NULL}.}
+
+\item{\code{y_col}}{(\code{character(1)}) \cr
+The outcome variable.}
+
+\item{\code{z_cols}}{(\code{NULL}, \code{character()}) \cr
+The instrumental variables. Default is \code{NULL}.}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{DoubleMLData$new()}}
-\item \href{#method-all_variables}{\code{DoubleMLData$all_variables()}}
-\item \href{#method-n_treat}{\code{DoubleMLData$n_treat()}}
-\item \href{#method-n_instr}{\code{DoubleMLData$n_instr()}}
-\item \href{#method-n_obs}{\code{DoubleMLData$n_obs()}}
-\item \href{#method-x}{\code{DoubleMLData$x()}}
-\item \href{#method-y}{\code{DoubleMLData$y()}}
-\item \href{#method-z}{\code{DoubleMLData$z()}}
-\item \href{#method-d}{\code{DoubleMLData$d()}}
-\item \href{#method-set__data_model}{\code{DoubleMLData$set__data_model()}}
+\item \href{#method-set_data_model}{\code{DoubleMLData$set_data_model()}}
 \item \href{#method-clone}{\code{DoubleMLData$clone()}}
 }
 }
@@ -26,6 +76,7 @@ Data structure for double machine learning.
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$new(
   data = NULL,
@@ -37,90 +88,47 @@ Data structure for double machine learning.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{(\code{\link[data.table:data.table]{data.table}})\cr
+Data object.}
+
+\item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
+The covariates. If \code{NULL}, all variables (columns of \code{data}) which are neither specified as outcome variable \code{y_col}, nor as treatment variables \code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates. Default is \code{NULL}.}
+
+\item{\code{y_col}}{(\code{character(1)}) \cr
+The outcome variable.}
+
+\item{\code{d_cols}}{(\code{character()}) \cr
+The treatment variable(s).}
+
+\item{\code{z_cols}}{(\code{NULL}, \code{character()}) \cr
+The instrumental variables. Default is \code{NULL}.}
+
+\item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
+Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-all_variables"></a>}}
-\if{latex}{\out{\hypertarget{method-all_variables}{}}}
-\subsection{Method \code{all_variables()}}{
+\if{html}{\out{<a id="method-set_data_model"></a>}}
+\if{latex}{\out{\hypertarget{method-set_data_model}{}}}
+\subsection{Method \code{set_data_model()}}{
+Setter function for \code{data_model}. The function implements the causal model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols} and assigns the role for the treatment variables in the multiple-treatment case.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$all_variables()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set_data_model(treatment_var)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{treatment_var}}{(\code{character()})\cr
+Active treatment variable that will be set to \code{treat_col}.}
 }
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-n_treat"></a>}}
-\if{latex}{\out{\hypertarget{method-n_treat}{}}}
-\subsection{Method \code{n_treat()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$n_treat()}\if{html}{\out{</div>}}
+\if{html}{\out{</div>}}
 }
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-n_instr"></a>}}
-\if{latex}{\out{\hypertarget{method-n_instr}{}}}
-\subsection{Method \code{n_instr()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$n_instr()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-n_obs"></a>}}
-\if{latex}{\out{\hypertarget{method-n_obs}{}}}
-\subsection{Method \code{n_obs()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$n_obs()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-x"></a>}}
-\if{latex}{\out{\hypertarget{method-x}{}}}
-\subsection{Method \code{x()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$x()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-y"></a>}}
-\if{latex}{\out{\hypertarget{method-y}{}}}
-\subsection{Method \code{y()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$y()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-z"></a>}}
-\if{latex}{\out{\hypertarget{method-z}{}}}
-\subsection{Method \code{z()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$z()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-d"></a>}}
-\if{latex}{\out{\hypertarget{method-d}{}}}
-\subsection{Method \code{d()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$d()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set__data_model"></a>}}
-\if{latex}{\out{\hypertarget{method-set__data_model}{}}}
-\subsection{Method \code{set__data_model()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set__data_model(
-  treatment_var,
-  use_other_treat_as_covariate = TRUE
-)}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

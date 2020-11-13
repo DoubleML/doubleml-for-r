@@ -66,18 +66,18 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   tune_sets = list(n_folds_tune = 2,
                       n_folds_tune = 1, 
                       rsmp_tune = "cv", 
-                      measure = list(measure_g = mlr3::default_measures("regr")[[1]],
-                                     measure_m = mlr3::default_measures("regr")[[1]]),
+                      measure = list("ml_g" = mlr3::default_measures("regr")[[1]],
+                                     "ml_m" = mlr3::default_measures("regr")[[1]]),
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
                       tuner = "grid_search",
                       resolution = 5)
 
   
-  param_grid = list(param_set_g = ParamSet$new(list(
+  param_grid = list("ml_g" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    param_set_m = ParamSet$new(list(
+                    "ml_m" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))))
   

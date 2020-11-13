@@ -9,7 +9,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 test_cases = expand.grid(learner = c('rpart'),
                          dml_procedure = c('dml1', 'dml2'),
                          score = c('ATE', 'ATTE'),
-                         se_reestimate = c(FALSE),
                          trimming_rule = c("truncate"),
                          trimming_threshold = c(1e-12, 0.05),
                          i_setting = 1:(length(data_irm)),
@@ -48,14 +47,14 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                                      trimming_rule = trimming_rule, 
                                      trimming_threshold = trimming_threshold)
     # set params for nuisance part m
-  double_mlirm_obj$set__ml_nuisance_params(learner = "ml_m", 
+  double_mlirm_obj$set_ml_nuisance_params(learner = "ml_m", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_m)
   # set params for nuisance part g
-  double_mlirm_obj$set__ml_nuisance_params(learner = "ml_g0", 
+  double_mlirm_obj$set_ml_nuisance_params(learner = "ml_g0", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_g)
-  double_mlirm_obj$set__ml_nuisance_params(learner = "ml_g1", 
+  double_mlirm_obj$set_ml_nuisance_params(learner = "ml_g1", 
                                            treat_var = "d",
                                           params = learner_pars$params$params_g)
   double_mlirm_obj$fit()

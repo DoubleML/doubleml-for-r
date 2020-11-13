@@ -13,17 +13,12 @@ logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 tune_settings = list(n_folds_tune = 3,
-                      n_rep_tune = 1, 
                       rsmp_tune = "cv", 
-                      measure_p = "classif.ce",
-                      measure_mu = "regr.mse", 
-                      measure_m = "classif.ce",
+                      measure = list("ml_m" = "classif.ce",
+                                     "ml_g" = "regr.mse", 
+                                     "ml_m" = "classif.ce"),
                       terminator = mlr3tuning::trm("evals", n_evals = 5), 
                       algorithm = "grid_search",
-                      tuning_instance_p = NULL, 
-                      tuning_instance_mu = NULL,
-                      tuning_instance_m = NULL,
-                      tuner = "grid_search",
                       resolution = 5)
 
 learner = "rpart"
@@ -62,13 +57,13 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
                                      score = score, 
                                      n_rep = n_rep)
   
-  param_grid = list(param_set_m = ParamSet$new(list(
+  param_grid = list("ml_m" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    param_set_g = ParamSet$new(list(
+                    "ml_g" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2))), 
-                    param_set_r = ParamSet$new(list(
+                    "ml_r" = ParamSet$new(list(
                                           ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                           ParamInt$new("minsplit", lower = 1, upper = 2)))) 
   

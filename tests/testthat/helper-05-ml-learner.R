@@ -100,6 +100,18 @@ get_default_mlmethod_pliv <- function(learner) {
                     params_r = list(s = "lambda.min",
                                     family = "gaussian"))
     
+  }   else if (learner == 'regr.glmnet') {
+    mlmethod <- list(mlmethod_m = learner,
+                     mlmethod_g = learner,
+                     mlmethod_r = learner)
+    
+    params <- list( params_m = list(lambda = 0.01, 
+                                    family = "gaussian"),
+                    params_g = list(lambda = 0.01,
+                                    family = "gaussian"),
+                    params_r = list(lambda = 0.01,
+                                    family = "gaussian"))
+    
   }
   
   return(list(mlmethod=mlmethod, params=params))

@@ -6,23 +6,20 @@ library('mlr3')
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(learner = c('regr.cv_glmnet'),
+test_cases = expand.grid(learner = c("regr.cv_glmnet"),
                          dml_procedure = c('dml1', 'dml2'),
-                         se_reestimate = c(FALSE),
                          score = c('IV-type', 'partialling out'),
                          method = c("romano-wolf", "bonferroni"),
                          apply_cross_fitting = c(TRUE, FALSE),
-                         i_setting = 1:(length(data_plr)),
                          stringsAsFactors = FALSE)
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
                                    .cases = test_cases, {
   
-  learner_pars <- get_default_mlmethod_plr(learner)
-  learner_pars_for_DML <- learner_pars
-  learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 3)
-  learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 3)
+  ml_m = lrn(learner, s = "lambda.min")
+  ml_g = lrn(learner, s = "lambda.min")
+  
   n_rep_boot = 498
   
   if (!apply_cross_fitting){
@@ -48,21 +45,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                                  y_col = "y", 
                                                  d_cols = colnames(X)[1:k]) 
   double_mlplr_obj = DoubleMLPLR$new(data_ml, 
-                                     ml_g = learner_pars_for_DML$mlmethod$mlmethod_g, 
-                                     ml_m = learner_pars_for_DML$mlmethod$mlmethod_m, 
+                                     ml_g = ml_g, 
+                                     ml_m = ml_m, 
                                      dml_procedure = dml_procedure, 
                                      n_folds = n_folds,
                                      score = score, 
                                      apply_cross_fitting = apply_cross_fitting)
-  lapply(data_ml$d_cols, function(x) {
-          # set params for nuisance part m
-          double_mlplr_obj$set__ml_nuisance_params(learner = "ml_m", 
-                                                   treat_var = x,
-                                                   params = learner_pars$params$params_m)
-          # set params for nuisance part g
-          double_mlplr_obj$set__ml_nuisance_params(learner = "ml_g", 
-                                                   treat_var = x,
-                                                  params = learner_pars$params$params_g)})
   double_mlplr_obj$fit()
   double_mlplr_obj$bootstrap()
   double_mlplr_obj$p_adjust(method = method)
