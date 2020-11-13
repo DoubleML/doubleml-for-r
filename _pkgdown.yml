@@ -13,10 +13,19 @@ home:
 development:
   mode: devel
 
+toc:
+  depth: 3
+  
 navbar: 
   structure: 
-    left:  [home, reference]
+    left:  [home, userguide, install, reference]
     right: [github]
+  components: 
+    home: ~
+    userguide:
+      text: User Guide
+      icon: fa fa-file-alt
+      href: http://doubleml.org/
 
 reference:
   - title: Double machine learning data class

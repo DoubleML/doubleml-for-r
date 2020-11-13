@@ -3,59 +3,90 @@
 
 # DoubleML - Double Machine Learning in python and R
 
-## About `DoubleML`
+The R package **DoubleML** provides an implementation of the double /
+debiased machine learning framework of [Chernozhukov et
+al. (2018)](https://arxiv.org/abs/1608.00060). It is built on top of
+[mlr3](https://mlr3.mlr-org.com/) and the [mlr3
+ecosystem](https://github.com/mlr-org/mlr3/wiki/Extension-Packages).
 
-`DoubleML` is an implementation of the Double Machine Learning framework
-of [Chernozhukov et al. (2018)](https://arxiv.org/abs/1608.00060) in
-python and R. An extensive user guide in both languages can be found
-`here`. The documentation of the R package can be found `here`.
+Note that the R package was developed together with a python twin based
+on [scikit-learn](https://scikit-learn.org/). The python package is also
+available on [GitHub](https://github.com/DoubleML/doubleml-for-py).
 
-## Introduction
+## Documentation and maintenance
 
-The R package `DoubleML` R provides an implementation of the double
-machine learning framework of [Chernozhukov et
-al. (2018)](https://arxiv.org/abs/1608.00060). The package allows for
+Documentation of functions in R: `here`
 
-  - uniformly valid statistical inference with a variety of machine
-    learning methods, for example construct t-statistics, p-values and
-    joint confidence bands,
+User guide: <http://doubleml.org>
 
-  - generic double machine learning with and without (repeated)
-    cross-fitting,
+**DoubleML** is currently maintained by
+[`@MalteKurz`](https://github.com/MalteKurz) and
+[`@PhilippBach`](https://github.com/PhilippBach).
 
-  - a list of causal models, for example, the partially linear
-    regression model and the interactive regression model as well as its
-    instrumental variable versions,
+## Main Features
 
-  - flexible interface for machine learning methods as provided by the
-    [mlr3](https://mlr3.mlr-org.com/) package and its extensions, for
-    example [mlr3learner](https://mlr3learners.mlr-org.com/) and
-    [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
+Double / debiased machine learning framework of [Chernozhukov et
+al. (2018)](https://arxiv.org/abs/1608.00060) for
 
-  - built-in advanced parameter tuning as provided by
-    [mlr3tuning](https://mlr3tuning.mlr-org.com/) and parameter passing
-    from external tuning with
-    [mlr3tuning](https://mlr3tuning.mlr-org.com/) or other packages.
+  - Partially linear regression models (PLR)
+  - Partially linear IV regression models (PLIV)
+  - Interactive regression models (IRM)
+  - Interactive IV regression models (IIVM)
 
-The object oriented implementation of the R package is based on the [R6
-package for R](https://r6.r-lib.org/). This enables collaborators to
-easily extend the existing models, for example, by varying the score
-functions, or to add new model classes.
+The object-oriented implementation of **DoubleML** that is based on the
+[R6 package for R](https://r6.r-lib.org/) is very flexible. The model
+classes `DoubleMLPLR`, `DoubleMLPLIV`, `DoubleMLIRM` and `DoubleIIVM`
+implement the estimation of the nuisance functions via machine learning
+methods and the computation of the Neyman orthogonal score function. All
+other functionalities are implemented in the abstract base class
+`DoubleML`. In particular functionalities to estimate double machine
+learning models and to perform statistical inference via the methods
+`fit`, `bootstrap`, `confint`, `p_adjust` and `tune`. This
+object-oriented implementation allows a high flexibility for the model
+specification in terms of …
+
+  - … the machine learners for the nuisance functions,
+  - … the resampling schemes,
+  - … the double machine learning algorithm,
+  - … the Neyman orthogonal score functions,
+  - …
+
+It further can be readily extended with regards to
+
+  - … new model classes that come with Neyman orthogonal score functions
+    being linear in the target parameter,
+  - … alternative score functions via callables,
+  - … alternative resampling schemes,
+  - …
 
 ## Installation
 
-The following command will install the development version of the R
-package (requires previous installation of the [`remotes`
-package](https://remotes.r-lib.org/index.html))
+**DoubleML** requires
+
+  - R
+  - R6
+  - mlr3
+  - mlr3tuning
+  - mlr3learners
+  - data.table
+  - paradox
+  - stats
+  - utils
+  - clusterGeneration
+  - foreign (\<= 0.8-76)
+
+We plan to push a first release of the **DoubleML** package to CRAN very
+soon.
+
+Until then we recommend to install from source via
 
 ``` r
 remotes::install_github("DoubleML/doubleml-for-r")
 ```
 
-    ## Using github PAT from envvar GITHUB_PAT
+## References
 
-    ## Skipping install of 'DoubleML' from a github remote, the SHA1 (80fb5ab4) has not changed since last install.
-    ##   Use `force = TRUE` to force installation
-
-Note that the package is still in an early phase of development and many
-parts can be subject of changes.
+  - Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen,
+    C., Newey, W. and Robins, J. (2018), Double/debiased machine
+    learning for treatment and structural parameters. The Econometrics
+    Journal, 21: C1-C68. <doi:10.1111/ectj.12097>.
