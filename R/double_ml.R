@@ -168,10 +168,10 @@ DoubleML = R6::R6Class("DoubleML", public = list(
         private$set__psi_a(psis$psi_a)
         private$set__psi_b(psis$psi_b)
         
-        # estimate the causal parameter(s)
+        # estimate the causal parameter
         coef = private$est_causal_pars()
         private$set__all_coef(coef)
-        # compute psi (depends on estimated causal parameter)
+        # compute score (depends on estimated causal parameter)
         private$compute_score()
         
         # compute standard errors for causal parameter
@@ -204,6 +204,9 @@ DoubleML = R6::R6Class("DoubleML", public = list(
     if (all(is.na(self$psi))) {
       stop("Apply fit() before bootstrap().")      
     }
+    checkmate::assert_choice(method, c("normal", "Bayes", "wild"))
+    checkmate::assert_count(n_rep_boot, positive = TRUE)
+    
     private$initialize_boot_arrays(n_rep_boot)
     
     for (i_rep in 1:self$n_rep) {
@@ -350,6 +353,17 @@ DoubleML = R6::R6Class("DoubleML", public = list(
                                         algorithm = "grid_search",
                                         resolution = 5), 
                              tune_on_folds = FALSE) {
+    checkmate::assert_count(n_folds_tune, positive = TRUE)
+    checkmate::assert(checkmate::check_character(terminator),
+                      checkmate::check_class(terminator, "Terminator"))
+    checkmate::assert_list(param_set)
+    valid_learner = self$learner_names()
+    if (! (all(names(param_set) %in% valid_learner))) {
+      stop(paste("invalid param_set", paste0(names(param_set), collapse = ", "),
+                 "\n param_grids must be a named list with elements named", 
+                  paste0(valid_learner, collapse = ", ")))
+    }
+    
     
     if (!self$apply_cross_fitting){
       stop("Parameter tuning for no-cross-fitting case not implemented.")
