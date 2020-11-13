@@ -246,7 +246,10 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
     stop("Column indices y_col and d_cols not specified.")
   }
   checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
-  checkmate::check_character(x_cols)
+  
+  if (!is.null(x_cols)) {
+    checkmate::check_character(x_cols)
+  }
   checkmate::check_character(y_col)
   checkmate::check_character(d_cols)
   
