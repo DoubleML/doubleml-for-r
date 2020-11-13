@@ -667,13 +667,15 @@ private = list(
                         draw_sample_splitting,
                         apply_cross_fitting) {
     
-    checkmate::check_class(data, "DoubleMLData")
-    checkmate::check_numeric(n_folds, lower = 1, len = 1)
-    checkmate::check_numeric(n_rep, lower = 1, len = 1)
-    checkmate::check_logical(draw_sample_splitting, len = 1)
-    checkmate::check_logical(apply_cross_fitting, len = 1)
-    checkmate::check_character(dml_procedure, len = 1)
-    
+    checkmate::assert_class(data, "DoubleMLData")
+    checkmate::assert_count(n_folds)
+    checkmate::assert_count(n_rep)
+    checkmate::assert(check_class(score, "character"),
+                      check_class(score, "function"))
+    checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))    
+    checkmate::assert_logical(draw_sample_splitting, len = 1)
+    checkmate::assert_logical(apply_cross_fitting, len = 1)
+
     self$data = data
     
     # initialize learners and parameters which are set model specific

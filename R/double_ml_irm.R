@@ -313,12 +313,10 @@ private = list(
   },
   check_score = function(score){
     if (is.character(score)) {
-      valid_score = c("ATE", "ATTE")
+      valid_score = c("ATE", "LATE")
       if (! (score %in% valid_score)) {
-        stop(paste("Invalid score", score, "\n valid score", list(valid_score)))
+        checkmate::assertChoice(score, valid_score)
       }
-    } else if (!is.function(score)) {
-      stop("Score should be either a character or a function.")
     }
     return(score)
   }

@@ -771,10 +771,8 @@ private = list(
     if (is.character(score)) {
       valid_score = c("partialling out")
       if (! (score %in% valid_score)) {
-        stop(paste("Invalid score", score, "\n valid score", list(valid_score)))
+        checkmate::assertChoice(score, valid_score)
       }
-    } else if (!is.function(score)) {
-      stop("Score should be either a character or a function.")
     }
     return(score)
   }
