@@ -69,7 +69,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   se_obj <- double_mlplr_obj$se
   
   # bootstrap
-  double_mlplr_obj$bootstrap(method = 'normal',  n_boot_rep = n_rep_boot)
+  double_mlplr_obj$bootstrap(method = 'normal',  n_rep_boot = n_rep_boot)
   boot_theta_obj = double_mlplr_obj$boot_t_stat
   
   # at the moment the object result comes without a name

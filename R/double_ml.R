@@ -195,17 +195,16 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' @param method (`character(1)`) \cr
   #' A `character(1)` (`"Bayes"`, `"normal"` or `"wild"`) specifying the multiplier bootstrap method. 
   #' 
-  #' @param n_boot_rep (`integer(1)`) \cr
+  #' @param n_rep_boot (`integer(1)`) \cr
   #' The number of bootstrap replications. 
   #' 
   #' @return self
-  bootstrap = function(method='normal', n_boot_rep = 500) {
+  bootstrap = function(method='normal', n_rep_boot = 500) {
     
     if (all(is.na(self$psi))) {
       stop("Apply fit() before bootstrap().")      
     }
-    
-    private$initialize_boot_arrays(n_boot_rep)
+    private$initialize_boot_arrays(n_rep_boot)
     
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
@@ -213,7 +212,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
       for (i_treat in 1:self$data$n_treat) {
         private$i_treat = i_treat
         
-        boot_res = private$compute_bootstrap(method, n_boot_rep)
+        boot_res = private$compute_bootstrap(method, n_rep_boot)
         boot_coef = boot_res$boot_coef
         boot_t_stat = boot_res$boot_t_stat
         private$set__boot_coef(boot_coef)
@@ -630,6 +629,10 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' 
   #' @return named `list()`with paramers for the nuisance model/learner.
   get_params = function(learner){
+    valid_learner = self$learner_names()
+    checkmate::assert_character(learner, len = 1)
+    checkmate::assert_choice(learner, valid_learner) 
+    
     if (private$fold_specific_params) {
       params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
     } else {
@@ -637,21 +640,6 @@ DoubleML = R6::R6Class("DoubleML", public = list(
     }
     return(params)
     }
-  # TODO: implement print() method for DoubleML objects
-  # print = function(digits = max(3L, getOption("digits") -
-  #                                                 3L)) {
-  # 
-  #   if (length(self$coef)) {
-  #     cat("Coefficients:\n")
-  #     print.default(format(self$coef, digits = digits), print.gap = 2L,
-  #                   quote = FALSE)
-  #   }
-  #   else {
-  #     cat("No coefficients\n")
-  #   }
-  #   cat("\n")
-  #   invisible(self$coef)
-  # }
 ),
 private = list(
   n_rep_boot = NULL,
@@ -666,56 +654,63 @@ private = list(
                         dml_procedure,
                         draw_sample_splitting,
                         apply_cross_fitting) {
-    
+    # check and pick up obj_dml_data
     checkmate::assert_class(data, "DoubleMLData")
-    checkmate::assert_count(n_folds)
-    checkmate::assert_count(n_rep)
-    checkmate::assert(checkmate::check_class(score, "character"),
-                      checkmate::check_class(score, "function"))
-    checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))    
-    checkmate::assert_logical(draw_sample_splitting, len = 1)
-    checkmate::assert_logical(apply_cross_fitting, len = 1)
-
+    private$check_data(data)
     self$data = data
     
     # initialize learners and parameters which are set model specific
     self$learner = NULL
     self$params = NULL
+    # Set fold_specific_params = FALSE at instantiation
+    private$fold_specific_params = FALSE
     
+    # check resampling specifications
+    checkmate::assert_count(n_folds)
+    checkmate::assert_count(n_rep)
+    checkmate::assert_logical(apply_cross_fitting, len = 1)
+    checkmate::assert_logical(draw_sample_splitting, len = 1)
+    
+    # set resampling specifications
     self$n_folds = n_folds
+    self$n_rep = n_rep
+    self$apply_cross_fitting = apply_cross_fitting
+    self$draw_sample_splitting = draw_sample_splitting
+
+    # check and set dml_procedure and score
+    checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))
     self$dml_procedure = dml_procedure
     self$score = private$check_score(score)
-    self$n_rep = n_rep
-    
-    self$draw_sample_splitting = draw_sample_splitting
-    self$apply_cross_fitting = apply_cross_fitting
-    
+  
     if (self$n_folds == 1 & self$apply_cross_fitting) {
       message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
       self$apply_cross_fitting = FALSE
     }
     
     if (!self$apply_cross_fitting) {
-      stopifnot(self$n_folds <= 2)
-      
+      if(self$n_folds > 2) {
+        stop("Estimation without cross-fitting not supported for n_folds > 2.")
+      }
       if (self$dml_procedure == "dml2") {
          # redirect to dml1 which works out-of-the-box; dml_procedure is of no relevance without cross-fitting
         self$dml_procedure = "dml1"
       }
     }
     
+    # perform sample splitting
     if (self$draw_sample_splitting) {
       self$split_samples()
     } else {
       self$smpls = NULL
     }
     
-    # Set fold_specific_params = FALSE at instantiation
-    private$fold_specific_params = FALSE
-    self$data$n_treat = data$n_treat
-    
+    # initialize arrays according to obj_dml_data and the resampling settings
     private$initialize_arrays()
     
+    # also initialize bootstrap arrays with the default number of bootstrap replications
+    private$initialize_boot_arrays(n_rep_boot = 500)
+    
+     # initialize instance attributes which are later used for iterating
     invisible(self)
   },
   initialize_arrays = function() {
@@ -739,10 +734,10 @@ private = list(
     }
     
   },
-  initialize_boot_arrays = function(n_rep) {
-    private$n_rep_boot = n_rep
-    self$boot_coef = array(NA, dim=c(self$data$n_treat, n_rep * self$n_rep))
-    self$boot_t_stat = array(NA, dim=c(self$data$n_treat, n_rep * self$n_rep))
+  initialize_boot_arrays = function(n_rep_boot) {
+    private$n_rep_boot = n_rep_boot
+    self$boot_coef = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
+    self$boot_t_stat = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
@@ -822,7 +817,7 @@ private = list(
     
     invisible(self)
   },
-  compute_bootstrap = function(method, n_boot_rep) {
+  compute_bootstrap = function(method, n_rep_boot) {
     dml_procedure = self$dml_procedure
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -835,21 +830,21 @@ private = list(
     }
     
     if (method == "Bayes") {
-      weights = stats::rexp(n_boot_rep * n_obs, rate = 1) - 1
+      weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
     } else if (method == "normal") {
-      weights = stats::rnorm(n_boot_rep * n_obs)
+      weights = stats::rnorm(n_rep_boot * n_obs)
     } else if (method == "wild") {
-      weights = stats::rnorm(n_boot_rep * n_obs)/sqrt(2) + (stats::rnorm(n_boot_rep * n_obs)^2 - 1)/2
+      weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
     } else {
       stop("invalid boot method")
     }
     
     # for alignment with the functional (loop-wise) implementation we fill by row
-    weights = matrix(weights, nrow = n_boot_rep, ncol = n_obs, byrow=TRUE)
+    weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
     
     if (self$apply_cross_fitting) {
       if (dml_procedure == "dml1") {
-        boot_coefs = boot_t_stat = matrix(NA, nrow = n_boot_rep, ncol = self$n_folds)
+        boot_coefs = boot_t_stat = matrix(NA, nrow = n_rep_boot, ncol = self$n_folds)
         ii = 0
         for (i_fold in 1:self$n_folds) {
           test_index = test_ids[[i_fold]]

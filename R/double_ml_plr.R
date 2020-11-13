@@ -244,6 +244,8 @@ private = list(
     return(tuning_result)
   },
   check_score = function(score){
+    checkmate::assert(checkmate::check_class(score, "character"),
+                      checkmate::check_class(score, "function"))
     if (is.character(score)) {
       valid_score = c("IV-type", "partialling out")
       if (! (score %in% valid_score)) {
@@ -251,6 +253,14 @@ private = list(
       }
     }
     return(score)
+  },
+  check_data = function(obj_dml_data) {
+    if (!is.null(obj_dml_data$z_cols)) {
+      stop(paste("Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "), 
+                 "has been set as instrumental variable(s).\n", 
+                  "To fit a partially linear IV regression model use DoubleMLPLIV instead of DoubleMLPLR."))
+    }
+    return()
   }
 )
 )

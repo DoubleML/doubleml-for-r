@@ -428,6 +428,8 @@ private = list(
                 train_ids_1=train_ids_1))
   },
   check_score = function(score){
+    checkmate::assert(checkmate::check_class(score, "character"),
+                      checkmate::check_class(score, "function"))
     if (is.character(score)) {
       valid_score = c("LATE")
       if (! (score %in% valid_score)) {
@@ -435,6 +437,25 @@ private = list(
       }
     }
     return(score)
+  }, 
+  check_data = function(obj_dml_data) {
+    one_treat = (obj_dml_data$n_treat == 1) 
+    binary_treat = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$d_cols, with = FALSE], lower = 0, upper = 1)
+    if (! (one_treat & binary_treat)) {
+      stop(paste("Incompatible data.\n", 
+                 "To fit an IIVM model with DoubleML", 
+                  "exactly one binary variable with values 0 and 1", 
+                  "needs to be specified as treatment variable."))
+    }
+    one_instr = (obj_dml_data$n_instr == 1) 
+    binary_instr = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$z_cols, with = FALSE], lower = 0, upper = 1)
+    if (! (one_instr & binary_instr)) {
+      stop(paste("Incompatible data.\n", 
+                 "To fit an IIVM model with DoubleML", 
+                  "exactly one binary variable with values 0 and 1", 
+                  "needs to be specified as instrumental variable."))
+    }
+    return()
   }
 )
 )

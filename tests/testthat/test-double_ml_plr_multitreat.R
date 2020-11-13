@@ -71,7 +71,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   
   # bootstrap
   set.seed(i_setting)
-  double_mlplr_obj$bootstrap(method = 'normal',  n_boot_rep = n_rep_boot)
+  double_mlplr_obj$bootstrap(method = 'normal',  n_rep_boot = n_rep_boot)
   boot_theta_obj = double_mlplr_obj$boot_t_stat
   
   # joint confint
