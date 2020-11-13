@@ -9,7 +9,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(eval = FALSE)
+knitr::opts_chunk$set(eval = TRUE)
 ```
 
 The purpose of the following case-studies is to demonstrate the core functionalities of `DoubleML`.
@@ -98,7 +98,7 @@ learner = lrn("regr.ranger", num.trees=500, mtry=floor(sqrt(n_vars)), max.depth=
 ml_g_bonus = learner$clone()
 ml_m_bonus = learner$clone()
 
-learner = lrn("regr.cv_glmnet", s = "lambda.min")
+learner = lrn("regr.glmnet", lambda = sqrt(log(n_vars)/(n_obs)))
 ml_g_sim = learner$clone()
 ml_m_sim = learner$clone()
 ```
