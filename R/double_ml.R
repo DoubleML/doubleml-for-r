@@ -230,7 +230,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' @return self
   split_samples = function() {
 
-    dummy_task = Task$new('dummy_resampling', 'regr', self$data$data)
+    dummy_task = mlr3::Task$new('dummy_resampling', 'regr', self$data$data)
     
      if (self$n_folds == 1 & self$apply_cross_fitting) {
       message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
@@ -239,7 +239,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
 
     if (self$apply_cross_fitting) {
       
-      dummy_resampling_scheme = rsmp("repeated_cv",
+      dummy_resampling_scheme = mlr3::rsmp("repeated_cv",
                                       folds = self$n_folds,
                                       repeats = self$n_rep)$instantiate(dummy_task)
       train_ids = lapply(1:(self$n_folds * self$n_rep),
@@ -262,14 +262,14 @@ DoubleML = R6::R6Class("DoubleML", public = list(
           stop("Repeated sample splitting without cross-fitting not implemented.")
         }
         
-        dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
+        dummy_resampling_scheme = mlr3::rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
         train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
         test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
         
         smpls = list(list(train_ids = train_ids, test_ids = test_ids))
         
       } else if (self$n_folds == 1) {
-        dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
+        dummy_resampling_scheme = mlr3::rsmp("insample")$instantiate(dummy_task)
       
         train_ids = lapply(1:(self$n_folds * self$n_rep),
                             function(x) dummy_resampling_scheme$train_set(x))
@@ -670,8 +670,8 @@ private = list(
     checkmate::assert_class(data, "DoubleMLData")
     checkmate::assert_count(n_folds)
     checkmate::assert_count(n_rep)
-    checkmate::assert(check_class(score, "character"),
-                      check_class(score, "function"))
+    checkmate::assert(checkmate::check_class(score, "character"),
+                      checkmate::check_class(score, "function"))
     checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))    
     checkmate::assert_logical(draw_sample_splitting, len = 1)
     checkmate::assert_logical(apply_cross_fitting, len = 1)
