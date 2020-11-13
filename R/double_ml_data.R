@@ -100,13 +100,15 @@ DoubleMLData = R6::R6Class("DoubleMLData", public = list(
     if (all(class(data)=="data.frame")){
       stop("'data' is a data.frame, use 'double_ml_data_from_data_frame' call to instantiate DoubleMLData.")
     }
-
     checkmate::assert_class(data, "data.table")
-    checkmate::assert_character(x_cols)
-    checkmate::assert_character(y_cols)
+    if (!is.null(x_cols)) {
+      checkmate::assert_character(x_cols)
+    }
+    checkmate::assert_character(y_col)
     checkmate::assert_character(d_cols)
-    checkmate::assert_character(z_cols)
-    
+    if (!is.null(z_cols)) {
+      checkmate::assert_character(z_cols)
+    }
     if (any(d_cols %in% x_cols)){
       stop(paste("Invalid model specification.\n", 
             "Treatment variables must not be elements of the control variables X."))
