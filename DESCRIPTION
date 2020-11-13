@@ -42,7 +42,8 @@ Suggests:
     ranger,
     hdm,
     sandwich,
-    AER
+    AER,
+    rpart
 VignetteBuilder: knitr
 Collate: 
     'double_ml.R'
