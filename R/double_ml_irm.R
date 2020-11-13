@@ -313,7 +313,7 @@ private = list(
   },
   check_score = function(score){
     if (is.character(score)) {
-      valid_score = c("ATE", "LATE")
+      valid_score = c("ATE", "ATTE")
       if (! (score %in% valid_score)) {
         checkmate::assertChoice(score, valid_score)
       }
