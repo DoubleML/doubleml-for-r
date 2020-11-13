@@ -101,8 +101,31 @@ DoubleMLData = R6::R6Class("DoubleMLData", public = list(
       stop("'data' is a data.frame, use 'double_ml_data_from_data_frame' call to instantiate DoubleMLData.")
     }
 
-    checkmate::check_class(data, "data.table")
-    checkmate::check_class(use_other_treat_as_covariate, "logical")
+    checkmate::assert_class(data, "data.table")
+    checkmate::assert_character(x_cols)
+    checkmate::assert_character(y_cols)
+    checkmate::assert_character(d_cols)
+    checkmate::assert_character(z_cols)
+    
+    if (any(d_cols %in% x_cols)){
+      stop(paste("Invalid model specification.\n", 
+            "Treatment variables must not be elements of the control variables X."))
+    }
+    if (y_col %in% x_cols){
+      stop(paste("Invalid model specification.\n", 
+            "Dependent variable must not be an element of the control variables X."))
+    }
+    if (any(z_cols %in% x_cols)){
+      stop(paste("Invalid model specification.\n", 
+            "Instrumental variables must not be an element of the control variables X."))
+    }
+    if (any(z_cols %in% d_cols)){
+      stop(paste("Invalid model specification.\n", 
+            "Instrumental variables must not be an element of the treatment variables d."))
+    }
+    
+    
+    checkmate::assert_logical(use_other_treat_as_covariate, len = 1)
         
     self$data = data
     self$data_model = NULL
@@ -143,7 +166,6 @@ DoubleMLData = R6::R6Class("DoubleMLData", public = list(
   #' @param treatment_var (`character()`)\cr 
   #' Active treatment variable that will be set to `treat_col`. 
   set_data_model = function(treatment_var){
-    
     checkmate::check_character(treatment_var, max.len = 1)
     checkmate::check_subset(treatment_var, self$d_cols)
     
@@ -217,7 +239,8 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
                                               d_cols = NULL, z_cols = NULL, 
                                               data_class = "DoubleMLData", 
                                               use_other_treat_as_covariate = TRUE){
-  if (is.null(y_col) | is.null(d_cols)){
+  
+  if (is.null(y_col) | is.null(d_cols)) {
     stop("Column indices y_col and d_cols not specified.")
   }
   checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
@@ -228,7 +251,23 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   if (!is.null(z_cols)){
     checkmate::check_character(z_cols)
   }
-  
+  if (any(d_cols %in% x_cols)){
+    stop(paste("Invalid model specification.\n", 
+          "Treatment variables must not be elements of the control variables X."))
+  }
+  if (y_col %in% x_cols){
+    stop(paste("Invalid model specification.\n", 
+          "Dependent variable must not be an element of the control variables X."))
+  }
+  if (any(z_cols %in% x_cols)){
+    stop(paste("Invalid model specification.\n", 
+          "Instrumental variables must not be an element of the control variables X."))
+  }
+  if (any(z_cols %in% d_cols)){
+    stop(paste("Invalid model specification.\n", 
+          "Instrumental variables must not be an element of the treatment variables d."))
+  }
+    
   if (!is.null(x_cols)) {
     x_cols = x_cols
   } else {
@@ -286,6 +325,7 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "DoubleMLData", 
                                       use_other_treat_as_covariate = TRUE){
   checkmate::check_choice(data_class, c("DoubleMLData", "data.table"))
+  checkmate::check_logical(use_other_treat_as_covariate, len = 1)
   if (!is.null(X)) {
     X = assure_matrix(X)
   }

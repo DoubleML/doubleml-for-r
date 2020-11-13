@@ -188,11 +188,9 @@ assure_matrix = function(x){
   if (is.vector(x)){
     x = matrix(x, ncol = 1)
   }
-  
   else {
     checkmate::check_matrix(x)
   }
-  
   return(x)
   
 }
