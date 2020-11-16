@@ -14,7 +14,7 @@
 #' 
 #' \eqn{Z = m_0(X) + V}, 
 #' 
-#' with \eqn{\mathbb{E}[\zeta|X,Z]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable, \eqn{D \in \{0,1\}} is the binary treatment variable and \eqn{Z \in \{0,1\}} is a binary instrumental variable. Consider the functions \eqn{g_0}, \eqn{r_0} and \eqn{m_0}, where \eqn{g_0} maps the support of \eqn{(Z,X)} to \eqn{\mathbb{R}} and \eqn{r_0} and \eqn{m_0}, respectively, map the support of \eqn{(Z,X)} and \eqn{X} to \eqn{(\epsilon, 1-\epsilon)} for some \eqn{\epsilon \in (1, 1/2)}, such that 
+#' with \eqn{E[\zeta|X,Z]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable, \eqn{D \in \{0,1\}} is the binary treatment variable and \eqn{Z \in \{0,1\}} is a binary instrumental variable. Consider the functions \eqn{g_0}, \eqn{r_0} and \eqn{m_0}, where \eqn{g_0} maps the support of \eqn{(Z,X)} to \eqn{R} and \eqn{r_0} and \eqn{m_0}, respectively, map the support of \eqn{(Z,X)} and \eqn{X} to \eqn{(\epsilon, 1-\epsilon)} for some \eqn{\epsilon \in (1, 1/2)}, such that 
 #' 
 #' \eqn{Y = g_0(D,X) + \zeta,}
 #'  
@@ -22,9 +22,9 @@
 #' 
 #' \eqn{Z = m_0(X) + V,} 
 #' 
-#' with \eqn{\mathbb{E}[\zeta|Z,X]=0}, \eqn{\mathbb{E}[U|Z,X]=0} and \eqn{\mathbb{E}[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE), 
+#' with \eqn{E[\zeta|Z,X]=0}, \eqn{E[U|Z,X]=0} and \eqn{E[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE), 
 #' 
-#' \eqn{\theta_0 = \frac{\mathbb{E}[g_0(1,X)] - \mathbb{E}[g_0(0,X)]}{\mathbb{E}[r(1,X)] - \mathbb{E}[r(0,X)]}.}
+#' \eqn{\theta_0 = \frac{E[g_0(1,X)] - E[g_0(0,X)]}{E[r(1,X)] - E[r(0,X)]}.}
 #' 
 #' 
 #' @usage NULL
@@ -65,17 +65,17 @@ DoubleMLIIVM =R6:: R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
   #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.  
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_g` refers to the nuisance function \eqn{g_0(Z,X) = \mathbb{E}[Y|X,Z]}.
+  #' `ml_g` refers to the nuisance function \eqn{g_0(Z,X) = E[Y|X,Z]}.
   #' 
   #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`) \cr
   #' An object of the class [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner, possibly with specified parameters, for example `lrn(classif.cv_glmnet, s = "lambda.min")`. 
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[Z|X]}.
+  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.
   #' 
   #' @param ml_r ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`) \cr
   #' An object of the class [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner, possibly with specified parameters, for example `lrn(classif.cv_glmnet, s = "lambda.min")`.
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_r` refers to the nuisance function \eqn{r_0(Z,X) = \mathbb{E}[D|X,Z]}.
+  #' `ml_r` refers to the nuisance function \eqn{r_0(Z,X) = E[D|X,Z]}.
   #' 
   #' @param n_folds (`integer(1)`)\cr
   #' Number of folds. Default is `5`. 

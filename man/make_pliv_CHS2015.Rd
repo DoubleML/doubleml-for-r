@@ -42,7 +42,7 @@ Generates data from a partially linear IV regression model used in Chernozhukov,
 
 with
 
-\eqn{\left(\begin{matrix} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i \end{matrix} \right) \sim \mathcal{N}\left(0, \left(\begin{matrix} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0 \\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{matrix} \right) \right)}
+\eqn{\left(\begin{array}{c} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i \end{array} \right) \sim \mathcal{N}\left(0, \left(\begin{array}{cccc} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0 \\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{array} \right) \right)}
 
 where \eqn{\Sigma} is a \eqn{p_n^x \times p_n^x} matrix with entries \eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{I_{p_n^z}} is the \eqn{p^z_n \times p^z_n} identity matrix. \eqn{\beta=\gamma} iis a \eqn{p^x_n}-vector with entries \eqn{\beta_j = \frac{1}{j^2}}, \eqn{\delta} is a \eqn{p^z_n}-vector with entries \eqn{\delta_j = \frac{1}{j^2}} and \eqn{\Pi = (I_{p_n^z}, O_{p_n^z \times (p_n^x - p_n^z)})}.
 }

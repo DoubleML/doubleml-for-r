@@ -315,7 +315,7 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5, return_typ
 #' 
 #' with 
 #' 
-#' \eqn{\left(\begin{matrix} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i \end{matrix} \right) \sim \mathcal{N}\left(0, \left(\begin{matrix} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0 \\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{matrix} \right) \right)}
+#' \eqn{\left(\begin{array}{c} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i \end{array} \right) \sim \mathcal{N}\left(0, \left(\begin{array}{cccc} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0 \\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{array} \right) \right)}
 #' 
 #' where \eqn{\Sigma} is a \eqn{p_n^x \times p_n^x} matrix with entries \eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{I_{p_n^z}} is the \eqn{p^z_n \times p^z_n} identity matrix. \eqn{\beta=\gamma} iis a \eqn{p^x_n}-vector with entries \eqn{\beta_j = \frac{1}{j^2}}, \eqn{\delta} is a \eqn{p^z_n}-vector with entries \eqn{\delta_j = \frac{1}{j^2}} and \eqn{\Pi = (I_{p_n^z}, O_{p_n^z \times (p_n^x - p_n^z)})}.
 #' 
@@ -483,9 +483,9 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5, R2_y = 
 #'
 #' \eqn{y_i = \theta d_i + x_i' \beta + u_i,}
 #' 
-#' \eqn{Z \sim \text{Bernoulli}(0.5)} and 
+#' \eqn{Z \sim textstyle(Bernoulli)(0.5)} and 
 #' 
-#' \eqn{\left(\begin{matrix} u_i \\ v_i \end{matrix} \right) \sim \mathcal{N}\left(0, \left(\begin{matrix} 1  0.3 \\ 0.3  1 \end{matrix} \right) \right).}
+#' \eqn{\left(\begin{array}{c} u_i \\ v_i \end{array} \right) \sim \mathcal{N}\left(0, \left(\begin{array}{cc} 1 & 0.3 \\ 0.3 & 1 \end{array} \right) \right).}
 #' 
 #' The covariates :\eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma} is a matrix with entries
 #' \eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{\beta} is a `dim_x`-vector with entries \eqn{\beta_j=\frac{1}{j^2}}.
