@@ -7,7 +7,8 @@ The R package **DoubleML** provides an implementation of the double /
 debiased machine learning framework of [Chernozhukov et
 al. (2018)](https://arxiv.org/abs/1608.00060). It is built on top of
 [mlr3](https://mlr3.mlr-org.com/) and the [mlr3
-ecosystem](https://github.com/mlr-org/mlr3/wiki/Extension-Packages).
+ecosystem](https://github.com/mlr-org/mlr3/wiki/Extension-Packages)
+(Lang et al., 2019).
 
 Note that the R package was developed together with a python twin based
 on [scikit-learn](https://scikit-learn.org/). The python package is also
@@ -90,3 +91,9 @@ remotes::install_github("DoubleML/doubleml-for-r")
     C., Newey, W. and Robins, J. (2018), Double/debiased machine
     learning for treatment and structural parameters. The Econometrics
     Journal, 21: C1-C68. <doi:10.1111/ectj.12097>.
+
+  - Lang, M., Binder, M., Richter, J., Schratz, P., Pfisterer, F.,
+    Coors, S., Au, Q., Casalicchio, G., Kotthoff, L., Bischl, B. (2019),
+    mlr3: A modern object-oriented machine learing framework in R.
+    Journal of Open Source Software,
+    [doi:10.21105/joss.01903](10.21105/joss.01903)
