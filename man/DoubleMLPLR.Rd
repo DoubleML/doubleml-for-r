@@ -16,7 +16,7 @@ Partially linear regression (PLR) models take the form
 
 \eqn{D = m_0(X) + V,}
 
-with \eqn{\mathbb{E}[\zeta|D,X]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
+with \eqn{E[\zeta|D,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
 }
 \examples{
 library(DoubleML)
@@ -96,11 +96,11 @@ The \code{DoubleMLData} object providing the data and specifying the variables o
 \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)},) \cr
 An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
-\code{ml_g} refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X]}.}
+\code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.}
 
 \item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)},) \cr
 An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}. Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
-\code{ml_m} refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[D|X]}.}
+\code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[D|X]}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
 Number of folds. Default is \code{5}.}

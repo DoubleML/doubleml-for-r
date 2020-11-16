@@ -14,13 +14,13 @@
 #' 
 #' \eqn{D = m_0(X) + V}, 
 #' 
-#' with \eqn{\mathbb{E}[U|X,D]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable and \eqn{D \in \{0,1\}} is the binary treatment variable. We consider estimation of the average treamtent effects when treatment effects are fully heterogeneous. Target parameters of interest in this model are the average treatment effect (ATE), 
+#' with \eqn{E[U|X,D]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable and \eqn{D \in \{0,1\}} is the binary treatment variable. We consider estimation of the average treamtent effects when treatment effects are fully heterogeneous. Target parameters of interest in this model are the average treatment effect (ATE), 
 #' 
-#' \eqn{\theta_0 = \mathbb{E}[g_0(1,X) - g_0(0,X)]} 
+#' \eqn{\theta_0 = E[g_0(1,X) - g_0(0,X)]} 
 #' 
 #' and the average treament effect on the treated (ATTE), 
 #' 
-#' \eqn{\theta_0 = \mathbb{E}[g_0(1,X) - g_0(0,X)|D=1]}.
+#' \eqn{\theta_0 = E[g_0(1,X) - g_0(0,X)|D=1]}.
 #' 
 #' @usage NULL
 #' 
@@ -55,12 +55,12 @@ DoubleMLIRM = R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
   #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`.
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`.  \cr
-  #' `ml_g` refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X,D]}.
+  #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X,D]}.
   #' 
   #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`) \cr
   #' An object of the class [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner, possibly with specified parameters, for example `lrn(classif.cv_glmnet, s = "lambda.min")`.
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 classification learner][mlr3::LearnerClassif] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[D|X]}.
+  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[D|X]}.
   #' 
   #' @param n_folds (`integer(1)`)\cr
   #' Number of folds. Default is `5`. 

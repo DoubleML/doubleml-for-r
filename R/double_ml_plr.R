@@ -13,7 +13,7 @@
 #' 
 #' \eqn{D = m_0(X) + V,}
 #' 
-#' with \eqn{\mathbb{E}[\zeta|D,X]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.  
+#' with \eqn{E[\zeta|D,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.  
 #'
 #' @usage NULL
 #' 
@@ -40,11 +40,11 @@ DoubleMLPLR = R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`,) \cr
   #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. 
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_g` refers to the nuisance function \eqn{g_0(X) = \mathbb{E}[Y|X]}.
+  #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
   #' 
   #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`,) \cr
   #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
-  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[D|X]}.
+  #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[D|X]}.
  
   #' 
   #' @param n_folds (`integer(1)`)\cr
