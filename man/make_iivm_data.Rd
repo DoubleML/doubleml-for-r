@@ -35,9 +35,9 @@ Generates data from a interactive IV regression (IIVM) model. The data generatin
 
 \eqn{y_i = \theta d_i + x_i' \beta + u_i,}
 
-\eqn{Z \sim \text{Bernoulli}(0.5)} and
+\eqn{Z \sim \textstyle{Bernoulli} (0.5)} and
 
-\eqn{\left(\begin{matrix} u_i \\ v_i \end{matrix} \right) \sim \mathcal{N}\left(0, \left(\begin{matrix} 1  0.3 \\ 0.3  1 \end{matrix} \right) \right).}
+\eqn{\left(\begin{array}{c} u_i \\ v_i \end{array} \right) \sim \mathcal{N}\left(0, \left(\begin{array}{cc} 1 & 0.3 \\ 0.3 & 1 \end{array} \right) \right).}
 
 The covariates :\eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma} is a matrix with entries
 \eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{1}{j^2}}.

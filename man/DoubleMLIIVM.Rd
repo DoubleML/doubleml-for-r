@@ -16,7 +16,7 @@ Interactive IV regression (IIVM) models take the form
 
 \eqn{Z = m_0(X) + V},
 
-with \eqn{\mathbb{E}[\zeta|X,Z]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the outcome variable, \eqn{D \in \{0,1\}} is the binary treatment variable and \eqn{Z \in \{0,1\}} is a binary instrumental variable. Consider the functions \eqn{g_0}, \eqn{r_0} and \eqn{m_0}, where \eqn{g_0} maps the support of \eqn{(Z,X)} to \eqn{\mathbb{R}} and \eqn{r_0} and \eqn{m_0}, respectively, map the support of \eqn{(Z,X)} and \eqn{X} to \eqn{(\epsilon, 1-\epsilon)} for some \eqn{\epsilon \in (1, 1/2)}, such that
+with \eqn{E[\zeta|X,Z]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable, \eqn{D \in \{0,1\}} is the binary treatment variable and \eqn{Z \in \{0,1\}} is a binary instrumental variable. Consider the functions \eqn{g_0}, \eqn{r_0} and \eqn{m_0}, where \eqn{g_0} maps the support of \eqn{(Z,X)} to \eqn{R} and \eqn{r_0} and \eqn{m_0}, respectively, map the support of \eqn{(Z,X)} and \eqn{X} to \eqn{(\epsilon, 1-\epsilon)} for some \eqn{\epsilon \in (1, 1/2)}, such that
 
 \eqn{Y = g_0(D,X) + \zeta,}
 
@@ -24,9 +24,9 @@ with \eqn{\mathbb{E}[\zeta|X,Z]=0} and \eqn{\mathbb{E}[V|X] = 0}. \eqn{Y} is the
 
 \eqn{Z = m_0(X) + V,}
 
-with \eqn{\mathbb{E}[\zeta|Z,X]=0}, \eqn{\mathbb{E}[U|Z,X]=0} and \eqn{\mathbb{E}[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE),
+with \eqn{E[\zeta|Z,X]=0}, \eqn{E[U|Z,X]=0} and \eqn{E[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE),
 
-\eqn{\theta_0 = \frac{\mathbb{E}[g_0(1,X)] - \mathbb{E}[g_0(0,X)]}{\mathbb{E}[r(1,X)] - \mathbb{E}[r(0,X)]}.}
+\eqn{\theta_0 = \frac{E[g_0(1,X)] - E[g_0(0,X)]}{E[r(1,X)] - E[r(0,X)]}.}
 }
 \examples{
 library(DoubleML)
@@ -125,17 +125,17 @@ The \code{DoubleMLData} object providing the data and specifying the variables o
 \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
 An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
-\code{ml_g} refers to the nuisance function \eqn{g_0(Z,X) = \mathbb{E}[Y|X,Z]}.}
+\code{ml_g} refers to the nuisance function \eqn{g_0(Z,X) = E[Y|X,Z]}.}
 
 \item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
 An object of the class \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner, possibly with specified parameters, for example \code{lrn(classif.cv_glmnet, s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
-\code{ml_m} refers to the nuisance function \eqn{m_0(X) = \mathbb{E}[Z|X]}.}
+\code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.}
 
 \item{\code{ml_r}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
 An object of the class \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner, possibly with specified parameters, for example \code{lrn(classif.cv_glmnet, s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
-\code{ml_r} refers to the nuisance function \eqn{r_0(Z,X) = \mathbb{E}[D|X,Z]}.}
+\code{ml_r} refers to the nuisance function \eqn{r_0(Z,X) = E[D|X,Z]}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
 Number of folds. Default is \code{5}.}
