@@ -7,8 +7,11 @@ Authors@R: c(
     person("Victor", "Chernozhukov", role="aut"),
     person("Malte", "Kurz", email = "malte.kurz@uni-hamburg.de", role=c("aut", "cre")),
     person("Martin", "Spindler", email="martin.spindler@gmx.de", role="aut"))
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: The R package DoubleML provides an implementation of the double / debiased machine learning framework of Chernozhukov et al. (2018) for
+    partially linear regression models, partially linear instrumental variable regression models, interactive regression models and interactive instrumental
+    variable regression models. DoubleML allows estimation of the nuisance parts in these models by machine learning methods and computation of the Neyman
+    orthogonal score functions. DoubleML is built on top of mlr3 and the mlr3 ecosystem. The object-oriented implementation of DoubleML that is based on 
+    the R6 package for R is very flexible. 
 License: MIT + file LICENSE
 URL: https://github.com/DoubleML/doubleml-for-r/
 Encoding: UTF-8
