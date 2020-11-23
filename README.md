@@ -60,6 +60,8 @@ It further can be readily extended with regards to
   - … alternative resampling schemes,
   - …
 
+![OOP structure of the DoubleML package](/man/figures/oop.svg?raw=true)
+
 ## Installation
 
 **DoubleML** requires
