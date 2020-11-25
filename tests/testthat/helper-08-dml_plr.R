@@ -199,8 +199,8 @@ dml_plr <- function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(par
 
 #' @export
 dml_plr_boot <- function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
-                          score = "IV-type", se_type = "ls",
-                          bootstrap = "normal",  nRep = 500) {
+                         score = "IV-type", se_type = "ls",
+                         weights = weights,  nRep = 500) {
   
   m_hat_list <- all_preds$m_hat_list
   g_hat_list <- all_preds$g_hat_list
@@ -232,13 +232,10 @@ dml_plr_boot <- function(data, y, d, theta, se, all_preds, dml_procedure = "dml2
       v_hatd[, i]  <- v_hat[, i]*D[test_index]
     }
     
-    if (bootstrap != "none") {
-      
-      boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
+    boot <- bootstrap_plr(theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat, 
                             v_hatd = v_hatd, score = score, se = se,
-                            bootstrap = bootstrap, nRep = nRep)
-      boot_theta <- boot$boot_theta
-    }
+                            weights = weights, nRep = nRep)
+    boot_theta <- boot$boot_theta
   }
   
   if ( dml_procedure == "dml2") {
@@ -257,13 +254,10 @@ dml_plr_boot <- function(data, y, d, theta, se, all_preds, dml_procedure = "dml2
       
     }
     
-    if (bootstrap != "none") {
-      
-      boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
+    boot <- bootstrap_plr(theta = theta, d = D, u_hat = u_hat, v_hat = v_hat, 
                             v_hatd = v_hatd, score = score, se = se,
-                            bootstrap = bootstrap, nRep = nRep)
-      boot_theta <- boot$boot_theta
-    }
+                          weights = weights, nRep = nRep)
+    boot_theta <- boot$boot_theta
   }
   
   return(boot_theta)
@@ -350,7 +344,7 @@ var_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedur
 #' @inheritParams DML
 #' @param se Estimated standard error from DML procedure.
 #' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
-bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se, bootstrap, nRep) {
+bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se, weights, nRep) {
   
   boot_var <- NA
   
@@ -373,19 +367,7 @@ bootstrap_plr <- function(theta, d, u_hat, v_hat, v_hatd, score, se, bootstrap, 
     J <- matrix(rep(J, each=nrow(score)), nrow=nrow(score))
   }
   for (i in seq(nRep)) {
-    
-    if (bootstrap == "Bayes") {
-        weights <- stats::rexp(n, rate = 1) - 1
-    }
-    
-      if (bootstrap == "normal") {
-        weights <- stats::rnorm(n)
-      }
-    
-      if (bootstrap == "wild") {
-        weights <- stats::rnorm(n)/sqrt(2) + (stats::rnorm(n)^2 - 1)/2
-      }
-     pertub[1,i] <- mean( colMeans(weights * 1/se * 1/J * score, na.rm = TRUE))
+     pertub[1,i] <- mean( colMeans(weights[i,] * 1/se * 1/J * score, na.rm = TRUE))
     
   }
   
