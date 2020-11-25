@@ -178,6 +178,25 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
 }
 
 
+# helper to draw weights in multiplier bootstrap
+draw_weights = function(method, n_rep_boot, n_obs) {
+  if (method == "Bayes") {
+    weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
+  } else if (method == "normal") {
+    weights = stats::rnorm(n_rep_boot * n_obs)
+  } else if (method == "wild") {
+    weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
+  } else {
+    stop("invalid boot method")
+  }
+  weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
+  return(weights)
+}
+
+
+
+
+
 format.perc = function (probs, digits) {
   paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
         "%" ) }
