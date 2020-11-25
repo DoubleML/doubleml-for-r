@@ -217,7 +217,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
       } else {
         smpls = private$get__smpls()
         test_ids = smpls$test_ids
-        test_index = test_ids[[i_rep]]
+        test_index = test_ids[[1]]
         n_obs = length(test_index)
       }
       weights = draw_weights(method, n_rep_boot, n_obs)  
