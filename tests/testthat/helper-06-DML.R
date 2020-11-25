@@ -237,6 +237,7 @@ bootstrap.DML <- function(object, data, y, d,
   n_rep = xx[2]
   p1 = length(d)
   
+  boot_theta = matrix(NA, nrow = p1, ncol = nRep * n_rep)
   n_obs <- nrow(data)
   for (s in seq(n_rep)){
     if (bootstrap == "Bayes") {
@@ -249,8 +250,6 @@ bootstrap.DML <- function(object, data, y, d,
       stop("invalid boot method")
     }
     weights = matrix(weights, nrow = nRep, ncol = n_obs, byrow=TRUE)
-    
-    boot_theta = matrix(NA, nrow = p1, ncol = nRep * n_rep)
     for (j in seq(p1)) {
       ind_start <- ((s-1)*nRep+1)
       ind_end <- (s*nRep)
