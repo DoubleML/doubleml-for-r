@@ -60,7 +60,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                      score = score, 
                                      draw_sample_splitting = FALSE)
   
-  double_mlplr_obj_external$set_samples(SAMPLES)
+  double_mlplr_obj_external$set_sample_splitting(SAMPLES)
   
   # set params for nuisance part m
   double_mlplr_obj_external$set_ml_nuisance_params(learner = "ml_m", 

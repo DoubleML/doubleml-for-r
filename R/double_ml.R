@@ -305,7 +305,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' A nested `list()`. The outer lists needs to provide an entry per repeated sample splitting (length of the list is set as `n_rep`). The inner list is a named `list()` with names `train_ids` and `test_ids`. The entries in `train_ids` and `test_ids` must be partitions per fold (length of `train_ids` and `test_ids` is set as `n_folds`).
   #' 
   #' @return self
-  set_samples = function(smpls) {
+  set_sample_splitting = function(smpls) {
     checkmate::assert_list(smpls)
     self$n_rep = length(smpls)
     n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
