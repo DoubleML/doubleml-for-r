@@ -1,6 +1,6 @@
 Package: DoubleML
 Type: Package
-Title: Double Machine Learning
+Title: Double Machine Learning in R
 Version: 0.1.0.9000
 Authors@R: c(
     person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role="aut"),
