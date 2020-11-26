@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DoubleML - Double Machine Learning in python and R
+# DoubleML - Double Machine Learning in R
 
 The R package **DoubleML** provides an implementation of the double /
 debiased machine learning framework of [Chernozhukov et
