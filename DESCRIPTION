@@ -33,7 +33,7 @@ Imports:
     paradox (>= 0.4.0),
     utils,
     clusterGeneration,
-    foreign (<= 0.8-76)
+    readstata13
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 

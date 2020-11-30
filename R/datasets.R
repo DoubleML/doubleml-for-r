@@ -36,7 +36,7 @@
 fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE) {
   checkmate::check_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
   url = "https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta"
-  data = foreign::read.dta(url)
+  data = readstata13::read.dta13(url)
   
   if (polynomial_features) {
     stop("Not implemented yet.")
