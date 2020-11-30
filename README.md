@@ -87,6 +87,23 @@ Until then we recommend to install from source via
 remotes::install_github("DoubleML/doubleml-for-r")
 ```
 
+## Citation
+
+If you use the DoubleML package a citation is highly appreciated:
+
+Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2020),
+DoubleML - Double Machine Learning in R. URL:
+<https://github.com/DoubleML/doubleml-for-r>, R-Package version 0.1.0.
+
+Bibtex-entry:
+
+    @Manual{DoubleML2020,
+      title = {DoubleML - Double Machine Learning in R},
+      author = {Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M.},
+      year = {2020},
+      note = {URL: \url{https://github.com/DoubleML/doubleml-for-r}, R-Package version 0.1.0}
+    }
+
 ## References
 
   - Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen,
