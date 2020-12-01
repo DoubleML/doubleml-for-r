@@ -100,7 +100,7 @@ Results from hyperparameter tuning.}
 \item \href{#method-fit}{\code{DoubleML$fit()}}
 \item \href{#method-bootstrap}{\code{DoubleML$bootstrap()}}
 \item \href{#method-split_samples}{\code{DoubleML$split_samples()}}
-\item \href{#method-set_samples}{\code{DoubleML$set_samples()}}
+\item \href{#method-set_sample_splitting}{\code{DoubleML$set_sample_splitting()}}
 \item \href{#method-tune}{\code{DoubleML$tune()}}
 \item \href{#method-summary}{\code{DoubleML$summary()}}
 \item \href{#method-confint}{\code{DoubleML$confint()}}
@@ -185,14 +185,14 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_samples"></a>}}
-\if{latex}{\out{\hypertarget{method-set_samples}{}}}
-\subsection{Method \code{set_samples()}}{
+\if{html}{\out{<a id="method-set_sample_splitting"></a>}}
+\if{latex}{\out{\hypertarget{method-set_sample_splitting}{}}}
+\subsection{Method \code{set_sample_splitting()}}{
 Set the sample splitting for DoubleML models.
 
 The attributes \code{n_folds} and \code{n_rep} are derived from the provided partition.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_samples(smpls)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_sample_splitting(smpls)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

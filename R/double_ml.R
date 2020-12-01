@@ -208,14 +208,24 @@ DoubleML = R6::R6Class("DoubleML", public = list(
     checkmate::assert_count(n_rep_boot, positive = TRUE)
     
     private$initialize_boot_arrays(n_rep_boot)
-    
+
     for (i_rep in 1:self$n_rep) {
       private$i_rep = i_rep
       
+      if (self$apply_cross_fitting) {
+        n_obs = self$data$n_obs
+      } else {
+        smpls = private$get__smpls()
+        test_ids = smpls$test_ids
+        test_index = test_ids[[1]]
+        n_obs = length(test_index)
+      }
+      weights = draw_weights(method, n_rep_boot, n_obs)  
+    
       for (i_treat in 1:self$data$n_treat) {
         private$i_treat = i_treat
-        
-        boot_res = private$compute_bootstrap(method, n_rep_boot)
+  
+        boot_res = private$compute_bootstrap(weights, n_rep_boot)
         boot_coef = boot_res$boot_coef
         boot_t_stat = boot_res$boot_t_stat
         private$set__boot_coef(boot_coef)
@@ -295,7 +305,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
   #' A nested `list()`. The outer lists needs to provide an entry per repeated sample splitting (length of the list is set as `n_rep`). The inner list is a named `list()` with names `train_ids` and `test_ids`. The entries in `train_ids` and `test_ids` must be partitions per fold (length of `train_ids` and `test_ids` is set as `n_folds`).
   #' 
   #' @return self
-  set_samples = function(smpls) {
+  set_sample_splitting = function(smpls) {
     checkmate::assert_list(smpls)
     self$n_rep = length(smpls)
     n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
@@ -845,7 +855,7 @@ private = list(
     
     invisible(self)
   },
-  compute_bootstrap = function(method, n_rep_boot) {
+  compute_bootstrap = function(weights, n_rep_boot) {
     dml_procedure = self$dml_procedure
     smpls = private$get__smpls()
     test_ids = smpls$test_ids
@@ -856,19 +866,6 @@ private = list(
       test_index = test_ids[[1]]
       n_obs = length(test_index)
     }
-    
-    if (method == "Bayes") {
-      weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
-    } else if (method == "normal") {
-      weights = stats::rnorm(n_rep_boot * n_obs)
-    } else if (method == "wild") {
-      weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
-    } else {
-      stop("invalid boot method")
-    }
-    
-    # for alignment with the functional (loop-wise) implementation we fill by row
-    weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
     
     if (self$apply_cross_fitting) {
       if (dml_procedure == "dml1") {

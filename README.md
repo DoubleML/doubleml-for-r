@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DoubleML - Double Machine Learning in python and R
+# DoubleML - Double Machine Learning in R
 
 The R package **DoubleML** provides an implementation of the double /
 debiased machine learning framework of [Chernozhukov et
@@ -60,6 +60,8 @@ It further can be readily extended with regards to
   - … alternative resampling schemes,
   - …
 
+![OOP structure of the DoubleML package](man/figures/oop.svg?raw=true)
+
 ## Installation
 
 **DoubleML** requires
@@ -84,6 +86,23 @@ Until then we recommend to install from source via
 ``` r
 remotes::install_github("DoubleML/doubleml-for-r")
 ```
+
+## Citation
+
+If you use the DoubleML package a citation is highly appreciated:
+
+Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2020),
+DoubleML - Double Machine Learning in R. URL:
+<https://github.com/DoubleML/doubleml-for-r>, R-Package version 0.1.0.
+
+Bibtex-entry:
+
+    @Manual{DoubleML2020,
+      title = {DoubleML - Double Machine Learning in R},
+      author = {Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M.},
+      year = {2020},
+      note = {URL: \url{https://github.com/DoubleML/doubleml-for-r}, R-Package version 0.1.0}
+    }
 
 ## References
 

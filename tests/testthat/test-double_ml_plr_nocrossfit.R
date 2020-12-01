@@ -75,7 +75,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     
-    dml_plr_obj_external$set_samples(smpls)
+    dml_plr_obj_external$set_sample_splitting(smpls)
     dml_plr_obj_external$fit()
   
     theta_external <- dml_plr_obj_external$coef

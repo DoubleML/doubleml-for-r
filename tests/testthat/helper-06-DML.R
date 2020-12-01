@@ -238,7 +238,18 @@ bootstrap.DML <- function(object, data, y, d,
   p1 = length(d)
   
   boot_theta = matrix(NA, nrow = p1, ncol = nRep * n_rep)
+  n_obs <- nrow(data)
   for (s in seq(n_rep)){
+    if (bootstrap == "Bayes") {
+      weights = stats::rexp(nRep * n_obs, rate = 1) - 1
+    } else if (bootstrap == "normal") {
+      weights = stats::rnorm(nRep * n_obs)
+    } else if (bootstrap == "wild") {
+      weights = stats::rnorm(nRep * n_obs)/sqrt(2) + (stats::rnorm(nRep * n_obs)^2 - 1)/2
+    } else {
+      stop("invalid boot method")
+    }
+    weights = matrix(weights, nrow = nRep, ncol = n_obs, byrow=TRUE)
     for (j in seq(p1)) {
       ind_start <- ((s-1)*nRep+1)
       ind_end <- (s*nRep)
@@ -247,7 +258,7 @@ bootstrap.DML <- function(object, data, y, d,
                                                        all_preds = object$all_preds[[s]][[j]],
                                                        dml_procedure = dml_procedure,
                                                        score = score, se_type = score,
-                                                       bootstrap = bootstrap,  nRep = nRep)
+                                                       weights = weights,  nRep = nRep)
     }
   }
   
