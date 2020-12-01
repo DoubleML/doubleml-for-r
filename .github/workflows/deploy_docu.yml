@@ -46,12 +46,19 @@ jobs:
         key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
         restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
 
-    - name: Install system dependencies
+    - name: Install system dependencies package
       run: |
         while read -r cmd
         do
           eval sudo $cmd
         done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
+
+    - name: Install system dependencies pkgdown
+      run: |
+        while read -r cmd
+        do
+          eval sudo $cmd
+        done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04", package="pkgdown"))')
 
     - name: Install dependencies
       run: |
