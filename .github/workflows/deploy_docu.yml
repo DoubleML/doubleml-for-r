@@ -99,7 +99,7 @@ jobs:
         REPOSITORY_NAME: DoubleML/doubleml.github.io
         BRANCH: master
         FOLDER: docs/dev
-        TARGET_FOLDER: r/${{RELEASE_VERSION}}
+        TARGET_FOLDER: r/${{env.RELEASE_VERSION}}
         GIT_CONFIG_NAME: DoubleML Deploy Bot
         GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
         CLEAN: true
