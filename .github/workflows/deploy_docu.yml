@@ -60,6 +60,9 @@ jobs:
           eval sudo $cmd
         done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04", package="pkgdown"))')
 
+    - name: Install additional system dependencies for pkgdown
+      run: sudo apt-get install libharfbuzz-dev libfribidi-dev
+
     - name: Install dependencies
       run: |
         remotes::install_deps(dependencies = TRUE)
@@ -72,13 +75,40 @@ jobs:
     - name: Build docu with pkgdown
       run: Rscript -e 'pkgdown::build_site(new_process = FALSE)'
 
-    - name: Deploy
+    - name: Deploy to dev
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
         REPOSITORY_NAME: DoubleML/doubleml.github.io
         BRANCH: master
         FOLDER: docs/dev
         TARGET_FOLDER: r/dev
+        GIT_CONFIG_NAME: DoubleML Deploy Bot
+        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
+        CLEAN: true
+        SSH: true
+
+    - name: Deploy to version
+      if: ${{ github.event_name == 'release' }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        REPOSITORY_NAME: DoubleML/doubleml.github.io
+        BRANCH: master
+        FOLDER: docs/dev
+        TARGET_FOLDER: r/ ${{ github.ref }}
+        GIT_CONFIG_NAME: DoubleML Deploy Bot
+        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
+        CLEAN: true
+        SSH: true
+
+    - name: Deploy to stable
+      if: ${{ github.event_name == 'release' }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        REPOSITORY_NAME: DoubleML/doubleml.github.io
+        BRANCH: master
+        FOLDER: docs/dev
+        TARGET_FOLDER: r/stable
         GIT_CONFIG_NAME: DoubleML Deploy Bot
         GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
         CLEAN: true
