@@ -5,6 +5,9 @@ on:
   release:
     types:
       - published
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
@@ -42,7 +45,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          remotes::install_deps(dependencies = TRUE)
+          update(remotes::install_deps(dependencies = TRUE))
         shell: Rscript {0}
 
       - name: Build package
