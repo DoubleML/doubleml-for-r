@@ -23,15 +23,29 @@ tune_settings = list(n_folds_tune = 3,
 
 learner = "rpart"
 
-test_cases = expand.grid(learner_list = learner,
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('LATE'),
-                         AT = c(TRUE, FALSE),
-                         NT = c(TRUE, FALSE),
-                         i_setting = 1:(length(data_iivm)),
-                         n_rep = c(1, 3),
-                         tune_on_folds = c(FALSE, TRUE),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner_list = learner,
+                           dml_procedure = c('dml2'),
+                           score = c('LATE'),
+                           AT = c(TRUE),
+                           NT = c(TRUE),
+                           i_setting = 1:(length(data_iivm)),
+                           n_rep = c(1),
+                           tune_on_folds = c(FALSE, TRUE),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner_list = learner,
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('LATE'),
+                           AT = c(TRUE, FALSE),
+                           NT = c(TRUE, FALSE),
+                           i_setting = 1:(length(data_iivm)),
+                           n_rep = c(1, 3),
+                           tune_on_folds = c(FALSE, TRUE),
+                           stringsAsFactors = FALSE)
+}
+
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 

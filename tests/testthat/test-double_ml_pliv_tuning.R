@@ -29,13 +29,24 @@ tune_settings = list(n_folds_tune = 2,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
-                         score = c('partialling out'),
-                         i_setting = 1:(length(data_pliv)),
-                         n_rep = c(1, 3),
-                         tune_on_folds = c(FALSE, TRUE),
-                         z_indx = c(1,2),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(dml_procedure = c('dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_pliv)),
+                           n_rep = c(1),
+                           tune_on_folds = c(FALSE, TRUE),
+                           z_indx = c(1,2),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_pliv)),
+                           n_rep = c(1, 3),
+                           tune_on_folds = c(FALSE, TRUE),
+                           z_indx = c(1,2),
+                           stringsAsFactors = FALSE)
+}
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 

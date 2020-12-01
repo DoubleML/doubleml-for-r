@@ -29,13 +29,24 @@ tune_settings = list(n_folds_tune = 3,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(learner = learner,
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('ATE', 'ATTE'),
-                         tune_on_folds = c(FALSE, TRUE),
-                         i_setting = 1:(length(data_irm)),
-                         n_rep = c(1, 3),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml2'),
+                           score = c('ATE', 'ATTE'),
+                           tune_on_folds = c(FALSE, TRUE),
+                           i_setting = 1:(length(data_irm)),
+                           n_rep = c(1),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('ATE', 'ATTE'),
+                           tune_on_folds = c(FALSE, TRUE),
+                           i_setting = 1:(length(data_irm)),
+                           n_rep = c(1, 3),
+                           stringsAsFactors = FALSE)
+}
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
