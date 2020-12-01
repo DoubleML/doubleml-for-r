@@ -90,7 +90,7 @@ jobs:
         SSH: true
 
     - name: Get tag
-        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
 
     - name: Deploy to version
       if: ${{ github.event_name == 'release' }}
