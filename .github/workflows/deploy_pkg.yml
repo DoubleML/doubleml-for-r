@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -45,7 +45,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          update(remotes::install_deps(dependencies = TRUE))
+          remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
 
       - name: Build package
