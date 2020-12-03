@@ -14,7 +14,7 @@ Note that the R package was developed together with a python twin based on [scik
 
 Documentation of functions in R: `here`
 
-User guide: [http://doubleml.org](http://doubleml.org)
+User guide: [http://docs.doubleml.org](http://docs.doubleml.org)
 
 **DoubleML** is currently maintained by [`@MalteKurz`](https://github.com/MalteKurz) and [`@PhilippBach`](https://github.com/PhilippBach). 
 
