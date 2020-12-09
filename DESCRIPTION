@@ -50,7 +50,7 @@ Suggests:
     AER,
     rpart
 VignetteBuilder: knitr
-Collate: 
+Collate:
     'double_ml.R'
     'double_ml_data.R'
     'double_ml_iivm.R'
@@ -59,3 +59,4 @@ Collate:
     'double_ml_plr.R'
     'helper.R'
     'datasets.R'
+    'zzz.R'

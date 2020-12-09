@@ -44,10 +44,10 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
     if (return_type == "data.frame") {
       return(data) 
     } else if (return_type == "data.table") {
-       data = data.table::as.data.table(data)
+       data = as.data.table(data)
        return(data)
     } else if (return_type == "DoubleMLData") {
-       dt = data.table::as.data.table(data)
+       dt = as.data.table(data)
        y_col = "net_tfa"
        d_cols = "e401"
        x_cols = c("age", "inc", "educ", "fsize", "marr", "twoearn", "db", "pira", "hown")
@@ -140,10 +140,10 @@ fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE
     if (return_type == "data.frame") {
       return(data) 
     } else if (return_type == "data.table") {
-       data = data.table::as.data.table(data)
+       data = as.data.table(data)
        return(data)
     } else if (return_type == "DoubleMLData") {
-       dt = data.table::as.data.table(data)
+       dt = as.data.table(data)
        y_col = "inuidur1"
        d_cols = "tg"
        x_cols = c("female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6", 
@@ -224,10 +224,10 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
     data = data.frame(x,y,d)
     return(data) 
   } else if (return_type == "data.table") {
-     data = data.table::data.table(x, y, d)
+     data = data.table(x, y, d)
      return(data)
   } else if (return_type == "DoubleMLData") {
-     dt = data.table::data.table(x, y, d)
+     dt = data.table(x, y, d)
      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d")
      return(data)
   }
@@ -292,10 +292,10 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5, return_typ
     data = data.frame(X,y,d)
     return(data) 
   } else if (return_type == "data.table") {
-     data = data.table::data.table(X, y, d)
+     data = data.table(X, y, d)
      return(data)
   } else if (return_type == "DoubleMLData") {
-     dt = data.table::data.table(X, y, d)
+     dt = data.table(X, y, d)
      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d")
      return(data)
   }
@@ -382,10 +382,10 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150, return_
       data = data.frame(X, Y, D, Z)
       return(data) 
     } else if (return_type == "data.table") {
-     data = data.table::data.table(X, Y, D, Z)
+     data = data.table(X, Y, D, Z)
      return(data)
     } else if (return_type == "DoubleMLData") {
-     dt = data.table::data.table(X, Y, D, Z)
+     dt = data.table(X, Y, D, Z)
      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", 
                                            x_cols = colnames(X), 
                                            z_cols = colnames(Z))
@@ -463,10 +463,10 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5, R2_y = 
     data = data.frame(x,y,d)
     return(data) 
   } else if (return_type == "data.table") {
-     data = data.table::data.table(x, y, d)
+     data = data.table(x, y, d)
      return(data)
   } else if (return_type == "DoubleMLData") {
-     dt = data.table::data.table(x, y, d)
+     dt = data.table(x, y, d)
      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d")
      return(data)
   }
@@ -537,10 +537,10 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
       data = data.frame(x, y, d, z)
       return(data) 
     } else if (return_type == "data.table") {
-     data = data.table::data.table(x, y, d, z)
+     data = data.table(x, y, d, z)
      return(data)
     } else if (return_type == "DoubleMLData") {
-     dt = data.table::data.table(x, y, d, z)
+     dt = data.table(x, y, d, z)
      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", 
                                            x_cols = colnames(x), 
                                            z_cols = "z")

@@ -32,7 +32,7 @@
 #' dml_plr_obj$summary()
 #' }
 #' @export
-DoubleMLPLR = R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
+DoubleMLPLR = R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   #' @description 
   #' Creates a new instance of this R6 class. 
   #' 
@@ -122,19 +122,19 @@ private = list(
       ml_g = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
   
-      resampling_g = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g = rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+      r_g = resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat = extract_prediction(r_g)$response
       
 
       ml_m = initiate_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
-      resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
+      resampling_m = rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = extract_prediction(r_m)$response
     } else {
       ml_g = lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
@@ -186,29 +186,29 @@ private = list(
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
     } else {
-      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
     if (any(class(tune_settings$measure$ml_g) == "Measure")) {
       measure_g = tune_settings$measure$ml_g
     } else {
         if (is.null(tune_settings$measure$ml_g)){
-          measure_g = mlr3::default_measures("regr")[[1]]
+          measure_g = default_measures("regr")[[1]]
         } else {
-          measure_g = mlr3::msr(tune_settings$measure$ml_g)    
+          measure_g = msr(tune_settings$measure$ml_g)    
         }
     }
     if (any(class(tune_settings$measure$ml_m) == "Measure")) {
       measure_m = tune_settings$measure$ml_m
     } else {
         if (is.null(tune_settings$measure$ml_m)){
-          measure_m = mlr3::default_measures("regr")[[1]]
+          measure_m = default_measures("regr")[[1]]
         } else {
-          measure_m = mlr3::msr(tune_settings$measure$ml_m)
+          measure_m = msr(tune_settings$measure$ml_m)
       }
     }
     
     terminator = tune_settings$terminator
-    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
 
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col),
                                                                     x,
@@ -216,7 +216,7 @@ private = list(
                                                                                     self$data$other_treat_cols),
                                                                     target = self$data$y_col))
     ml_g = initiate_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -229,7 +229,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
     ml_m = initiate_learner(self$learner$ml_m, params = list())
-    tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,
