@@ -25,6 +25,7 @@ and the average treament effect on the treated (ATTE),
 \eqn{\theta_0 = E[g_0(1,X) - g_0(0,X)|D=1]}.
 }
 \examples{
+\donttest{
 library(DoubleML)
 library(mlr3)
 library(mlr3learners)
@@ -36,6 +37,7 @@ obj_dml_data = make_irm_data(theta = 0.5)
 dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 dml_irm_obj$fit()
 dml_irm_obj$summary()
+}
 }
 \seealso{
 Other DoubleML: 

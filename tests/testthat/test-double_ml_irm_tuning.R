@@ -1,11 +1,5 @@
 context("Unit tests for tuning of IRM")
 
-library("mlr3learners")
-library("mlr3tuning")
-library("paradox")
-library('data.table')
-library('mlr3')
-
 requireNamespace("lgr")
 
 logger = lgr::get_logger("bbotk")
@@ -29,13 +23,24 @@ tune_settings = list(n_folds_tune = 3,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(learner = learner,
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('ATE', 'ATTE'),
-                         tune_on_folds = c(FALSE, TRUE),
-                         i_setting = 1:(length(data_irm)),
-                         n_rep = c(1, 3),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml2'),
+                           score = c('ATE'),
+                           tune_on_folds = c(FALSE),
+                           i_setting = 1:(length(data_irm)),
+                           n_rep = c(1),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('ATE', 'ATTE'),
+                           tune_on_folds = c(FALSE, TRUE),
+                           i_setting = 1:(length(data_irm)),
+                           n_rep = c(1, 3),
+                           stringsAsFactors = FALSE)
+}
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -61,13 +66,11 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                      dml_procedure = dml_procedure,
                                      score = score)
   
-  param_grid = list("ml_g" = ParamSet$new(list(
-                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    "ml_m" = ParamSet$new(list(
-                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                          ParamInt$new("minsplit", lower = 1, upper = 2))))
-                  
+  param_grid = list("ml_g" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                                        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    "ml_m" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                                        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+  
   double_mlirm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings)
   double_mlirm_obj_tuned$fit()
   

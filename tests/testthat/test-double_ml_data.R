@@ -1,7 +1,5 @@
 context("Unit tests for DoubleMLData")
 
-library('data.table')
-
 test_cases = expand.grid(i_setting = 1:(length(data_iivm)))
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -104,8 +102,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   expect_equivalent(D4$data_model, D4_renamed$data_model)
 
   # Instantiate DoubleMLData
-  data = data.table(data)
-  data2 = data.table(data2)
+  data = data.table::data.table(data)
+  data2 = data.table::data.table(data2)
   D8 = DoubleMLData$new(data, x_cols = X_cols1, 
                               y_col = y_indx, 
                               d_cols = d_indx, 
@@ -115,8 +113,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                               d_cols = d_indx, 
                               z_cols = z_indx)
   # with renamed variables
-  data_renamed = copy(data)
-  data_renamed = setnames(data_renamed, c("outc", "exposure", "instr", 
+  data_renamed = data.table::copy(data)
+  data_renamed = data.table::setnames(data_renamed, c("outc", "exposure", "instr", 
                                           paste0("Explr", 1:(ncol(data_renamed)-3))))
   
   Expl_cols1 = names(data_renamed[, X_indx1, with = FALSE])

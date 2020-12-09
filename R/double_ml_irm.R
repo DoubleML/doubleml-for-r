@@ -25,6 +25,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -36,6 +37,7 @@
 #' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 #' dml_irm_obj$fit()
 #' dml_irm_obj$summary()
+#' }
 #' @export
 DoubleMLIRM = R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   #' @field trimming_rule (`character(1)`) \cr
@@ -264,7 +266,7 @@ private = list(
    
    ml_g0 = initiate_learner(self$learner$ml_g, params = list())
       
-   tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
+   tuning_instance_g0 = lapply(task_g0, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g0,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -276,7 +278,7 @@ private = list(
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$y_col))
    ml_g1 = initiate_learner(self$learner$ml_g, params = list())
-   tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
+   tuning_instance_g1 = lapply(task_g1, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g1,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -288,7 +290,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
    ml_m = initiate_prob_learner(self$learner$ml_m, params = list())
-   tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+   tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_m,
                                          resampling = CV_tune,
                                          measure = measure_m,

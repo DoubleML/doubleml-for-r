@@ -18,6 +18,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -29,6 +30,7 @@
 #' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 #' dml_plr_obj$fit()
 #' dml_plr_obj$summary()
+#' }
 #' @export
 DoubleMLPLR = R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   #' @description 
@@ -214,7 +216,7 @@ private = list(
                                                                                     self$data$other_treat_cols),
                                                                     target = self$data$y_col))
     ml_g = initiate_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_g = lapply(task_g, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -227,7 +229,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
     ml_m = initiate_learner(self$learner$ml_m, params = list())
-    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,

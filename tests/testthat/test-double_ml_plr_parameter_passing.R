@@ -1,24 +1,28 @@
 context("Unit tests for parameter passing for PLR")
 
-library("mlr3learners")
-library("mlr3tuning")
-library("paradox")
-library('data.table')
-library('mlr3')
-
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision
 learner = c('regr.rpart')
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
-  
-test_cases = expand.grid(learner = learner,
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('IV-type', 'partialling out'),
-                         i_setting = 1:(length(data_plr)),
-                         n_rep = c(1, 3),
-                         stringsAsFactors = FALSE)
+
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_plr)),
+                           n_rep = c(1),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('IV-type', 'partialling out'),
+                           i_setting = 1:(length(data_plr)),
+                           n_rep = c(1, 3),
+                           stringsAsFactors = FALSE)
+}
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
