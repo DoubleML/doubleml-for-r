@@ -18,7 +18,7 @@ available on [GitHub](https://github.com/DoubleML/doubleml-for-py).
 
 Documentation of functions in R: `here`
 
-User guide: <http://docs.doubleml.org>
+User guide: <https://docs.doubleml.org>
 
 **DoubleML** is currently maintained by
 [`@MalteKurz`](https://github.com/MalteKurz) and
