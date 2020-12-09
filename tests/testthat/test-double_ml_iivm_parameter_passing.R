@@ -1,10 +1,5 @@
 context("Unit tests for parameter passing of IIVM")
 
-library("mlr3learners")
-library("mlr3tuning")
-library("paradox")
-library('data.table')
-library('mlr3')
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision

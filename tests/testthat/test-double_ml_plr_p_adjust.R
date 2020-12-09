@@ -1,9 +1,5 @@
 context("Unit tests for PLR (p_adjust)")
 
-library("mlr3learners")
-library('data.table')
-library('mlr3')
-
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")

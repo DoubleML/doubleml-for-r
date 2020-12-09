@@ -1,9 +1,5 @@
 context("Unit tests for PLR")
 
-library("mlr3learners")
-library('data.table')
-library('mlr3')
-
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 non_orth_score = function(y, d, g_hat, m_hat, smpls) {

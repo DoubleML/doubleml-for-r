@@ -1,9 +1,5 @@
 context("Unit tests for IRM propensity score trimming")
 
-library("mlr3learners")
-library('data.table')
-library('mlr3')
-
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('rpart'),

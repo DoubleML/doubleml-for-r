@@ -1,14 +1,10 @@
 context("Unit tests for PLR with repeated cross-fitting")
 
-library("mlr3learners")
-library('data.table')
-library('mlr3')
-
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases = expand.grid(learner = c('regr.cv_glmnet'),
+  test_cases = expand.grid(learner = c('regr.lm'),
                            dml_procedure = c('dml1', 'dml2'),
                            score = c('partialling out'),
                            i_setting = 1:(length(data_plr)),
