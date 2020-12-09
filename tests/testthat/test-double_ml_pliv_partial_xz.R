@@ -1,5 +1,7 @@
 context("Unit tests for PLIV, partialling out X, Z, XZ")
 
+library("mlr3learners")
+
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),

@@ -1,7 +1,8 @@
 context("Unit tests for IIVM")
 
-lgr::get_logger("mlr3")$set_threshold("warn")
+library("mlr3learners")
 
+lgr::get_logger("mlr3")$set_threshold("warn")
 
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {

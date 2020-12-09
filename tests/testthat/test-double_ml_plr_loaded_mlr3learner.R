@@ -1,5 +1,7 @@
 context("Unit tests for PLR")
 
+library("mlr3learners")
+
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
