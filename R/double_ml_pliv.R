@@ -366,7 +366,7 @@ private = list(
 
       # nuisance r_tilde: Predict predicted values from nuisance m, only with X
       data_aux_list = lapply(m_hat_on_train, function(x) 
-                                              data.table(self$data$data_model, "m_hat_on_train" = x$response))
+                                              data.table::data.table(self$data$data_model, "m_hat_on_train" = x$response))
       
       task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
                                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
@@ -402,7 +402,7 @@ private = list(
       
       # nuisance r_tilde: Predict predicted values from nuisance m, only with X
       data_aux_list = lapply(m_hat_on_train, function(x) 
-                                              data.table(self$data$data_model, "m_hat_on_train" = x$response))
+                                              data.table::data.table(self$data$data_model, "m_hat_on_train" = x$response))
       
       task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
@@ -694,7 +694,7 @@ private = list(
     m_hat_on_train = lapply(m_hat_on_train, function(x) x[[1]]$response)
       
     data_aux_list = lapply(1:length(data_tune_list), function(x) 
-                                              data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]]))
+                                              data.table::data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]]))
     task_r = lapply(data_aux_list, function(x) initiate_regr_task("nuis_r_m_hat_on_train", x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = "m_hat_on_train"))
