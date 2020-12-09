@@ -1,0 +1,118 @@
+# Workflow based on https://github.com/r-lib/actions/blob/master/examples/pkgdown.yaml
+
+name: CI deploy documentation
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+    - name: Install SSH Client
+      uses: webfactory/ssh-agent@v0.4.1
+      with:
+        ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+    - name: Install R
+      uses: r-lib/actions/setup-r@v1
+      with:
+        r-version: 'release'
+
+    - uses: r-lib/actions/setup-pandoc@v1
+
+    - name: Query dependencies
+      run: |
+        install.packages('remotes')
+        saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+        writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
+      shell: Rscript {0}
+
+    - name: Cache R packages
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.R_LIBS_USER }}
+        key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
+        restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+
+    - name: Install system dependencies package
+      run: |
+        while read -r cmd
+        do
+          eval sudo $cmd
+        done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
+
+    - name: Install system dependencies pkgdown
+      run: |
+        while read -r cmd
+        do
+          eval sudo $cmd
+        done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04", package="pkgdown"))')
+
+    - name: Install additional system dependencies for pkgdown
+      run: sudo apt-get install libharfbuzz-dev libfribidi-dev
+
+    - name: Install dependencies
+      run: |
+        remotes::install_deps(dependencies = TRUE)
+        remotes::install_cran("pkgdown")
+      shell: Rscript {0}
+
+    - name: Install package
+      run: R CMD INSTALL .
+
+    - name: Build docu with pkgdown
+      run: Rscript -e 'pkgdown::build_site(new_process = FALSE)'
+
+    - name: Deploy to dev
+      if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        REPOSITORY_NAME: DoubleML/doubleml.github.io
+        BRANCH: master
+        FOLDER: docs/dev
+        TARGET_FOLDER: r/dev
+        GIT_CONFIG_NAME: DoubleML Deploy Bot
+        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
+        CLEAN: true
+        SSH: true
+
+    - name: Get tag
+      run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
+
+    - name: Deploy to version
+      if: ${{ github.event_name == 'release' }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        REPOSITORY_NAME: DoubleML/doubleml.github.io
+        BRANCH: master
+        FOLDER: docs/dev
+        TARGET_FOLDER: r/${{env.RELEASE_VERSION}}
+        GIT_CONFIG_NAME: DoubleML Deploy Bot
+        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
+        CLEAN: true
+        SSH: true
+
+    - name: Deploy to stable
+      if: ${{ github.event_name == 'release' }}
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        REPOSITORY_NAME: DoubleML/doubleml.github.io
+        BRANCH: master
+        FOLDER: docs/dev
+        TARGET_FOLDER: r/stable
+        GIT_CONFIG_NAME: DoubleML Deploy Bot
+        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
+        CLEAN: true
+        SSH: true
