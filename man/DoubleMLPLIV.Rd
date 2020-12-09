@@ -19,6 +19,7 @@ Partially linear IV regression (PLIV) models take the form
 with \eqn{E[\zeta|Z,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable variable, \eqn{D} is the policy variable of interest and \eqn{Z} denotes one or multiple instrumental variables. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
 }
 \examples{
+\donttest{
 library(DoubleML)
 library(mlr3)
 library(mlr3learners)
@@ -31,6 +32,7 @@ obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
 dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
 dml_pliv_obj$fit()
 dml_pliv_obj$summary()
+}
 }
 \seealso{
 Other DoubleML: 
