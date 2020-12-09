@@ -226,8 +226,9 @@ private = list(
         m_hat = lapply(r_m, extract_prediction)
         #m_hat = rearrange_prediction(m_hat, smpls$test_ids)
         m_hat = lapply(1:self$data$n_instr, function(x) 
-                                            setnames(m_hat[[x]], "response", self$data$z_cols[x]))
-        m_hat = Reduce(function(x,y) data.table::merge.data.table(x,y, by = "row_id"), m_hat)
+          data.table::setnames(m_hat[[x]], "response", self$data$z_cols[x]))
+        m_hat = Reduce(function(x,y)
+          data.table::merge.data.table(x,y, by = "row_id"), m_hat)
         row_id_indx = names(m_hat)!="row_id"
         m_hat = m_hat[, row_id_indx, with = FALSE]
       }
@@ -270,8 +271,9 @@ private = list(
           m_hat[[i_instr]] = rearrange_prediction(m_hat_prelim, smpls$test_ids, keep_rowids = TRUE)
         }
         m_hat = lapply(1:self$data$n_instr, function(x) 
-                                            setnames(m_hat[[x]], "response", self$data$z_cols[x]))
-        m_hat = Reduce(function(x,y) data.table::merge.data.table(x,y, by = "row_id"), m_hat)
+          data.table::setnames(m_hat[[x]], "response", self$data$z_cols[x]))
+        m_hat = Reduce(function(x,y)
+          data.table::merge.data.table(x,y, by = "row_id"), m_hat)
         row_id_indx = names(m_hat)!="row_id"
         m_hat = m_hat[, row_id_indx, with = FALSE]
       }
