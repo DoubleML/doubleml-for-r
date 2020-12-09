@@ -216,7 +216,7 @@ private = list(
                                                                                     self$data$other_treat_cols),
                                                                     target = self$data$y_col))
     ml_g = initiate_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_g = lapply(task_g, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -229,7 +229,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
     ml_m = initiate_learner(self$learner$ml_m, params = list())
-    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,

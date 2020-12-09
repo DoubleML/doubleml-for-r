@@ -549,7 +549,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$y_col))
     ml_g = initiate_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_g = lapply(task_g, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -562,7 +562,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
     ml_r = initiate_learner(self$learner$ml_r, params = list())
-    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_r = lapply(task_r, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
                                           measure = measure_r,
@@ -575,7 +575,7 @@ private = list(
       task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols), x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$z_cols))
-      tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+      tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,
@@ -598,7 +598,7 @@ private = list(
         task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols[i_instr]), x,
                                                       select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                       target = this_z))
-        tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+        tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,
@@ -664,7 +664,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols), 
                                                   target = self$data$y_col))
     ml_g = initiate_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_g = lapply(task_g, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -676,7 +676,7 @@ private = list(
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$z_cols), 
                                                   target = self$data$treat_col))
-    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_m,
                                           resampling = CV_tune,
                                           measure = measure_m,
@@ -699,7 +699,7 @@ private = list(
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = "m_hat_on_train"))
     ml_r = initiate_learner(self$learner$ml_r, params = list())
-    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_r = lapply(task_r, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
                                           measure = measure_r,
@@ -747,7 +747,7 @@ private = list(
                                                                    self$data$z_cols), 
                                                    target = self$data$treat_col))
     ml_r = initiate_learner(self$learner$ml_r, params = list())
-    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
+    tuning_instance_r = lapply(task_r, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
                                           measure = measure_r,
