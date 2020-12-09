@@ -25,6 +25,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -36,6 +37,7 @@
 #' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 #' dml_irm_obj$fit()
 #' dml_irm_obj$summary()
+#' }
 #' @export
 DoubleMLIRM = R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   #' @field trimming_rule (`character(1)`) \cr

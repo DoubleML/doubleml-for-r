@@ -19,6 +19,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -31,6 +32,7 @@
 #' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
+#' }
 #' @export
 DoubleMLPLIV = R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   #' @field partialX (`logical(1)`)  \cr

@@ -18,6 +18,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -29,6 +30,7 @@
 #' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 #' dml_plr_obj$fit()
 #' dml_plr_obj$summary()
+#' }
 #' @export
 DoubleMLPLR = R6::R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   #' @description 

@@ -30,6 +30,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -42,6 +43,7 @@
 #' dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 #' dml_iivm_obj$fit()
 #' dml_iivm_obj$summary()
+#' }
 #' @export
 DoubleMLIIVM =R6:: R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   #' @field subgroups (named `list(2)`) \cr
