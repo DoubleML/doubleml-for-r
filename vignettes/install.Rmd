@@ -46,4 +46,4 @@ Load the package after completed installation.
 library(DoubleML)
 ```
 
-The python package `DoubleML` is avaiable via the github repository. For more information, please visit our [user guide](https:https://docs.doubleml.org/). 
+The python package `DoubleML` is available via the github repository. For more information, please visit our [user guide](https://docs.doubleml.org/). 
