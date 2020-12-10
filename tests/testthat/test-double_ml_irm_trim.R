@@ -2,13 +2,24 @@ context("Unit tests for IRM propensity score trimming")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(learner = c('rpart'),
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('ATE', 'ATTE'),
-                         trimming_rule = c("truncate"),
-                         trimming_threshold = c(1e-12, 0.05),
-                         i_setting = 1:(length(data_irm)),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = c('rpart'),
+                           dml_procedure = c('dml2'),
+                           score = c('ATTE'),
+                           trimming_rule = c("truncate"),
+                           trimming_threshold = c(0.05),
+                           i_setting = 1:(length(data_irm)),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner = c('rpart'),
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('ATE', 'ATTE'),
+                           trimming_rule = c("truncate"),
+                           trimming_threshold = c(1e-12, 0.05),
+                           i_setting = 1:(length(data_irm)),
+                           stringsAsFactors = FALSE)
+}
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
