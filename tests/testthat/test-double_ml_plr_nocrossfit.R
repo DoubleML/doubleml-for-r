@@ -4,13 +4,24 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(learner = c('regr.lm'),
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('IV-type', 'partialling out'),
-                         i_setting = 1:(length(data_plr)),
-                         apply_cross_fitting = FALSE,
-                         n_folds = c(1,2),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = c('regr.lm'),
+                           dml_procedure = c('dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_plr)),
+                           apply_cross_fitting = FALSE,
+                           n_folds = c(1,2),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner = c('regr.lm'),
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('IV-type', 'partialling out'),
+                           i_setting = 1:(length(data_plr)),
+                           apply_cross_fitting = FALSE,
+                           n_folds = c(1,2),
+                           stringsAsFactors = FALSE)
+}
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",

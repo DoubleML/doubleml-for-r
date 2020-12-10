@@ -7,12 +7,22 @@ learner = c('rpart')
 
 learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m" = learner)
 
-test_cases = expand.grid(learner = learner,
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('LATE'),
-                         i_setting = 1:(length(data_iivm)),
-                         n_rep = c(1, 3),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml2'),
+                           score = c('LATE'),
+                           i_setting = 1:(length(data_iivm)),
+                           n_rep = c(1),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(learner = learner,
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('LATE'),
+                           i_setting = 1:(length(data_iivm)),
+                           n_rep = c(1, 3),
+                           stringsAsFactors = FALSE)
+}
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 patrick::with_parameters_test_that("Unit tests for IIVM:",

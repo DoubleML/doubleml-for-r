@@ -8,7 +8,7 @@ on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(learner = c('cv_glmnet'),
                            dml_procedure = c('dml2'),
-                           score = c('ATE', 'ATTE'),
+                           score = c('ATE'),
                            i_setting = 1:(length(data_irm)),
                            trimming_threshold = 0,
                            stringsAsFactors = FALSE)

@@ -26,7 +26,7 @@ if (on_cran) {
                            NT = c(TRUE),
                            i_setting = 1:(length(data_iivm)),
                            n_rep = c(1),
-                           tune_on_folds = c(FALSE, TRUE),
+                           tune_on_folds = c(FALSE),
                            stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(learner_list = learner,

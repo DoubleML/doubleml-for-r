@@ -17,7 +17,7 @@ if (on_cran) {
                            dml_procedure = c('dml2'),
                            score = c('partialling out'),
                            n_rep = c(1),
-                           tune_on_folds = c(FALSE),
+                           tune_on_folds = c(FALSE, TRUE),
                            i_setting = 1:(length(data_plr)),
                            stringsAsFactors = FALSE)
 } else {
