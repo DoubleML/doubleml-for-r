@@ -413,7 +413,7 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150, return_
 #' 
 #' The data generating process is inspired by a process used in the simulation experiment (see Appendix P) of Belloni et al. (2017).
 #' 
-#' @references Belloni, A., Chernozhukov, V., Fernández‐Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With High‐Dimensional Data. Econometrica, 85: 233-298.
+#' @references Belloni, A., Chernozhukov, V., Fernández-Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With High-Dimensional Data. Econometrica, 85: 233-298.
 #' 
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate. 

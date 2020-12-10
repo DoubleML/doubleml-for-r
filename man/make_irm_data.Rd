@@ -48,5 +48,5 @@ with \eqn{v_i \sim \mathcal{U}(0,1)}, \eqn{\zeta_i \sim \mathcal{N}(0,1)} and co
 The data generating process is inspired by a process used in the simulation experiment (see Appendix P) of Belloni et al. (2017).
 }
 \references{
-Belloni, A., Chernozhukov, V., Fernández‐Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With High‐Dimensional Data. Econometrica, 85: 233-298.
+Belloni, A., Chernozhukov, V., Fernández-Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With High-Dimensional Data. Econometrica, 85: 233-298.
 }
