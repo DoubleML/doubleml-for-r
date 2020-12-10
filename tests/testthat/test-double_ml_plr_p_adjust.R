@@ -9,8 +9,8 @@ if (on_cran) {
   test_cases = expand.grid(learner = c("regr.cv_glmnet"),
                            dml_procedure = c('dml1'),
                            score = c('partialling out'),
-                           method = c("romano-wolf", "bonferroni"),
-                           apply_cross_fitting = c(TRUE, FALSE),
+                           method = c("romano-wolf"),
+                           apply_cross_fitting = c(TRUE),
                            stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(learner = c("regr.cv_glmnet"),

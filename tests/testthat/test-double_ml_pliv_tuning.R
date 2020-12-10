@@ -29,8 +29,8 @@ if (on_cran) {
                            score = c('partialling out'),
                            i_setting = 1:(length(data_pliv)),
                            n_rep = c(1),
-                           tune_on_folds = c(FALSE, TRUE),
-                           z_indx = c(1,2),
+                           tune_on_folds = c(FALSE),
+                           z_indx = c(1),
                            stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
