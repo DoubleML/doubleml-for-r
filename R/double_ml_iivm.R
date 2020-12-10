@@ -339,8 +339,8 @@ private = list(
    terminator = tune_settings$terminator
    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     
-   indx_g0 = lapply(data_tune_list, function(x) x[self$data$z_cols] == 0)
-   indx_g1 = lapply(data_tune_list, function(x) x[self$data$z_cols] == 1)
+   indx_g0 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 0)
+   indx_g1 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 1)
    data_tune_list_z0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
    data_tune_list_z1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
 

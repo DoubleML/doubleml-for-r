@@ -281,13 +281,16 @@ private = list(
   
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
-    z = self$data$data_model[[self$data$z_cols]]
     
     u_hat = y - g_hat
     w_hat = d - r_hat
-    v_hat = z - m_hat
     
-    if (self$data$n_instr > 1) {
+    if (self$data$n_instr == 1) {
+      z = self$data$data_model[[self$data$z_cols]]
+      v_hat = z - m_hat
+    } else {
+      z = self$data$data_model[, self$data$z_cols, with = FALSE]
+      v_hat = z - m_hat
       
       stopifnot(self$apply_cross_fitting) 
       
@@ -298,7 +301,7 @@ private = list(
       ml_r_tilde = lrn("regr.lm")
       resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
       r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
-                                  store_models = TRUE)
+                           store_models = TRUE)
       r_hat_tilde = extract_prediction(r_r_tilde)$response
     }
     
@@ -470,7 +473,6 @@ private = list(
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
-    z = self$data$data_model[[self$data$z_cols]]
     
     score = self$score
     private$check_score(score)

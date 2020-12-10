@@ -114,7 +114,7 @@ initiate_regr_task = function(id, data, select_cols, target) {
 initiate_classif_task = function(id, data, select_cols, target) {
   indx = (names(data) %in% c(select_cols, target))
   data_sel = data[ , indx, with = FALSE]
-  data_sel[, target] = factor(data_sel[, target])
+  data_sel[[target]] = factor(data_sel[[target]])
   task = mlr3::TaskClassif$new(id = id, backend = data_sel,
                                 target = target, positive = "1")
   return(task)

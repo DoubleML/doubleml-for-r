@@ -191,7 +191,7 @@ private = list(
       # fraction of treated for ATTE
       p_hat = vector('numeric', length = self$data$n_obs)
       for (i_fold in 1:length(smpls$test_ids)) {
-        p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[smpls$test_ids[[i_fold]], self$data$treat_col, with = FALSE] )
+        p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
       }
     }
     
@@ -255,8 +255,8 @@ private = list(
    terminator = tune_settings$terminator
    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
    
-   indx_g0 = lapply(data_tune_list, function(x) x[self$data$treat_col] == 0)
-   indx_g1 = lapply(data_tune_list, function(x) x[self$data$treat_col] == 1)
+   indx_g0 = lapply(data_tune_list, function(x) x[[self$data$treat_col]] == 0)
+   indx_g1 = lapply(data_tune_list, function(x) x[[self$data$treat_col]] == 1)
    data_tune_list_d0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
    data_tune_list_d1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
 
