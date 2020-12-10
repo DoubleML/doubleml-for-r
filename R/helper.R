@@ -1,22 +1,22 @@
 
 extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
   if (!return_train_preds) {
-    f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat = data.table::as.data.table(obj_resampling$prediction())
+    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat = as.data.table(obj_resampling$prediction())
     f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
     data.table::setorder(f_hat, 'row_id')
-    f_hat = data.table::as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
+    f_hat = as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # tbd: optimize
     return(f_hat)
     
   } else {
     # Access in-sample predictions
     iters = obj_resampling$resampling$iters
-    f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat_list = lapply(1:iters, function(x) data.table::as.data.table(obj_resampling$predictions()[[x]]))
+    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
     f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
                                                                             by = "row_id", all = TRUE))
     f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
-    f_hat_list = lapply(f_hat_list, function(x) data.table::as.data.table(list("row_id" = x$row_id, 
+    f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
                                                                    "response"= x$response)))
     return(f_hat_list)
   }
@@ -37,11 +37,11 @@ rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
 
 
 extract_prob_prediction = function(obj_resampling) {
-  f_hat_aux = data.table::data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-  f_hat = data.table::as.data.table(obj_resampling$prediction())
+  f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+  f_hat = as.data.table(obj_resampling$prediction())
   f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
   data.table::setorder(f_hat, 'row_id')
-  f_hat = data.table::as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+  f_hat = as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
   
   return(f_hat)
 }
@@ -61,7 +61,7 @@ initiate_learner = function(mlmethod, params) {
       learner$param_set$values = params
     }
   } else {
-    learner = mlr3::lrn(mlmethod)
+    learner = lrn(mlmethod)
     
     if (!is.null(params) & length(params) != 0){
     learner$param_set$values = params
@@ -83,7 +83,7 @@ initiate_prob_learner = function(mlmethod, params) {
       learner$param_set$values = params
     }
   } else {
-    learner = mlr3::lrn(mlmethod,
+    learner = lrn(mlmethod,
                          predict_type = 'prob')
     
     if (!is.null(params) & length(params) != 0){
@@ -114,7 +114,7 @@ initiate_regr_task = function(id, data, select_cols, target) {
 initiate_classif_task = function(id, data, select_cols, target) {
   indx = (names(data) %in% c(select_cols, target))
   data_sel = data[ , indx, with = FALSE]
-  data_sel[, target] = factor(data_sel[, target])
+  data_sel[[target]] = factor(data_sel[[target]])
   task = mlr3::TaskClassif$new(id = id, backend = data_sel,
                                 target = target, positive = "1")
   return(task)
@@ -146,7 +146,7 @@ extract_tuned_params = function(param_results) {
 initiate_resampling = function(task, train_ids, test_ids){
     stopifnot(length(train_ids) == length(test_ids))
     resampling = lapply(1:length(train_ids), function(x)
-                                              mlr3::rsmp("custom")$instantiate(task,
+                                              rsmp("custom")$instantiate(task,
                                                           list(train_ids[[x]]),
                                                           list(test_ids[[x]])))
     return(resampling)

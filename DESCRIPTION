@@ -28,9 +28,8 @@ Imports:
     stats,
     checkmate,
     mlr3 (>= 0.5.0),
-    mlr3learners (>= 0.3.0),
     mlr3tuning (>= 0.3.0),
-    paradox (>= 0.4.0),
+    mvtnorm,
     utils,
     clusterGeneration,
     readstata13
@@ -41,18 +40,17 @@ Suggests:
     rmarkdown,
     testthat,
     patrick,
-    mvtnorm,
+    mlr3learners (>= 0.3.0),
+    paradox (>= 0.4.0),
     dplyr,
     glmnet,
     lgr,
-    ggplot2,
     ranger,
-    hdm,
     sandwich,
     AER,
     rpart
 VignetteBuilder: knitr
-Collate: 
+Collate:
     'double_ml.R'
     'double_ml_data.R'
     'double_ml_iivm.R'
@@ -61,3 +59,4 @@ Collate:
     'double_ml_plr.R'
     'helper.R'
     'datasets.R'
+    'zzz.R'

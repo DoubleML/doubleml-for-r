@@ -7,7 +7,7 @@
 #' @format [R6::R6Class] object.
 #' 
 #' @family DoubleML
-DoubleML = R6::R6Class("DoubleML", public = list(
+DoubleML = R6Class("DoubleML", public = list(
   #' @field all_coef (`matrix()`) \cr 
   #' Estimates of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()`. 
   all_coef = NULL, 
@@ -251,7 +251,7 @@ DoubleML = R6::R6Class("DoubleML", public = list(
 
     if (self$apply_cross_fitting) {
       
-      dummy_resampling_scheme = mlr3::rsmp("repeated_cv",
+      dummy_resampling_scheme = rsmp("repeated_cv",
                                       folds = self$n_folds,
                                       repeats = self$n_rep)$instantiate(dummy_task)
       train_ids = lapply(1:(self$n_folds * self$n_rep),
@@ -274,14 +274,14 @@ DoubleML = R6::R6Class("DoubleML", public = list(
           stop("Repeated sample splitting without cross-fitting not implemented.")
         }
         
-        dummy_resampling_scheme = mlr3::rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
+        dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
         train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
         test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
         
         smpls = list(list(train_ids = train_ids, test_ids = test_ids))
         
       } else if (self$n_folds == 1) {
-        dummy_resampling_scheme = mlr3::rsmp("insample")$instantiate(dummy_task)
+        dummy_resampling_scheme = rsmp("insample")$instantiate(dummy_task)
       
         train_ids = lapply(1:(self$n_folds * self$n_rep),
                             function(x) dummy_resampling_scheme$train_set(x))

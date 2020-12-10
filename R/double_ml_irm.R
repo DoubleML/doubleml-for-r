@@ -39,7 +39,7 @@
 #' dml_irm_obj$summary()
 #' }
 #' @export
-DoubleMLIRM = R6::R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
+DoubleMLIRM = R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
   #' @field trimming_rule (`character(1)`) \cr
   #' A `character(1)` specifying the trimming approach. 
   trimming_rule = NULL, 
@@ -143,25 +143,25 @@ private = list(
       ml_g1 = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g1"))
 
-      resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
+      resampling_m = rsmp("custom")$instantiate(task_m,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
+      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
       
-      resampling_g0 = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g0 = rsmp("custom")$instantiate(task_g,
                                                         cond_smpls$train_ids_0,
                                                         smpls$test_ids)
-      r_g0 = mlr3::resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
+      r_g0 = resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat = extract_prediction(r_g0)$response
       
-      resampling_g1  = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g1  = rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_1,
                                                          smpls$test_ids)
-      r_g1 = mlr3::resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
+      r_g1 = resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
       g1_hat = extract_prediction(r_g1)$response
     } else {
       ml_m = lapply(self$get_params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
@@ -176,7 +176,7 @@ private = list(
       ml_g1 = lapply(self$get_params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                   x))
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
+      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
       resampling_g0 = initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
       r_g0 = resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat = lapply(r_g0, extract_prediction)
@@ -191,12 +191,12 @@ private = list(
       # fraction of treated for ATTE
       p_hat = vector('numeric', length = self$data$n_obs)
       for (i_fold in 1:length(smpls$test_ids)) {
-        p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[smpls$test_ids[[i_fold]], self$data$treat_col, with = FALSE] )
+        p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
       }
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE] # numeric # tbd: optimize
-    y = self$data$data_model[, self$data$y_col, with=FALSE] # numeric # tbd: optimize
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     u0_hat = y - g0_hat
     u1_hat = y - g1_hat
     
@@ -231,32 +231,32 @@ private = list(
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
      CV_tune = tune_settings$rsmp_tune
    } else {
-     CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+     CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
    }
    if (any(class(tune_settings$measure$ml_g) == "Measure")) {
         measure_g = tune_settings$measure$ml_g
       } else {
           if (is.null(tune_settings$measure$ml_g)){
-            measure_g = mlr3::default_measures("regr")[[1]]
+            measure_g = default_measures("regr")[[1]]
           } else {
-            measure_g = mlr3::msr(tune_settings$measure$ml_g)
+            measure_g = msr(tune_settings$measure$ml_g)
         }
    }
    if (any(class(tune_settings$measure$ml_m) == "Measure")) {
       measure_m = tune_settings$measure$ml_m
     } else {
         if (is.null(tune_settings$measure$ml_m)){
-          measure_m = mlr3::default_measures("classif")[[1]]
+          measure_m = default_measures("classif")[[1]]
         } else {
-          measure_m = mlr3::msr(tune_settings$measure$ml_m)
+          measure_m = msr(tune_settings$measure$ml_m)
       }
     }
     
    terminator = tune_settings$terminator
-   tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+   tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
    
-   indx_g0 = lapply(data_tune_list, function(x) x[self$data$treat_col] == 0)
-   indx_g1 = lapply(data_tune_list, function(x) x[self$data$treat_col] == 1)
+   indx_g0 = lapply(data_tune_list, function(x) x[[self$data$treat_col]] == 0)
+   indx_g1 = lapply(data_tune_list, function(x) x[[self$data$treat_col]] == 1)
    data_tune_list_d0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
    data_tune_list_d1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
 
@@ -266,7 +266,7 @@ private = list(
    
    ml_g0 = initiate_learner(self$learner$ml_g, params = list())
       
-   tuning_instance_g0 = lapply(task_g0, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
+   tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g0,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -278,7 +278,7 @@ private = list(
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$y_col))
    ml_g1 = initiate_learner(self$learner$ml_g, params = list())
-   tuning_instance_g1 = lapply(task_g1, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
+   tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g1,
                                           resampling = CV_tune,
                                           measure = measure_g,
@@ -290,7 +290,7 @@ private = list(
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
    ml_m = initiate_prob_learner(self$learner$ml_m, params = list())
-   tuning_instance_m = lapply(task_m, function(x) mlr3tuning::TuningInstanceSingleCrit$new(task = x,
+   tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_m,
                                          resampling = CV_tune,
                                          measure = measure_m,
@@ -330,7 +330,7 @@ private = list(
                   "To fit an interactive IV regression model use DoubleMLIIVM instead of DoubleMLIRM."))
     }
     one_treat = (obj_dml_data$n_treat == 1) 
-    binary_treat = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$d_cols, with = FALSE], lower = 0, upper = 1)
+    binary_treat = checkmate::test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]], lower = 0, upper = 1)
     if (! (one_treat & binary_treat)) {
       stop(paste("Incompatible data.\n", 
                  "To fit an IRM model with DoubleML", 
