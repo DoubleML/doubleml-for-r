@@ -279,9 +279,9 @@ private = list(
       }
     }
   
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
-    z = self$data$data_model[, self$data$z_cols, with = FALSE]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
+    z = self$data$data_model[[self$data$z_cols]]
     
     u_hat = y - g_hat
     w_hat = d - r_hat
@@ -419,8 +419,8 @@ private = list(
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
 
     u_hat = y - g_hat
     w_hat = d - m_hat_tilde
@@ -468,9 +468,9 @@ private = list(
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
-    z = self$data$data_model[, self$data$z_cols, with = FALSE]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
+    z = self$data$data_model[[self$data$z_cols]]
     
     score = self$score
     private$check_score(score)

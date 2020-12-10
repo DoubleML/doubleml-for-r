@@ -150,7 +150,7 @@ private = list(
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
+      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
       
       resampling_g0 = rsmp("custom")$instantiate(task_g,
                                                         cond_smpls$train_ids_0,
@@ -176,7 +176,7 @@ private = list(
       ml_g1 = lapply(self$get_params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
                                                                                   x))
       # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[, self$data$treat_col, with = FALSE])
+      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
       resampling_g0 = initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
       r_g0 = resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat = lapply(r_g0, extract_prediction)
@@ -195,8 +195,8 @@ private = list(
       }
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE] # numeric # tbd: optimize
-    y = self$data$data_model[, self$data$y_col, with=FALSE] # numeric # tbd: optimize
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     u0_hat = y - g0_hat
     u1_hat = y - g1_hat
     
@@ -330,7 +330,7 @@ private = list(
                   "To fit an interactive IV regression model use DoubleMLIIVM instead of DoubleMLIRM."))
     }
     one_treat = (obj_dml_data$n_treat == 1) 
-    binary_treat = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$d_cols, with = FALSE], lower = 0, upper = 1)
+    binary_treat = checkmate::test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]], lower = 0, upper = 1)
     if (! (one_treat & binary_treat)) {
       stop(paste("Incompatible data.\n", 
                  "To fit an IRM model with DoubleML", 

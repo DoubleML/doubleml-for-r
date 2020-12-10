@@ -152,8 +152,8 @@ private = list(
       m_hat = rearrange_prediction(m_hat, smpls$test_ids)
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE] # numeric # tbd: optimize
-    y = self$data$data_model[, self$data$y_col, with=FALSE] # numeric # tbd: optimize
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     
     v_hat = d - m_hat
     u_hat = y - g_hat

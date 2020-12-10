@@ -270,9 +270,9 @@ private = list(
     }
     
     # compute residuals
-    z = self$data$data_model[, self$data$z_cols, with = FALSE]
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
+    z = self$data$data_model[[self$data$z_cols]]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     u0_hat = y - g0_hat
     u1_hat = y - g1_hat
     w0_hat = d - r0_hat
@@ -441,7 +441,7 @@ private = list(
   }, 
   check_data = function(obj_dml_data) {
     one_treat = (obj_dml_data$n_treat == 1) 
-    binary_treat = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$d_cols, with = FALSE], lower = 0, upper = 1)
+    binary_treat = checkmate::test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]], lower = 0, upper = 1)
     if (! (one_treat & binary_treat)) {
       stop(paste("Incompatible data.\n", 
                  "To fit an IIVM model with DoubleML", 
@@ -449,7 +449,7 @@ private = list(
                   "needs to be specified as treatment variable."))
     }
     one_instr = (obj_dml_data$n_instr == 1) 
-    binary_instr = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$z_cols, with = FALSE], lower = 0, upper = 1)
+    binary_instr = checkmate::test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]], lower = 0, upper = 1)
     if (! (one_instr & binary_instr)) {
       stop(paste("Incompatible data.\n", 
                  "To fit an IIVM model with DoubleML", 
