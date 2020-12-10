@@ -19,6 +19,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -31,8 +32,9 @@
 #' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
+#' }
 #' @export
-DoubleMLPLIV = R6::R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
+DoubleMLPLIV = R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   #' @field partialX (`logical(1)`)  \cr
   #' Indicates whether covariates \eqn{X} should be partialled out. 
   partialX = NULL,
@@ -189,43 +191,44 @@ private = list(
     if (!private$fold_specific_params) {
       ml_g = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
-      resampling_g = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g = rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+      r_g = resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat = extract_prediction(r_g)$response
       
       ml_r = initiate_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
-      resampling_r = mlr3::rsmp("custom")$instantiate(task_r,
+      resampling_r = rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
-      r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_r = resample(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = extract_prediction(r_r)$response
       
       if (self$data$n_instr == 1) {
         ml_m = initiate_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
-        resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
+        resampling_m = rsmp("custom")$instantiate(task_m,
                                                          smpls$train_ids,
                                                          smpls$test_ids)
-        r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+        r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
         m_hat = extract_prediction(r_m)$response
         
       } else {
         ml_m = lapply(self$data$z_cols, function (i_instr) 
                                         initiate_learner(self$learner$ml_m,
                                                          self$get_params(paste0("ml_m_", i_instr))))
-        resampling_m = lapply(task_m, function(x) mlr3::rsmp("custom")$instantiate(x,
+        resampling_m = lapply(task_m, function(x) rsmp("custom")$instantiate(x,
                                                   smpls$train_ids, smpls$test_ids))
         
-        r_m = lapply(1:self$data$n_instr, function(x) mlr3::resample(task_m[[x]], ml_m[[x]], 
+        r_m = lapply(1:self$data$n_instr, function(x) resample(task_m[[x]], ml_m[[x]], 
                                                     resampling_m[[x]], store_models = TRUE))
         m_hat = lapply(r_m, extract_prediction)
         #m_hat = rearrange_prediction(m_hat, smpls$test_ids)
         m_hat = lapply(1:self$data$n_instr, function(x) 
-                                            setnames(m_hat[[x]], "response", self$data$z_cols[x]))
-        m_hat = Reduce(function(x,y) data.table::merge.data.table(x,y, by = "row_id"), m_hat)
+          data.table::setnames(m_hat[[x]], "response", self$data$z_cols[x]))
+        m_hat = Reduce(function(x,y)
+          data.table::merge.data.table(x,y, by = "row_id"), m_hat)
         row_id_indx = names(m_hat)!="row_id"
         m_hat = m_hat[, row_id_indx, with = FALSE]
       }
@@ -268,33 +271,37 @@ private = list(
           m_hat[[i_instr]] = rearrange_prediction(m_hat_prelim, smpls$test_ids, keep_rowids = TRUE)
         }
         m_hat = lapply(1:self$data$n_instr, function(x) 
-                                            setnames(m_hat[[x]], "response", self$data$z_cols[x]))
-        m_hat = Reduce(function(x,y) data.table::merge.data.table(x,y, by = "row_id"), m_hat)
+          data.table::setnames(m_hat[[x]], "response", self$data$z_cols[x]))
+        m_hat = Reduce(function(x,y)
+          data.table::merge.data.table(x,y, by = "row_id"), m_hat)
         row_id_indx = names(m_hat)!="row_id"
         m_hat = m_hat[, row_id_indx, with = FALSE]
       }
     }
   
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
-    z = self$data$data_model[, self$data$z_cols, with = FALSE]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     
     u_hat = y - g_hat
     w_hat = d - r_hat
-    v_hat = z - m_hat
     
-    if (self$data$n_instr > 1) {
+    if (self$data$n_instr == 1) {
+      z = self$data$data_model[[self$data$z_cols]]
+      v_hat = z - m_hat
+    } else {
+      z = self$data$data_model[, self$data$z_cols, with = FALSE]
+      v_hat = z - m_hat
       
       stopifnot(self$apply_cross_fitting) 
       
       # Projection: r_hat from projection on m_hat
-      data_aux = data.table::data.table(w_hat, v_hat)
+      data_aux = data.table(w_hat, v_hat)
       task_r_tilde = initiate_regr_task("nuis_r_tilde", data_aux, select_cols = NULL, 
                                         target = "w_hat")
-      ml_r_tilde = mlr3::lrn("regr.lm")
+      ml_r_tilde = lrn("regr.lm")
       resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
-      r_r_tilde = mlr3::resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
-                                  store_models = TRUE)
+      r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
+                           store_models = TRUE)
       r_hat_tilde = extract_prediction(r_r_tilde)$response
     }
     
@@ -340,24 +347,24 @@ private = list(
      if (!private$fold_specific_params){
       ml_g = initiate_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
-      resampling_g = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g = rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
-      r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+      r_g = resample(task_g, ml_g, resampling_g, store_models = TRUE)
       g_hat = extract_prediction(r_g)$response
       
       ml_m = initiate_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
-      resampling_m = mlr3::rsmp("custom")$instantiate(task_m, 
+      resampling_m = rsmp("custom")$instantiate(task_m, 
                                                       smpls$train_ids, 
                                                       smpls$test_ids)
-      r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = extract_prediction(r_m)$response  
       
-      resampling_m_on_train = mlr3::rsmp("custom")$instantiate(task_m,
+      resampling_m_on_train = rsmp("custom")$instantiate(task_m,
                                                       smpls$train_ids,
                                                       smpls$train_ids)
-      r_m_on_train = mlr3::resample(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
+      r_m_on_train = resample(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
       m_hat_on_train = extract_prediction(r_m_on_train, return_train_preds = TRUE)
 
       # nuisance r_tilde: Predict predicted values from nuisance m, only with X
@@ -369,10 +376,10 @@ private = list(
                                                    target = "m_hat_on_train"))
       ml_r = initiate_learner(self$learner$ml_r, self$get_params("ml_r"))
       resampling_r = lapply(1:self$n_folds, function(x) 
-                                                  mlr3::rsmp("custom")$instantiate(task_r[[x]], 
+                                                  rsmp("custom")$instantiate(task_r[[x]], 
                                                                                     list(smpls$train_ids[[x]]), 
                                                                                     list(smpls$test_ids[[x]])))
-      r_r = lapply(1:self$n_folds, function(x) mlr3::resample(task_r[[x]], ml_r, 
+      r_r = lapply(1:self$n_folds, function(x) resample(task_r[[x]], ml_r, 
                                                 resampling_r[[x]], store_models = TRUE))
       m_hat_tilde = lapply(r_r, extract_prediction)
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
@@ -405,18 +412,18 @@ private = list(
                                                     target = "m_hat_on_train"))
       ml_r = lapply(self$get_params("ml_r"), function(x) initiate_learner(self$learner$ml_r, x))
       resampling_r = lapply(1:self$n_folds, function(x) 
-                                                  mlr3::rsmp("custom")$instantiate(task_r[[x]], 
+                                                  rsmp("custom")$instantiate(task_r[[x]], 
                                                                                     list(smpls$train_ids[[x]]), 
                                                                                     list(smpls$test_ids[[x]])))
-      r_r = lapply(1:self$n_folds, function(x) mlr3::resample(task_r[[x]], ml_r[[x]], 
+      r_r = lapply(1:self$n_folds, function(x) resample(task_r[[x]], ml_r[[x]], 
                                                 resampling_r[[x]], store_models = TRUE))
       
       m_hat_tilde = lapply(r_r, extract_prediction)
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
 
     u_hat = y - g_hat
     w_hat = d - m_hat_tilde
@@ -448,10 +455,10 @@ private = list(
     if (!private$fold_specific_params) {
       ml_r = initiate_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
-      resampling_r = mlr3::rsmp("custom")$instantiate(task_r,
+      resampling_r = rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
-      r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+      r_r = resample(task_r, ml_r, resampling_r, store_models = TRUE)
       r_hat = extract_prediction(r_r)$response
     }
     
@@ -464,9 +471,8 @@ private = list(
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
     }
     
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
-    z = self$data$data_model[, self$data$z_cols, with = FALSE]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     
     score = self$score
     private$check_score(score)
@@ -508,38 +514,38 @@ private = list(
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
     } else {
-      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
     if (any(class(tune_settings$measure$ml_g) == "Measure")) {
       measure_g = tune_settings$measure$ml_g
     } else {
         if (is.null(tune_settings$measure$ml_g)){
-          measure_g = mlr3::default_measures("regr")[[1]]
+          measure_g = default_measures("regr")[[1]]
         } else {
-          measure_g = mlr3::msr(tune_settings$measure$ml_g)
+          measure_g = msr(tune_settings$measure$ml_g)
       }
     }
     if (any(class(tune_settings$measure$ml_m) == "Measure")) {
       measure_m = tune_settings$measure$ml_m
     } else {
         if (is.null(tune_settings$measure$ml_m)){
-          measure_m = mlr3::default_measures("regr")[[1]]
+          measure_m = default_measures("regr")[[1]]
         } else {
-          measure_m = mlr3::msr(tune_settings$measure$ml_m)
+          measure_m = msr(tune_settings$measure$ml_m)
       }
     }
     if (any(class(tune_settings$measure$ml_r) == "Measure")) {
       measure_r = tune_settings$measure$ml_r
     } else {
         if (is.null(tune_settings$measure$ml_r)){
-          measure_r = mlr3::default_measures("regr")[[1]]
+          measure_r = default_measures("regr")[[1]]
         } else {
-          measure_r = mlr3::msr(tune_settings$measure$ml_r)
+          measure_r = msr(tune_settings$measure$ml_r)
       }
     }
     
     terminator = tune_settings$terminator
-    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
@@ -624,37 +630,37 @@ private = list(
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
     } else {
-      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
     if (any(class(tune_settings$measure$ml_g) == "Measure")) {
       measure_g = tune_settings$measure$ml_g
     } else {
         if (is.null(tune_settings$measure$ml_g)){
-          measure_g = mlr3::default_measures("regr")[[1]]
+          measure_g = default_measures("regr")[[1]]
         } else {
-          measure_g = mlr3::msr(tune_settings$measure$ml_g)
+          measure_g = msr(tune_settings$measure$ml_g)
       }
     }
     if (any(class(tune_settings$measure$ml_m) == "Measure")) {
       measure_m = tune_settings$measure$ml_m
     } else {
         if (is.null(tune_settings$measure$ml_m)){
-          measure_m = mlr3::default_measures("regr")[[1]]
+          measure_m = default_measures("regr")[[1]]
         } else {
-          measure_m = mlr3::msr(tune_settings$measure$ml_m)
+          measure_m = msr(tune_settings$measure$ml_m)
       }
     }
     if (any(class(tune_settings$measure$ml_r) == "Measure")) {
       measure_r = tune_settings$measure$ml_r
     } else {
         if (is.null(tune_settings$measure$ml_r)){
-          measure_r = mlr3::default_measures("regr")[[1]]
+          measure_r = default_measures("regr")[[1]]
         } else {
-          measure_r = mlr3::msr(tune_settings$measure$ml_r)
+          measure_r = msr(tune_settings$measure$ml_r)
       }
     }
     terminator = tune_settings$terminator
-    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                   select_cols = c(self$data$x_cols), 
@@ -683,9 +689,9 @@ private = list(
     m_params = extract_tuned_params(tuning_result_m)
     ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m, params = x))
     
-    resampling_m_on_train = lapply(task_m, function(x) mlr3::rsmp("insample")$instantiate(x))
+    resampling_m_on_train = lapply(task_m, function(x) rsmp("insample")$instantiate(x))
     r_m_on_train = lapply(1:length(data_tune_list), function(x) 
-                                        mlr3::resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
+                                        resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
     m_hat_on_train = lapply(r_m_on_train, function(x) extract_prediction(x, return_train_preds = TRUE))
     m_hat_on_train = lapply(m_hat_on_train, function(x) x[[1]]$response)
       
@@ -722,21 +728,21 @@ private = list(
     if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
       CV_tune = tune_settings$rsmp_tune
     } else {
-      CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
     }
   
     if (any(class(tune_settings$measure_r) == "Measure")) {
       measure_r = tune_settings$measure_r
     } else {
         if (is.null(tune_settings$measure_r)){
-          measure_r = mlr3::default_measures("regr")[[1]]
+          measure_r = default_measures("regr")[[1]]
         } else {
-          measure_r = mlr3::msr(tune_settings$measure_r)
+          measure_r = msr(tune_settings$measure_r)
       }
     }
     
     terminator = tune_settings$terminator
-    tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     
     task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$treat_col), x,
                                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols, 

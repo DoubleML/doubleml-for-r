@@ -1,18 +1,27 @@
 context("Unit tests for PLR with repeated cross-fitting")
 
 library("mlr3learners")
-library('data.table')
-library('mlr3')
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'), # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
-                         dml_procedure = c('dml1', 'dml2'),
-                         score = c('IV-type', 'partialling out'),
-                         i_setting = 1:(length(data_plr)),
-                         n_rep = c(2, 5),
-                         stringsAsFactors = FALSE)
-test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(learner = c('regr.lm'),
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_plr)),
+                           n_rep = c(2, 5),
+                           stringsAsFactors = FALSE)
+  test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
+} else {
+  test_cases = expand.grid(learner = c('regr.lm', 'regr.cv_glmnet'),
+                           dml_procedure = c('dml1', 'dml2'),
+                           score = c('IV-type', 'partialling out'),
+                           i_setting = 1:(length(data_plr)),
+                           n_rep = c(2, 5),
+                           stringsAsFactors = FALSE)
+  test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
+}
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
                                    .cases = test_cases, {

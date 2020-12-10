@@ -1,8 +1,6 @@
 context("Unit tests for PLR, no cross-fitting")
 
 library("mlr3learners")
-library('data.table')
-library('mlr3')
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 

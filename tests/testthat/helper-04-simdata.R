@@ -4,8 +4,13 @@ settings <- list(list(theta = 0.5, n = 1000, p = 20),
                  list(theta = 1.5, n = 1000, p = 50),
                  list(theta = -0.75, n = 1000, p = 100))
 settings <- list(list(theta = 0.5, n = 1000, p = 20))
-settings_irm <- list(list(theta = 0.5, n = 5000, p = 20))
 
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  settings_irm <- list(list(theta = 0.5, n = 1000, p = 20))
+} else {
+  settings_irm <- list(list(theta = 0.5, n = 5000, p = 20))
+}
 
 n_settings <- length(settings)
 

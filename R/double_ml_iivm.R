@@ -30,6 +30,7 @@
 #' @usage NULL
 #' 
 #' @examples
+#' \donttest{
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
@@ -42,8 +43,9 @@
 #' dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 #' dml_iivm_obj$fit()
 #' dml_iivm_obj$summary()
+#' }
 #' @export
-DoubleMLIIVM =R6:: R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
+DoubleMLIIVM = R6Class("DoubleMLIIVM", inherit = DoubleML, public = list(
   #' @field subgroups (named `list(2)`) \cr
   #' Named `list(2)` with options to adapt to cases with and without the subgroups of always-takers and never-takes. The entry `always_takers`(`logical(1)`) speficies whether there are always takers in the sample. The entry `never_takers` (`logical(1)`) speficies whether there are never takers in the sample.
   subgroups = NULL, 
@@ -168,25 +170,25 @@ private = list(
       
       # nuisance m
       ml_m = initiate_prob_learner(self$learner$ml_m, self$get_params("ml_m"))                  
-      resampling_m = mlr3::rsmp("custom")$instantiate(task_m,
+      resampling_m = rsmp("custom")$instantiate(task_m,
                                                         smpls$train_ids,
                                                         smpls$test_ids)
-      r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+      r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # nuisance g
       ml_g0 = initiate_learner(self$learner$ml_g, self$get_params("ml_g0"))
-      resampling_g0 = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g0 = rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_0,
                                                          smpls$test_ids)
-      r_g0 = mlr3::resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
+      r_g0 = resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
       g0_hat = extract_prediction(r_g0)$response
       
       ml_g1 = initiate_learner(self$learner$ml_g, self$get_params("ml_g1"))
-      resampling_g1 = mlr3::rsmp("custom")$instantiate(task_g,
+      resampling_g1 = rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_1,
                                                          smpls$test_ids)
-      r_g1 = mlr3::resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
+      r_g1 = resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
       g1_hat = extract_prediction(r_g1)$response
     
       # nuisance r
@@ -198,10 +200,10 @@ private = list(
         r0_hat = rep(0, nrow(self$data$data_model))
       } else if (self$subgroups$always_takers == TRUE){
         ml_r0 = initiate_prob_learner(self$learner$ml_r, self$get_params("ml_r0"))
-        resampling_r0 = mlr3::rsmp("custom")$instantiate(task_r,
+        resampling_r0 = rsmp("custom")$instantiate(task_r,
                                                           cond_smpls$train_ids_0,
                                                           smpls$test_ids)
-        r_r0 = mlr3::resample(task_r, ml_r0, resampling_r0, store_models = TRUE)
+        r_r0 = resample(task_r, ml_r0, resampling_r0, store_models = TRUE)
         r0_hat = extract_prob_prediction(r_r0)$prob.1
       }
       
@@ -209,10 +211,10 @@ private = list(
         r1_hat = rep(1, nrow(self$data$data_model))
       } else if (self$subgroups$never_takers == TRUE){
         ml_r1 = initiate_prob_learner(self$learner$ml_r, self$get_params("ml_r1"))
-        resampling_r1 = mlr3::rsmp("custom")$instantiate(task_r,
+        resampling_r1 = rsmp("custom")$instantiate(task_r,
                                                            cond_smpls$train_ids_1,
                                                            smpls$test_ids)
-        r_r1 = mlr3::resample(task_r, ml_r1, resampling_r1, store_models = TRUE)
+        r_r1 = resample(task_r, ml_r1, resampling_r1, store_models = TRUE)
         r1_hat = extract_prob_prediction(r_r1)$prob.1
       }
     } else {
@@ -268,9 +270,9 @@ private = list(
     }
     
     # compute residuals
-    z = self$data$data_model[, self$data$z_cols, with = FALSE]
-    d = self$data$data_model[, self$data$treat_col, with = FALSE]
-    y = self$data$data_model[, self$data$y_col, with = FALSE]
+    z = self$data$data_model[[self$data$z_cols]]
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
     u0_hat = y - g0_hat
     u1_hat = y - g1_hat
     w0_hat = d - r0_hat
@@ -304,41 +306,41 @@ private = list(
    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
      CV_tune = tune_settings$rsmp_tune
    } else {
-     CV_tune = mlr3::rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+     CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
    }
    if (any(class(tune_settings$measure$ml_m) == "Measure")) {
         measure_m = tune_settings$measure$ml_m
       } else {
           if (is.null(tune_settings$measure$ml_m)){
-            measure_m = mlr3::default_measures("classif")[[1]]
+            measure_m = default_measures("classif")[[1]]
           } else {
-            measure_m = mlr3::msr(tune_settings$measure$ml_m)
+            measure_m = msr(tune_settings$measure$ml_m)
         }
    }
    if (any(class(tune_settings$measure$ml_g) == "Measure")) {
         measure_g = tune_settings$measure$ml_g
       } else {
           if (is.null(tune_settings$measure$ml_g)){
-            measure_g = mlr3::default_measures("regr")[[1]]
+            measure_g = default_measures("regr")[[1]]
           } else {
-            measure_g = mlr3::msr(tune_settings$measure$ml_g)
+            measure_g = msr(tune_settings$measure$ml_g)
         }
    }
    if (any(class(tune_settings$measure$ml_r) == "Measure")) {
         measure_r = tune_settings$measure$ml_r
       } else {
           if (is.null(tune_settings$measure$ml_r)){
-            measure_r= mlr3::default_measures("classif")[[1]]
+            measure_r= default_measures("classif")[[1]]
           } else {
-            measure_r = mlr3::msr(tune_settings$measure$ml_r)
+            measure_r = msr(tune_settings$measure$ml_r)
         }
       }
    
    terminator = tune_settings$terminator
-   tuner = mlr3tuning::tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+   tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
     
-   indx_g0 = lapply(data_tune_list, function(x) x[self$data$z_cols] == 0)
-   indx_g1 = lapply(data_tune_list, function(x) x[self$data$z_cols] == 1)
+   indx_g0 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 0)
+   indx_g1 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 1)
    data_tune_list_z0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
    data_tune_list_z1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
 
@@ -439,7 +441,7 @@ private = list(
   }, 
   check_data = function(obj_dml_data) {
     one_treat = (obj_dml_data$n_treat == 1) 
-    binary_treat = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$d_cols, with = FALSE], lower = 0, upper = 1)
+    binary_treat = checkmate::test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]], lower = 0, upper = 1)
     if (! (one_treat & binary_treat)) {
       stop(paste("Incompatible data.\n", 
                  "To fit an IIVM model with DoubleML", 
@@ -447,7 +449,7 @@ private = list(
                   "needs to be specified as treatment variable."))
     }
     one_instr = (obj_dml_data$n_instr == 1) 
-    binary_instr = checkmate::test_integerish(obj_dml_data$data[ , obj_dml_data$z_cols, with = FALSE], lower = 0, upper = 1)
+    binary_instr = checkmate::test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]], lower = 0, upper = 1)
     if (! (one_instr & binary_instr)) {
       stop(paste("Incompatible data.\n", 
                  "To fit an IIVM model with DoubleML", 

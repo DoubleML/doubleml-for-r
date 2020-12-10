@@ -19,6 +19,7 @@ Partially linear regression (PLR) models take the form
 with \eqn{E[\zeta|D,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
 }
 \examples{
+\donttest{
 library(DoubleML)
 library(mlr3)
 library(mlr3learners)
@@ -30,6 +31,7 @@ obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
 dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 dml_plr_obj$fit()
 dml_plr_obj$summary()
+}
 }
 \seealso{
 Other DoubleML: 

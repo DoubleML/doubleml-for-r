@@ -16,7 +16,7 @@
 #'                                y_col = "y",
 #'                                d_cols = "d")
 #' @export
-DoubleMLData = R6::R6Class("DoubleMLData", public = list(
+DoubleMLData = R6Class("DoubleMLData", public = list(
   #' @field all_variables (`character()`)\cr 
   #' All variables available in the dataset.
   all_variables = NULL,
@@ -285,7 +285,7 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
       }
   }
   col_indx =  c(x_cols, y_col, d_cols, z_cols)
-  data = data.table::data.table(df)[, col_indx, with = FALSE]
+  data = data.table(df)[, col_indx, with = FALSE]
   if (data_class == "DoubleMLData") {
     data = DoubleMLData$new(data, x_cols = x_cols, y_col = y_col, d_cols = d_cols, 
                             z_cols = z_cols, 
@@ -342,7 +342,7 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "Do
     } else {
       check_matrix_row(list(y, d))
     }
-    data = data.table::data.table(X, y, d)
+    data = data.table(X, y, d)
   } else {
     z = assure_matrix(z)
     if (!is.null(X)) {
@@ -350,7 +350,7 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "Do
     } else {
       check_matrix_row(list(y, d, z))
     }
-    data = data.table::data.table(X, y, d, z)
+    data = data.table(X, y, d, z)
   }
   if (!is.null(z)){
     if (ncol(z) == 1) {

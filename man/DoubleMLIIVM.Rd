@@ -29,6 +29,7 @@ with \eqn{E[\zeta|Z,X]=0}, \eqn{E[U|Z,X]=0} and \eqn{E[V|X]=0}. The target param
 \eqn{\theta_0 = \frac{E[g_0(1,X)] - E[g_0(0,X)]}{E[r(1,X)] - E[r(0,X)]}.}
 }
 \examples{
+\donttest{
 library(DoubleML)
 library(mlr3)
 library(mlr3learners)
@@ -41,6 +42,7 @@ obj_dml_data = make_iivm_data(theta = 0.5, n_obs=1000, alpha_x = 1, dim_x=20)
 dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 dml_iivm_obj$fit()
 dml_iivm_obj$summary()
+}
 }
 \seealso{
 Other DoubleML: 

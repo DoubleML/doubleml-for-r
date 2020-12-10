@@ -1,21 +1,21 @@
 Package: DoubleML
 Type: Package
 Title: Double Machine Learning in R
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role="aut"),
     person("Victor", "Chernozhukov", role="aut"),
     person("Malte S.", "Kurz", email = "malte.simon.kurz@uni-hamburg.de", role=c("aut", "cre")),
     person("Martin", "Spindler", email="martin.spindler@gmx.de", role="aut"))
 Description: The R package DoubleML provides an implementation of the double / 
-    debiased machine learning framework of Chernozhukov et al. (2018) for 
-    partially linear regression models, partially linear instrumental variable 
-    regression models, interactive regression models and interactive 
-    instrumental variable regression models. DoubleML allows estimation of the 
-    nuisance parts in these models by machine learning methods and computation 
-    of the Neyman orthogonal score functions. DoubleML is built on top of mlr3 
-    and the mlr3 ecosystem. The object-oriented implementation of DoubleML that
-    is based on the R6 package for R is very flexible. 
+    debiased machine learning framework of Chernozhukov et al. (2018)
+    <doi:10.1111/ectj.12097> for partially linear regression models, partially
+    linear instrumental variable regression models, interactive regression
+    models and interactive instrumental variable regression models. DoubleML
+    allows estimation of the nuisance parts in these models by machine learning
+    methods and computation of the Neyman orthogonal score functions. DoubleML
+    is built on top of mlr3 and the mlr3 ecosystem. The object-oriented
+    implementation of DoubleML that is based on the R6 package for R is very flexible. 
 License: MIT + file LICENSE
 URL: https://github.com/DoubleML/doubleml-for-r/
 Encoding: UTF-8
@@ -28,12 +28,11 @@ Imports:
     stats,
     checkmate,
     mlr3 (>= 0.5.0),
-    mlr3learners (>= 0.3.0),
     mlr3tuning (>= 0.3.0),
-    paradox (>= 0.4.0),
+    mvtnorm,
     utils,
     clusterGeneration,
-    foreign (<= 0.8-76)
+    readstata13
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
@@ -41,18 +40,17 @@ Suggests:
     rmarkdown,
     testthat,
     patrick,
-    mvtnorm,
+    mlr3learners (>= 0.3.0),
+    paradox (>= 0.4.0),
     dplyr,
     glmnet,
     lgr,
-    ggplot2,
     ranger,
-    hdm,
     sandwich,
     AER,
     rpart
 VignetteBuilder: knitr
-Collate: 
+Collate:
     'double_ml.R'
     'double_ml_data.R'
     'double_ml_iivm.R'
@@ -61,3 +59,4 @@ Collate:
     'double_ml_plr.R'
     'helper.R'
     'datasets.R'
+    'zzz.R'

@@ -1,11 +1,5 @@
 context("Unit tests for tuning for PLIV")
 
-library("mlr3learners")
-library("mlr3tuning")
-library("paradox")
-library('data.table')
-library('mlr3')
-
 requireNamespace("lgr")
 
 logger = lgr::get_logger("bbotk")
@@ -29,13 +23,24 @@ tune_settings = list(n_folds_tune = 2,
                       tuner = "grid_search",
                       resolution = 5)
 
-test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
-                         score = c('partialling out'),
-                         i_setting = 1:(length(data_pliv)),
-                         n_rep = c(1, 3),
-                         tune_on_folds = c(FALSE, TRUE),
-                         z_indx = c(1,2),
-                         stringsAsFactors = FALSE)
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(dml_procedure = c('dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_pliv)),
+                           n_rep = c(1),
+                           tune_on_folds = c(FALSE, TRUE),
+                           z_indx = c(1,2),
+                           stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(dml_procedure = c('dml1', 'dml2'),
+                           score = c('partialling out'),
+                           i_setting = 1:(length(data_pliv)),
+                           n_rep = c(1, 3),
+                           tune_on_folds = c(FALSE, TRUE),
+                           z_indx = c(1,2),
+                           stringsAsFactors = FALSE)
+}
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
@@ -76,14 +81,12 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
                                      score = score,
                                      n_rep = n_rep)
   
-  param_grid = list("ml_g" = ParamSet$new(list(
-                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    "ml_m" = ParamSet$new(list(
-                                          ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                          ParamInt$new("minsplit", lower = 1, upper = 2))),
-                    "ml_r" = ParamSet$new(list( ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                          ParamInt$new("minsplit", lower = 1, upper = 2))))
+  param_grid = list("ml_g" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                                        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    "ml_m" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                                        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+                    "ml_r" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                                        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
   
   double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds)
   double_mlpliv_obj_tuned$fit()
