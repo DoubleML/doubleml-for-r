@@ -14,7 +14,7 @@ Description: Implementation of the double/debiased machine learning framework of
     regression models. 'DoubleML' allows estimation of the nuisance parts in
     these models by machine learning methods and computation of the Neyman
     orthogonal score functions. 'DoubleML' is built on top of 'mlr3' and the
-    'mlr3' ecosystem. The object-oriented implementation of DoubleML based on
+    'mlr3' ecosystem. The object-oriented implementation of 'DoubleML' based on
     the 'R6' package is very flexible. 
 License: MIT + file LICENSE
 URL: https://github.com/DoubleML/doubleml-for-r/
