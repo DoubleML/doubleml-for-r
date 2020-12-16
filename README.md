@@ -70,28 +70,31 @@ It further can be readily extended with regards to
 
 ## Installation
 
-**DoubleML** requires
+Install the latest release from CRAN:
 
-  - R
-  - R6
-  - mlr3
-  - mlr3tuning
-  - mlr3learners
-  - data.table
-  - paradox
-  - stats
-  - utils
-  - clusterGeneration
-  - foreign (\<= 0.8-76)
+``` r
+remotes::packages("DoubleML")
+```
 
-We plan to push a first release of the **DoubleML** package to CRAN very
-soon.
-
-Until then we recommend to install from source via
+Install the development version from GitHub:
 
 ``` r
 remotes::install_github("DoubleML/doubleml-for-r")
 ```
+
+**DoubleML** requires
+
+  - R (\>= 3.5.0)
+  - R6 (\>= 2.4.1)
+  - data.table (\>= 1.12.8)
+  - stats
+  - checkmate
+  - mlr3 (\>= 0.5.0)
+  - mlr3tuning (\>= 0.3.0)
+  - mvtnorm
+  - utils
+  - clusterGeneration
+  - readstata13
 
 ## Citation
 
