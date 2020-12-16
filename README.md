@@ -3,6 +3,10 @@
 
 # DoubleML - Double Machine Learning in R
 
+[![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
+[![CRAN
+Version](https://www.r-pkg.org/badges/version/DoubleML)](https://cran.r-project.org/package=DoubleML)
+
 The R package **DoubleML** provides an implementation of the double /
 debiased machine learning framework of [Chernozhukov et
 al. (2018)](https://arxiv.org/abs/1608.00060). It is built on top of
@@ -12,7 +16,9 @@ ecosystem](https://github.com/mlr-org/mlr3/wiki/Extension-Packages)
 
 Note that the R package was developed together with a python twin based
 on [scikit-learn](https://scikit-learn.org/). The python package is also
-available on [GitHub](https://github.com/DoubleML/doubleml-for-py).
+available on [GitHub](https://github.com/DoubleML/doubleml-for-py) and
+[![PyPI
+version](https://badge.fury.io/py/DoubleML.svg)](https://badge.fury.io/py/DoubleML).
 
 ## Documentation and maintenance
 
