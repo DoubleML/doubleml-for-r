@@ -1,5 +1,5 @@
 # Workflow based on https://github.com/r-lib/actions/tree/master/examples#standard-ci-workflow
-name: CI unit tests
+name: build
 
 on:
   push:
