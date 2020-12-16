@@ -3,6 +3,10 @@
 
 # DoubleML - Double Machine Learning in R
 
+[![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
+[![CRAN
+Version](https://www.r-pkg.org/badges/version/DoubleML)](https://cran.r-project.org/package=DoubleML)
+
 The R package **DoubleML** provides an implementation of the double /
 debiased machine learning framework of [Chernozhukov et
 al. (2018)](https://arxiv.org/abs/1608.00060). It is built on top of
@@ -12,7 +16,9 @@ ecosystem](https://github.com/mlr-org/mlr3/wiki/Extension-Packages)
 
 Note that the R package was developed together with a python twin based
 on [scikit-learn](https://scikit-learn.org/). The python package is also
-available on [GitHub](https://github.com/DoubleML/doubleml-for-py).
+available on [GitHub](https://github.com/DoubleML/doubleml-for-py) and
+[![PyPI
+version](https://badge.fury.io/py/DoubleML.svg)](https://badge.fury.io/py/DoubleML).
 
 ## Documentation and maintenance
 
@@ -64,28 +70,31 @@ It further can be readily extended with regards to
 
 ## Installation
 
-**DoubleML** requires
+Install the latest release from CRAN:
 
-  - R
-  - R6
-  - mlr3
-  - mlr3tuning
-  - mlr3learners
-  - data.table
-  - paradox
-  - stats
-  - utils
-  - clusterGeneration
-  - foreign (\<= 0.8-76)
+``` r
+remotes::packages("DoubleML")
+```
 
-We plan to push a first release of the **DoubleML** package to CRAN very
-soon.
-
-Until then we recommend to install from source via
+Install the development version from GitHub:
 
 ``` r
 remotes::install_github("DoubleML/doubleml-for-r")
 ```
+
+**DoubleML** requires
+
+  - R (\>= 3.5.0)
+  - R6 (\>= 2.4.1)
+  - data.table (\>= 1.12.8)
+  - stats
+  - checkmate
+  - mlr3 (\>= 0.5.0)
+  - mlr3tuning (\>= 0.3.0)
+  - mvtnorm
+  - utils
+  - clusterGeneration
+  - readstata13
 
 ## Citation
 
