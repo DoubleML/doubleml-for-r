@@ -37,6 +37,8 @@ jobs:
         run: brew install --cask gfortran 
 
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
 
       - uses: r-lib/actions/setup-r@v1
         with:
@@ -74,6 +76,7 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
+        if: runner.os != 'macOS'
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
           NOT_CRAN: false
@@ -86,3 +89,14 @@ jobs:
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
+
+      - name: Install covr
+        if: runner.os == 'macOS'
+        run: |
+          remotes::install_cran("covr")
+        shell: Rscript {0}
+        
+      - name: Test coverage
+        if: runner.os == 'macOS'
+        run: covr::codecov()
+        shell: Rscript {0}
