@@ -33,6 +33,9 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - if: runner.os == 'macOS'
+        run: brew install --cask gfortran 
+
       - uses: actions/checkout@v2
 
       - uses: r-lib/actions/setup-r@v1
