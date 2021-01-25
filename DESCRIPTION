@@ -48,7 +48,8 @@ Suggests:
     ranger,
     sandwich,
     AER,
-    rpart
+    rpart,
+    bbotk
 VignetteBuilder: knitr
 Collate:
     'double_ml.R'
