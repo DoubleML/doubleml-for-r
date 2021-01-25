@@ -19,8 +19,6 @@ Please note that the current version of the `DoubleML` package for R is still un
 
 ### Installation from CRAN
 
-**Note**: We plan to push a first release of the DoubleML package to CRAN very soon. Until then the installation of a released version is only possible from the [DoubleML GitHub repository](https://github.com/DoubleML/doubleml-for-r). The steps for installation from GitHub are explained below. 
-
 For installation from CRAN type
 ```{r, eval = FALSE}
 install.packages("DoubleML")
