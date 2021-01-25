@@ -129,7 +129,12 @@ extract_training_data = function(data, smpls) {
 
 tune_instance = function(tuner, tuning_instance){
   tuning_result = tuner$optimize(tuning_instance)
-  tuning_archive = tuning_instance$archive$data()
+  if (utils::compareVersion(as.character(utils::packageVersion('mlr3tuning')), '0.6.0') < 0) {
+    tuning_archive = tuning_instance$archive$data()
+  } else {
+    tuning_archive = tuning_instance$archive$data
+  }
+  
   params = tuning_instance$result$params
   
   tuning_results = list(tuning_result = tuning_result, 
