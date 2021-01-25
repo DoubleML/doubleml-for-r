@@ -45,5 +45,5 @@ The covariates :\eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma} is a 
 The data generating process is inspired by a process used in the simulation experiment of Farbmacher, Gruber and Klaaßen (2020).
 }
 \references{
-Farbmacher, H., Guber, R. and Klaaßen, S. (2020). Instrument Validity Tests with Causal Forests. MEA Discussion Paper No. 13-2020. Available at SSRN: \url{http://dx.doi.org/10.2139/ssrn.3619201}.
+Farbmacher, H., Guber, R. and Klaaßen, S. (2020). Instrument Validity Tests with Causal Forests. MEA Discussion Paper No. 13-2020. Available at SSRN: \doi{10.2139/ssrn.3619201}.
 }

@@ -40,5 +40,5 @@ with \eqn{v_i \sim \mathcal{N}(0,1)} and \eqn{\zeta_i \sim \mathcal{N}(0,1),}. T
 \eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3}.}
 }
 \references{
-Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. doi:\href{https://doi.org/10.1111/ectj.12097}{10.1111/ectj.12097}.
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 }
