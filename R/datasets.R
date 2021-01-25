@@ -21,7 +21,7 @@
 #' The supplementary data of the study by Chernozhukov et al. (2018) is available at [https://academic.oup.com/ectj/article/21/1/C1/5056401#supplementary-data](https://academic.oup.com/ectj/article/21/1/C1/5056401#supplementary-data). 
 #' @references Abadie, A. (2003), Semiparametric instrumental variable estimation of treatment response models. Journal of Econometrics, 113(2): 231-263.
 #' 
-#' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. doi:[10.1111/ectj.12097](https://doi.org/10.1111/ectj.12097).
+#' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 #' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. Default is `"DoubleMLData"`.
@@ -96,7 +96,7 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
 #' 
 #' @references Bilias Y. (2000), Sequential Testing of Duration Data: The Case of Pennsylvania ‘Reemployment Bonus’ Experiment. Journal of Applied Econometrics, 15(6): 575-594.
 #' 
-#' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. doi:[10.1111/ectj.12097](https://doi.org/10.1111/ectj.12097).
+#' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 #' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. Default is `"DoubleMLData"`.
@@ -182,7 +182,7 @@ g = function(x){
 #' 
 #' \eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3}.}
 #' 
-#' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. doi:[10.1111/ectj.12097](https://doi.org/10.1111/ectj.12097).
+#' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 #' 
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate. 
@@ -492,7 +492,7 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5, R2_y = 
 #' 
 #' The data generating process is inspired by a process used in the simulation experiment of Farbmacher, Gruber and Klaaßen (2020).
 #' 
-#' @references Farbmacher, H., Guber, R. and Klaaßen, S. (2020). Instrument Validity Tests with Causal Forests. MEA Discussion Paper No. 13-2020. Available at SSRN: [http://dx.doi.org/10.2139/ssrn.3619201](http://dx.doi.org/10.2139/ssrn.3619201).
+#' @references Farbmacher, H., Guber, R. and Klaaßen, S. (2020). Instrument Validity Tests with Causal Forests. MEA Discussion Paper No. 13-2020. Available at SSRN: \doi{10.2139/ssrn.3619201}.
 #' 
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate. 

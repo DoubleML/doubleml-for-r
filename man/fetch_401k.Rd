@@ -40,5 +40,5 @@ The supplementary data of the study by Chernozhukov et al. (2018) is available a
 \references{
 Abadie, A. (2003), Semiparametric instrumental variable estimation of treatment response models. Journal of Econometrics, 113(2): 231-263.
 
-Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. doi:\href{https://doi.org/10.1111/ectj.12097}{10.1111/ectj.12097}.
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 }
