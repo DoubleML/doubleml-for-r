@@ -500,15 +500,24 @@ DoubleML = R6Class("DoubleML", public = list(
   #' @param level (`numeric(1)`) \cr
   #' The confidence level. Default is `0.95`.
   #' 
-  #' @param parm (`numeric()`) \cr
+  #' @param parm (`numeric()` or `character()`) \cr
   #' A specification of which parameters are to be given confidence intervals among the variables for which inference was done, either a vector of numbers or a vector of names. If missing, all parameters are considered (default).
   #' @return A `matrix()` with the confidence interval(s). 
   confint = function(parm, joint = FALSE, level = 0.95){
+    checkmate::assert_logical(joint, len = 1)
+    checkmate::assert_numeric(level, len = 1)
+    if (level <= 0 | level >= 1) {
+      stop("'level' must be > 0 and < 1.")
+    }
     if (missing(parm)) {
       parm = names(self$coef)
       }
-    else if (is.numeric(parm)) {
-      parm = names(self$coef)[parm]
+    else {
+      checkmate::assert(checkmate::check_character(parm, max.len = self$data$n_treat),
+                        checkmate::check_numeric(parm, max.len = self$data$n_treat))
+      if (is.numeric(parm)) {
+        parm = names(self$coef)[parm]
+      }
     }
 
     if (joint == FALSE) {
