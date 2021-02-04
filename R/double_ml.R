@@ -518,7 +518,7 @@ DoubleML = R6Class("DoubleML", public = list(
       fac = stats::qnorm(a)
       ci = array(NA_real_, dim = c(length(parm), 2L), dimnames = list(parm,
                                                                      pct))
-      ci[] = self$coef[parm] + self$se %o% fac
+      ci[] = self$coef[parm] + self$se[parm] %o% fac
     }
   
     if (joint == TRUE) {
@@ -535,8 +535,8 @@ DoubleML = R6Class("DoubleML", public = list(
       sim = apply(abs(self$boot_t_stat), 2, max)
       hatc = stats::quantile(sim, probs = 1 - a)
       
-      ci[, 1] = self$coef[parm] - hatc * self$se
-      ci[, 2] = self$coef[parm] + hatc * self$se
+      ci[, 1] = self$coef[parm] - hatc * self$se[parm]
+      ci[, 2] = self$coef[parm] + hatc * self$se[parm]
      }
     return(ci)
   }, 
