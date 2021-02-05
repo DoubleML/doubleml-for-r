@@ -463,14 +463,18 @@ DoubleML = R6Class("DoubleML", public = list(
   summary = function(digits = max(3L, getOption("digits") - 
                                                           3L)) {
     
+    col_names = c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
     if (all(is.na(self$coef))) {
-      print("fit() not yet called.")
+      table = matrix(NA, ncol = 4, nrow = 1)
+      colnames(table) = col_names
+      res = table
+      print(res)
     } else {
       ans = NULL
       k = length(self$coef)
       table = matrix(NA, ncol = 4, nrow = k)
       rownames(table) = names(self$coef)
-      colnames(table) = c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
+      colnames(table) = col_names
       table[, 1] = self$coef
       table[, 2] = self$se
       table[, 3] = self$t_stat
