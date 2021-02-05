@@ -612,7 +612,7 @@ DoubleML = R6Class("DoubleML", public = list(
   #' Multiple testing adjustment for DoubleML models. 
   #' 
   #' @param method (`character(1)`) \cr
-  #' A `character(1)`(`"romano-wolf"`, `"bonferroni"`, `"holm"`, etc) specifying the adjustment method. In addition to `"romano-wolf"`, all methods implemented in [p.adjust()][stats::p.adjust()] can be applied. Default is `"romano-wolf"`. 
+  #' A `character(1)`(`"romano-wolf"`, `"bonferroni"`, `"holm"`, etc) specifying the adjustment method. In addition to `"romano-wolf"`, all methods implemented in [p.adjust()][stats::p.adjust()] can be applied. Default is `"romano-wolf"`. For more information on `p.adjust()` visit the documentation, which is available via `help(p.adjust)`. 
   #' @param return_matrix (`logical(1)`) \cr
   #' Indicates if the output is returned as a matrix with corresponding coefficient names. 
   #' 
@@ -621,7 +621,11 @@ DoubleML = R6Class("DoubleML", public = list(
     if (all(is.na(self$coef))) {
       stop("apply fit() before p_adust().")
     }
-   
+    checkmate::assert_character(method)
+    checkmate::assert_logical(return_matrix)
+    supported_methods = c("rw", "RW", "romano-wolf", stats::p.adjust.methods)
+    checkmate::assert_choice(method, supported_methods)
+    
     if (tolower(method) %in% c("rw", "romano-wolf")) {
       if (is.null(self$boot_t_stat) | all(is.na(self$coef))){
         stop("apply fit() & bootstrap() before p_adust().")

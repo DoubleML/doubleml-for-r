@@ -371,7 +371,7 @@ Multiple testing adjustment for DoubleML models.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{method}}{(\code{character(1)}) \cr
-A \code{character(1)}(\code{"romano-wolf"}, \code{"bonferroni"}, \code{"holm"}, etc) specifying the adjustment method. In addition to \code{"romano-wolf"}, all methods implemented in \link[stats:p.adjust]{p.adjust()} can be applied. Default is \code{"romano-wolf"}.}
+A \code{character(1)}(\code{"romano-wolf"}, \code{"bonferroni"}, \code{"holm"}, etc) specifying the adjustment method. In addition to \code{"romano-wolf"}, all methods implemented in \link[stats:p.adjust]{p.adjust()} can be applied. Default is \code{"romano-wolf"}. For more information on \code{p.adjust()} visit the documentation, which is available via \code{help(p.adjust)}.}
 
 \item{\code{return_matrix}}{(\code{logical(1)}) \cr
 Indicates if the output is returned as a matrix with corresponding coefficient names.}
