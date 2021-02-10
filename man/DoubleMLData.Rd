@@ -6,7 +6,7 @@
 \description{
 Double machine learning data-backend.
 
-\code{DoubleMLData} objects can be initialized from a \link[data.table:data.table]{data.table}. Alternatively \code{DoubleML} provides functions to initialize from a collection of \code{matrix} objects or a \code{data.frame}. The the following functions can be used to create a new instance of \code{DoubleMLData}.
+\code{DoubleMLData} objects can be initialized from a \link[data.table:data.table]{data.table}. Alternatively \code{DoubleML} provides functions to initialize from a collection of \code{matrix} objects or a \code{data.frame}. The following functions can be used to create a new instance of \code{DoubleMLData}.
 \itemize{
 \item \code{DoubleMLData$new()} for initialization from a \code{data.table}.
 \item \code{\link[=double_ml_data_from_matrix]{double_ml_data_from_matrix()}} for initialization from \code{matrix} objects,

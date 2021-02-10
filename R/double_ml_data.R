@@ -3,7 +3,7 @@
 #' @description
 #' Double machine learning data-backend.
 #' 
-#' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively `DoubleML` provides functions to initialize from a collection of `matrix` objects or a `data.frame`. The the following functions can be used to create a new instance of `DoubleMLData`. 
+#' `DoubleMLData` objects can be initialized from a [data.table][data.table::data.table()]. Alternatively `DoubleML` provides functions to initialize from a collection of `matrix` objects or a `data.frame`. The following functions can be used to create a new instance of `DoubleMLData`. 
 #' * `DoubleMLData$new()` for initialization from a `data.table`. 
 #' * [double_ml_data_from_matrix()] for initialization from `matrix` objects,
 #' * [double_ml_data_from_data_frame()] for initialization from a `data.frame`. 
