@@ -1,5 +1,117 @@
 
-extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
+dml_cv_predict = function(learner, X_cols, y_col,
+                          data_model, nuisance_id, 
+                          smpls = NULL, est_params = NULL, 
+                          return_train_preds = FALSE, learner_class = NULL, 
+                          fold_specific_params = FALSE) {
+  
+  # TODO: Asserts 
+  task_pred = initiate_task(id = nuisance_id, data = data_model, 
+                            target = y_col,
+                            select_cols = X_cols,  
+                            learner_class = learner_class)
+  
+  if (!fold_specific_params) {
+    ml_learner = initiate_learner(learner, learner_class, est_params)
+    resampling_smpls = rsmp("custom")$instantiate(task_pred, smpls$train_ids,
+                                                             smpls$test_ids)
+    resampling_pred = resample(task_pred, ml_learner, resampling_smpls, store_models = TRUE)
+    
+    preds = extract_prediction(resampling_pred, learner_class, return_train_preds)
+  } else {
+    stopifnot(length(smpls$train_ids) == length(smpls$test_ids))
+
+    # learners initiated according to fold-specific learners, proceed foldwise
+    ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
+    
+    resampling_smpls = lapply(1:length(smpls$train_ids), function(x) 
+                                                    rsmp("custom")$instantiate(task_pred, list(smpls$train_ids[[x]]),
+                                                                                          list(smpls$test_ids[[x]])))
+    
+    resampling_pred = lapply(1:length(ml_learners), function(x) resample(task_pred, ml_learners[[x]], 
+                                                                         resampling_smpls[[x]], store_models = TRUE))
+    
+    preds = extract_prediction_list(resampling_pred, learner_class, smpls$test_ids, return_train_preds)
+
+  }
+  return(preds)
+}
+
+
+
+extract_prediction = function(obj_resampling, learner_class, return_train_preds = FALSE, return_type = "numeric") {
+  if (learner_class == "LearnerRegr") {
+    if (!return_train_preds) {
+      f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+      f_hat = as.data.table(obj_resampling$prediction())
+      f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
+      data.table::setorder(f_hat, 'row_id')
+      f_hat = as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # TODO: optimize
+      preds = f_hat$response
+    } else {
+      # Access in-sample predictions
+      iters = obj_resampling$resampling$iters
+      f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+      f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
+      f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
+                                                                              by = "row_id", all = TRUE))
+      f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
+      f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+                                                                     "response"= x$response)))
+      preds = f_hat_list$response
+    }
+  } else if (learner_class == "LearnerClassif") {
+    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+    f_hat = as.data.table(obj_resampling$prediction())
+    f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
+    data.table::setorder(f_hat, 'row_id')
+    f_hat = as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+    preds = f_hat$prob.1
+  }
+  
+  if (return_type == "numeric") {
+    return(preds)
+  } else if (return_type == "data.table") {
+    return(f_hat)
+  }
+}
+
+
+extract_prediction_list = function(obj_resampling, learner_class, test_ids, return_train_preds = FALSE) {
+  checkmate::assert_list(obj_resampling)
+  
+  prediction_list = lapply(obj_resampling, function(x) extract_prediction(x, learner_class, 
+                                                                          return_train_preds = return_train_preds,
+                                                                          return_type = "data.table"))
+  
+  prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
+  predictions = data.table::rbindlist(prediction_list)
+  data.table::setorder(predictions, 'row_id')
+  
+  if (learner_class == "LearnerRegr") {
+    preds = predictions$response
+  } else if (learner_class == "LearnerClassif") {
+    preds = predictions$prob.1
+  }
+  return(preds)
+}
+
+
+rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
+    
+    # if (length(test_ids) > 1) {
+      # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
+    prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
+    predictions = data.table::rbindlist(prediction_list)
+    data.table::setorder(predictions, 'row_id')
+    if (!keep_rowids) {
+      predictions = predictions$response
+    }
+    return(predictions)
+}
+
+
+extract_response_prediction = function(obj_resampling, return_train_preds = FALSE) {
   if (!return_train_preds) {
     f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
     f_hat = as.data.table(obj_resampling$prediction())
@@ -22,20 +134,6 @@ extract_prediction = function(obj_resampling, return_train_preds = FALSE) {
   }
 }
 
-rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
-    
-    # if (length(test_ids) > 1) {
-      # Note: length(test_ids) = 1 if apply_cross_fitting == FALSE)  
-    prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions = data.table::rbindlist(prediction_list)
-    data.table::setorder(predictions, 'row_id')
-    if (!keep_rowids) {
-      predictions = predictions$response
-    }
-    return(predictions)
-}
-
-
 extract_prob_prediction = function(obj_resampling) {
   f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
   f_hat = as.data.table(obj_resampling$prediction())
@@ -54,7 +152,22 @@ rearrange_prob_prediction = function(prediction_list, test_ids){
     return(predictions)
 }
 
-initiate_learner = function(mlmethod, params) {
+initiate_learner = function(learner, learner_class, params) {
+  ml_learner = learner$clone()
+  
+  if (!is.null(params)) {
+    ml_learner$param_set$values = params
+  } else if (is.null(params) | length(params) == 0) {
+    message("No parameters provided for learners. Default values are used.")
+  }
+  
+  if (learner_class == "LearnerClassif") {
+    ml_learner$predict_type = 'prob'
+  }
+  return(ml_learner)
+}
+
+initiate_regr_learner = function(mlmethod, params) {
   if (any(class(mlmethod) == "LearnerRegr")) {
     learner = mlmethod$clone()
     if (!is.null(params)){
@@ -97,6 +210,22 @@ initiate_prob_learner = function(mlmethod, params) {
   return(learner)
 }
 
+
+# Function to initialize task (regression or classification)
+initiate_task = function(id, data, target, select_cols, learner_class) {
+  if (!is.null(select_cols)){
+    indx = (names(data) %in% c(select_cols, target))
+    data = data[ , indx, with = FALSE]
+  }
+  if (learner_class == "LearnerRegr") {
+    task = mlr3::TaskRegr$new(id = id, backend = data, target = target)
+  } else if (learner_class == "LearnerClassif") {
+    data[[target]] = factor(data[[target]])
+    task = mlr3::TaskClassif$new(id = id, backend = data, target = target, 
+                                 positive = "1")
+  }
+  return(task)
+}
 
 initiate_regr_task = function(id, data, select_cols, target) {
   if (!is.null(select_cols)){
