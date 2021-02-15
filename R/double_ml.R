@@ -569,7 +569,7 @@ DoubleML = R6Class("DoubleML", public = list(
   #' Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific. 
   #' 
   #' @param learner (`character(1)`) \cr
-  #' The nuisance model/learner (see method `params_names`)
+  #' The nuisance model/learner (see method `params_names`).
   #' 
   #' @param treat_var (`character(1)`) \cr
   #' The treatment varaible (hyperparameters can be set treatment-variable specific).
@@ -694,6 +694,7 @@ private = list(
   i_treat = NA,
   fold_specific_params = NULL,
   summary_table = NULL,
+  learner_class = NULL,
   initialize_double_ml = function(data, 
                         n_folds,
                         n_rep,
@@ -760,6 +761,27 @@ private = list(
      # initialize instance attributes which are later used for iterating
     invisible(self)
   },
+  assert_learner = function(learner, learner_name, Regr, Classif) {
+     checkmate::assert(checkmate::check_character(learner, max.len = 1),
+                      checkmate::check_class(learner, "Learner"))
+    
+    if (is.character(learner)) {
+      # warning("Learner provision by character() will be deprecated in the future.")
+      learner = lrn(learner)
+    }
+    
+    if (Regr) {
+      checkmate::assert_class(learner, "LearnerRegr")
+      private$learner_class[learner_name] = "LearnerRegr"
+    }
+    else if (Classif) {
+      checkmate::assert_class(learner, "LearnerClassif")
+      private$learner_class[learner_name] = "LearnerClassif"
+    } else {
+      stop(paste0("Invalid learner provided for ", learner, ": must be either of class 'LearnerRegr' or 'LearnerClassif'."))
+    }
+    invisible(learner)
+  }, 
   initialize_arrays = function() {
     
     self$psi = array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat))
