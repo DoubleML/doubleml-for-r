@@ -177,19 +177,19 @@ private = list(
       m_hat = extract_prob_prediction(r_m)$prob.1
       
       # nuisance g
-      ml_g0 = initiate_learner(self$learner$ml_g, self$get_params("ml_g0"))
+      ml_g0 = initiate_regr_learner(self$learner$ml_g, self$get_params("ml_g0"))
       resampling_g0 = rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_0,
                                                          smpls$test_ids)
       r_g0 = resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat = extract_prediction(r_g0)$response
+      g0_hat = extract_response_prediction(r_g0)$response
       
-      ml_g1 = initiate_learner(self$learner$ml_g, self$get_params("ml_g1"))
+      ml_g1 = initiate_regr_learner(self$learner$ml_g, self$get_params("ml_g1"))
       resampling_g1 = rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_1,
                                                          smpls$test_ids)
       r_g1 = resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat = extract_prediction(r_g1)$response
+      g1_hat = extract_response_prediction(r_g1)$response
     
       # nuisance r
       if (self$subgroups$always_takers == FALSE & self$subgroups$never_takers == FALSE) {
@@ -231,17 +231,17 @@ private = list(
       
       # nuisance g
       ml_g0 = lapply(self$get_params("ml_g0"), function(x) 
-                                                    initiate_learner(self$learner$ml_g, x))
+                                                    initiate_regr_learner(self$learner$ml_g, x))
       resampling_g0 = initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
       r_g0 = resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat = lapply(r_g0, extract_prediction)
+      g0_hat = lapply(r_g0, extract_response_prediction)
       g0_hat = rearrange_prediction(g0_hat, smpls$test_ids)
 
       ml_g1 = lapply(self$get_params("ml_g1"), function(x) 
-                                                  initiate_learner(self$learner$ml_g, x))
+                                                  initiate_regr_learner(self$learner$ml_g, x))
       resampling_g1 = initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
       r_g1 = resample_dml(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat = lapply(r_g1, extract_prediction)
+      g1_hat = lapply(r_g1, extract_response_prediction)
       g1_hat = rearrange_prediction(g1_hat, smpls$test_ids)             
       
       if (self$subgroups$always_takers == FALSE & self$subgroups$never_takers == FALSE) {
@@ -359,7 +359,7 @@ private = list(
    task_g0 = lapply(data_tune_list_z0, function(x) initiate_regr_task(paste0("nuis_mu_", self$data$y_col), x,
                                                      select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                      target = self$data$y_col))
-   ml_g0 = initiate_learner(self$learner$ml_g, params = list())
+   ml_g0 = initiate_regr_learner(self$learner$ml_g, params = list())
    tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_g0,
                                          resampling = CV_tune,
@@ -371,7 +371,7 @@ private = list(
    task_g1 = lapply(data_tune_list_z0, function(x) initiate_regr_task(paste0("nuis_mu_", self$data$y_col), x,
                                                      select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                      target = self$data$y_col))
-   ml_g1 = initiate_learner(self$learner$ml_g, params = list())
+   ml_g1 = initiate_regr_learner(self$learner$ml_g, params = list())
    tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
                                          learner = ml_g1,
                                          resampling = CV_tune,

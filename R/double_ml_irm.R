@@ -107,6 +107,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                                dml_procedure, 
                                draw_sample_splitting, 
                                apply_cross_fitting)
+    
+    # TODO: Check learner and learner class
     self$learner = list("ml_g" = ml_g,
                         "ml_m" = ml_m)
     private$initialize_ml_nuisance_params()
@@ -138,9 +140,9 @@ private = list(
     if (!private$fold_specific_params) {
       ml_m = initiate_prob_learner(self$learner$ml_m,
                                     self$get_params("ml_m"))
-      ml_g0 = initiate_learner(self$learner$ml_g,
+      ml_g0 = initiate_regr_learner(self$learner$ml_g,
                                self$get_params("ml_g1"))
-      ml_g1 = initiate_learner(self$learner$ml_g,
+      ml_g1 = initiate_regr_learner(self$learner$ml_g,
                                self$get_params("ml_g1"))
 
       resampling_m = rsmp("custom")$instantiate(task_m,
@@ -156,13 +158,13 @@ private = list(
                                                         cond_smpls$train_ids_0,
                                                         smpls$test_ids)
       r_g0 = resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat = extract_prediction(r_g0)$response
+      g0_hat = extract_response_prediction(r_g0)$response
       
       resampling_g1  = rsmp("custom")$instantiate(task_g,
                                                          cond_smpls$train_ids_1,
                                                          smpls$test_ids)
       r_g1 = resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat = extract_prediction(r_g1)$response
+      g1_hat = extract_response_prediction(r_g1)$response
     } else {
       ml_m = lapply(self$get_params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
                                                                                     x))
@@ -171,19 +173,19 @@ private = list(
       m_hat = lapply(r_m, extract_prob_prediction)
       m_hat = rearrange_prob_prediction(m_hat, smpls$test_ids) 
       
-      ml_g0 = lapply(self$get_params("ml_g0"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g0 = lapply(self$get_params("ml_g0"), function(x) initiate_regr_learner(self$learner$ml_g, 
                                                                                   x))
-      ml_g1 = lapply(self$get_params("ml_g1"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g1 = lapply(self$get_params("ml_g1"), function(x) initiate_regr_learner(self$learner$ml_g, 
                                                                                   x))
       # get conditional samples (conditioned on D = 0 or D = 1)
       cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
       resampling_g0 = initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
       r_g0 = resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat = lapply(r_g0, extract_prediction)
+      g0_hat = lapply(r_g0, extract_response_prediction)
       g0_hat = rearrange_prediction(g0_hat, smpls$test_ids)
       resampling_g1 = initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
       r_g1 = resample_dml(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat = lapply(r_g1, extract_prediction)
+      g1_hat = lapply(r_g1, extract_response_prediction)
       g1_hat = rearrange_prediction(g1_hat, smpls$test_ids)            
     }
     
@@ -264,7 +266,7 @@ private = list(
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$y_col))
    
-   ml_g0 = initiate_learner(self$learner$ml_g, params = list())
+   ml_g0 = initiate_regr_learner(self$learner$ml_g, params = list())
       
    tuning_instance_g0 = lapply(task_g0, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g0,
@@ -277,7 +279,7 @@ private = list(
    task_g1 = lapply(data_tune_list_d1, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = self$data$y_col))
-   ml_g1 = initiate_learner(self$learner$ml_g, params = list())
+   ml_g1 = initiate_regr_learner(self$learner$ml_g, params = list())
    tuning_instance_g1 = lapply(task_g1, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g1,
                                           resampling = CV_tune,

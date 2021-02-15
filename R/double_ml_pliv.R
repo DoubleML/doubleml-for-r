@@ -189,41 +189,41 @@ private = list(
     }
     
     if (!private$fold_specific_params) {
-      ml_g = initiate_learner(self$learner$ml_g,
+      ml_g = initiate_regr_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
       resampling_g = rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
       r_g = resample(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat = extract_prediction(r_g)$response
+      g_hat = extract_response_prediction(r_g)$response
       
-      ml_r = initiate_learner(self$learner$ml_r,
+      ml_r = initiate_regr_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
       resampling_r = rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
       r_r = resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat = extract_prediction(r_r)$response
+      r_hat = extract_response_prediction(r_r)$response
       
       if (self$data$n_instr == 1) {
-        ml_m = initiate_learner(self$learner$ml_m,
+        ml_m = initiate_regr_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
         resampling_m = rsmp("custom")$instantiate(task_m,
                                                          smpls$train_ids,
                                                          smpls$test_ids)
         r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
-        m_hat = extract_prediction(r_m)$response
+        m_hat = extract_response_prediction(r_m)$response
         
       } else {
         ml_m = lapply(self$data$z_cols, function (i_instr) 
-                                        initiate_learner(self$learner$ml_m,
+                                        initiate_regr_learner(self$learner$ml_m,
                                                          self$get_params(paste0("ml_m_", i_instr))))
         resampling_m = lapply(task_m, function(x) rsmp("custom")$instantiate(x,
                                                   smpls$train_ids, smpls$test_ids))
         
         r_m = lapply(1:self$data$n_instr, function(x) resample(task_m[[x]], ml_m[[x]], 
                                                     resampling_m[[x]], store_models = TRUE))
-        m_hat = lapply(r_m, extract_prediction)
+        m_hat = lapply(r_m, extract_response_prediction)
         #m_hat = rearrange_prediction(m_hat, smpls$test_ids)
         m_hat = lapply(1:self$data$n_instr, function(x) 
           data.table::setnames(m_hat[[x]], "response", self$data$z_cols[x]))
@@ -233,27 +233,27 @@ private = list(
         m_hat = m_hat[, row_id_indx, with = FALSE]
       }
     } else {
-      ml_g = lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g = lapply(self$get_params("ml_g"), function(x) initiate_regr_learner(self$learner$ml_g, 
                                                                                 x))
       resampling_g = initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g = resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat = lapply(r_g, extract_prediction)
+      g_hat = lapply(r_g, extract_response_prediction)
       g_hat = rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_r = lapply(self$get_params("ml_r"), function(x) initiate_learner(self$learner$ml_r, 
+      ml_r = lapply(self$get_params("ml_r"), function(x) initiate_regr_learner(self$learner$ml_r, 
                                                                                 x))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat = lapply(r_r, extract_prediction)
+      r_hat = lapply(r_r, extract_response_prediction)
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
       
       # TBD: 1-iv vs. multi-iv case
       if (self$data$n_instr == 1) {
-        ml_m = lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
+        ml_m = lapply(self$get_params("ml_m"), function(x) initiate_regr_learner(self$learner$ml_m, 
                                                                                   x))
         resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
         r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
-        m_hat = lapply(r_m, extract_prediction)
+        m_hat = lapply(r_m, extract_response_prediction)
         m_hat = rearrange_prediction(m_hat, smpls$test_ids)
         
       } else {
@@ -263,11 +263,11 @@ private = list(
         for (i_instr in 1:self$data$n_instr) {
           this_z = self$data$z_cols[i_instr]
           ml_m = lapply(self$get_params(paste0("ml_m_", this_z)), function(x) 
-                                                                        initiate_learner(self$learner$ml_m, x))
+                                                                        initiate_regr_learner(self$learner$ml_m, x))
          
           resampling_m = initiate_resampling(task_m[[i_instr]], smpls$train_ids, smpls$test_ids)
           r_m = resample_dml(task_m[[i_instr]], ml_m, resampling_m, store_models = TRUE)
-          m_hat_prelim = lapply(r_m, extract_prediction)
+          m_hat_prelim = lapply(r_m, extract_response_prediction)
           m_hat[[i_instr]] = rearrange_prediction(m_hat_prelim, smpls$test_ids, keep_rowids = TRUE)
         }
         m_hat = lapply(1:self$data$n_instr, function(x) 
@@ -302,7 +302,7 @@ private = list(
       resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
       r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
                            store_models = TRUE)
-      r_hat_tilde = extract_prediction(r_r_tilde)$response
+      r_hat_tilde = extract_response_prediction(r_r_tilde)$response
     }
     
     score = self$score
@@ -345,27 +345,27 @@ private = list(
                                  target = self$data$treat_col)
     
      if (!private$fold_specific_params){
-      ml_g = initiate_learner(self$learner$ml_g,
+      ml_g = initiate_regr_learner(self$learner$ml_g,
                                self$get_params("ml_g"))
       resampling_g = rsmp("custom")$instantiate(task_g,
                                                        smpls$train_ids,
                                                        smpls$test_ids)
       r_g = resample(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat = extract_prediction(r_g)$response
+      g_hat = extract_response_prediction(r_g)$response
       
-      ml_m = initiate_learner(self$learner$ml_m,
+      ml_m = initiate_regr_learner(self$learner$ml_m,
                                self$get_params("ml_m"))
       resampling_m = rsmp("custom")$instantiate(task_m, 
                                                       smpls$train_ids, 
                                                       smpls$test_ids)
       r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
-      m_hat = extract_prediction(r_m)$response  
+      m_hat = extract_response_prediction(r_m)$response  
       
       resampling_m_on_train = rsmp("custom")$instantiate(task_m,
                                                       smpls$train_ids,
                                                       smpls$train_ids)
       r_m_on_train = resample(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
-      m_hat_on_train = extract_prediction(r_m_on_train, return_train_preds = TRUE)
+      m_hat_on_train = extract_response_prediction(r_m_on_train, return_train_preds = TRUE)
 
       # nuisance r_tilde: Predict predicted values from nuisance m, only with X
       data_aux_list = lapply(m_hat_on_train, function(x) 
@@ -374,34 +374,34 @@ private = list(
       task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
                                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                    target = "m_hat_on_train"))
-      ml_r = initiate_learner(self$learner$ml_r, self$get_params("ml_r"))
+      ml_r = initiate_regr_learner(self$learner$ml_r, self$get_params("ml_r"))
       resampling_r = lapply(1:self$n_folds, function(x) 
                                                   rsmp("custom")$instantiate(task_r[[x]], 
                                                                                     list(smpls$train_ids[[x]]), 
                                                                                     list(smpls$test_ids[[x]])))
       r_r = lapply(1:self$n_folds, function(x) resample(task_r[[x]], ml_r, 
                                                 resampling_r[[x]], store_models = TRUE))
-      m_hat_tilde = lapply(r_r, extract_prediction)
+      m_hat_tilde = lapply(r_r, extract_response_prediction)
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     } else {
-      ml_g = lapply(self$get_params("ml_g"), function(x) initiate_learner(self$learner$ml_g, 
+      ml_g = lapply(self$get_params("ml_g"), function(x) initiate_regr_learner(self$learner$ml_g, 
                                                                                 x))
       resampling_g = initiate_resampling(task_g, smpls$train_ids, smpls$test_ids)
       r_g = resample_dml(task_g, ml_g, resampling_g, store_models = TRUE)
-      g_hat = lapply(r_g, extract_prediction)
+      g_hat = lapply(r_g, extract_response_prediction)
       g_hat = rearrange_prediction(g_hat, smpls$test_ids)
       
-      ml_m = lapply(self$get_params("ml_m"), function(x) initiate_learner(self$learner$ml_m, 
+      ml_m = lapply(self$get_params("ml_m"), function(x) initiate_regr_learner(self$learner$ml_m, 
                                                                                 x))
       resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
       r_m  = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
-      m_hat = lapply(r_m, extract_prediction)
+      m_hat = lapply(r_m, extract_response_prediction)
       m_hat = rearrange_prediction(m_hat, smpls$test_ids)
       
       resampling_m_on_train = initiate_resampling(task_m, smpls$train_ids, smpls$train_ids)
       r_m_on_train = resample_dml(task_m, ml_m, resampling_m_on_train, store_models = TRUE)
       m_hat_on_train = vapply(r_m_on_train, function(x) 
-                                              extract_prediction(x, return_train_preds = TRUE), list(1L))
+                                              extract_response_prediction(x, return_train_preds = TRUE), list(1L))
       
       # nuisance r_tilde: Predict predicted values from nuisance m, only with X
       data_aux_list = lapply(m_hat_on_train, function(x) 
@@ -410,7 +410,7 @@ private = list(
       task_r = lapply(1:self$n_folds, function(x) initiate_regr_task("nuis_r_m_hat_on_train", data_aux_list[[x]],
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = "m_hat_on_train"))
-      ml_r = lapply(self$get_params("ml_r"), function(x) initiate_learner(self$learner$ml_r, x))
+      ml_r = lapply(self$get_params("ml_r"), function(x) initiate_regr_learner(self$learner$ml_r, x))
       resampling_r = lapply(1:self$n_folds, function(x) 
                                                   rsmp("custom")$instantiate(task_r[[x]], 
                                                                                     list(smpls$train_ids[[x]]), 
@@ -418,7 +418,7 @@ private = list(
       r_r = lapply(1:self$n_folds, function(x) resample(task_r[[x]], ml_r[[x]], 
                                                 resampling_r[[x]], store_models = TRUE))
       
-      m_hat_tilde = lapply(r_r, extract_prediction)
+      m_hat_tilde = lapply(r_r, extract_response_prediction)
       m_hat_tilde = rearrange_prediction(m_hat_tilde, smpls$test_ids)
     }
     
@@ -453,21 +453,21 @@ private = list(
                                  target = self$data$treat_col)
     
     if (!private$fold_specific_params) {
-      ml_r = initiate_learner(self$learner$ml_r,
+      ml_r = initiate_regr_learner(self$learner$ml_r,
                                self$get_params("ml_r"))
       resampling_r = rsmp("custom")$instantiate(task_r,
                                                      smpls$train_ids,
                                                      smpls$test_ids)
       r_r = resample(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat = extract_prediction(r_r)$response
+      r_hat = extract_response_prediction(r_r)$response
     }
     
     else if (!is.null(self$param_tuning)){
-      ml_r = lapply(self$r_params, function(x) initiate_learner(self$ml_r, 
+      ml_r = lapply(self$r_params, function(x) initiate_regr_learner(self$ml_r, 
                                                                         x[[1]]))
       resampling_r = initiate_resampling(task_r, smpls$train_ids, smpls$test_ids)
       r_r = resample_dml(task_r, ml_r, resampling_r, store_models = TRUE)
-      r_hat = lapply(r_r, extract_prediction)
+      r_hat = lapply(r_r, extract_response_prediction)
       r_hat = rearrange_prediction(r_hat, smpls$test_ids)
     }
     
@@ -550,7 +550,7 @@ private = list(
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$y_col))
-    ml_g = initiate_learner(self$learner$ml_g, params = list())
+    ml_g = initiate_regr_learner(self$learner$ml_g, params = list())
     tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
@@ -563,7 +563,7 @@ private = list(
     task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$treat_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                   target = self$data$treat_col))
-    ml_r = initiate_learner(self$learner$ml_r, params = list())
+    ml_r = initiate_regr_learner(self$learner$ml_r, params = list())
     tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
@@ -571,7 +571,7 @@ private = list(
                                           search_space = param_set$ml_r,
                                           terminator = terminator))
     tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
-    ml_m = initiate_learner(self$learner$ml_m, params = list())
+    ml_m = initiate_regr_learner(self$learner$ml_m, params = list())
     
     if (self$data$n_instr == 1) {
       task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols), x,
@@ -665,7 +665,7 @@ private = list(
     task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
                                                   select_cols = c(self$data$x_cols), 
                                                   target = self$data$y_col))
-    ml_g = initiate_learner(self$learner$ml_g, params = list())
+    ml_g = initiate_regr_learner(self$learner$ml_g, params = list())
     tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_g,
                                           resampling = CV_tune,
@@ -674,7 +674,7 @@ private = list(
                                           terminator = terminator))
     tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
     
-    ml_m = initiate_learner(self$learner$ml_m, params = list())
+    ml_m = initiate_regr_learner(self$learner$ml_m, params = list())
     task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,
                                                   select_cols = c(self$data$x_cols, self$data$z_cols), 
                                                   target = self$data$treat_col))
@@ -687,12 +687,12 @@ private = list(
     tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
     
     m_params = extract_tuned_params(tuning_result_m)
-    ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m, params = x))
+    ml_m = lapply(m_params, function(x) initiate_regr_learner(self$learner$ml_m, params = x))
     
     resampling_m_on_train = lapply(task_m, function(x) rsmp("insample")$instantiate(x))
     r_m_on_train = lapply(1:length(data_tune_list), function(x) 
                                         resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
-    m_hat_on_train = lapply(r_m_on_train, function(x) extract_prediction(x, return_train_preds = TRUE))
+    m_hat_on_train = lapply(r_m_on_train, function(x) extract_response_prediction(x, return_train_preds = TRUE))
     m_hat_on_train = lapply(m_hat_on_train, function(x) x[[1]]$response)
       
     data_aux_list = lapply(1:length(data_tune_list), function(x) 
@@ -700,7 +700,7 @@ private = list(
     task_r = lapply(data_aux_list, function(x) initiate_regr_task("nuis_r_m_hat_on_train", x,
                                                     select_cols = c(self$data$x_cols, self$data$other_treat_cols),
                                                     target = "m_hat_on_train"))
-    ml_r = initiate_learner(self$learner$ml_r, params = list())
+    ml_r = initiate_regr_learner(self$learner$ml_r, params = list())
     tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
@@ -748,7 +748,7 @@ private = list(
                                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols, 
                                                                    self$data$z_cols), 
                                                    target = self$data$treat_col))
-    ml_r = initiate_learner(self$learner$ml_r, params = list())
+    ml_r = initiate_regr_learner(self$learner$ml_r, params = list())
     tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
                                           learner = ml_r,
                                           resampling = CV_tune,
