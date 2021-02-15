@@ -108,7 +108,11 @@ DoubleMLIRM = R6Class("DoubleMLIRM", inherit = DoubleML, public = list(
                                draw_sample_splitting, 
                                apply_cross_fitting)
     
-    # TODO: Check learner and learner class
+    private$learner_class = list("ml_g" = NULL,
+                                 "ml_m" = NULL)
+    ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
+    ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
+    
     self$learner = list("ml_g" = ml_g,
                         "ml_m" = ml_m)
     private$initialize_ml_nuisance_params()
@@ -128,66 +132,23 @@ private = list(
     invisible(self)
   },
   ml_nuisance_and_score_elements = function(smpls, ...) {
-    # nuisance m
-    task_m = initiate_classif_task(paste0("nuis_m_", self$data$treat_col), self$data$data_model,
-                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                    target = self$data$treat_col)
-    # nuisance g
-    task_g = initiate_regr_task(paste0("nuis_g_", self$data$y_col), self$data$data_model,
-                                 select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                 target = self$data$y_col)
     
-    if (!private$fold_specific_params) {
-      ml_m = initiate_prob_learner(self$learner$ml_m,
-                                    self$get_params("ml_m"))
-      ml_g0 = initiate_regr_learner(self$learner$ml_g,
-                               self$get_params("ml_g1"))
-      ml_g1 = initiate_regr_learner(self$learner$ml_g,
-                               self$get_params("ml_g1"))
-
-      resampling_m = rsmp("custom")$instantiate(task_m,
-                                                       smpls$train_ids,
-                                                       smpls$test_ids)
-      r_m = resample(task_m, ml_m, resampling_m, store_models = TRUE)
-      m_hat = extract_prob_prediction(r_m)$prob.1
-      
-      # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
-      
-      resampling_g0 = rsmp("custom")$instantiate(task_g,
-                                                        cond_smpls$train_ids_0,
-                                                        smpls$test_ids)
-      r_g0 = resample(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat = extract_response_prediction(r_g0)$response
-      
-      resampling_g1  = rsmp("custom")$instantiate(task_g,
-                                                         cond_smpls$train_ids_1,
-                                                         smpls$test_ids)
-      r_g1 = resample(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat = extract_response_prediction(r_g1)$response
-    } else {
-      ml_m = lapply(self$get_params("ml_m"), function(x) initiate_prob_learner(self$learner$ml_m, 
-                                                                                    x))
-      resampling_m = initiate_resampling(task_m, smpls$train_ids, smpls$test_ids)
-      r_m = resample_dml(task_m, ml_m, resampling_m, store_models = TRUE)
-      m_hat = lapply(r_m, extract_prob_prediction)
-      m_hat = rearrange_prob_prediction(m_hat, smpls$test_ids) 
-      
-      ml_g0 = lapply(self$get_params("ml_g0"), function(x) initiate_regr_learner(self$learner$ml_g, 
-                                                                                  x))
-      ml_g1 = lapply(self$get_params("ml_g1"), function(x) initiate_regr_learner(self$learner$ml_g, 
-                                                                                  x))
-      # get conditional samples (conditioned on D = 0 or D = 1)
-      cond_smpls = private$get_cond_smpls(smpls, self$data$data_model[[self$data$treat_col]])
-      resampling_g0 = initiate_resampling(task_g, cond_smpls$train_ids_0, smpls$test_ids)
-      r_g0 = resample_dml(task_g, ml_g0, resampling_g0, store_models = TRUE)
-      g0_hat = lapply(r_g0, extract_response_prediction)
-      g0_hat = rearrange_prediction(g0_hat, smpls$test_ids)
-      resampling_g1 = initiate_resampling(task_g, cond_smpls$train_ids_1, smpls$test_ids)
-      r_g1 = resample_dml(task_g, ml_g1, resampling_g1, store_models = TRUE)
-      g1_hat = lapply(r_g1, extract_response_prediction)
-      g1_hat = rearrange_prediction(g1_hat, smpls$test_ids)            
-    }
+    cond_smpls = get_cond_samples(smpls, self$data$data_model[[self$data$treat_col]])
+    
+    m_hat = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), self$data$treat_col, 
+                           self$data$data_model, nuisance_id = "nuis_m",  
+                           smpls, self$get_params("ml_m"), return_train_preds = FALSE, 
+                           learner_class = private$learner_class["ml_m"], private$fold_specific_params)
+          
+    g0_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
+                           self$data$data_model, nuisance_id = "nuis_g0",  
+                           cond_smpls$smpls_0, self$get_params("ml_g0"), return_train_preds = FALSE, 
+                           learner_class = private$learner_class["ml_g"], private$fold_specific_params)
+    
+    g1_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
+                           self$data$data_model, nuisance_id = "nuis_g1",  
+                           cond_smpls$smpls_1, self$get_params("ml_g1"), return_train_preds = FALSE, 
+                           learner_class = private$learner_class["ml_g"], private$fold_specific_params)
     
     if (self$score == "ATTE") {
       # fraction of treated for ATTE
@@ -305,14 +266,6 @@ private = list(
                         "ml_m"  = list(tuning_result_m, params = extract_tuned_params(tuning_result_m)))
    
    return(tuning_result)
-  },
-  get_cond_smpls = function(smpls, D) {
-    train_ids_0 = lapply(1:length(smpls$train_ids), function(x) 
-                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
-    train_ids_1 =  lapply(1:length(smpls$test_ids), function(x) 
-                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
-    return(list(train_ids_0=train_ids_0,
-                train_ids_1=train_ids_1))
   },
   check_score = function(score){
     checkmate::assert(checkmate::check_character(score),
