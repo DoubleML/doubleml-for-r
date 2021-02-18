@@ -6,40 +6,103 @@ dml_cv_predict = function(learner, X_cols, y_col,
                           fold_specific_params = FALSE) {
   
   # TODO: Asserts 
-  task_pred = initiate_task(id = nuisance_id, data = data_model, 
-                            target = y_col,
-                            select_cols = X_cols,  
-                            learner_class = learner_class)
-  
-  if (!fold_specific_params) {
-    ml_learner = initiate_learner(learner, learner_class, est_params)
-    resampling_smpls = rsmp("custom")$instantiate(task_pred, smpls$train_ids,
-                                                             smpls$test_ids)
-    resampling_pred = resample(task_pred, ml_learner, resampling_smpls, store_models = TRUE)
-    
-    preds = extract_prediction(resampling_pred, learner_class, return_train_preds)
-  } else {
+  if (fold_specific_params) {
     stopifnot(length(smpls$train_ids) == length(smpls$test_ids))
-
-    # learners initiated according to fold-specific learners, proceed foldwise
-    ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
-    
-    resampling_smpls = lapply(1:length(smpls$train_ids), function(x) 
-                                                    rsmp("custom")$instantiate(task_pred, list(smpls$train_ids[[x]]),
-                                                                                          list(smpls$test_ids[[x]])))
-    
-    resampling_pred = lapply(1:length(ml_learners), function(x) resample(task_pred, ml_learners[[x]], 
-                                                                         resampling_smpls[[x]], store_models = TRUE))
-    
-    preds = extract_prediction_list(resampling_pred, learner_class, smpls$test_ids, return_train_preds)
-
   }
-  return(preds)
+  
+  fold_specific_target = (all(class(data_model) == "list"))
+                      
+  if (!fold_specific_target) {
+    task_pred = initiate_task(id = nuisance_id, data = data_model, 
+                              target = y_col,
+                              select_cols = X_cols,  
+                              learner_class = learner_class)
+    
+    if (!fold_specific_params) {
+      ml_learner = initiate_learner(learner, learner_class, est_params)
+      resampling_smpls = rsmp("custom")$instantiate(task_pred, smpls$train_ids,
+                                                               smpls$test_ids)
+      resampling_pred = resample(task_pred, ml_learner, resampling_smpls, store_models = TRUE)
+      preds = extract_prediction(resampling_pred, learner_class, return_train_preds = FALSE)
+      
+      if (return_train_preds) {
+        resampling_smpls_train = rsmp("custom")$instantiate(task_pred, smpls$train_ids,
+                                                                       smpls$train_ids)
+        resampling_pred_train = resample(task_pred, ml_learner, resampling_smpls_train, store_models = TRUE)
+        train_preds = extract_prediction(resampling_pred_train, learner_class, return_train_preds = TRUE)
+      }
+      
+    } else {
+      # learners initiated according to fold-specific learners, proceed foldwise
+      ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
+      resampling_smpls = lapply(1:length(smpls$train_ids), function(x) 
+                                                      rsmp("custom")$instantiate(task_pred, list(smpls$train_ids[[x]]),
+                                                                                            list(smpls$test_ids[[x]])))
+      
+      resampling_pred = lapply(1:length(ml_learners), function(x) resample(task_pred, ml_learners[[x]], 
+                                                                           resampling_smpls[[x]], store_models = TRUE))
+      
+      preds = extract_prediction_list(resampling_pred, learner_class, smpls$test_ids, return_train_preds = FALSE, 
+                                      fold_specific_params = fold_specific_params)
+      
+      if (return_train_preds) {
+        resampling_smpls_train = lapply(1:length(smpls$train_ids), function(x) 
+                                                      rsmp("custom")$instantiate(task_pred, list(smpls$train_ids[[x]]),
+                                                                                            list(smpls$train_ids[[x]])))
+      
+        resampling_pred_train = lapply(1:length(ml_learners), function(x) resample(task_pred, ml_learners[[x]], 
+                                                                                   resampling_smpls_train[[x]], store_models = TRUE))
+        train_preds = extract_prediction_list(resampling_pred_train, learner_class, smpls$test_ids, return_train_preds = TRUE, 
+                                              fold_specific_params = fold_specific_params)
+      }
+    }
+    
+  } else {
+    
+    task_pred = lapply(data_model, function(x) 
+                                    initiate_task(id = nuisance_id, data = x, 
+                                                  target = y_col,
+                                                  select_cols = X_cols,  
+                                                  learner_class = learner_class))
+    
+    # fold_specific_target == TRUE; only required for pliv_partialXZ
+     if (!fold_specific_params) {
+       ml_learner = initiate_learner(learner, learner_class, est_params)
+       
+       resampling_smpls = lapply(1:length(data_model), function(x) 
+                                                        rsmp("custom")$instantiate(task_pred[[x]], 
+                                                                                    list(smpls$train_ids[[x]]), 
+                                                                                    list(smpls$test_ids[[x]])))
+       resampling_pred = lapply(1:length(data_model), function(x) resample(task_pred[[x]], ml_learner, 
+                                                                           resampling_smpls[[x]], store_models = TRUE))
+       preds = extract_prediction_list(resampling_pred, learner_class, smpls$test_ids, return_train_preds = FALSE,
+                                       fold_specific_params = fold_specific_params)
+       # preds = rearrange_prediction(m_hat_tilde, smpls$test_ids)
+     } else { 
+       # learners initiated according to fold-specific learners, proceed foldwise
+       ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
+       resampling_smpls = lapply(1:length(smpls$train_ids), function(x) 
+                                                               rsmp("custom")$instantiate(task_pred[[x]], list(smpls$train_ids[[x]]),
+                                                                                                          list(smpls$test_ids[[x]])))
+       resampling_pred = lapply(1:length(ml_learners), function(x) resample(task_pred[[x]], ml_learners[[x]], 
+                                                                             resampling_smpls[[x]], store_models = TRUE))
+       preds = extract_prediction_list(resampling_pred, learner_class, smpls$test_ids, return_train_preds = FALSE, 
+                                       fold_specific_params = fold_specific_params)
+     }
+  }
+  
+  if (return_train_preds) {
+    return(list("preds" = preds, "train_preds" = train_preds))
+  } else {
+    return(preds)
+  }
 }
 
 
 
-extract_prediction = function(obj_resampling, learner_class, return_train_preds = FALSE, return_type = "numeric") {
+
+
+extract_prediction = function(obj_resampling, learner_class, return_train_preds = FALSE, return_type = "numeric", fold_specific_params = FALSE) {
   if (learner_class == "LearnerRegr") {
     if (!return_train_preds) {
       f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
@@ -58,7 +121,11 @@ extract_prediction = function(obj_resampling, learner_class, return_train_preds 
       f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
       f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
                                                                      "response"= x$response)))
-      preds = f_hat_list$response
+      
+      if (fold_specific_params) {
+        f_hat = f_hat_list[[1]]
+      }
+      preds = lapply(f_hat_list, function(x) x$response)
     }
   } else if (learner_class == "LearnerClassif") {
     f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
@@ -77,21 +144,38 @@ extract_prediction = function(obj_resampling, learner_class, return_train_preds 
 }
 
 
-extract_prediction_list = function(obj_resampling, learner_class, test_ids, return_train_preds = FALSE) {
+extract_prediction_list = function(obj_resampling, learner_class, test_ids = NULL, return_train_preds = FALSE, fold_specific_params = FALSE) {
   checkmate::assert_list(obj_resampling)
   
   prediction_list = lapply(obj_resampling, function(x) extract_prediction(x, learner_class, 
                                                                           return_train_preds = return_train_preds,
-                                                                          return_type = "data.table"))
+                                                                          return_type = "data.table", 
+                                                                          fold_specific_params = fold_specific_params))
   
-  prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-  predictions = data.table::rbindlist(prediction_list)
-  data.table::setorder(predictions, 'row_id')
+  # TODO: In fold_specific_aram case
   
-  if (learner_class == "LearnerRegr") {
-    preds = predictions$response
-  } else if (learner_class == "LearnerClassif") {
-    preds = predictions$prob.1
+  if (return_train_preds & fold_specific_params) {
+    f_hat_aux = lapply(obj_resampling, function(x) data.table("row_id" = 1:x$task$backend$nrow))
+    
+    f_hat_list = lapply(obj_resampling, function(x) as.data.table(x$predictions()[[1]]))
+    
+    f_hat_list = lapply(1:length(obj_resampling), function(x) data.table::merge.data.table(f_hat_aux[[x]], f_hat_list[[x]], 
+                                                                            by = "row_id", all = TRUE))
+    f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
+    f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+                                                                   "response"= x$response)))
+    preds = lapply(f_hat_list, function(x) x$response)
+  } else {
+  
+    prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
+    predictions = data.table::rbindlist(prediction_list)
+    data.table::setorder(predictions, 'row_id')
+    
+    if (learner_class == "LearnerRegr") {
+      preds = predictions$response
+    } else if (learner_class == "LearnerClassif") {
+      preds = predictions$prob.1
+    }
   }
   return(preds)
 }

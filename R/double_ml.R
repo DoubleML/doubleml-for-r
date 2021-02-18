@@ -763,7 +763,7 @@ private = list(
   },
   assert_learner = function(learner, learner_name, Regr, Classif) {
      checkmate::assert(checkmate::check_character(learner, max.len = 1),
-                      checkmate::check_class(learner, "Learner"))
+                       checkmate::check_class(learner, "Learner"))
     
     if (is.character(learner)) {
       # warning("Learner provision by character() will be deprecated in the future.")
