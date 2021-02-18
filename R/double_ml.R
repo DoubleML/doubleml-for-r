@@ -357,17 +357,15 @@ DoubleML = R6Class("DoubleML", public = list(
   tune = function(param_set, tune_settings = list(
                                         n_folds_tune = 5,
                                         rsmp_tune = "cv", 
-                                        measure = list(ml_g = NULL, 
-                                                       ml_m = NULL,
-                                                       ml_r = NULL),
+                                        measure = NULL,
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
                                         algorithm = "grid_search",
                                         resolution = 5), 
                              tune_on_folds = FALSE) {
     checkmate::assert_list(param_set)
     valid_learner = self$learner_names()
-    if (! (all(names(param_set) %in% valid_learner))) {
-      stop(paste("invalid param_set", paste0(names(param_set), collapse = ", "),
+    if (!checkmate::test_names(names(param_set), permutation.of = valid_learner)) {
+      stop(paste("Invalid param_set", paste0(names(param_set), collapse = ", "),
                  "\n param_grids must be a named list with elements named", 
                   paste0(valid_learner, collapse = ", ")))
     }
@@ -375,23 +373,53 @@ DoubleML = R6Class("DoubleML", public = list(
       checkmate::assert_class(param_set[[i_grid]], "ParamSet")
     }
     
-    required_settings = c("n_folds_tune", "rsmp_tune", "measure", "terminator", "algorithm", "resolution")
+    required_settings = c("terminator", "resolution")
     if (! all(required_settings %in% names(tune_settings))) {
       missing_setting = required_settings[which(! (required_settings %in% names(tune_settings)))]
       stop(paste("Invalid tune_settings\n", 
                   paste0(missing_setting, collapse = ", "), "is missing.\n",
-                  "Tune settngs require specification of", toString(required_settings), "."))
+                  "Tune settings require specification of", toString(required_settings), "."))
     }
     
-    checkmate::assert_count(tune_settings$n_folds_tune, positive = TRUE)
-    checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
-                      checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
-    checkmate::assert_list(tune_settings$measure)
+    if (!is.null(tune_settings$n_folds_tune)) {
+      checkmate::assert_integerish(tune_settings$n_folds_tune, len = 1, lower = 2)
+    } else {
+      tune_settings$n_folds_tune = 5
+    }
+    
+    if (!is.null(tune_settings$rsmp_tune)) {
+      checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
+                        checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
+      if (!checkmate::test_class(tune_settings$rsmp_tune, "Resampling")) {
+        tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+      }
+    }
+    
+    if (!is.null(tune_settings$measure)) {
+      checkmate::assert_list(tune_settings$measure)
+      if (!checkmate::test_names(names(tune_settings$measure), permutation.of = valid_learner)) {
+        stop(paste("Invalid name of measure", paste0(names(tune_settings$measure), collapse = ", "),
+                 "\n measure must be a named list with elements named", 
+                  paste0(valid_learner, collapse = ", ")))
+      }
+    } else {
+      tune_settings$measure = rep(list(NA), length(valid_learner))
+      names(tune_settings$measure) = valid_learner
+      for (i_msr in seq_len(tune_settings$measure)) {
+        this_learner = names(tune_settings)[i_msr]
+        tune_settings$measure[[this_learner]] = set_default_measure(private$learner_class[[this_learner]])
+      }
+    }
+    
+    if (!is.null(tune_settings$algorithm)) {
+      checkmate::assert_character(tune_settings$algorithm, len = 1)
+    } else {
+      tune_settings$algorithm = "grid_search"
+    }
+    
     checkmate::assert(checkmate::check_character(tune_settings$terminator),
                       checkmate::check_class(tune_settings$terminator, "Terminator"))
-    checkmate::assert_character(tune_settings$algorithm, len = 1)
     checkmate::assert_count(tune_settings$resolution, positive = TRUE)
-  
     checkmate::assert_logical(tune_on_folds, len = 1)
     
     if (!self$apply_cross_fitting){
@@ -418,8 +446,6 @@ DoubleML = R6Class("DoubleML", public = list(
         if (tune_on_folds) {
           for (i_rep in 1:self$n_rep) {
             private$i_rep = i_rep
-            # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
-            #      e.g., in seperate function (tune_mlr3)...
             param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
                                                       param_set, tune_settings,  tune_on_folds)
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning

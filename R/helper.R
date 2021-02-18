@@ -31,7 +31,6 @@ dml_cv_predict = function(learner, X_cols, y_col,
         resampling_pred_train = resample(task_pred, ml_learner, resampling_smpls_train, store_models = TRUE)
         train_preds = extract_prediction(resampling_pred_train, learner_class, return_train_preds = TRUE)
       }
-      
     } else {
       # learners initiated according to fold-specific learners, proceed foldwise
       ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
@@ -56,15 +55,12 @@ dml_cv_predict = function(learner, X_cols, y_col,
                                               fold_specific_params = fold_specific_params)
       }
     }
-    
   } else {
-    
     task_pred = lapply(data_model, function(x) 
                                     initiate_task(id = nuisance_id, data = x, 
                                                   target = y_col,
                                                   select_cols = X_cols,  
                                                   learner_class = learner_class))
-    
     # fold_specific_target == TRUE; only required for pliv_partialXZ
      if (!fold_specific_params) {
        ml_learner = initiate_learner(learner, learner_class, est_params)
@@ -77,7 +73,6 @@ dml_cv_predict = function(learner, X_cols, y_col,
                                                                            resampling_smpls[[x]], store_models = TRUE))
        preds = extract_prediction_list(resampling_pred, learner_class, smpls$test_ids, return_train_preds = FALSE,
                                        fold_specific_params = fold_specific_params)
-       # preds = rearrange_prediction(m_hat_tilde, smpls$test_ids)
      } else { 
        # learners initiated according to fold-specific learners, proceed foldwise
        ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
@@ -90,7 +85,6 @@ dml_cv_predict = function(learner, X_cols, y_col,
                                        fold_specific_params = fold_specific_params)
      }
   }
-  
   if (return_train_preds) {
     return(list("preds" = preds, "train_preds" = train_preds))
   } else {
@@ -99,7 +93,29 @@ dml_cv_predict = function(learner, X_cols, y_col,
 }
 
 
-
+dml_tune = function(learner, X_cols, y_col, data_tune_list, 
+                    nuisance_id, param_set, tune_settings, measure, learner_class) {
+  
+  tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+  task_tune = lapply(data_tune_list, function(x) initiate_task(id = nuisance_id, 
+                                                               data = x, 
+                                                               target = y_col, 
+                                                               select_cols = X_cols, 
+                                                               learner_class = learner_class))
+  ml_learner = initiate_learner(learner, learner_class, params = list())
+  tuning_instance = lapply(task_tune, function(x) 
+                                        TuningInstanceSingleCrit$new(task = x, 
+                                                                     learner = ml_learner, 
+                                                                     resampling = tune_settings$rsmp_tune, 
+                                                                     measure = measure, 
+                                                                     search_space = param_set, 
+                                                                     terminator = tune_settings$terminator))
+  tuning_result = lapply(tuning_instance, function(x) tune_instance(tuner, x))
+  params = vapply(tuning_result, function(x) x$tuning_result$learner_param_vals, list(1L))
+  
+  return(list("tuning_result" = tuning_result,
+              "params" = params))
+}
 
 
 extract_prediction = function(obj_resampling, learner_class, return_train_preds = FALSE, return_type = "numeric", fold_specific_params = FALSE) {
@@ -143,7 +159,6 @@ extract_prediction = function(obj_resampling, learner_class, return_train_preds 
   }
 }
 
-
 extract_prediction_list = function(obj_resampling, learner_class, test_ids = NULL, return_train_preds = FALSE, fold_specific_params = FALSE) {
   checkmate::assert_list(obj_resampling)
   
@@ -151,14 +166,9 @@ extract_prediction_list = function(obj_resampling, learner_class, test_ids = NUL
                                                                           return_train_preds = return_train_preds,
                                                                           return_type = "data.table", 
                                                                           fold_specific_params = fold_specific_params))
-  
-  # TODO: In fold_specific_aram case
-  
   if (return_train_preds & fold_specific_params) {
     f_hat_aux = lapply(obj_resampling, function(x) data.table("row_id" = 1:x$task$backend$nrow))
-    
-    f_hat_list = lapply(obj_resampling, function(x) as.data.table(x$predictions()[[1]]))
-    
+    f_hat_list = lapply(obj_resampling, function(x) as.data.table(x$prediction()))
     f_hat_list = lapply(1:length(obj_resampling), function(x) data.table::merge.data.table(f_hat_aux[[x]], f_hat_list[[x]], 
                                                                             by = "row_id", all = TRUE))
     f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
@@ -179,6 +189,110 @@ extract_prediction_list = function(obj_resampling, learner_class, test_ids = NUL
   }
   return(preds)
 }
+
+
+
+initiate_learner = function(learner, learner_class, params) {
+  ml_learner = learner$clone()
+  
+  if (!is.null(params)) {
+    ml_learner$param_set$values = params
+  } else if (is.null(params) | length(params) == 0) {
+    message("No parameters provided for learners. Default values are used.")
+  }
+  
+  if (learner_class == "LearnerClassif") {
+    ml_learner$predict_type = 'prob'
+  }
+  return(ml_learner)
+}
+
+# Function to initialize task (regression or classification)
+initiate_task = function(id, data, target, select_cols, learner_class) {
+  if (!is.null(select_cols)){
+    indx = (names(data) %in% c(select_cols, target))
+    data = data[ , indx, with = FALSE]
+  }
+  if (learner_class == "LearnerRegr") {
+    task = mlr3::TaskRegr$new(id = id, backend = data, target = target)
+  } else if (learner_class == "LearnerClassif") {
+    data[[target]] = factor(data[[target]])
+    task = mlr3::TaskClassif$new(id = id, backend = data, target = target, 
+                                 positive = "1")
+  }
+  return(task)
+}
+
+
+# helper to draw weights in multiplier bootstrap
+draw_weights = function(method, n_rep_boot, n_obs) {
+  if (method == "Bayes") {
+    weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
+  } else if (method == "normal") {
+    weights = stats::rnorm(n_rep_boot * n_obs)
+  } else if (method == "wild") {
+    weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
+  } else {
+    stop("invalid boot method")
+  }
+  weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
+  return(weights)
+}
+
+
+
+
+get_cond_samples = function(smpls, D) {
+  train_ids_0 = lapply(1:length(smpls$train_ids), function(x)
+                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
+  train_ids_1 =  lapply(1:length(smpls$test_ids), function(x) 
+                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
+  return(list(smpls_0 = list("train_ids" = train_ids_0,
+                           "test_ids" = smpls$test_ids), 
+              smpls_1 = list("train_ids" = train_ids_1, 
+                             "test_ids" = smpls$test_ids)))
+}
+
+set_default_measure = function(learner_class) {
+  if (learner_class == "LearnerRegr") {
+    measure = msr("regr.mse")
+  } else if (learner_class == "LearnerClassif") {
+    measure = msr("classif.ce")
+  }
+  return(measure)
+}
+
+
+format.perc = function (probs, digits) {
+  paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
+        "%" ) }
+
+
+# Take x (vector or matrix) as input and return it as a matrix
+assure_matrix = function(x){
+  if (is.vector(x)){
+    x = matrix(x, ncol = 1)
+  }
+  else {
+    checkmate::check_matrix(x)
+  }
+  return(x)
+  
+}
+
+# Check if matrices in a list have the same number of rows
+check_matrix_row = function(mat_list){
+  checkmate::check_list(mat_list)
+  
+  n_rows = vapply(mat_list, nrow, integer(1L))
+ 
+  if ( isFALSE(all(n_rows == n_rows[1]))){
+    stop("Matrices do not have same number of rows.")
+  }
+}
+
+
+
 
 
 rearrange_prediction = function(prediction_list, test_ids, keep_rowids = FALSE){
@@ -236,20 +350,6 @@ rearrange_prob_prediction = function(prediction_list, test_ids){
     return(predictions)
 }
 
-initiate_learner = function(learner, learner_class, params) {
-  ml_learner = learner$clone()
-  
-  if (!is.null(params)) {
-    ml_learner$param_set$values = params
-  } else if (is.null(params) | length(params) == 0) {
-    message("No parameters provided for learners. Default values are used.")
-  }
-  
-  if (learner_class == "LearnerClassif") {
-    ml_learner$predict_type = 'prob'
-  }
-  return(ml_learner)
-}
 
 initiate_regr_learner = function(mlmethod, params) {
   if (any(class(mlmethod) == "LearnerRegr")) {
@@ -295,21 +395,6 @@ initiate_prob_learner = function(mlmethod, params) {
 }
 
 
-# Function to initialize task (regression or classification)
-initiate_task = function(id, data, target, select_cols, learner_class) {
-  if (!is.null(select_cols)){
-    indx = (names(data) %in% c(select_cols, target))
-    data = data[ , indx, with = FALSE]
-  }
-  if (learner_class == "LearnerRegr") {
-    task = mlr3::TaskRegr$new(id = id, backend = data, target = target)
-  } else if (learner_class == "LearnerClassif") {
-    data[[target]] = factor(data[[target]])
-    task = mlr3::TaskClassif$new(id = id, backend = data, target = target, 
-                                 positive = "1")
-  }
-  return(task)
-}
 
 initiate_regr_task = function(id, data, select_cols, target) {
   if (!is.null(select_cols)){
@@ -347,12 +432,9 @@ tune_instance = function(tuner, tuning_instance){
   } else {
     tuning_archive = tuning_instance$archive$data
   }
-  
-  params = tuning_instance$result$params
-  
   tuning_results = list(tuning_result = tuning_result, 
                         tuning_archive = tuning_archive, 
-                        params = params)
+                        params = tuning_instance$result$params)
   return(tuning_results)
 }
   
@@ -396,63 +478,6 @@ resample_dml = function(task, learner, resampling, store_models = FALSE){
 }
 
 
-# helper to draw weights in multiplier bootstrap
-draw_weights = function(method, n_rep_boot, n_obs) {
-  if (method == "Bayes") {
-    weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
-  } else if (method == "normal") {
-    weights = stats::rnorm(n_rep_boot * n_obs)
-  } else if (method == "wild") {
-    weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
-  } else {
-    stop("invalid boot method")
-  }
-  weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
-  return(weights)
-}
-
-
-get_cond_samples = function(smpls, D) {
-  train_ids_0 = lapply(1:length(smpls$train_ids), function(x)
-                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
-  train_ids_1 =  lapply(1:length(smpls$test_ids), function(x) 
-                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
-  return(list(smpls_0 = list("train_ids" = train_ids_0,
-                           "test_ids" = smpls$test_ids), 
-              smpls_1 = list("train_ids" = train_ids_1, 
-                             "test_ids" = smpls$test_ids)))
-}
-
-
-
-
-format.perc = function (probs, digits) {
-  paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
-        "%" ) }
-
-
-# Take x (vector or matrix) as input and return it as a matrix
-assure_matrix = function(x){
-  if (is.vector(x)){
-    x = matrix(x, ncol = 1)
-  }
-  else {
-    checkmate::check_matrix(x)
-  }
-  return(x)
-  
-}
-
-# Check if matrices in a list have the same number of rows
-check_matrix_row = function(mat_list){
-  checkmate::check_list(mat_list)
-  
-  n_rows = vapply(mat_list, nrow, integer(1L))
- 
-  if ( isFALSE(all(n_rows == n_rows[1]))){
-    stop("Matrices do not have same number of rows.")
-  }
-}
 
 
 # resample_dml = function(task, learner, resampling, store_models = FALSE){
