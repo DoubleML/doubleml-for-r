@@ -402,13 +402,18 @@ DoubleML = R6Class("DoubleML", public = list(
                  "\n measure must be a named list with elements named", 
                   paste0(valid_learner, collapse = ", ")))
       }
+      for (i_msr in seq_len(length(tune_settings$measure))) {
+        checkmate::assert(checkmate::check_character(tune_settings$measure[[i_msr]]),
+                          checkmate::check_class(tune_settings$measure[[i_msr]], "Measure"))
+      }
     } else {
       tune_settings$measure = rep(list(NA), length(valid_learner))
       names(tune_settings$measure) = valid_learner
-      for (i_msr in seq_len(tune_settings$measure)) {
-        this_learner = names(tune_settings)[i_msr]
-        tune_settings$measure[[this_learner]] = set_default_measure(private$learner_class[[this_learner]])
-      }
+    }
+    for (i_msr in seq_len(length(tune_settings$measure))) {
+        this_learner = names(tune_settings$measure)[i_msr]
+        tune_settings$measure[[this_learner]] = set_default_measure(tune_settings$measure[[this_learner]],
+                                                                    private$learner_class[[this_learner]])
     }
     
     if (!is.null(tune_settings$algorithm)) {
