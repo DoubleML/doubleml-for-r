@@ -92,7 +92,6 @@ dml_cv_predict = function(learner, X_cols, y_col,
   }
 }
 
-
 dml_tune = function(learner, X_cols, y_col, data_tune_list, 
                     nuisance_id, param_set, tune_settings, measure, learner_class) {
   
@@ -239,25 +238,27 @@ draw_weights = function(method, n_rep_boot, n_obs) {
   return(weights)
 }
 
-
-
-
 get_cond_samples = function(smpls, D) {
   train_ids_0 = lapply(1:length(smpls$train_ids), function(x)
                                                       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
   train_ids_1 =  lapply(1:length(smpls$test_ids), function(x) 
                                                       smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
   return(list(smpls_0 = list("train_ids" = train_ids_0,
-                           "test_ids" = smpls$test_ids), 
+                             "test_ids" = smpls$test_ids), 
               smpls_1 = list("train_ids" = train_ids_1, 
                              "test_ids" = smpls$test_ids)))
 }
 
-set_default_measure = function(learner_class) {
-  if (learner_class == "LearnerRegr") {
-    measure = msr("regr.mse")
-  } else if (learner_class == "LearnerClassif") {
-    measure = msr("classif.ce")
+set_default_measure = function(measure_in = NA, learner_class) {
+  
+  if (is.na(measure_in)) {
+    if (learner_class == "LearnerRegr") {
+      measure = msr("regr.mse")
+    } else if (learner_class == "LearnerClassif") {
+      measure = msr("classif.ce")
+    }
+  } else if (is.character(measure_in)) {
+    measure = msr(measure_in)
   }
   return(measure)
 }
