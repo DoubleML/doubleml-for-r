@@ -190,16 +190,14 @@ private = list(
  ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
    if (!tune_on_folds){
     data_tune_list = list(self$data$data_model)
-    } else {
+    } else {                                                  
     data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(self$data$data_model, x))
     }
-  
-   # TODO: Use wrapper here 
+   # TODO: Use wrapper here
    indx_g0 = lapply(data_tune_list, function(x) x[[self$data$treat_col]] == 0)
    indx_g1 = lapply(data_tune_list, function(x) x[[self$data$treat_col]] == 1)
    data_tune_list_d0 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g0[[x]], ] )
    data_tune_list_d1 = lapply(1:length(data_tune_list), function(x) data_tune_list[[x]][indx_g1[[x]], ] )
-  
       
    tuning_result_m = dml_tune(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), 
                               self$data$treat_col, 
