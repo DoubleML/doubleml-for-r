@@ -120,7 +120,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
     } else {
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = FALSE)
-      ml_r = private$assert_learner(ml_g, "ml_r", Regr = TRUE, Classif = FALSE)
+      ml_r = private$assert_learner(ml_r, "ml_r", Regr = TRUE, Classif = FALSE)
       self$learner = list("ml_g" = ml_g, 
                           "ml_m" = ml_m, 
                           "ml_r" = ml_r)
@@ -170,24 +170,24 @@ private = list(
     g_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                            self$data$data_model, nuisance_id = "nuis_g",  
                            smpls, self$get_params("ml_g"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class["ml_g"], private$fold_specific_params)
+                           learner_class = private$learner_class$ml_g, private$fold_specific_params)
       
     r_hat = dml_cv_predict(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols), self$data$treat_col, 
                            self$data$data_model, nuisance_id = "nuis_r",  
                            smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class["ml_r"], private$fold_specific_params)
+                           learner_class = private$learner_class$ml_r, private$fold_specific_params)
     
     if (self$data$n_instr == 1) {
       m_hat = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), self$data$z_cols, 
                              self$data$data_model, nuisance_id = "nuis_m",  
                              smpls, self$get_params("ml_m"), return_train_preds = FALSE, 
-                             learner_class = private$learner_class["ml_m"], private$fold_specific_params)
+                             learner_class = private$learner_class$ml_m, private$fold_specific_params)
     } else {
       m_hat = do.call(cbind, lapply(self$data$z_cols, function(x) 
                                         dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols),  x, 
                                                        self$data$data_model, nuisance_id = "nuis_m",  
                                                        smpls, self$get_params(paste0("ml_m_", x)), return_train_preds = FALSE, 
-                                                       learner_class = private$learner_class["ml_m"], private$fold_specific_params)))
+                                                       learner_class = private$learner_class$ml_m, private$fold_specific_params)))
     }
     
     d = self$data$data_model[[self$data$treat_col]]
@@ -248,22 +248,23 @@ private = list(
     g_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                            self$data$data_model, nuisance_id = "nuis_g",  
                            smpls, self$get_params("ml_g"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class["ml_g"], private$fold_specific_params)
+                           learner_class = private$learner_class$ml_g, private$fold_specific_params)
       
     m_hat_list = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols), 
-                           self$data$treat_col, 
-                           self$data$data_model, nuisance_id = "nuis_m",  
-                           smpls, self$get_params("ml_m"), return_train_preds = TRUE, 
-                           learner_class = private$learner_class["ml_m"], private$fold_specific_params)
+                                self$data$treat_col, 
+                                self$data$data_model, nuisance_id = "nuis_m",  
+                                smpls, self$get_params("ml_m"), return_train_preds = TRUE, 
+                                learner_class = private$learner_class$ml_m, private$fold_specific_params)
     m_hat = m_hat_list$preds
-    data_aux_list = lapply(m_hat_list$train_preds, function(x) 
-                                              data.table(self$data$data_model, "m_hat_on_train" = x))
+    data_aux_list = lapply(m_hat_list$train_preds, function(x)
+                                                      data.table(self$data$data_model, "m_hat_on_train" = x))
     
     m_hat_tilde = dml_cv_predict(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols), 
-                                                         "m_hat_on_train", 
-                                                         data_aux_list, nuisance_id = "nuis_r",  
-                                                         smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
-                                                         learner_class = private$learner_class["ml_r"], private$fold_specific_params)
+                                 "m_hat_on_train", 
+                                  data_aux_list, nuisance_id = "nuis_r",  
+                                  smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
+                                  learner_class = private$learner_class$ml_r, 
+                                  private$fold_specific_params)
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
@@ -295,7 +296,7 @@ private = list(
                            c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols), self$data$treat_col, 
                            self$data$data_model, nuisance_id = "nuis_r",  
                            smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class["ml_r"], private$fold_specific_params)
+                           learner_class = private$learner_class$ml_r, private$fold_specific_params)
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
@@ -337,111 +338,46 @@ private = list(
     } else {
       data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(self$data$data_model, x))
     }
-    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
-      CV_tune = tune_settings$rsmp_tune
-    } else {
-      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
-    }
-    if (any(class(tune_settings$measure$ml_g) == "Measure")) {
-      measure_g = tune_settings$measure$ml_g
-    } else {
-        if (is.null(tune_settings$measure$ml_g)){
-          measure_g = default_measures("regr")[[1]]
-        } else {
-          measure_g = msr(tune_settings$measure$ml_g)
-      }
-    }
-    if (any(class(tune_settings$measure$ml_m) == "Measure")) {
-      measure_m = tune_settings$measure$ml_m
-    } else {
-        if (is.null(tune_settings$measure$ml_m)){
-          measure_m = default_measures("regr")[[1]]
-        } else {
-          measure_m = msr(tune_settings$measure$ml_m)
-      }
-    }
-    if (any(class(tune_settings$measure$ml_r) == "Measure")) {
-      measure_r = tune_settings$measure$ml_r
-    } else {
-        if (is.null(tune_settings$measure$ml_r)){
-          measure_r = default_measures("regr")[[1]]
-        } else {
-          measure_r = msr(tune_settings$measure$ml_r)
-      }
-    }
     
-    terminator = tune_settings$terminator
-    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+    tuning_result_g = dml_tune(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols),
+                               self$data$y_col, data_tune_list, nuisance_id = "nuis_g", 
+                               param_set$ml_g, tune_settings, tune_settings$measure$ml_g, 
+                               private$learner_class$ml_g)
     
-    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
-                                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                                  target = self$data$y_col))
-    ml_g = initiate_regr_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_g,
-                                          resampling = CV_tune,
-                                          measure = measure_g,
-                                          search_space = param_set$ml_g,
-                                          terminator = terminator))
-    
-    tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
-    
-    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$treat_col), x,
-                                                  select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                                  target = self$data$treat_col))
-    ml_r = initiate_regr_learner(self$learner$ml_r, params = list())
-    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_r,
-                                          resampling = CV_tune,
-                                          measure = measure_r,
-                                          search_space = param_set$ml_r,
-                                          terminator = terminator))
-    tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
-    ml_m = initiate_regr_learner(self$learner$ml_m, params = list())
-    
+    tuning_result_r = dml_tune(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols),
+                               self$data$treat_col, data_tune_list, nuisance_id = "nuis_r", 
+                               param_set$ml_r, tune_settings, tune_settings$measure$ml_r, 
+                               private$learner_class$ml_r)
+  
     if (self$data$n_instr == 1) {
-      task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols), x,
-                                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                                    target = self$data$z_cols))
-      tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_m,
-                                          resampling = CV_tune,
-                                          measure = measure_m,
-                                          search_space = param_set$ml_m,
-                                          terminator = terminator))
-      tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
-    
+      tuning_result_m = dml_tune(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), 
+                                 self$data$z_cols, data_tune_list, nuisance_id = "nuis_m", 
+                                 param_set$ml_m, tune_settings, tune_settings$measure$ml_m, 
+                                 private$learner_class$ml_m)
+  
       tuning_result = list("ml_g" = list(tuning_result_g,
-                                         params = extract_tuned_params(tuning_result_g)),
-                           "ml_m" = list(tuning_result_m, 
-                                         params = extract_tuned_params(tuning_result_m)), 
-                           "ml_r" = list(tuning_result_r, 
-                                         params = extract_tuned_params(tuning_result_r)))
+                                         params = tuning_result_g$params),
+                           "ml_m" = list(tuning_result_m,
+                                         params = tuning_result_m$params),
+                           "ml_r" = list(tuning_result_r,
+                                         params = tuning_result_r$params))
     } else {
+      tuning_result = vector("list", length = self$data$n_instr + 2)
+      names(tuning_result) = c("ml_g", "ml_r", paste0("ml_m_", self$data$z_cols))
+      tuning_result[["ml_g"]] = list(tuning_result_g, params = tuning_result_g$params)
+      tuning_result[["ml_r"]] = list(tuning_result_r, params = tuning_result_r$params)
+      
       tuning_result_m = vector("list", length = self$data$n_instr)
       names(tuning_result_m) = self$data$z_cols
       
       for (i_instr in 1:self$data$n_instr) {
         this_z = self$data$z_cols[i_instr] 
-        task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$z_cols[i_instr]), x,
-                                                      select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                                      target = this_z))
-        tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_m,
-                                          resampling = CV_tune,
-                                          measure = measure_m,
-                                          search_space = param_set$ml_m,
-                                          terminator = terminator))
-        tuning_result_m[[this_z]] = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
-     }
-      tuning_result = list("ml_g" = list(tuning_result_g,
-                                         params = extract_tuned_params(tuning_result_g)),
-                           "ml_r" = list(tuning_result_r, 
-                                         params = extract_tuned_params(tuning_result_r)))
-        for (this_z in self$data$z_cols) {
-          tuning_result[[paste0("ml_m_", this_z)]] = list(tuning_result_m[[this_z]], 
-                                                          params = extract_tuned_params(tuning_result_m[[this_z]]))
-        }
+        tuning_result_this_z = dml_tune(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), 
+                                            this_z, data_tune_list, nuisance_id = paste0("nuis_m_", this_z), 
+                                            param_set$ml_m, tune_settings, tune_settings$measure$ml_m, 
+                                            private$learner_class$ml_m)
+        tuning_result[[paste0("ml_m_", this_z)]] = list(tuning_result_this_z, params = tuning_result_this_z$params)
+      }
     }
     return(tuning_result)
     
@@ -453,94 +389,42 @@ private = list(
     } else {
       data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(self$data$data_model, x))
     }
-    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
-      CV_tune = tune_settings$rsmp_tune
-    } else {
-      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
-    }
-    if (any(class(tune_settings$measure$ml_g) == "Measure")) {
-      measure_g = tune_settings$measure$ml_g
-    } else {
-        if (is.null(tune_settings$measure$ml_g)){
-          measure_g = default_measures("regr")[[1]]
-        } else {
-          measure_g = msr(tune_settings$measure$ml_g)
-      }
-    }
-    if (any(class(tune_settings$measure$ml_m) == "Measure")) {
-      measure_m = tune_settings$measure$ml_m
-    } else {
-        if (is.null(tune_settings$measure$ml_m)){
-          measure_m = default_measures("regr")[[1]]
-        } else {
-          measure_m = msr(tune_settings$measure$ml_m)
-      }
-    }
-    if (any(class(tune_settings$measure$ml_r) == "Measure")) {
-      measure_r = tune_settings$measure$ml_r
-    } else {
-        if (is.null(tune_settings$measure$ml_r)){
-          measure_r = default_measures("regr")[[1]]
-        } else {
-          measure_r = msr(tune_settings$measure$ml_r)
-      }
-    }
-    terminator = tune_settings$terminator
-    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
+   
+    tuning_result_g = dml_tune(self$learner$ml_g, c(self$data$x_cols),
+                               self$data$y_col, data_tune_list, nuisance_id = "nuis_g", 
+                               param_set$ml_g, tune_settings, tune_settings$measure$ml_g, 
+                               private$learner_class$ml_g) 
     
-    task_g = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_g_", self$data$y_col), x,
-                                                  select_cols = c(self$data$x_cols), 
-                                                  target = self$data$y_col))
-    ml_g = initiate_regr_learner(self$learner$ml_g, params = list())
-    tuning_instance_g = lapply(task_g, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_g,
-                                          resampling = CV_tune,
-                                          measure = measure_g,
-                                          search_space = param_set$ml_g,
-                                          terminator = terminator))
-    tuning_result_g = lapply(tuning_instance_g, function(x) tune_instance(tuner, x))
-    
-    ml_m = initiate_regr_learner(self$learner$ml_m, params = list())
-    task_m = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_m_", self$data$treat_col), x,
-                                                  select_cols = c(self$data$x_cols, self$data$z_cols), 
-                                                  target = self$data$treat_col))
-    tuning_instance_m = lapply(task_m, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_m,
-                                          resampling = CV_tune,
-                                          measure = measure_m,
-                                          search_space = param_set$ml_m,
-                                          terminator = terminator))
-    tuning_result_m = lapply(tuning_instance_m, function(x) tune_instance(tuner, x))
-    
-    m_params = extract_tuned_params(tuning_result_m)
-    ml_m = lapply(m_params, function(x) initiate_regr_learner(self$learner$ml_m, params = x))
-    
+    tuning_result_m = dml_tune(self$learner$ml_m, c(self$data$x_cols, self$data$z_cols), 
+                               self$data$treat_col, data_tune_list, nuisance_id = "nuis_m", 
+                               param_set$ml_m, tune_settings, tune_settings$measure$ml_g,
+                               private$learner_class$ml_m)
+ 
+    m_params = tuning_result_m$params
+    ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m, private$learner_class$ml_m, params = x))
+    task_m = lapply(data_tune_list, function(x) initiate_task("nuis_m", x,
+                                                              target = self$data$treat_col,
+                                                              select_cols = c(self$data$x_cols, self$data$z_cols), 
+                                                              private$learner_class$ml_m))
     resampling_m_on_train = lapply(task_m, function(x) rsmp("insample")$instantiate(x))
     r_m_on_train = lapply(1:length(data_tune_list), function(x) 
                                         resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
-    m_hat_on_train = lapply(r_m_on_train, function(x) extract_response_prediction(x, return_train_preds = TRUE))
-    m_hat_on_train = lapply(m_hat_on_train, function(x) x[[1]]$response)
-      
+    m_hat_on_train = lapply(r_m_on_train, function(x) extract_prediction(x, private$learner_class$ml_m, 
+                                                                          return_train_preds = TRUE)[[1]])
     data_aux_list = lapply(1:length(data_tune_list), function(x) 
                                               data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]]))
-    task_r = lapply(data_aux_list, function(x) initiate_regr_task("nuis_r_m_hat_on_train", x,
-                                                    select_cols = c(self$data$x_cols, self$data$other_treat_cols),
-                                                    target = "m_hat_on_train"))
-    ml_r = initiate_regr_learner(self$learner$ml_r, params = list())
-    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_r,
-                                          resampling = CV_tune,
-                                          measure = measure_r,
-                                          search_space = param_set$ml_r,
-                                          terminator = terminator))
-    tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
-
+    
+    tuning_result_r = dml_tune(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols), 
+                               "m_hat_on_train", data_aux_list, nuisance_id = "nuis_r", 
+                               param_set$ml_r, tune_settings, tune_settings$measure$ml_r,
+                               private$learner_class$ml_r)
+    
     tuning_result = list("ml_g" = list(tuning_result_g,
-                                         params = extract_tuned_params(tuning_result_g)),
-                           "ml_m" = list(tuning_result_m, 
-                                         params = extract_tuned_params(tuning_result_m)), 
-                           "ml_r" = list(tuning_result_r, 
-                                         params = extract_tuned_params(tuning_result_r)))
+                                         params = tuning_result_g$params),
+                         "ml_m" = list(tuning_result_m, 
+                                         params = tuning_result_m$params), 
+                         "ml_r" = list(tuning_result_r, 
+                                         params = tuning_result_r$params))
     return(tuning_result)
   },
   
@@ -551,44 +435,14 @@ private = list(
       data_tune_list = lapply(smpls$train_ids, function(x) extract_training_data(self$data$data_model, x))
     }
 
-    if (any(class(tune_settings$rsmp_tune) == "Resampling")) {
-      CV_tune = tune_settings$rsmp_tune
-    } else {
-      CV_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
-    }
-  
-    if (any(class(tune_settings$measure_r) == "Measure")) {
-      measure_r = tune_settings$measure_r
-    } else {
-        if (is.null(tune_settings$measure_r)){
-          measure_r = default_measures("regr")[[1]]
-        } else {
-          measure_r = msr(tune_settings$measure_r)
-      }
-    }
+    tuning_result_r = dml_tune(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols),
+                               self$data$treat_col, data_tune_list, nuisance_id = "nuis_r", 
+                               param_set$ml_r, tune_settings, tune_settings$measure$ml_r, 
+                               private$learner_class$ml_r)
     
-    terminator = tune_settings$terminator
-    tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
-    
-    task_r = lapply(data_tune_list, function(x) initiate_regr_task(paste0("nuis_r_", self$data$treat_col), x,
-                                                   select_cols = c(self$data$x_cols, self$data$other_treat_cols, 
-                                                                   self$data$z_cols), 
-                                                   target = self$data$treat_col))
-    ml_r = initiate_regr_learner(self$learner$ml_r, params = list())
-    tuning_instance_r = lapply(task_r, function(x) TuningInstanceSingleCrit$new(task = x,
-                                          learner = ml_r,
-                                          resampling = CV_tune,
-                                          measure = measure_r,
-                                          search_space = param_set$ml_r,
-                                          terminator = terminator))
-    
-    tuning_result_r = lapply(tuning_instance_r, function(x) tune_instance(tuner, x))
-    
-    tuning_result = list(tuning_result = list(tuning_result_r = tuning_result_r),
-                         params = list(r_params = extract_tuned_params(tuning_result_r)))
-    
+    tuning_result = list("ml_r" = list(tuning_result_r, 
+                                       params = tuning_result_r$params))
     return(tuning_result)
-    
   },
   check_score = function(score){
     checkmate::assert(checkmate::check_character(score),
