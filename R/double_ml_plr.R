@@ -118,16 +118,17 @@ private = list(
                            self$data$data_model, nuisance_id = "nuis_m", 
                            smpls, self$get_params("ml_m"), return_train_preds = FALSE, 
                            learner_class = private$learner_class$ml_m, private$fold_specific_params)
-
+    
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
     
+    psis = private$score_elements(y, d, g_hat, m_hat, smpls)
+    return(psis)
+  },
+   score_elements = function(y, d, g_hat, m_hat, smpls) {
     v_hat = d - m_hat
     u_hat = y - g_hat
     v_hatd = v_hat * d # tbd: handle product of numeric and binary in data.table
-    
-    score = self$score
-    private$check_score(score)
     
     if (is.character(self$score)) {
       if (self$score == 'IV-type') {
@@ -142,7 +143,7 @@ private = list(
       psis = self$score(y, d, g_hat, m_hat, smpls)
     }
     return(psis)
-  }, 
+  },
   ml_nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...){
     
     if (!tune_on_folds){

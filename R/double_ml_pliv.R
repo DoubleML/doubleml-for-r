@@ -193,6 +193,10 @@ private = list(
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
     
+    psis = private$score_elements(y, z, d, g_hat, m_hat, r_hat, smpls)
+    return(psis)
+  },
+  score_elements = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
     u_hat = y - g_hat
     w_hat = d - r_hat
     
@@ -215,10 +219,6 @@ private = list(
                            store_models = TRUE)
       r_hat_tilde = as.data.table(r_r_tilde$prediction())$response
     }
-    
-    score = self$score
-    private$check_score(score)
-    
     if (is.character(self$score)) {
       if (self$data$n_instr == 1) {
         if (self$score == 'partialling out') {
@@ -241,8 +241,7 @@ private = list(
       psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
     }
     return(psis)
-  },
-  
+  }, 
   ml_nuisance_and_score_elements_partialXZ = function(smpls, ...) {
     
     g_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
