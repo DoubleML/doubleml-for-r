@@ -231,9 +231,9 @@ private = list(
           psi_b = r_hat_tilde * u_hat
         }
       }
-    psis = list(psi_a = psi_a, 
+      psis = list(psi_a = psi_a, 
                 psi_b = psi_b)
-    } else if (is.function(self$score)) {
+      } else if (is.function(self$score)) {
       if (self$data$n_instr > 1) {
         stop("Callable score not implemented for DoubleMLPLIV with partialX=TRUE and partialZ=FALSE 
               with several instruments")
@@ -271,9 +271,6 @@ private = list(
     u_hat = y - g_hat
     w_hat = d - m_hat_tilde
 
-    score = self$score
-    private$check_score(score)
-    
     if (is.character(self$score)) {
       if (self$score == 'partialling out') {
           psi_a = -w_hat * (m_hat - m_hat_tilde)
@@ -299,9 +296,6 @@ private = list(
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
-    
-    score = self$score
-    private$check_score(score)
     
     if (is.character(self$score)) {
       if (self$score == 'partialling out') {
