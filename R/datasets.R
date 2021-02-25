@@ -180,7 +180,9 @@ g = function(x){
 #' 
 #' \eqn{m_0(x_i) = a_0 x_{i,1} + a_1 \frac{\exp(x_{i,3})}{1+\exp(x_{i,3})},}
 #' 
-#' \eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3}.}
+#' \eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3},}
+#' 
+#' with \eqn{a_0=1}, \eqn{a_1=0.25}, \eqn{s_1=1}, \eqn{b_0=1}, \eqn{b_1=0.25}, \eqn{s_2=1}.
 #' 
 #' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 #' 
@@ -195,7 +197,8 @@ g = function(x){
 #' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y` and `d` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
-#' #' @return A data object according to the choice of `return_type`.
+#' 
+#' @return A data object according to the choice of `return_type`.
 #' 
 #' @export
 make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
@@ -205,11 +208,9 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
   a_0 = 1
   a_1 = 0.25
   s_1 = 1
-  
   b_0 = 1
   b_1 = 0.25
   s_2 = 1
-  
   x = mvtnorm::rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
   
   d = as.matrix(a_0*x[,1] + a_1*(exp(x[,3])/(1+exp(x[,3]))) + s_1*stats::rnorm(n_obs))
