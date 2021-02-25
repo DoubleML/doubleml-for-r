@@ -764,58 +764,64 @@ private = list(
   assert_tune_settings = function(tune_settings) {
     valid_learner = self$learner_names()
     required_settings = c("terminator", "resolution")
-      if (!all(required_settings %in% names(tune_settings))) {
-        missing_setting = required_settings[which(! (required_settings %in% names(tune_settings)))]
-        stop(paste("Invalid tune_settings\n", 
-                    paste0(missing_setting, collapse = ", "), "is missing.\n",
-                    "Tune settings require specification of", toString(required_settings), "."))
-      }
-      
-      if (!is.null(tune_settings$n_folds_tune)) {
-        checkmate::assert_integerish(tune_settings$n_folds_tune, len = 1, lower = 2)
-      } else {
-        tune_settings$n_folds_tune = 5
-      }
-      
-      if (!is.null(tune_settings$rsmp_tune)) {
-        checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
-                          checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
-        if (!checkmate::test_class(tune_settings$rsmp_tune, "Resampling")) {
+    
+    if (!all(required_settings %in% names(tune_settings))) {
+      missing_setting = required_settings[which(! (required_settings %in% names(tune_settings)))]
+      stop(paste("Invalid tune_settings\n", 
+                  paste0(missing_setting, collapse = ", "), "is missing.\n",
+                  "Tune settings require specification of", toString(required_settings), "."))
+    }
+    
+    if (!is.null(tune_settings$n_folds_tune)) {
+      checkmate::assert_integerish(tune_settings$n_folds_tune, len = 1, lower = 2)
+    } else {
+      tune_settings$n_folds_tune = 5
+    }
+    
+    if (!is.null(tune_settings$rsmp_tune)) {
+      checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
+                        checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
+      if (!checkmate::test_class(tune_settings$rsmp_tune, "Resampling")) {
           tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
-        }
       }
-      
-      if (!is.null(tune_settings$measure)) {
-        checkmate::assert_list(tune_settings$measure)
-        if (!checkmate::test_names(names(tune_settings$measure), permutation.of = valid_learner)) {
-          stop(paste("Invalid name of measure", paste0(names(tune_settings$measure), collapse = ", "),
-                   "\n measure must be a named list with elements named", 
-                    paste0(valid_learner, collapse = ", ")))
-        }
-        for (i_msr in seq_len(length(tune_settings$measure))) {
-          checkmate::assert(checkmate::check_character(tune_settings$measure[[i_msr]]),
-                            checkmate::check_class(tune_settings$measure[[i_msr]], "Measure"))
-        }
-      } else {
-        tune_settings$measure = rep(list(NA), length(valid_learner))
-        names(tune_settings$measure) = valid_learner
+    } else {
+      tune_settings$rsmp_tune = rsmp("cv", folds = tune_settings$n_folds_tune)
+    }
+    
+    if (!is.null(tune_settings$measure)) {
+      checkmate::assert_list(tune_settings$measure)
+      if (!checkmate::test_names(names(tune_settings$measure), permutation.of = valid_learner)) {
+        stop(paste("Invalid name of measure", paste0(names(tune_settings$measure), collapse = ", "),
+                 "\n measure must be a named list with elements named", 
+                  paste0(valid_learner, collapse = ", ")))
       }
       for (i_msr in seq_len(length(tune_settings$measure))) {
-          this_learner = names(tune_settings$measure)[i_msr]
-          tune_settings$measure[[this_learner]] = set_default_measure(tune_settings$measure[[this_learner]],
-                                                                      private$learner_class[[this_learner]])
+        checkmate::assert(checkmate::check_character(tune_settings$measure[[i_msr]]),
+                          checkmate::check_class(tune_settings$measure[[i_msr]], "Measure"))
       }
-      
-      if (!is.null(tune_settings$algorithm)) {
-        checkmate::assert_character(tune_settings$algorithm, len = 1)
-      } else {
-        tune_settings$algorithm = "grid_search"
+    } else {
+      tune_settings$measure = rep(list(NA), length(valid_learner))
+      names(tune_settings$measure) = valid_learner
+    }
+    
+    for (i_msr in seq_len(length(tune_settings$measure))) {
+      if (!checkmate::test_class(tune_settings$measure[[i_msr]], "Measure")) {
+        this_learner = names(tune_settings$measure)[i_msr]
+        tune_settings$measure[[this_learner]] = set_default_measure(tune_settings$measure[[this_learner]],
+                                                                  private$learner_class[[this_learner]])
       }
+    }
       
-      checkmate::assert(checkmate::check_character(tune_settings$terminator),
-                        checkmate::check_class(tune_settings$terminator, "Terminator"))
-      checkmate::assert_count(tune_settings$resolution, positive = TRUE)
-      return(tune_settings)
+    if (!is.null(tune_settings$algorithm)) {
+      checkmate::assert_character(tune_settings$algorithm, len = 1)
+    } else {
+      tune_settings$algorithm = "grid_search"
+    }
+    
+    checkmate::assert(checkmate::check_character(tune_settings$terminator),
+                      checkmate::check_class(tune_settings$terminator, "Terminator"))
+    checkmate::assert_count(tune_settings$resolution, positive = TRUE)
+    return(tune_settings)
   },
   initialize_arrays = function() {
     
