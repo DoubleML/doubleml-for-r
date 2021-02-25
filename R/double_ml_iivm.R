@@ -201,6 +201,12 @@ private = list(
     z = self$data$data_model[[self$data$z_cols]]
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
+
+    psis = private$score_elements(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls)
+    return(psis)
+  },
+  score_elements = function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls) {
+
     u0_hat = y - g0_hat
     u1_hat = y - g1_hat
     w0_hat = d - r0_hat
@@ -210,8 +216,6 @@ private = list(
       m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
       m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
     }
-    score = self$score
-    private$check_score(score)
     
     if (is.character(self$score)) {
       if (self$score == 'LATE') {

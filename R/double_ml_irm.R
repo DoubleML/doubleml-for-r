@@ -152,6 +152,13 @@ private = list(
                              learner_class = private$learner_class$ml_g, private$fold_specific_params)
     }
     
+    d = self$data$data_model[[self$data$treat_col]]
+    y = self$data$data_model[[self$data$y_col]]
+    
+    psis = private$score_elements(y, d, g0_hat, g1_hat, m_hat, smpls)
+    return(psis)
+  },
+  score_elements = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
     if (self$score == "ATTE") {
       # fraction of treated for ATTE
       p_hat = vector('numeric', length = self$data$n_obs)
@@ -159,18 +166,12 @@ private = list(
         p_hat[smpls$test_ids[[i_fold]]] = mean(self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
       }
     }
-    
-    d = self$data$data_model[[self$data$treat_col]]
-    y = self$data$data_model[[self$data$y_col]]
     u0_hat = y - g0_hat
     
     if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
       m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
       m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
     }
-    
-    score = self$score
-    private$check_score(score)
   
     if (is.character(self$score)) {
       if (self$score == 'ATE') {
