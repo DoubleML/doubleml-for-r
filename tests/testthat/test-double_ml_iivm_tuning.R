@@ -10,7 +10,7 @@ tune_settings = list(n_folds_tune = 3,
                       rsmp_tune = "cv", 
                       measure = list("ml_m" = "classif.ce",
                                      "ml_g" = "regr.mse", 
-                                     "ml_m" = "classif.ce"),
+                                     "ml_r" = "classif.ce"),
                       terminator = mlr3tuning::trm("evals", n_evals = 5), 
                       algorithm = "grid_search",
                       resolution = 5)

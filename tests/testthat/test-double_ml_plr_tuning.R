@@ -72,12 +72,11 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                       n_folds_tune = 1, 
                       rsmp_tune = "cv", 
                       measure = list("ml_g" = mlr3::default_measures("regr")[[1]],
-                                     "ml_m" = mlr3::default_measures("regr")[[1]]),
+                                     "ml_m" = "regr.mse"),
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
                       tuner = "grid_search",
                       resolution = 5)
-
   
   param_grid = list("ml_g" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                                         paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),

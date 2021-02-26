@@ -11,17 +11,19 @@ learner = c('rpart')
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
-tune_settings = list(n_folds_tune = 3,
-                      n_rep_tune = 1, 
-                      rsmp_tune = "cv", 
-                      measure = list("ml_g" = "regr.mse", 
-                                     "ml_m" = "classif.ce"),
-                      terminator = mlr3tuning::trm("evals", n_evals = 5), 
-                      algorithm = "grid_search",
-                      tuning_instance_g = NULL, 
-                      tuning_instance_m = NULL,
-                      tuner = "grid_search",
-                      resolution = 5)
+# tune_settings = list(n_folds_tune = 3,
+#                       n_rep_tune = 1, 
+#                       rsmp_tune = "cv", 
+#                       measure = list("ml_g" = "regr.mse", 
+#                                      "ml_m" = "classif.ce"),
+#                       terminator = mlr3tuning::trm("evals", n_evals = 5), 
+#                       algorithm = "grid_search",
+#                       tuner = "grid_search",
+#                       resolution = 5)
+
+# only minimum amount of input for tuning 
+tune_settings = list(terminator = mlr3tuning::trm("evals", n_evals = 5),
+                     resolution = 5)
 
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {

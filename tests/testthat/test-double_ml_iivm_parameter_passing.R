@@ -51,6 +51,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   
   double_mliivm_obj_once =  DoubleMLIIVM$new(data_ml, 
                                      n_folds = 5,
+                                     n_rep = n_rep,
                                      ml_m = learner_pars$mlmethod$mlmethod_p,
                                      ml_g = learner_pars$mlmethod$mlmethod_mu,
                                      ml_r = learner_pars$mlmethod$mlmethod_m,
@@ -76,11 +77,46 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   double_mliivm_obj_once$fit()
   theta_obj_once <- double_mliivm_obj_once$coef
   se_obj_once <- double_mliivm_obj_once$se
-
+  
+  # Exact parameter passing (foldwise)
+  export_params_exact_g = rep(list(rep(list(learner_pars$params$params_mu), 5)), n_rep)
+  export_params_exact_r = rep(list(rep(list(learner_pars$params$params_m), 5)), n_rep)
+  export_params_exact_m = rep(list(rep(list(learner_pars$params$params_p), 5)), n_rep)
+  
+  set.seed(i_setting)
+  double_mliivm_obj_exact =  DoubleMLIIVM$new(data_ml, 
+                                       n_folds = 5,
+                                       n_rep = n_rep,
+                                       ml_m = learner_pars$mlmethod$mlmethod_p,
+                                       ml_g = learner_pars$mlmethod$mlmethod_mu,
+                                       ml_r = learner_pars$mlmethod$mlmethod_m,
+                                       dml_procedure = dml_procedure, 
+                                       score = score)
+  
+  double_mliivm_obj_exact$set_ml_nuisance_params(treat_var = "d", learner = "ml_m", 
+                                                params = export_params_exact_m, 
+                                                set_fold_specific = TRUE)
+  double_mliivm_obj_exact$set_ml_nuisance_params(treat_var = "d", learner = "ml_r0", 
+                                                params = export_params_exact_r, 
+                                                set_fold_specific = TRUE)
+  double_mliivm_obj_exact$set_ml_nuisance_params(treat_var = "d", learner = "ml_r1", 
+                                                params = export_params_exact_r, 
+                                                set_fold_specific = TRUE)
+  double_mliivm_obj_exact$set_ml_nuisance_params(treat_var = "d", learner = "ml_g0", 
+                                                params = export_params_exact_g, 
+                                                set_fold_specific = TRUE)
+  double_mliivm_obj_exact$set_ml_nuisance_params(treat_var = "d", learner = "ml_g1", 
+                                                params = export_params_exact_g, 
+                                                set_fold_specific = TRUE)
+  
+  double_mliivm_obj_exact$fit()
+  theta_obj_exact <- double_mliivm_obj_exact$coef
+  se_obj_exact <- double_mliivm_obj_exact$se
   
   set.seed(i_setting)
   double_mliivm_obj_default = DoubleMLIIVM$new(data_ml, 
                                      n_folds = 5,
+                                     n_rep = n_rep,
                                      ml_m = learner_pars$mlmethod$mlmethod_p,
                                      ml_g = learner_pars$mlmethod$mlmethod_mu,
                                      ml_r = learner_pars$mlmethod$mlmethod_m,
@@ -93,7 +129,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   # at the moment the object result comes without a name
   # expect_equal(theta, c(d=theta_obj_once), tolerance = 1e-8)
   expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
-
+  expect_equal(theta_obj_exact, theta_obj_once, tolerance = 1e-8)
   
 }
 )
