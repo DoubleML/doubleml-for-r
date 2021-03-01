@@ -117,39 +117,73 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
 
 
 extract_prediction = function(obj_resampling, learner_class, return_train_preds = FALSE, return_type = "numeric", fold_specific_params = FALSE) {
-  if (learner_class == "LearnerRegr") {
-    if (!return_train_preds) {
+  if (utils::compareVersion(as.character(utils::packageVersion('mlr3')), '0.11.0') < 0) {
+    if (learner_class == "LearnerRegr") {
+      if (!return_train_preds) {
+        f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+        f_hat = as.data.table(obj_resampling$prediction())
+        f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
+        data.table::setorder(f_hat, 'row_id')
+        f_hat = as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # TODO: optimize
+        preds = f_hat$response
+      } else {
+        # Access in-sample predictions
+        iters = obj_resampling$resampling$iters
+        f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
+        f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
+        f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
+                                                                                by = "row_id", all = TRUE))
+        f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
+        f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+                                                                       "response"= x$response)))
+        
+        if (fold_specific_params) {
+          f_hat = f_hat_list[[1]]
+        }
+        preds = lapply(f_hat_list, function(x) x$response)
+      }
+    } else if (learner_class == "LearnerClassif") {
       f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
       f_hat = as.data.table(obj_resampling$prediction())
       f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
       data.table::setorder(f_hat, 'row_id')
-      f_hat = as.data.table(list("row_id" = f_hat$row_id, "response" = f_hat$response)) # TODO: optimize
-      preds = f_hat$response
-    } else {
-      # Access in-sample predictions
-      iters = obj_resampling$resampling$iters
-      f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-      f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
-      f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
-                                                                              by = "row_id", all = TRUE))
-      f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
-      f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
-                                                                     "response"= x$response)))
-      
-      if (fold_specific_params) {
-        f_hat = f_hat_list[[1]]
-      }
-      preds = lapply(f_hat_list, function(x) x$response)
+      f_hat = as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+      preds = f_hat$prob.1
     }
-  } else if (learner_class == "LearnerClassif") {
-    f_hat_aux = data.table("row_id" = 1:obj_resampling$task$backend$nrow)
-    f_hat = as.data.table(obj_resampling$prediction())
-    f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_id", all = TRUE)
-    data.table::setorder(f_hat, 'row_id')
-    f_hat = as.data.table(list("row_id" = f_hat$row_id, "prob.1" = f_hat$prob.1))
-    preds = f_hat$prob.1
+  } else {
+      if (learner_class == "LearnerRegr") {
+        if (!return_train_preds) {
+          f_hat_aux = data.table("row_ids" = 1:obj_resampling$task$backend$nrow)
+          f_hat = as.data.table(obj_resampling$prediction())
+          f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_ids", all = TRUE)
+          data.table::setorder(f_hat, 'row_ids')
+          f_hat = as.data.table(list("row_ids" = f_hat$row_id, "response" = f_hat$response)) # TODO: optimize
+          preds = f_hat$response
+        } else {
+          # Access in-sample predictions
+          iters = obj_resampling$resampling$iters
+          f_hat_aux = data.table("row_ids" = 1:obj_resampling$task$backend$nrow)
+          f_hat_list = lapply(1:iters, function(x) as.data.table(obj_resampling$predictions()[[x]]))
+          f_hat_list = lapply(1:iters, function(x) data.table::merge.data.table(f_hat_aux, f_hat_list[[x]], 
+                                                                                  by = "row_ids", all = TRUE))
+          f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_ids"))
+          f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_ids" = x$row_id, 
+                                                                         "response"= x$response)))
+          
+          if (fold_specific_params) {
+            f_hat = f_hat_list[[1]]
+          }
+          preds = lapply(f_hat_list, function(x) x$response)
+        }
+      } else if (learner_class == "LearnerClassif") {
+        f_hat_aux = data.table("row_ids" = 1:obj_resampling$task$backend$nrow)
+        f_hat = as.data.table(obj_resampling$prediction())
+        f_hat = data.table::merge.data.table(f_hat_aux, f_hat, by = "row_ids", all = TRUE)
+        data.table::setorder(f_hat, 'row_ids')
+        f_hat = as.data.table(list("row_ids" = f_hat$row_id, "prob.1" = f_hat$prob.1))
+        preds = f_hat$prob.1
+      }
   }
-  
   if (return_type == "numeric") {
     return(preds)
   } else if (return_type == "data.table") {
@@ -164,27 +198,51 @@ extract_prediction_list = function(obj_resampling, learner_class, test_ids = NUL
                                                                           return_train_preds = return_train_preds,
                                                                           return_type = "data.table", 
                                                                           fold_specific_params = fold_specific_params))
-  if (return_train_preds & fold_specific_params) {
-    f_hat_aux = lapply(obj_resampling, function(x) data.table("row_id" = 1:x$task$backend$nrow))
-    f_hat_list = lapply(obj_resampling, function(x) as.data.table(x$prediction()))
-    f_hat_list = lapply(1:length(obj_resampling), function(x) data.table::merge.data.table(f_hat_aux[[x]], f_hat_list[[x]], 
-                                                                            by = "row_id", all = TRUE))
-    f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
-    f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
-                                                                   "response"= x$response)))
-    preds = lapply(f_hat_list, function(x) x$response)
-  } else {
-  
-    prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
-    predictions = data.table::rbindlist(prediction_list)
-    data.table::setorder(predictions, 'row_id')
+  if (utils::compareVersion(as.character(utils::packageVersion('mlr3')), '0.11.0') < 0) { 
+    if (return_train_preds & fold_specific_params) {
+      f_hat_aux = lapply(obj_resampling, function(x) data.table("row_id" = 1:x$task$backend$nrow))
+      f_hat_list = lapply(obj_resampling, function(x) as.data.table(x$prediction()))
+      f_hat_list = lapply(1:length(obj_resampling), function(x) data.table::merge.data.table(f_hat_aux[[x]], f_hat_list[[x]], 
+                                                                              by = "row_id", all = TRUE))
+      f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_id"))
+      f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_id" = x$row_id, 
+                                                                     "response"= x$response)))
+      preds = lapply(f_hat_list, function(x) x$response)
+    } else {
     
-    if (learner_class == "LearnerRegr") {
-      preds = predictions$response
-    } else if (learner_class == "LearnerClassif") {
-      preds = predictions$prob.1
+      prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
+      predictions = data.table::rbindlist(prediction_list)
+      data.table::setorder(predictions, 'row_id')
+      
+      if (learner_class == "LearnerRegr") {
+        preds = predictions$response
+      } else if (learner_class == "LearnerClassif") {
+        preds = predictions$prob.1
+      }
+    }
+  } else {
+    if (return_train_preds & fold_specific_params) {
+      f_hat_aux = lapply(obj_resampling, function(x) data.table("row_ids" = 1:x$task$backend$nrow))
+      f_hat_list = lapply(obj_resampling, function(x) as.data.table(x$prediction()))
+      f_hat_list = lapply(1:length(obj_resampling), function(x) data.table::merge.data.table(f_hat_aux[[x]], f_hat_list[[x]], 
+                                                                              by = "row_ids", all = TRUE))
+      f_hat_list = lapply(f_hat_list, function(x) data.table::setorder(x, "row_ids"))
+      f_hat_list = lapply(f_hat_list, function(x) as.data.table(list("row_ids" = x$row_id, 
+                                                                     "response"= x$response)))
+      preds = lapply(f_hat_list, function(x) x$response)
+    } else {
+      prediction_list = lapply(1:length(test_ids), function(x) prediction_list[[x]][test_ids[[x]], ])
+      predictions = data.table::rbindlist(prediction_list)
+      data.table::setorder(predictions, 'row_ids')
+      
+      if (learner_class == "LearnerRegr") {
+        preds = predictions$response
+      } else if (learner_class == "LearnerClassif") {
+        preds = predictions$prob.1
+      }
     }
   }
+  
   return(preds)
 }
 
