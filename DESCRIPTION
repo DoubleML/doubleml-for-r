@@ -41,6 +41,7 @@ Suggests:
     knitr,
     rmarkdown,
     testthat,
+    covr,
     patrick,
     paradox (>= 0.4.0),
     dplyr,
