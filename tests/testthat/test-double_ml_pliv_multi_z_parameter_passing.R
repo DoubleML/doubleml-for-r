@@ -4,20 +4,14 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
-if (on_cran) {
-  test_cases = expand.grid(learner = c('regr.glmnet'),
-                           dml_procedure = c('dml2'),
-                           score = c('partialling out'),
-                           i_setting = 1:(length(data_pliv)),
-                           stringsAsFactors = FALSE)
-} else {
-  test_cases = expand.grid(learner = c('regr.lm', 'regr.glmnet'),
+
+skip_on_cran()
+
+test_cases = expand.grid(learner = c('regr.lm', 'regr.glmnet'),
                            dml_procedure = c('dml1', 'dml2'),
                            score = c('partialling out'),
                            i_setting = 1:(length(data_pliv)),
                            stringsAsFactors = FALSE)
-}
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV:",

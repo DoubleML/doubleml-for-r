@@ -75,7 +75,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
                                      "ml_m" = "regr.mse"),
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
-                      tuner = "grid_search",
                       resolution = 5)
   
   param_grid = list("ml_g" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
