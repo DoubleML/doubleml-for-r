@@ -15,7 +15,7 @@ Note that the R package was developed together with a python twin based on [scik
 
 ## Documentation and maintenance 
 
-Documentation of functions in R: `here`
+Documentation of functions in R: [https://docs.doubleml.org/r/stable/reference/index.html](https://docs.doubleml.org/r/stable/reference/index.html)
 
 User guide: [https://docs.doubleml.org](https://docs.doubleml.org)
 
@@ -29,7 +29,6 @@ Double / debiased machine learning framework of [Chernozhukov et al. (2018)](htt
 * Partially linear IV regression models (PLIV)
 * Interactive regression models (IRM)
 * Interactive IV regression models (IIVM)
-
 
 
 The object-oriented implementation of **DoubleML** that is based on the [R6 package for R](https://r6.r-lib.org/) is very flexible. The model classes `DoubleMLPLR`, `DoubleMLPLIV`, `DoubleMLIRM` and `DoubleIIVM` implement the estimation of the nuisance functions via machine learning methods and the computation of the Neyman orthogonal score function. All other functionalities are implemented in the abstract base class `DoubleML`. In particular functionalities to estimate double machine learning models and to perform statistical inference via the methods `fit`, `bootstrap`, `confint`, `p_adjust` and `tune`. This object-oriented implementation allows a high flexibility for the model specification in terms of ...

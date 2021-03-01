@@ -17,7 +17,8 @@ Description: Implementation of the double/debiased machine learning framework of
     'mlr3' ecosystem. The object-oriented implementation of 'DoubleML' based on
     the 'R6' package is very flexible. 
 License: MIT + file LICENSE
-URL: https://github.com/DoubleML/doubleml-for-r/
+URL: https://docs.doubleml.org/stable/index.html, https://github.com/DoubleML/doubleml-for-r/
+BugReports: https://github.com/DoubleML/doubleml-for-r/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
