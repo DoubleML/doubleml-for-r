@@ -217,9 +217,9 @@ The hyperparameter-tuning is performed using the tuning methods provided in the 
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
   param_set,
-  tune_settings = list(n_folds_tune = 5, rsmp_tune = "cv", measure = list(ml_g = NULL,
-    ml_m = NULL, ml_r = NULL), terminator = mlr3tuning::trm("evals", n_evals = 20),
-    algorithm = "grid_search", resolution = 5),
+  tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5),
+    measure = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
+    mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
 )}\if{html}{\out{</div>}}
 }
@@ -231,14 +231,19 @@ The hyperparameter-tuning is performed using the tuning methods provided in the 
 A named \code{list} with a parameter grid for each nuisance model/learner (see method \code{learner_names()}). The parameter grid must be an object of class \link[paradox:ParamSet]{ParamSet}.}
 
 \item{\code{tune_settings}}{(named \code{list()}) \cr
-A named \code{list()} with argument passed to the hyperparameter-tuning with \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up \link[mlr3tuning:TuningInstanceSingleCrit]{TuningInstance} objects. \code{tune_settings} has entries
+A named \code{list()} with arguments passed to the hyperparameter-tuning with \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up \link[mlr3tuning:TuningInstanceSingleCrit]{TuningInstance} objects. \code{tune_settings} has entries
 \itemize{
-\item \code{rsmp_tune} \cr \link[mlr3:Resampling]{Resampling} or option passed to \link[mlr3:mlr_sugar]{rsmpl()} to initialize a \link[mlr3:Resampling]{Resampling} for parameter tuning in \code{mlr3}. Default is \code{"cv"} (cross-validation).
-\item \code{n_folds_tune} (\code{integer(1)}) \cr If \code{rsmp_tune = "cv"}, number of folds used for cross-validation. Default is \code{5}.
-\item \code{measure} (\code{NULL}, named \code{list()}) \cr \code{NULL} or named \code{list()} with options passed to \link[mlr3:mlr_sugar]{msr()}. Names of entries are set to names of learners (see method \code{learner_names()}). If \code{NULL}, default measures as provided by \link[mlr3:default_measures]{default_measures()} are used. Default is \code{NULL}.
-\item \code{terminator} \cr A \link[bbotk:Terminator]{Terminator} object. Default is \code{mlr3tuning::trm("evals", n_evals = 20)}.
-\item \code{algorithm} (\code{character(1)}) \cr The key passed to the respective dictionary to specify the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{algorithm} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}. Default is \code{grid_search}.
-\item \code{resolution} (\code{character(1)}) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}. Default is \code{5}.
+\item \code{terminator} (\link[bbotk:Terminator]{Terminator}) \cr
+A \link[bbotk:Terminator]{Terminator} object. Specification of \code{terminator} is required to perform tuning.
+\item \code{algorithm} (\link[mlr3tuning:Tuner]{Tuner} or \code{character(1)}) \cr
+A \link[mlr3tuning:Tuner]{Tuner} object (recommended) or key passed to the respective dictionary to specify the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{algorithm} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}. If \code{algorithm} is not specified by the users, default is set to \code{"grid_search"}. If set to \code{"grid_search"}, then additional argument \code{"resolution"} is required.
+\item \code{rsmp_tune} (\link[mlr3:Resampling]{Resampling} or \code{character(1)})\cr
+A \link[mlr3:Resampling]{Resampling} object (recommended) or option passed to \link[mlr3:mlr_sugar]{rsmp()} to initialize a \link[mlr3:Resampling]{Resampling} for parameter tuning in \code{mlr3}. If not specified by the user, default is set to \code{"cv"} (cross-validation).
+\item \code{n_folds_tune} (\code{integer(1)}, optional) \cr
+If \code{rsmp_tune = "cv"}, number of folds used for cross-validation. If not specified by the user, default is set to \code{5}.
+\item \code{measure} (\code{NULL}, named \code{list()}, optional) \cr
+Named list containing the measures used for parameter tuning. Entries in list must either be \link[mlr3:Measure]{Measure} objects or keys to be passed to passed to \link[mlr3:mlr_sugar]{msr()}. The names of the entries must match the learner names (see method \code{learner_names()}). If set to \code{NULL}, default measures are used, i.e., \code{"regr.mse"} for continuous outcome variables and \code{"classif.ce"} for binary outcomes.
+\item \code{resolution} (\code{character(1)}) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}.
 }}
 
 \item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
@@ -280,7 +285,7 @@ Confidence intervals for DoubleML models.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{parm}}{(\code{numeric()}) \cr
+\item{\code{parm}}{(\code{numeric()} or \code{character()}) \cr
 A specification of which parameters are to be given confidence intervals among the variables for which inference was done, either a vector of numbers or a vector of names. If missing, all parameters are considered (default).}
 
 \item{\code{joint}}{(\code{logical(1)}) \cr
@@ -341,7 +346,7 @@ Note that in the current implementation, either all parameters have to be set gl
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{learner}}{(\code{character(1)}) \cr
-The nuisance model/learner (see method \code{params_names})}
+The nuisance model/learner (see method \code{params_names}).}
 
 \item{\code{treat_var}}{(\code{character(1)}) \cr
 The treatment varaible (hyperparameters can be set treatment-variable specific).}

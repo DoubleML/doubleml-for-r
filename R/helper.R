@@ -95,7 +95,6 @@ dml_cv_predict = function(learner, X_cols, y_col,
 dml_tune = function(learner, X_cols, y_col, data_tune_list, 
                     nuisance_id, param_set, tune_settings, measure, learner_class) {
   
-  tuner = tnr(tune_settings$algorithm, resolution = tune_settings$resolution)
   task_tune = lapply(data_tune_list, function(x) initiate_task(id = nuisance_id, 
                                                                data = x, 
                                                                target = y_col, 
@@ -109,7 +108,7 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
                                                                      measure = measure, 
                                                                      search_space = param_set, 
                                                                      terminator = tune_settings$terminator))
-  tuning_result = lapply(tuning_instance, function(x) tune_instance(tuner, x))
+  tuning_result = lapply(tuning_instance, function(x) tune_instance(tune_settings$tuner, x))
   params = vapply(tuning_result, function(x) x$tuning_result$learner_param_vals, list(1L))
   
   return(list("tuning_result" = tuning_result,
