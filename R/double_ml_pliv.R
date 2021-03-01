@@ -33,6 +33,36 @@
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
 #' }
+#' 
+#' \dontrun{
+#' library(DoubleML)
+#' library(mlr3)
+#' library(mlr3learners)
+#' library(mlr3tuning)
+#' library(data.table)
+#' set.seed(2)
+#' ml_g = lrn("regr.rpart")
+#' ml_m = ml_g$clone()
+#' ml_r = ml_g$clone()
+#' obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
+#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' param_grid = list("ml_g" = paradox::ParamSet$new(
+#'                             list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+#'                                  paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+#'                  "ml_m" = paradox::ParamSet$new(list(
+#'                                  paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+#'                                  paradox::ParamInt$new("minsplit", lower = 1, upper = 2))), 
+#'                  "ml_r" = paradox::ParamSet$new(list(
+#'                                  paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+#'                                  paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+#' 
+#' # minimum requirements for tune_settings
+#' tune_settings = list(terminator = mlr3tuning::trm("evals", n_evals = 5), 
+#'                       algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+#' dml_pliv_obj$tune(param_set = param_grid, tune_settings = tune_settings)
+#' dml_pliv_obj$fit()
+#' dml_pliv_obj$summary()
+#' }
 #' @export
 DoubleMLPLIV = R6Class("DoubleMLPLIV", inherit = DoubleML, public = list(
   #' @field partialX (`logical(1)`)  \cr

@@ -22,8 +22,10 @@ The number of covariates.}
 The value of the causal parameter.}
 
 \item{return_type}{(\code{character(1)}) \cr
-If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y} and \code{d} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.
-#' @return A data object according to the choice of \code{return_type}.}
+If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y} and \code{d} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
+}
+\value{
+A data object according to the choice of \code{return_type}.
 }
 \description{
 Generates data from a partially linear regression model used in Chernozhukov et al. (2018) for Figure 1.
@@ -37,7 +39,9 @@ with \eqn{v_i \sim \mathcal{N}(0,1)} and \eqn{\zeta_i \sim \mathcal{N}(0,1),}. T
 
 \eqn{m_0(x_i) = a_0 x_{i,1} + a_1 \frac{\exp(x_{i,3})}{1+\exp(x_{i,3})},}
 
-\eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3}.}
+\eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3},}
+
+with \eqn{a_0=1}, \eqn{a_1=0.25}, \eqn{s_1=1}, \eqn{b_0=1}, \eqn{b_1=0.25}, \eqn{s_2=1}.
 }
 \references{
 Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
