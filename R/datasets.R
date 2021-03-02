@@ -39,21 +39,27 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
   data = readstata13::read.dta13(url)
   
   if (polynomial_features) {
-    stop("Not implemented yet.")
+    # see https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K.R#L67  
+    formula_flex = stats::formula("net_tfa ~ e401 + (poly(age, 6, raw=TRUE) + poly(inc, 8, raw=TRUE) +
+                           poly(educ, 4, raw=TRUE) + poly(fsize, 2, raw=TRUE) +
+                           marr + twoearn + db + pira + hown)^2")
+    data = data.frame("net_tfa" = data$net_tfa, stats::model.matrix(formula_flex, data))
+    x_cols = NULL
   } else {
-    if (return_type == "data.frame") {
-      return(data) 
-    } else if (return_type == "data.table") {
-       data = as.data.table(data)
-       return(data)
-    } else if (return_type == "DoubleMLData") {
-       dt = as.data.table(data)
-       y_col = "net_tfa"
-       d_cols = "e401"
-       x_cols = c("age", "inc", "educ", "fsize", "marr", "twoearn", "db", "pira", "hown")
-       data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
-       return(data)
-    }
+    x_cols = c("age", "inc", "educ", "fsize", "marr", "twoearn", "db", "pira", "hown")
+  }
+  
+  if (return_type == "data.frame") {
+      return(data)
+  } else if (return_type == "data.table") {
+    data = as.data.table(data)
+    return(data)
+  } else if (return_type == "DoubleMLData") {
+    dt = as.data.table(data)
+    y_col = "net_tfa"
+    d_cols = "e401"
+    data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
+    return(data)
   }
 }
 
@@ -135,22 +141,27 @@ fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE
   # data$dep = as.factor(data$dep)
   
   if (polynomial_features) {
-    stop("Not implemented yet.")
+    #https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/Bonus.R#L84
+    formula_flex = stats::formula("inuidur1 ~ tg + (female+black+othrace+dep1+dep2+q2+q3+
+                           q4+q5+q6+agelt35+agegt54+durable+lusd+husd)*(female+black+othrace+dep1+dep2+q2+q3+
+                           q4+q5+q6+agelt35+agegt54+durable+lusd+husd)")
+    data = data.frame("inuidur1" = data$inuidur1, stats::model.matrix(formula_flex, data))
+    x_cols = NULL
   } else {
-    if (return_type == "data.frame") {
-      return(data) 
-    } else if (return_type == "data.table") {
-       data = as.data.table(data)
-       return(data)
-    } else if (return_type == "DoubleMLData") {
-       dt = as.data.table(data)
-       y_col = "inuidur1"
-       d_cols = "tg"
-       x_cols = c("female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6", 
-                  "agelt35", "agegt54", "durable", "lusd", "husd")
-       data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
-       return(data)
-    }
+     x_cols = c("female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6",
+                "agelt35", "agegt54", "durable", "lusd", "husd")
+  }
+  if (return_type == "data.frame") {
+    return(data) 
+  } else if (return_type == "data.table") {
+     data = as.data.table(data)
+     return(data)
+  } else if (return_type == "DoubleMLData") {
+     dt = as.data.table(data)
+     y_col = "inuidur1"
+     d_cols = "tg"
+     data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
+     return(data)
   }
 }
 
@@ -524,10 +535,15 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
   x = mvtnorm::rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
 
   beta = 1/(1:dim_x)^2
-  z = sample(c(0,1), size = n_obs, prob = c(0.5, 0.5), replace = TRUE)
-  d = 1*(alpha_x*z + v > 0)
+  z = matrix(sample(c(0,1), size = n_obs, prob = c(0.5, 0.5), replace = TRUE))
+  d = matrix(1*(alpha_x*z + v > 0))
   
   y = d*theta + x %*% beta + u
+  
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  colnames(z) = "z"
   
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d, "z" = z))
