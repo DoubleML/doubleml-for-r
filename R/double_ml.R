@@ -753,15 +753,18 @@ private = list(
       learner = lrn(learner)
     }
     
-    if (Regr) {
-      checkmate::assert_class(learner, "LearnerRegr")
+    if (Regr & checkmate::test_class(learner, "LearnerRegr")) {
       private$learner_class[learner_name] = "LearnerRegr"
     }
-    else if (Classif) {
-      checkmate::assert_class(learner, "LearnerClassif")
+    if (Classif & checkmate::test_class(learner, "LearnerClassif"))  {
       private$learner_class[learner_name] = "LearnerClassif"
-    } else {
-      stop(paste0("Invalid learner provided for ", learner, ": must be either of class 'LearnerRegr' or 'LearnerClassif'."))
+    } 
+    
+    if ( (Regr & !Classif & !checkmate::test_class(learner, "LearnerRegr"))) {
+      stop(paste0("Invalid learner provided for ", learner_name, ": must be either of class 'LearnerRegr'"))
+    }
+    if ( (Classif & !Regr & !checkmate::test_class(learner, "LearnerClassif"))) {
+      stop(paste0("Invalid learner provided for ", learner_name, ": must be either of class 'LearnerClassif'"))
     }
     invisible(learner)
   }, 

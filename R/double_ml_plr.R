@@ -116,7 +116,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
     private$learner_class = list("ml_g" = NULL,
                                  "ml_m" = NULL)
     ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
-    ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = FALSE)
+    ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
 
     self$learner = list("ml_g" = ml_g, 
                         "ml_m" = ml_m)
