@@ -80,13 +80,13 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     }
   
     # currently, no warning or message printed
-    double_mlplr_obj$summary()
+    utils::capture.output(double_mlplr_obj$summary(), file = NULL)
     expect_error(double_mlplr_obj$bootstrap(method = 'normal',  n_rep_boot = n_rep_boot))
   
     double_mlplr_obj$fit()
     
-    double_mlplr_obj$print()
-    expect_is(double_mlplr_obj$summary(), "matrix")
+    utils::capture.output(double_mlplr_obj$print(), file = NULL)
+    utils::capture.output(expect_is(double_mlplr_obj$summary(), "matrix"), file = NULL)
     
     expect_error(double_mlplr_obj$confint(level = 1.2))
     expect_error(double_mlplr_obj$confint(joint = TRUE, level = 0.95))
