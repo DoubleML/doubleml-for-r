@@ -164,19 +164,25 @@ private = list(
     
     m_hat = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), self$data$treat_col, 
                            self$data$data_model, nuisance_id = "nuis_m",  
-                           smpls, self$get_params("ml_m"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_m, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_m"),
+                           return_train_preds = FALSE, 
+                           learner_class = private$learner_class$ml_m,
+                           fold_specific_params = private$fold_specific_params)
           
     g0_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                             self$data$data_model, nuisance_id = "nuis_g0",  
-                            cond_smpls$smpls_0, self$get_params("ml_g0"), return_train_preds = FALSE, 
-                            learner_class = private$learner_class$ml_g, private$fold_specific_params)
+                            smpls = cond_smpls$smpls_0, est_params = self$get_params("ml_g0"),
+                            return_train_preds = FALSE, 
+                            learner_class = private$learner_class$ml_g,
+                            fold_specific_params = private$fold_specific_params)
     
     if (self$score == "ATE" | is.function(self$score)) {
       g1_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                              self$data$data_model, nuisance_id = "nuis_g1",  
-                             cond_smpls$smpls_1, self$get_params("ml_g1"), return_train_preds = FALSE, 
-                             learner_class = private$learner_class$ml_g, private$fold_specific_params)
+                             smpls = cond_smpls$smpls_1, est_params = self$get_params("ml_g1"),
+                             return_train_preds = FALSE, 
+                             learner_class = private$learner_class$ml_g,
+                             fold_specific_params = private$fold_specific_params)
     }
     
     d = self$data$data_model[[self$data$treat_col]]
