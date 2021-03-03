@@ -367,7 +367,11 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL, data_class = "Do
   } else {
     d_cols = paste0("d", 1:ncol(d))
   }
-  x_cols = paste0("X", 1:ncol(X))
+  if (!is.null(X)) {
+    x_cols = paste0("X", 1:ncol(X))
+  } else {
+    x_cols = NULL
+  }
   names(data) = c(x_cols, y_col, d_cols, z_cols)
   
   if (data_class == "DoubleMLData") {
