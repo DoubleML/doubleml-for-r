@@ -199,25 +199,33 @@ private = list(
     
     g_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                            self$data$data_model, nuisance_id = "nuis_g",  
-                           smpls, self$get_params("ml_g"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_g, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_g"),
+                           return_train_preds = FALSE, 
+                           learner_class = private$learner_class$ml_g,
+                           fold_specific_params = private$fold_specific_params)
       
     r_hat = dml_cv_predict(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols), self$data$treat_col, 
                            self$data$data_model, nuisance_id = "nuis_r",  
-                           smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_r, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_r"),
+                           return_train_preds = FALSE, 
+                           learner_class = private$learner_class$ml_r,
+                           fold_specific_params = private$fold_specific_params)
     
     if (self$data$n_instr == 1) {
       m_hat = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), self$data$z_cols, 
                              self$data$data_model, nuisance_id = "nuis_m",  
-                             smpls, self$get_params("ml_m"), return_train_preds = FALSE, 
-                             learner_class = private$learner_class$ml_m, private$fold_specific_params)
+                             smpls = smpls, est_params = self$get_params("ml_m"),
+                             return_train_preds = FALSE, 
+                             learner_class = private$learner_class$ml_m,
+                             fold_specific_params = private$fold_specific_params)
     } else {
       m_hat = do.call(cbind, lapply(self$data$z_cols, function(x) 
                                         dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols),  x, 
                                                        self$data$data_model, nuisance_id = "nuis_m",  
-                                                       smpls, self$get_params(paste0("ml_m_", x)), return_train_preds = FALSE, 
-                                                       learner_class = private$learner_class$ml_m, private$fold_specific_params)))
+                                                       smpls = smpls, est_params = self$get_params(paste0("ml_m_", x)),
+                                                       return_train_preds = FALSE, 
+                                                       learner_class = private$learner_class$ml_m,
+                                                       fold_specific_params = private$fold_specific_params)))
     }
     
     d = self$data$data_model[[self$data$treat_col]]
@@ -276,24 +284,29 @@ private = list(
     
     g_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                            self$data$data_model, nuisance_id = "nuis_g",  
-                           smpls, self$get_params("ml_g"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_g, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_g"),
+                           return_train_preds = FALSE, 
+                           learner_class = private$learner_class$ml_g,
+                           fold_specific_params = private$fold_specific_params)
       
     m_hat_list = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols), 
                                 self$data$treat_col, 
                                 self$data$data_model, nuisance_id = "nuis_m",  
-                                smpls, self$get_params("ml_m"), return_train_preds = TRUE, 
-                                learner_class = private$learner_class$ml_m, private$fold_specific_params)
+                                smpls = smpls, est_params = self$get_params("ml_m"),
+                                return_train_preds = TRUE, 
+                                learner_class = private$learner_class$ml_m,
+                                fold_specific_params = private$fold_specific_params)
     m_hat = m_hat_list$preds
     data_aux_list = lapply(m_hat_list$train_preds, function(x)
                                                       data.table(self$data$data_model, "m_hat_on_train" = x))
     
     m_hat_tilde = dml_cv_predict(self$learner$ml_r, c(self$data$x_cols, self$data$other_treat_cols), 
                                  "m_hat_on_train", 
-                                  data_aux_list, nuisance_id = "nuis_r",  
-                                  smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
-                                  learner_class = private$learner_class$ml_r, 
-                                  private$fold_specific_params)
+                                 data_aux_list, nuisance_id = "nuis_r",  
+                                 smpls = smpls, est_params = self$get_params("ml_r"),
+                                 return_train_preds = FALSE, 
+                                 learner_class = private$learner_class$ml_r, 
+                                 fold_specific_params = private$fold_specific_params)
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
@@ -321,8 +334,10 @@ private = list(
     r_hat = dml_cv_predict(self$learner$ml_r, 
                            c(self$data$x_cols, self$data$other_treat_cols, self$data$z_cols), self$data$treat_col, 
                            self$data$data_model, nuisance_id = "nuis_r",  
-                           smpls, self$get_params("ml_r"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_r, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_r"),
+                           return_train_preds = FALSE, 
+                           learner_class = private$learner_class$ml_r,
+                           fold_specific_params = private$fold_specific_params)
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
@@ -432,8 +447,7 @@ private = list(
     resampling_m_on_train = lapply(task_m, function(x) rsmp("insample")$instantiate(x))
     r_m_on_train = lapply(1:length(data_tune_list), function(x) 
                                         resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
-    m_hat_on_train = lapply(r_m_on_train, function(x) extract_prediction(x, private$learner_class$ml_m, 
-                                                                          return_train_preds = TRUE)[[1]])
+    m_hat_on_train = extract_prediction(r_m_on_train, private$learner_class$ml_m, self$data$n_obs, return_train_preds = TRUE)
     data_aux_list = lapply(1:length(data_tune_list), function(x) 
                                               data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]]))
     
