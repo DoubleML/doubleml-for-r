@@ -17,28 +17,28 @@ If \code{TRUE} polynomial freatures are added (see replication file of Chernozhu
 A data object according to the choice of \code{return_type}.
 }
 \description{
-Data set on the Pennsylvania Reemploymnent Bonus experiment. An internet connection is required to sucessfully download the data set.
+Preprocessed data set on the Pennsylvania Reemploymnent Bonus experiment. The raw data files are preprocessed to reproduce the examples in Chernozhukov et al. (2020). An internet connection is required to sucessfully download the data set.
 }
 \details{
 Variable description, based on the supplementary material of Chernozhukov et al. (2020):
 \itemize{
 \item abdt:  chronological time of enrollment of each claimant in the Pennsylvania reemployment bonus experiment.
 \item tg:  indicates the treatment group (bonus amount - qualification period) of each claimant.
-\item inuidur1:  a measure of length (in weeks) of the first spell ofunemployment
+\item inuidur1:  a measure of length (in weeks) of the first spell of unemployment
 \item inuidur2:  a second measure for the length (in weeks) of
 \item female:  dummy variable; it indicates if the claimant's sex is female (=1) or male (=0).
-\item black: dummy variable; itindicates a person of black race (=1).
-\item hispanic:  dummy variable; itindicates a person of hispanic race (=1).
-\item othrace: dummy variable; itindicates a non-white, non-black, not-hispanic person (=1).
+\item black: dummy variable; it indicates a person of black race (=1).
+\item hispanic:  dummy variable; it indicates a person of hispanic race (=1).
+\item othrace: dummy variable; it indicates a non-white, non-black, not-hispanic person (=1).
 \item dep1: dummy variable; indicates if the number of dependents of each claimant is equal to 1 (=1).
 \item dep2: dummy variable; indicates if the number of dependents of each claimant is equal to 2 (=1).
-\item q1-q6: six dummy variables indicating the quarter of experimentduring which each claimant enrolled.
+\item q1-q6: six dummy variables indicating the quarter of experiment during which each claimant enrolled.
 \item recall:  takes the value of 1 if the claimant answered ``yes'' when was asked if he/she had any expectation to be recalled
-\item agelt35: takes the value of 1 if the claimant's age is lessthan 35 and 0 otherwise.
+\item agelt35: takes the value of 1 if the claimant's age is less than 35 and 0 otherwise.
 \item agegt54: takes the value of 1 if the claimant's age is more than 54 and 0 otherwise.
-\item durable: it takes the value of 1 if the occupationof the claimant was in the sector of durable manufacturing and 0 otherwise.
+\item durable: it takes the value of 1 if the occupation of the claimant was in the sector of durable manufacturing and 0 otherwise.
 \item nondurable:  it takes the value of 1 if the occupation of the claimant was in the sector of nondurable manufacturing and 0 otherwise.
-\item lusd:  it takes the value of 1 if the claimant filedin Coatesville, Reading, or Lancaster and 0 otherwise.
+\item lusd:  it takes the value of 1 if the claimant filed in Coatesville, Reading, or Lancaster and 0 otherwise.
 \item These three sites were considered to be located in areas characterized by low unemployment rate and short duration of unemployment.
 \item husd:  it takes the value of 1 if the claimant filed in Lewistown, Pittston, or Scranton and 0 otherwise.
 \item These three sites were considered to be located in areas characterized by high unemployment rate and short duration of unemployment.

@@ -3,6 +3,7 @@ context("Unit tests for DoubleMLData")
 test_cases = expand.grid(return_type = c("data.frame", "data.table", 
                                          "matrix", "DoubleMLData"),
                          polynomial_features = c(TRUE, FALSE),
+                         instrument = c(TRUE, FALSE),
                          i_setting = 1:(length(data_iivm)))
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
@@ -76,7 +77,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   
   # Test fetch_401k
   if (return_type != "matrix") {                                  
-    df = fetch_401k(return_type = return_type, polynomial_features = polynomial_features)                              
+    df = fetch_401k(return_type = return_type, polynomial_features = polynomial_features, 
+                    instrument = instrument)                              
     expect_is(df, paste0(return_type))
   } 
   
