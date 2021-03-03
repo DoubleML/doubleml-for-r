@@ -447,8 +447,7 @@ private = list(
     resampling_m_on_train = lapply(task_m, function(x) rsmp("insample")$instantiate(x))
     r_m_on_train = lapply(1:length(data_tune_list), function(x) 
                                         resample(task_m[[x]], ml_m[[x]], resampling_m_on_train[[x]], store_models = TRUE))
-    m_hat_on_train = lapply(r_m_on_train, function(x) extract_prediction(x, private$learner_class$ml_m, 
-                                                                          return_train_preds = TRUE)[[1]])
+    m_hat_on_train = extract_prediction(r_m_on_train, private$learner_class$ml_m, self$data$n_obs, return_train_preds = TRUE)
     data_aux_list = lapply(1:length(data_tune_list), function(x) 
                                               data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]]))
     
