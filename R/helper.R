@@ -25,7 +25,9 @@ dml_cv_predict = function(learner, X_cols, y_col,
                                                                smpls$test_ids)
       resampling_pred = resample(task_pred, ml_learner, resampling_smpls, store_models = TRUE)
       preds = extract_prediction(resampling_pred, learner_class, n_obs)
-      if (return_train_preds) train_preds = extract_prediction(resampling_pred, learner_class, n_obs, return_train_preds = TRUE)
+      if (return_train_preds) {
+        train_preds = extract_prediction(resampling_pred, learner_class, n_obs, return_train_preds = TRUE)
+      }
     } else {
       # learners initiated according to fold-specific learners, proceed foldwise
       ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x, return_train_preds))
@@ -37,7 +39,9 @@ dml_cv_predict = function(learner, X_cols, y_col,
                                                                            resampling_smpls[[x]], store_models = TRUE))
       
       preds = extract_prediction(resampling_pred, learner_class, n_obs)
-      if (return_train_preds) train_preds = extract_prediction(resampling_pred, learner_class, n_obs, return_train_preds = TRUE)
+      if (return_train_preds) {
+        train_preds = extract_prediction(resampling_pred, learner_class, n_obs, return_train_preds = TRUE)
+      }
     }
   } else {
     n_obs = nrow(data_model[[1]])
@@ -109,7 +113,6 @@ extract_prediction = function(obj_resampling, learner_class, n_obs, return_train
   } else if (learner_class == "LearnerClassif") {
     resp_name = "prob.1"
   }
-  
   
   if (return_train_preds) {
     if (checkmate::testR6(obj_resampling, classes='ResampleResult')) {
