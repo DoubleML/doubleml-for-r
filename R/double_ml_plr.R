@@ -138,13 +138,17 @@ private = list(
   ml_nuisance_and_score_elements = function(smpls, ...) {
     g_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                            self$data$data_model, nuisance_id = "nuis_g",  
-                           smpls, self$get_params("ml_g"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_g, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_g"),
+                           return_train_preds = FALSE, 
+                           learner_class = private$learner_class$ml_g,
+                           fold_specific_params = private$fold_specific_params)
     
     m_hat = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), self$data$treat_col,
                            self$data$data_model, nuisance_id = "nuis_m", 
-                           smpls, self$get_params("ml_m"), return_train_preds = FALSE, 
-                           learner_class = private$learner_class$ml_m, private$fold_specific_params)
+                           smpls = smpls, est_params = self$get_params("ml_m"),
+                           return_train_preds = FALSE,
+                           learner_class = private$learner_class$ml_m,
+                           fold_specific_params = private$fold_specific_params)
     
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
