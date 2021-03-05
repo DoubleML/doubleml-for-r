@@ -1,4 +1,4 @@
-context("Unit tests for PLR")
+context("Unit tests for PLR with a classifier for ml_m")
 
 library("mlr3learners")
 
@@ -6,14 +6,14 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases = expand.grid(learner = c('regr.cv_glmnet', 'classif.cv_glmnet'),
+  test_cases = expand.grid(g_learner = c('regr.cv_glmnet', 'classif.cv_glmnet'),
                            m_learner = c('classif.cv_glmnet'),
                            dml_procedure = c('dml2'),
                            score = c('partialling out'),
                            i_setting = 1:(length(data_plr)),
                            stringsAsFactors = FALSE)
 } else {
-  test_cases = expand.grid(learner = c('regr.cv_glmnet'),
+  test_cases = expand.grid(g_learner = c('regr.cv_glmnet'),
                            m_learner = c('classif.cv_glmnet'),
                            dml_procedure = c('dml1', 'dml2'),
                            score = c('IV-type', 'partialling out'),
@@ -22,13 +22,13 @@ if (on_cran) {
 }
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-patrick::with_parameters_test_that("Unit tests for PLR:",
+patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:",
                                    .cases = test_cases, {
   n_rep_boot = 498
   n_folds = 3
                                      
-  if (learner == "regr.cv_glmnet") {  
-    learner_pars <- get_default_mlmethod_plr(learner)
+  if (g_learner == "regr.cv_glmnet") {  
+    learner_pars <- get_default_mlmethod_plr(g_learner)
     learner_pars_for_DML <- learner_pars
     learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 1)
     learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
@@ -40,7 +40,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                 d_cols = "d", x_cols = Xnames)
                     
     double_mlplr_obj = DoubleMLPLR$new(data = data_ml, 
-                                       ml_g = lrn(learner), 
+                                       ml_g = lrn(g_learner), 
                                        ml_m = lrn(m_learner), 
                                        dml_procedure = dml_procedure, 
                                        n_folds = n_folds,
@@ -58,10 +58,10 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     expect_is( pval_obj, "numeric")
     expect_is(ci_obj, "matrix")
     
-  } else if (learner == "classif.cv_glmnet") 
+  } else if (g_learner == "classif.cv_glmnet") 
     
     expect_error(DoubleMLPLR$new(data = data_ml, 
-                                       ml_g = lrn(learner), 
+                                       ml_g = lrn(g_learner), 
                                        ml_m = lrn(m_learner), 
                                        dml_procedure = dml_procedure, 
                                        n_folds = n_folds,
