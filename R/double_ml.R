@@ -449,7 +449,6 @@ DoubleML = R6Class("DoubleML", public = list(
     if (all(is.na(self$coef))) {
       print("fit() not yet called.")
     } else {
-      ans = NULL
       k = length(self$coef)
       table = matrix(NA, ncol = 4, nrow = k)
       rownames(table) = names(self$coef)
@@ -458,8 +457,6 @@ DoubleML = R6Class("DoubleML", public = list(
       table[, 2] = self$se
       table[, 3] = self$t_stat
       table[, 4] = self$pval
-  #    ans$coefficients = table
-  #    ans$object = object
       private$summary_table = table
       
       if (length(k)) {
@@ -520,7 +517,7 @@ DoubleML = R6Class("DoubleML", public = list(
       pct = format.perc(ab, 3)
       ci = array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
       
-      if (is.null(self$boot_coef)){
+      if (all(is.na(self$boot_coef))){
         stop("Multiplier bootstrap has not yet been performed. First call bootstrap() and then try confint() again.")
       }
       
@@ -882,16 +879,6 @@ private = list(
   set__all_coef = function(value) self$all_coef[private$i_treat, private$i_rep] = value,
   get__all_se = function() self$all_se[private$i_treat, private$i_rep],
   set__all_se = function(value) self$all_se[private$i_treat, private$i_rep] = value,
-  get__boot_coef = function() {
-    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
-    ind_end = private$i_rep * private$n_rep_boot
-    self$boot_coef[private$i_treat, ind_start:ind_end]
-    },
-  get__boot_t_stat = function() {
-    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
-    ind_end = private$i_rep * private$n_rep_boot
-    self$boot_t_stat[private$i_treat, ind_start:ind_end]
-    },
   set__boot_coef = function(value) {
     ind_start = (private$i_rep-1) * private$n_rep_boot + 1
     ind_end = private$i_rep * private$n_rep_boot
