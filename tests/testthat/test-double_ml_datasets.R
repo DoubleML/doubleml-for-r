@@ -1,4 +1,4 @@
-context("Unit tests for DoubleMLData")
+context("Unit tests for datasets functionalities")
 
 test_cases = expand.grid(return_type = c("data.frame", "data.table", 
                                          "matrix", "DoubleMLData"),
@@ -8,7 +8,8 @@ test_cases = expand.grid(return_type = c("data.frame", "data.table",
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
+testthat::skip_on_cran('skip unit tests for the datasets functionalities on cran')
+patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
                                    .cases = test_cases, {
                                      
   n_obs = 100
