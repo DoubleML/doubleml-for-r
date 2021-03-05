@@ -758,10 +758,10 @@ private = list(
     } 
     
     if ( (Regr & !Classif & !checkmate::test_class(learner, "LearnerRegr"))) {
-      stop(paste0("Invalid learner provided for ", learner_name, ": must be either of class 'LearnerRegr'"))
+      stop(paste0("Invalid learner provided for ", learner_name, ": must be of class 'LearnerRegr'"))
     }
     if ( (Classif & !Regr & !checkmate::test_class(learner, "LearnerClassif"))) {
-      stop(paste0("Invalid learner provided for ", learner_name, ": must be either of class 'LearnerClassif'"))
+      stop(paste0("Invalid learner provided for ", learner_name, ": must be of class 'LearnerClassif'"))
     }
     invisible(learner)
   }, 
