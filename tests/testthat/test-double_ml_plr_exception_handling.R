@@ -28,7 +28,7 @@ if (on_cran) {
 }
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-patrick::with_parameters_test_that("Unit tests for PLR:",
+patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
                                    .cases = test_cases, {
   
   learner_pars <- get_default_mlmethod_plr(learner)
