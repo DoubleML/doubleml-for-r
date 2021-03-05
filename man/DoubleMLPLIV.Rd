@@ -33,6 +33,36 @@ dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
 dml_pliv_obj$fit()
 dml_pliv_obj$summary()
 }
+
+\dontrun{
+library(DoubleML)
+library(mlr3)
+library(mlr3learners)
+library(mlr3tuning)
+library(data.table)
+set.seed(2)
+ml_g = lrn("regr.rpart")
+ml_m = ml_g$clone()
+ml_r = ml_g$clone()
+obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
+dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
+param_grid = list("ml_g" = paradox::ParamSet$new(
+                            list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                 paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+                 "ml_m" = paradox::ParamSet$new(list(
+                                 paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                 paradox::ParamInt$new("minsplit", lower = 1, upper = 2))), 
+                 "ml_r" = paradox::ParamSet$new(list(
+                                 paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+                                 paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+
+# minimum requirements for tune_settings
+tune_settings = list(terminator = mlr3tuning::trm("evals", n_evals = 5), 
+                      algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+dml_pliv_obj$tune(param_set = param_grid, tune_settings = tune_settings)
+dml_pliv_obj$fit()
+dml_pliv_obj$summary()
+}
 }
 \seealso{
 Other DoubleML: 
@@ -111,17 +141,17 @@ Creates a new instance of this R6 class.
 The \code{DoubleMLData} object providing the data and specifying the variables of the causal model.}
 
 \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}.  \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.}
 
 \item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}.  \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.}
 
 \item{\code{ml_r}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn(regr.cv_glmnet, s = "lambda.min")}.
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}.   \cr
 \code{ml_r} refers to the nuisance function \eqn{r_0(X) = E[D|X]}.}
 

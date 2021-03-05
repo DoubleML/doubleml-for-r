@@ -341,58 +341,43 @@ DoubleML = R6Class("DoubleML", public = list(
   #' A named `list` with a parameter grid for each nuisance model/learner (see method `learner_names()`). The parameter grid must be an object of class [ParamSet][paradox::ParamSet].   
   #'
   #' @param tune_settings (named `list()`) \cr
-  #' A named `list()` with argument passed to the hyperparameter-tuning with [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects. `tune_settings` has entries 
-  #' * `rsmp_tune` \cr [Resampling][mlr3::Resampling] or option passed to [rsmpl()][mlr3::mlr_sugar] to initialize a [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`. Default is `"cv"` (cross-validation). 
-  #' * `n_folds_tune` (`integer(1)`) \cr If `rsmp_tune = "cv"`, number of folds used for cross-validation. Default is `5`. 
-  #' * `measure` (`NULL`, named `list()`) \cr `NULL` or named `list()` with options passed to [msr()][mlr3::msr()]. Names of entries are set to names of learners (see method `learner_names()`). If `NULL`, default measures as provided by [default_measures()][mlr3::default_measures()] are used. Default is `NULL`. 
-  #' * `terminator` \cr A [Terminator][bbotk::Terminator] object. Default is `mlr3tuning::trm("evals", n_evals = 20)`.
-  #' * `algorithm` (`character(1)`) \cr The key passed to the respective dictionary to specify the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to [tnr()][mlr3tuning::tnr()]. Default is `grid_search`. 
-  #' * `resolution` (`character(1)`) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to [tnr()][mlr3tuning::tnr()]. Default is `5`. 
+  #' A named `list()` with arguments passed to the hyperparameter-tuning with [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects. `tune_settings` has entries 
+  #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
+  #' A [Terminator][bbotk::Terminator] object. Specification of `terminator` is required to perform tuning. 
+  #' * `algorithm` ([Tuner][mlr3tuning::Tuner] or `character(1)`) \cr 
+  #' A [Tuner][mlr3tuning::Tuner] object (recommended) or key passed to the respective dictionary to specify the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to [tnr()][mlr3tuning::tnr()]. If `algorithm` is not specified by the users, default is set to `"grid_search"`. If set to `"grid_search"`, then additional argument `"resolution"` is required. 
+  #' * `rsmp_tune` ([Resampling][mlr3::Resampling] or `character(1)`)\cr 
+  #' A [Resampling][mlr3::Resampling] object (recommended) or option passed to [rsmp()][mlr3::mlr_sugar] to initialize a [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`. If not specified by the user, default is set to `"cv"` (cross-validation). 
+  #' * `n_folds_tune` (`integer(1)`, optional) \cr 
+  #' If `rsmp_tune = "cv"`, number of folds used for cross-validation. If not specified by the user, default is set to `5`. 
+  #' * `measure` (`NULL`, named `list()`, optional) \cr 
+  #' Named list containing the measures used for parameter tuning. Entries in list must either be [Measure][mlr3::Measure] objects or keys to be passed to passed to [msr()][mlr3::msr()]. The names of the entries must match the learner names (see method `learner_names()`). If set to `NULL`, default measures are used, i.e., `"regr.mse"` for continuous outcome variables and `"classif.ce"` for binary outcomes.
+  #' * `resolution` (`character(1)`) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to [tnr()][mlr3tuning::tnr()].
   #' 
   #' @param tune_on_folds (`logical(1)`) \cr
   #' Indicates whether the tuning should be done fold-specific or globally. Default is `FALSE`. 
   #' 
-  #' 
   #' @return self
   tune = function(param_set, tune_settings = list(
                                         n_folds_tune = 5,
-                                        rsmp_tune = "cv", 
-                                        measure = list(ml_g = NULL, 
-                                                       ml_m = NULL,
-                                                       ml_r = NULL),
+                                        rsmp_tune = mlr3::rsmp("cv", folds = 5), 
+                                        measure = NULL,
                                         terminator = mlr3tuning::trm("evals", n_evals = 20), 
-                                        algorithm = "grid_search",
+                                        algorithm = mlr3tuning::tnr("grid_search"),
                                         resolution = 5), 
                              tune_on_folds = FALSE) {
     checkmate::assert_list(param_set)
     valid_learner = self$learner_names()
-    if (! (all(names(param_set) %in% valid_learner))) {
-      stop(paste("invalid param_set", paste0(names(param_set), collapse = ", "),
+    if (!checkmate::test_names(names(param_set), subset.of = valid_learner)) {
+      stop(paste("Invalid param_set", paste0(names(param_set), collapse = ", "),
                  "\n param_grids must be a named list with elements named", 
                   paste0(valid_learner, collapse = ", ")))
     }
     for (i_grid in seq_len(length(param_set))){
       checkmate::assert_class(param_set[[i_grid]], "ParamSet")
     }
-    
-    required_settings = c("n_folds_tune", "rsmp_tune", "measure", "terminator", "algorithm", "resolution")
-    if (! all(required_settings %in% names(tune_settings))) {
-      missing_setting = required_settings[which(! (required_settings %in% names(tune_settings)))]
-      stop(paste("Invalid tune_settings\n", 
-                  paste0(missing_setting, collapse = ", "), "is missing.\n",
-                  "Tune settngs require specification of", toString(required_settings), "."))
-    }
-    
-    checkmate::assert_count(tune_settings$n_folds_tune, positive = TRUE)
-    checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
-                      checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
-    checkmate::assert_list(tune_settings$measure)
-    checkmate::assert(checkmate::check_character(tune_settings$terminator),
-                      checkmate::check_class(tune_settings$terminator, "Terminator"))
-    checkmate::assert_character(tune_settings$algorithm, len = 1)
-    checkmate::assert_count(tune_settings$resolution, positive = TRUE)
-  
     checkmate::assert_logical(tune_on_folds, len = 1)
+    tune_settings = private$assert_tune_settings(tune_settings)
     
     if (!self$apply_cross_fitting){
       stop("Parameter tuning for no-cross-fitting case not implemented.")
@@ -418,8 +403,6 @@ DoubleML = R6Class("DoubleML", public = list(
         if (tune_on_folds) {
           for (i_rep in 1:self$n_rep) {
             private$i_rep = i_rep
-            # TODO: advanced usage passing original mlr3training objects like terminator, smpl, 
-            #      e.g., in seperate function (tune_mlr3)...
             param_tuning = private$ml_nuisance_tuning(private$get__smpls(),
                                                       param_set, tune_settings,  tune_on_folds)
             self$tuning_res[[i_treat]][[i_rep]] = param_tuning
@@ -466,7 +449,6 @@ DoubleML = R6Class("DoubleML", public = list(
     if (all(is.na(self$coef))) {
       print("fit() not yet called.")
     } else {
-      ans = NULL
       k = length(self$coef)
       table = matrix(NA, ncol = 4, nrow = k)
       rownames(table) = names(self$coef)
@@ -475,8 +457,6 @@ DoubleML = R6Class("DoubleML", public = list(
       table[, 2] = self$se
       table[, 3] = self$t_stat
       table[, 4] = self$pval
-  #    ans$coefficients = table
-  #    ans$object = object
       private$summary_table = table
       
       if (length(k)) {
@@ -537,7 +517,7 @@ DoubleML = R6Class("DoubleML", public = list(
       pct = format.perc(ab, 3)
       ci = array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
       
-      if (is.null(self$boot_coef)){
+      if (all(is.na(self$boot_coef))){
         stop("Multiplier bootstrap has not yet been performed. First call bootstrap() and then try confint() again.")
       }
       
@@ -569,7 +549,7 @@ DoubleML = R6Class("DoubleML", public = list(
   #' Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific. 
   #' 
   #' @param learner (`character(1)`) \cr
-  #' The nuisance model/learner (see method `params_names`)
+  #' The nuisance model/learner (see method `params_names`).
   #' 
   #' @param treat_var (`character(1)`) \cr
   #' The treatment varaible (hyperparameters can be set treatment-variable specific).
@@ -694,6 +674,7 @@ private = list(
   i_treat = NA,
   fold_specific_params = NULL,
   summary_table = NULL,
+  learner_class = list(),
   initialize_double_ml = function(data, 
                         n_folds,
                         n_rep,
@@ -760,6 +741,107 @@ private = list(
      # initialize instance attributes which are later used for iterating
     invisible(self)
   },
+  assert_learner = function(learner, learner_name, Regr, Classif) {
+     checkmate::assert(checkmate::check_character(learner, max.len = 1),
+                       checkmate::check_class(learner, "Learner"))
+    
+    if (is.character(learner)) {
+      # warning("Learner provision by character() will be deprecated in the future.")
+      learner = lrn(learner)
+    }
+    
+    if (Regr & checkmate::test_class(learner, "LearnerRegr")) {
+      private$learner_class[learner_name] = "LearnerRegr"
+    }
+    if (Classif & checkmate::test_class(learner, "LearnerClassif"))  {
+      private$learner_class[learner_name] = "LearnerClassif"
+    } 
+    
+    if ( (Regr & !Classif & !checkmate::test_class(learner, "LearnerRegr"))) {
+      stop(paste0("Invalid learner provided for ", learner_name, ": must be of class 'LearnerRegr'"))
+    }
+    if ( (Classif & !Regr & !checkmate::test_class(learner, "LearnerClassif"))) {
+      stop(paste0("Invalid learner provided for ", learner_name, ": must be of class 'LearnerClassif'"))
+    }
+    invisible(learner)
+  }, 
+  assert_tune_settings = function(tune_settings) {
+    valid_learner = self$learner_names()
+    
+    if (!checkmate::test_names(names(tune_settings), must.include = "terminator")) {
+      stop(paste("Invalid tune_settings\n", 
+                  "object 'terminator' is missing."))
+    }
+    checkmate::assert_class(tune_settings$terminator, "Terminator")
+    
+    if (checkmate::test_names(names(tune_settings), must.include = "n_folds_tune")) {
+      checkmate::assert_integerish(tune_settings$n_folds_tune, len = 1, lower = 2)
+    } else {
+      tune_settings$n_folds_tune = 5
+    }
+    
+    if (checkmate::test_names(names(tune_settings), must.include = "rsmp_tune")) {
+      checkmate::assert(checkmate::check_character(tune_settings$rsmp_tune),
+                        checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
+      if (!checkmate::test_class(tune_settings$rsmp_tune, "Resampling")) {
+        if (tune_settings$rsmp_tune == "cv") {
+          tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+        } else {
+          tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune)
+        }
+      }
+    } else {
+      tune_settings$rsmp_tune = rsmp("cv", folds = tune_settings$n_folds_tune)
+    }
+    
+    if (checkmate::test_names(names(tune_settings), must.include = "measure")) {
+      checkmate::assert_list(tune_settings$measure)
+      if (!checkmate::test_names(names(tune_settings$measure), subset.of = valid_learner)) {
+        stop(paste("Invalid name of measure", paste0(names(tune_settings$measure), collapse = ", "),
+                 "\n measure must be a named list with elements named", 
+                  paste0(valid_learner, collapse = ", ")))
+      }
+      for (i_msr in seq_len(length(tune_settings$measure))) {
+        checkmate::assert(checkmate::check_character(tune_settings$measure[[i_msr]]),
+                          checkmate::check_class(tune_settings$measure[[i_msr]], "Measure"))
+      }
+    } else {
+      tune_settings$measure = rep(list(NA), length(valid_learner))
+      names(tune_settings$measure) = valid_learner
+    }
+    
+    for (i_msr in seq_len(length(tune_settings$measure))) {
+      if (!checkmate::test_class(tune_settings$measure[[i_msr]], "Measure")) {
+        this_learner = names(tune_settings$measure)[i_msr]
+        tune_settings$measure[[this_learner]] = set_default_measure(tune_settings$measure[[this_learner]],
+                                                                    private$learner_class[[this_learner]])
+      }
+    }
+      
+    if (!checkmate::test_names(names(tune_settings), must.include = "algorithm")) {
+      tune_settings$algorithm = "grid_search"
+    } else {
+      checkmate::assert(checkmate::check_character(tune_settings$algorithm, len = 1),
+                        checkmate::check_class(tune_settings$algorithm, "Tuner"))
+    }
+    
+    if (checkmate::test_character(tune_settings$algorithm)) {
+      if (tune_settings$algorithm == "grid_search") {
+        if (is.null(tune_settings$resolution)) {
+          stop(paste("Invalid tune_settings\n", 
+                      "object 'resolution' is missing."))
+        } else {
+          checkmate::assert_count(tune_settings$resolution, positive = TRUE)
+        }
+        tune_settings$tuner = tnr(tune_settings$algorithm, 
+                                  resolution = tune_settings$resolution)
+      }
+    } else {
+      tune_settings$tuner = tune_settings$algorithm
+    }
+  
+    return(tune_settings)
+  },
   initialize_arrays = function() {
     
     self$psi = array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat))
@@ -779,7 +861,6 @@ private = list(
         self$all_dml1_coef = array(NA, dim=c(self$data$n_treat, self$n_rep, 1))
       }
     }
-    
   },
   initialize_boot_arrays = function(n_rep_boot) {
     private$n_rep_boot = n_rep_boot
@@ -801,16 +882,6 @@ private = list(
   set__all_coef = function(value) self$all_coef[private$i_treat, private$i_rep] = value,
   get__all_se = function() self$all_se[private$i_treat, private$i_rep],
   set__all_se = function(value) self$all_se[private$i_treat, private$i_rep] = value,
-  get__boot_coef = function() {
-    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
-    ind_end = private$i_rep * private$n_rep_boot
-    self$boot_coef[private$i_treat, ind_start:ind_end]
-    },
-  get__boot_t_stat = function() {
-    ind_start = (private$i_rep-1) * private$n_rep_boot + 1
-    ind_end = private$i_rep * private$n_rep_boot
-    self$boot_t_stat[private$i_treat, ind_start:ind_end]
-    },
   set__boot_coef = function(value) {
     ind_start = (private$i_rep-1) * private$n_rep_boot + 1
     ind_end = private$i_rep * private$n_rep_boot

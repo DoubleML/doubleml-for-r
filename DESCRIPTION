@@ -33,7 +33,8 @@ Imports:
     mvtnorm,
     utils,
     clusterGeneration,
-    readstata13
+    readstata13,
+    mlr3learners (>= 0.3.0)
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
@@ -42,7 +43,6 @@ Suggests:
     testthat,
     covr,
     patrick,
-    mlr3learners (>= 0.3.0),
     paradox (>= 0.4.0),
     dplyr,
     glmnet,

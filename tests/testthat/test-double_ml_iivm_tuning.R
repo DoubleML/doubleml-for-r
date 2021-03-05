@@ -6,14 +6,12 @@ logger = lgr::get_logger("bbotk")
 logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-tune_settings = list(n_folds_tune = 3,
-                      rsmp_tune = "cv", 
-                      measure = list("ml_m" = "classif.ce",
-                                     "ml_g" = "regr.mse", 
-                                     "ml_m" = "classif.ce"),
-                      terminator = mlr3tuning::trm("evals", n_evals = 5), 
-                      algorithm = "grid_search",
-                      resolution = 5)
+tune_settings = list(rsmp_tune = rsmp("cv", folds = 3), 
+                    measure = list("ml_m" = "classif.ce",
+                                   "ml_g" = "regr.mse", 
+                                   "ml_r" = "classif.ce"),
+                    terminator = mlr3tuning::trm("evals", n_evals = 5), 
+                    algorithm = tnr("random_search"))
 
 learner = "rpart"
 

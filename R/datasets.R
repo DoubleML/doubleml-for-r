@@ -1,18 +1,20 @@
 #' @title Data set on financial wealth and 401(k) plan participation.
 #' 
 #' @description 
-#' Data set on financial wealth and 401(k) plan participation. An internet connection is required to sucessfully download the data set.
+#' Preprocessed data set on financial wealth and 401(k) plan participation. The raw data files are preprocessed to reproduce the examples in Chernozhukov et al. (2020). An internet connection is required to sucessfully download the data set.
+#' 
 #' 
 #' @details 
 #' Variable description, based on the supplementary material of Chernozhukov et al. (2020):
 #' 
 #' * net_tfa: net total financial assets
 #' * e401: = 1 if employer offers 401(k)
-#' * age
+#' * p401: = 1 if individual participates in a 401(k) plan
+#' * age: age
 #' * inc: income
 #' * fsize: family size
 #' * educ: years of education
-#' * db: = 1 if indivuduals has defined benefit pension
+#' * db: = 1 if individual has defined benefit pension
 #' * marr: = 1 if married
 #' * twoearn: = 1 if two-earner household
 #' * pira: = 1 if individual participates in IRA plan
@@ -24,36 +26,62 @@
 #' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 #' 
 #' @param return_type (`character(1)`) \cr
-#' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. Default is `"DoubleMLData"`.
+#' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. Default is `"DoubleMLData"`.  
 #' 
 #' @param polynomial_features (`logical(1)`) \cr
 #' If `TRUE` polynomial freatures are added (see replication file of Chernozhukov et al. (2018)).
+#' 
+#' @param instrument (`logical(1)`) \cr
+#' If `TRUE`, the returned data object contains the variables `e401` and `p401`. If `return_type = "DoubleMLData"`, the variable `e401` is used as an instrument for the endogenous treatment variable `p401`. If `FALSE`, `p401` is removed from the data set.  
 #' 
 #' @return A data object according to the choice of `return_type`.
 #' 
 #' 
 #' @export
-fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE) {
+fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE, 
+                      instrument = FALSE) {
   checkmate::check_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
+  checkmate::check_logical(polynomial_features)
+  checkmate::check_logical(instrument)
   url = "https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta"
   data = readstata13::read.dta13(url)
   
+  x_cols = NULL
+  z_cols = NULL
+  d_cols = NULL
+  y_col = "net_tfa"
+  
   if (polynomial_features) {
-    stop("Not implemented yet.")
+    formula_x = stats::formula(" ~ -1 + (poly(age, 6, raw=TRUE) + poly(inc, 8, raw=TRUE) + 
+                                    poly(educ, 4, raw=TRUE) + poly(fsize, 2, raw=TRUE) +
+                                    marr + twoearn + db + pira + hown)^2")
   } else {
-    if (return_type == "data.frame") {
-      return(data) 
-    } else if (return_type == "data.table") {
-       data = as.data.table(data)
-       return(data)
-    } else if (return_type == "DoubleMLData") {
-       dt = as.data.table(data)
-       y_col = "net_tfa"
-       d_cols = "e401"
-       x_cols = c("age", "inc", "educ", "fsize", "marr", "twoearn", "db", "pira", "hown")
-       data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
-       return(data)
-    }
+    formula_x = stats::formula(" ~ -1 + age + inc + educ + fsize + marr + twoearn + db + pira + hown")
+  }
+  
+  if (instrument) {
+    # https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K-LATE.R#L60-L71
+    data = data.frame("net_tfa" = data$net_tfa, 
+                      stats::model.matrix(formula_x, data), 
+                      "p401" = data$p401, "e401" = data$e401)
+    d_cols = "p401"
+    z_cols = "e401"
+  } else {
+    # see https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K.R#L67  
+    data = data.frame("net_tfa" = data$net_tfa, stats::model.matrix(formula_x, data), 
+                      "e401" = data$e401)
+    d_cols = "e401"
+  }
+  if (return_type == "data.frame") {
+      return(data)
+  } else if (return_type == "data.table") {
+    data = as.data.table(data)
+    return(data)
+  } else if (return_type == "DoubleMLData") {
+    dt = as.data.table(data)
+    data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols, 
+                              z_cols = z_cols)
+    return(data)
   }
 }
 
@@ -61,28 +89,28 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE)
 #' @title Data set on the Pennsylvania Reemployment Bonus experiment.
 #' 
 #' @description 
-#' Data set on the Pennsylvania Reemploymnent Bonus experiment. An internet connection is required to sucessfully download the data set.
+#' Preprocessed data set on the Pennsylvania Reemploymnent Bonus experiment. The raw data files are preprocessed to reproduce the examples in Chernozhukov et al. (2020). An internet connection is required to sucessfully download the data set.
 #' 
 #' @details 
 #' Variable description, based on the supplementary material of Chernozhukov et al. (2020):
 #' 
 #' * abdt:  chronological time of enrollment of each claimant in the Pennsylvania reemployment bonus experiment.
 #' * tg:  indicates the treatment group (bonus amount - qualification period) of each claimant. 
-#' * inuidur1:  a measure of length (in weeks) of the first spell ofunemployment
+#' * inuidur1:  a measure of length (in weeks) of the first spell of unemployment
 #' * inuidur2:  a second measure for the length (in weeks) of 
 #' * female:  dummy variable; it indicates if the claimant's sex is female (=1) or male (=0).
-#' * black: dummy variable; itindicates a person of black race (=1).
-#' * hispanic:  dummy variable; itindicates a person of hispanic race (=1).
-#' * othrace: dummy variable; itindicates a non-white, non-black, not-hispanic person (=1).
+#' * black: dummy variable; it indicates a person of black race (=1).
+#' * hispanic:  dummy variable; it indicates a person of hispanic race (=1).
+#' * othrace: dummy variable; it indicates a non-white, non-black, not-hispanic person (=1).
 #' * dep1: dummy variable; indicates if the number of dependents of each claimant is equal to 1 (=1). 
 #' * dep2: dummy variable; indicates if the number of dependents of each claimant is equal to 2 (=1).
-#' * q1-q6: six dummy variables indicating the quarter of experimentduring which each claimant enrolled.
+#' * q1-q6: six dummy variables indicating the quarter of experiment during which each claimant enrolled.
 #' * recall:  takes the value of 1 if the claimant answered ``yes'' when was asked if he/she had any expectation to be recalled
-#' * agelt35: takes the value of 1 if the claimant's age is lessthan 35 and 0 otherwise.
+#' * agelt35: takes the value of 1 if the claimant's age is less than 35 and 0 otherwise.
 #' * agegt54: takes the value of 1 if the claimant's age is more than 54 and 0 otherwise.
-#' * durable: it takes the value of 1 if the occupationof the claimant was in the sector of durable manufacturing and 0 otherwise.
+#' * durable: it takes the value of 1 if the occupation of the claimant was in the sector of durable manufacturing and 0 otherwise.
 #' * nondurable:  it takes the value of 1 if the occupation of the claimant was in the sector of nondurable manufacturing and 0 otherwise.
-#' * lusd:  it takes the value of 1 if the claimant filedin Coatesville, Reading, or Lancaster and 0 otherwise.
+#' * lusd:  it takes the value of 1 if the claimant filed in Coatesville, Reading, or Lancaster and 0 otherwise.
 #' * These three sites were considered to be located in areas characterized by low unemployment rate and short duration of unemployment.
 #' * husd:  it takes the value of 1 if the claimant filed in Lewistown, Pittston, or Scranton and 0 otherwise.
 #' * These three sites were considered to be located in areas characterized by high unemployment rate and short duration of unemployment.
@@ -134,23 +162,31 @@ fetch_bonus = function(return_type = "DoubleMLData", polynomial_features = FALSE
   data = data[, col_indx]
   # data$dep = as.factor(data$dep)
   
+  y_col = "inuidur1"
+  d_cols = "tg"
+  x_cols = NULL
+  
   if (polynomial_features) {
-    stop("Not implemented yet.")
+    #https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/Bonus.R#L84
+    formula_x = stats::formula(" ~ -1 + (female + black + othrace + dep1 +
+                                   dep2 + q2 + q3 + q4 + q5 + q6 + agelt35 + agegt54 + 
+                                   durable + lusd + husd)^2")
   } else {
-    if (return_type == "data.frame") {
-      return(data) 
-    } else if (return_type == "data.table") {
-       data = as.data.table(data)
-       return(data)
-    } else if (return_type == "DoubleMLData") {
-       dt = as.data.table(data)
-       y_col = "inuidur1"
-       d_cols = "tg"
-       x_cols = c("female", "black", "othrace", "dep1", "dep2", "q2", "q3", "q4", "q5", "q6", 
-                  "agelt35", "agegt54", "durable", "lusd", "husd")
-       data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
-       return(data)
-    }
+    formula_x = stats::formula(" ~ -1 + female + black + othrace + dep1 +
+                                   dep2 + q2 + q3 + q4 + q5 + q6 + agelt35 + agegt54 + 
+                                   durable + lusd + husd")
+  }
+  data = data.frame("inuidur1" = data$inuidur1, stats::model.matrix(formula_x, data), 
+                      "tg" = data$tg)
+  if (return_type == "data.frame") {
+    return(data) 
+  } else if (return_type == "data.table") {
+     data = as.data.table(data)
+     return(data)
+  } else if (return_type == "DoubleMLData") {
+     dt = as.data.table(data)
+     data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
+     return(data)
   }
 }
 
@@ -180,7 +216,9 @@ g = function(x){
 #' 
 #' \eqn{m_0(x_i) = a_0 x_{i,1} + a_1 \frac{\exp(x_{i,3})}{1+\exp(x_{i,3})},}
 #' 
-#' \eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3}.}
+#' \eqn{g_0(x_i) = b_0 \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + b_1 x_{i,3},}
+#' 
+#' with \eqn{a_0=1}, \eqn{a_1=0.25}, \eqn{s_1=1}, \eqn{b_0=1}, \eqn{b_1=0.25}, \eqn{s_2=1}.
 #' 
 #' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68. \doi{10.1111/ectj.12097}.
 #' 
@@ -195,7 +233,8 @@ g = function(x){
 #' 
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object. If `"data.frame"` returns a `data.frame()`. If `"data.table"` returns a `data.table()`. If `"matrix"` a named `list()` with entries `X`, `y` and `d` is returned. Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
-#' #' @return A data object according to the choice of `return_type`.
+#' 
+#' @return A data object according to the choice of `return_type`.
 #' 
 #' @export
 make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
@@ -205,11 +244,9 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
   a_0 = 1
   a_1 = 0.25
   s_1 = 1
-  
   b_0 = 1
   b_1 = 0.25
   s_2 = 1
-  
   x = mvtnorm::rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
   
   d = as.matrix(a_0*x[,1] + a_1*(exp(x[,3])/(1+exp(x[,3]))) + s_1*stats::rnorm(n_obs))
@@ -523,10 +560,15 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
   x = mvtnorm::rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
 
   beta = 1/(1:dim_x)^2
-  z = sample(c(0,1), size = n_obs, prob = c(0.5, 0.5), replace = TRUE)
-  d = 1*(alpha_x*z + v > 0)
+  z = matrix(sample(c(0,1), size = n_obs, prob = c(0.5, 0.5), replace = TRUE))
+  d = matrix(1*(alpha_x*z + v > 0))
   
   y = d*theta + x %*% beta + u
+  
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  colnames(z) = "z"
   
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d, "z" = z))

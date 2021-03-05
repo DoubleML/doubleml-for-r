@@ -6,6 +6,8 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 learner = c('regr.rpart')
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
+learner_list_mlr3 = list("mlmethod_m" = lrn(learner), "mlmethod_g" = lrn(learner))
+
 
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
@@ -64,8 +66,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   set.seed(i_setting)
   double_mlplr_obj_once = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_g = learner_list$mlmethod_g,
-                                     ml_m = learner_list$mlmethod_m,
+                                     ml_g = learner_list_mlr3$mlmethod_g,
+                                     ml_m = learner_list_mlr3$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
                                      n_rep = n_rep)
@@ -87,8 +89,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
     set.seed(i_setting)
     double_mlplr_obj_nocf = DoubleMLPLR$new(data_ml, 
                                        n_folds = n_folds,
-                                       ml_g = learner_list$mlmethod_g,
-                                       ml_m = learner_list$mlmethod_m,
+                                       ml_g = learner_list_mlr3$mlmethod_g,
+                                       ml_m = learner_list_mlr3$mlmethod_m,
                                        dml_procedure = dml_procedure, 
                                        score = score,
                                        n_rep = n_rep,
@@ -116,8 +118,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   # Instantiate with parameters
   double_mlplr_obj_exact = DoubleMLPLR$new(data_ml,
                                      n_folds = n_folds,
-                                     ml_g = learner_list$mlmethod_g,
-                                     ml_m = learner_list$mlmethod_m,
+                                     ml_g = learner_list_mlr3$mlmethod_g,
+                                     ml_m = learner_list_mlr3$mlmethod_m,
                                      dml_procedure = dml_procedure,
                                      score = score,
                                      n_rep = n_rep)
@@ -144,8 +146,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
   set.seed(i_setting)
   double_mlplr_obj_default = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
-                                     ml_g = learner_list$mlmethod_g,
-                                     ml_m = learner_list$mlmethod_m,
+                                     ml_g = learner_list_mlr3$mlmethod_g,
+                                     ml_m = learner_list_mlr3$mlmethod_m,
                                      dml_procedure = dml_procedure, 
                                      score = score,
                                      n_rep = n_rep)

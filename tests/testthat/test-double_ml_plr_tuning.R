@@ -14,6 +14,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(learner = "regr.rpart",
+                           m_learner = "regr.rpart",
                            dml_procedure = c('dml2'),
                            score = c('partialling out'),
                            n_rep = c(1),
@@ -22,6 +23,7 @@ if (on_cran) {
                            stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(learner = "regr.rpart",
+                           m_learner = c("regr.rpart", "classif.rpart"),
                            dml_procedure = c('dml1', 'dml2'),
                            score = c('IV-type', 'partialling out'),
                            n_rep = c(1, 3),
@@ -39,45 +41,34 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   
   n_rep_boot = 498    
   n_folds = 4
-  
-  # TBD: Functional Test Case
-  
-  # set.seed(i_setting)
-  # n_folds = 5
-  # plr_hat <- DML(data_plr_multi[[i_setting]], y = "y", d = c('d1', 'd2', 'd3'),
-  #                model = "plr",
-  #                k = n_folds, S = 1,
-  #                mlmethod = learner_pars_for_DML$mlmethod,
-  #                params = learner_pars_for_DML$params,
-  #                dml_procedure = dml_procedure, score = score,
-  #                se_type = score,
-  #                bootstrap = "normal", nRep = n_rep_boot)
-  # theta <- coef(plr_hat)
-  # se <- plr_hat$se
-  
+
   set.seed(i_setting)
   Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
-  data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
-                              d_cols = c("d1", "d2"), x_cols = Xnames)
-
+  if (m_learner == "regr.rpart") {
+    data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]], y_col = "y", 
+                                d_cols = c("d1", "d2"), x_cols = Xnames)
+    
+  } else if (m_learner == "classif.rpart") {
+    data_plr_binary = data_plr_multi[[i_setting]]
+    data_plr_binary$d1 = as.numeric(data_plr_binary$d1 > 0)
+    data_plr_binary$d2 = as.numeric(data_plr_binary$d2 > 0)
+    data_ml = double_ml_data_from_data_frame(data_plr_binary, y_col = "y", 
+                                d_cols = c("d1", "d2"), x_cols = Xnames)
+  }
   double_mlplr_obj_tuned = DoubleMLPLR$new(data_ml, 
                                      n_folds = n_folds,
                                      ml_g = learner,
-                                     ml_m = learner,
+                                     ml_m = m_learner,
                                      dml_procedure = dml_procedure, 
                                      score = score, 
                                      n_rep = n_rep)
   
   tune_sets = list(n_folds_tune = 2,
                       n_folds_tune = 1, 
-                      rsmp_tune = "cv", 
-                      measure = list("ml_g" = mlr3::default_measures("regr")[[1]],
-                                     "ml_m" = mlr3::default_measures("regr")[[1]]),
+                      rsmp_tune = "cv",
                       terminator = mlr3tuning::trm("evals", n_evals = 2), 
                       algorithm = "grid_search",
-                      tuner = "grid_search",
                       resolution = 5)
-
   
   param_grid = list("ml_g" = paradox::ParamSet$new(list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
                                                         paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),

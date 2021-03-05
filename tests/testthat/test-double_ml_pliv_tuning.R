@@ -120,6 +120,28 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
   # }
   # 
   if (data_ml$n_instr > 1) {
+      set.seed(i_setting)
+      double_mlpliv_obj_tuned_Z = DoubleMLPLIV.partialZ(data_ml, 
+                                     n_folds = n_folds,
+                                     ml_r = learner,
+                                     dml_procedure = dml_procedure, 
+                                     score = score,
+                                     n_rep = n_rep)
+  
+      param_grid_r = list("ml_r" = param_grid[["ml_r"]])
+      tune_settings_r = tune_settings
+      tune_settings_r$measure$ml_g = tune_settings_r$measure$ml_m = NULL
+      double_mlpliv_obj_tuned_Z$tune(param_set = param_grid_r, tune_on_folds = tune_on_folds,
+                                       tune_settings = tune_settings_r)
+      double_mlpliv_obj_tuned_Z$fit()
+    
+      theta_obj_tuned_Z <- double_mlpliv_obj_tuned_Z$coef
+      se_obj_tuned_Z <- double_mlpliv_obj_tuned_Z$se
+      
+      expect_is(theta_obj_tuned_Z, "numeric")
+      expect_is(se_obj_tuned_Z, "numeric")
+    
+      set.seed(i_setting)
       double_mlpliv_obj_tuned_XZ = DoubleMLPLIV.partialXZ(data_ml, 
                                      n_folds = n_folds,
                                      ml_g = learner,
