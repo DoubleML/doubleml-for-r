@@ -8,7 +8,7 @@ test_cases = expand.grid(return_type = c("data.frame", "data.table",
 
 test_cases['test_name'] = apply(test_cases, 1, paste, collapse="_")
 
-testthat::skip_on_cran('skip unit tests for the datasets functionalities on cran')
+testthat::skip_on_cran()
 patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
                                    .cases = test_cases, {
                                      
