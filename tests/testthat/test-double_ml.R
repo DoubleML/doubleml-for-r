@@ -1,11 +1,11 @@
-context("Unit tests for PLR")
+context("Unit tests for exception handling if fit() or bootstrap() was not run yet; uses PLR")
 
 library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases = expand.grid(learner = c('regr.cv_glmnet'),
+  test_cases = expand.grid(learner = c('regr.lm'),
                            dml_procedure = c("dml1"),
                            score = c('IV-type'),
                            set_params = c(FALSE),
