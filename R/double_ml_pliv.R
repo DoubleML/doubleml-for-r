@@ -251,7 +251,7 @@ private = list(
       data_aux = data.table(w_hat, v_hat)
       task_r_tilde = initiate_task("nuis_r_tilde", data_aux, target = "w_hat", 
                                    select_cols = c(self$data$z_cols), "LearnerRegr")
-      ml_r_tilde = lrn("regr.lm")
+      ml_r_tilde = LearnerRegrLM$new() # equivalent to ml_r_tilde = lrn("regr.lm")
       resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
       r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
                            store_models = TRUE)
