@@ -10,21 +10,21 @@
 #' @details 
 #' Interactive IV regression (IIVM) models take the form 
 #' 
-#' \eqn{Y = g_0(D,X) + \zeta},
+#' \eqn{Y = \ell_0(D,X) + \zeta},
 #' 
 #' \eqn{Z = m_0(X) + V}, 
 #' 
 #' with \eqn{E[\zeta|X,Z]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable, \eqn{D \in \{0,1\}} is the binary treatment variable and \eqn{Z \in \{0,1\}} is a binary instrumental variable. Consider the functions \eqn{g_0}, \eqn{r_0} and \eqn{m_0}, where \eqn{g_0} maps the support of \eqn{(Z,X)} to \eqn{R} and \eqn{r_0} and \eqn{m_0}, respectively, map the support of \eqn{(Z,X)} and \eqn{X} to \eqn{(\epsilon, 1-\epsilon)} for some \eqn{\epsilon \in (1, 1/2)}, such that 
 #' 
-#' \eqn{Y = g_0(D,X) + \zeta,}
+#' \eqn{Y = g_0(Z,X) + \nu,}
 #'  
-#' \eqn{D = r_0(D,X) + U,} 
+#' \eqn{D = r_0(Z,X) + U,} 
 #' 
 #' \eqn{Z = m_0(X) + V,} 
 #' 
-#' with \eqn{E[\zeta|Z,X]=0}, \eqn{E[U|Z,X]=0} and \eqn{E[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE), 
+#' with \eqn{E[\nu|Z,X]=0}, \eqn{E[U|Z,X]=0} and \eqn{E[V|X]=0}. The target parameter of interest in this model is the local average treatment effect (LATE), 
 #' 
-#' \eqn{\theta_0 = \frac{E[g_0(1,X)] - E[g_0(0,X)]}{E[r(1,X)] - E[r(0,X)]}.}
+#' \eqn{\theta_0 = \frac{E[g_0(1,X)] - E[g_0(0,X)]}{E[r_0(1,X)] - E[r_0(0,X)]}.}
 #' 
 #' 
 #' @usage NULL
