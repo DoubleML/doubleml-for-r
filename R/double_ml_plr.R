@@ -67,12 +67,12 @@ DoubleMLPLR = R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
   #' The `DoubleMLData` object providing the data and specifying the variables of the causal model. 
   #' 
   #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`,) \cr
-  #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. 
+  #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn("regr.cv_glmnet", s = "lambda.min")`. 
   #' Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
   #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
   #' 
-  #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`,) \cr
-  #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn(regr.cv_glmnet, s = "lambda.min")`. Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
+  #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr], [`LearnerClassif`][mlr3::LearnerClassif], `character(1)`,) \cr
+  #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to pass a learner, possibly with specified parameters, for example `lrn("regr.cv_glmnet", s = "lambda.min")`. For binary treatment variables, an object of the class [`LearnerClassif`][mlr3::LearnerClassif] can be passed, for example `lrn("classif.cv_glmnet", s = "lambda.min")`. Alternatively, a `character(1)` specifying the name of a [mlr3 regression learner][mlr3::LearnerRegr] that is available in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example `"regr.cv_glmnet"`. \cr
   #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[D|X]}.
  
   #' 
@@ -116,7 +116,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR", inherit = DoubleML, public = list(
     private$learner_class = list("ml_g" = NULL,
                                  "ml_m" = NULL)
     ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
-    ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = FALSE)
+    ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
 
     self$learner = list("ml_g" = ml_g, 
                         "ml_m" = ml_m)
