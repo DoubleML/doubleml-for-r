@@ -439,7 +439,10 @@ private = list(
                                private$learner_class$ml_m)
  
     m_params = tuning_result_m$params
-    ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m, private$learner_class$ml_m, params = x))
+    ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m,
+                                                         private$learner_class$ml_m,
+                                                         params = x,
+                                                         return_train_preds=TRUE))
     task_m = lapply(data_tune_list, function(x) initiate_task("nuis_m", x,
                                                               target = self$data$treat_col,
                                                               select_cols = c(self$data$x_cols, self$data$z_cols), 
