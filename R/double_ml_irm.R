@@ -188,8 +188,11 @@ private = list(
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
     
-    psis = private$score_elements(y, d, g0_hat, g1_hat, m_hat, smpls)
-    return(psis)
+    res = private$score_elements(y, d, g0_hat, g1_hat, m_hat, smpls)
+    res$preds = list("ml_g0" = g0_hat,
+                     "ml_g1" = g1_hat,
+                     "ml_m" = m_hat)
+    return(res)
   },
   score_elements = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
     if (self$score == "ATTE") {
