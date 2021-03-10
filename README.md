@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DoubleML - Double Machine Learning in R
+# DoubleML - Double Machine Learning in R <img src="man/figures/logo.png" align="right" width = "120" />
 
 [![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
 [![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/master/graph/badge.svg?token=C5aiyo2MVL)](https://codecov.io/gh/DoubleML/doubleml-for-r)
