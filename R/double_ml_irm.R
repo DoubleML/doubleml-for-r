@@ -176,6 +176,7 @@ private = list(
                             learner_class = private$learner_class$ml_g,
                             fold_specific_params = private$fold_specific_params)
     
+    g1_hat = NULL
     if (self$score == "ATE" | is.function(self$score)) {
       g1_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                              self$data$data_model, nuisance_id = "nuis_g1",  

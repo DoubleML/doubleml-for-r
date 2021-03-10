@@ -881,14 +881,16 @@ private = list(
     self$boot_t_stat = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
   },
   initialize_predictions = function() {
-    self$predictions = sapply(dml_plr_obj$params_names(),
+    self$predictions = sapply(self$params_names(),
                               function(key) array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat)),
                               simplify=F)
   },
   store_predictions = function(preds) {
     for (learner in self$params_names())
     {
-      self$predictions[[learner]][, private$i_rep, private$i_treat] = preds[[learner]]
+      if (!is.null(preds[[learner]])) {
+        self$predictions[[learner]][, private$i_rep, private$i_treat] = preds[[learner]]
+      }
     }
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
