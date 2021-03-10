@@ -151,15 +151,15 @@ DoubleMLData = R6Class("DoubleMLData", public = list(
     self$treat_col = NULL
     self$other_treat_cols = NULL
     self$use_other_treat_as_covariate = use_other_treat_as_covariate
-
-    # by default, we initialize to the first treatment variable
-    self$set_data_model(d_cols[1]) 
     
     self$all_variables = names(self$data)
     self$n_treat = length(self$d_cols)
     self$n_instr = length(self$z_cols)
     self$n_obs = dim(self$data)[1]
 
+    # by default, we initialize to the first treatment variable
+    self$set_data_model(d_cols[1]) 
+    
     invisible(self)
   },
   
@@ -181,10 +181,10 @@ DoubleMLData = R6Class("DoubleMLData", public = list(
     
     self$treat_col = treatment_var
     
-    if (length(self$d_cols) > 1) {
+    if (self$n_treat > 1) {
       self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
     }
-    if (length(self$d_cols) > 1 & self$use_other_treat_as_covariate == FALSE) {
+    if (self$n_treat > 1 & self$use_other_treat_as_covariate == FALSE) {
       message("Controls variables do not include other treatment variables")
       self$other_treat_cols = NULL
     }
@@ -193,14 +193,13 @@ DoubleMLData = R6Class("DoubleMLData", public = list(
     stopifnot(nrow(self$data) == nrow(self$data_model))
 
     # successful assigning treatment variable
-    message(paste0("Set treatment variable d to ", treatment_var, "."))
-
+    if (self$n_treat > 1) {
+      message(paste0("Set treatment variable d to ", treatment_var, "."))
+    }
     invisible(self)
   }
  )
 )
-
-
 
 #' @title Wrapper for Double machine learning data-backend initialization from data.frame. 
 #' 

@@ -153,9 +153,9 @@ initiate_learner = function(learner, learner_class, params, return_train_preds=F
   
   if (!is.null(params)) {
     ml_learner$param_set$values = params
-  } else if (is.null(params) | length(params) == 0) {
-    message("No parameters provided for learners. Default values are used.")
-  }
+  } # else if (is.null(params) | length(params) == 0) {
+    # message("No parameters provided for learners. Default values are used.")
+  # }
   
   if (learner_class == "LearnerClassif") {
     ml_learner$predict_type = 'prob'
