@@ -34,7 +34,7 @@ Double / debiased machine learning framework of [Chernozhukov et al. (2018)](htt
 
 The object-oriented implementation of **DoubleML** that is based on the [R6 package for R](https://r6.r-lib.org/) is very flexible. The model classes `DoubleMLPLR`, `DoubleMLPLIV`, `DoubleMLIRM` and `DoubleIIVM` implement the estimation of the nuisance functions via machine learning methods and the computation of the Neyman orthogonal score function. All other functionalities are implemented in the abstract base class `DoubleML`. In particular functionalities to estimate double machine learning models and to perform statistical inference via the methods `fit`, `bootstrap`, `confint`, `p_adjust` and `tune`. This object-oriented implementation allows a high flexibility for the model specification in terms of ...
 
-* ... the machine learners for the nuisance functions,
+* ... the machine learning methods for estimation of the nuisance functions,
 * ... the resampling schemes,
 * ... the double machine learning algorithm,
 * ... the Neyman orthogonal score functions,
@@ -72,6 +72,7 @@ remotes::install_github("DoubleML/doubleml-for-r")
 * checkmate
 * mlr3 (>= 0.5.0)
 * mlr3tuning (>= 0.3.0)
+* mlr3learners (>= 0.3.0)
 * mvtnorm
 * utils
 * clusterGeneration
@@ -85,7 +86,7 @@ If you use the DoubleML package a citation is highly appreciated:
 Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2020),
 DoubleML - Double Machine Learning in R.
 URL: [https://github.com/DoubleML/doubleml-for-r](https://github.com/DoubleML/doubleml-for-r),
-R-Package version 0.1.0.
+R-Package version 0.2.0.
 
 Bibtex-entry:
 
@@ -94,7 +95,7 @@ Bibtex-entry:
   title = {DoubleML - Double Machine Learning in R},
   author = {Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M.},
   year = {2020},
-  note = {URL: \url{https://github.com/DoubleML/doubleml-for-r}, R-Package version 0.1.0}
+  note = {URL: \url{https://github.com/DoubleML/doubleml-for-r}, R-Package version 0.2.0}
 }
 ```
 
