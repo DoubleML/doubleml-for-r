@@ -72,6 +72,9 @@ Value of the score function component \eqn{\psi_a(W;\eta)} after calling \code{f
 \item{\code{psi_b}}{(\code{array()}) \cr
 Value of the score function component \eqn{\psi_b(W;\eta)} after calling \code{fit()}.}
 
+\item{\code{predictions}}{(\code{array()}) \cr
+Predictions of the nuisance models after calling \code{fit(store_predictions=TRUE)}.}
+
 \item{\code{pval}}{(\code{numeric()}) \cr
 p-values for the causal parameter(s) after calling \code{fit()}.}
 
@@ -138,9 +141,17 @@ Print DoubleML objects.
 \subsection{Method \code{fit()}}{
 Estimate DoubleML models.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit(store_predictions = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{store_predictions}}{(\code{logical(1)}) \cr
+Indicates whether the predictions for the nuisance functions should be be stored in field \code{predictions}. Default is \code{FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 self
 }
