@@ -42,10 +42,14 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
   set.seed(i_setting)
   # params_OOP <- rep(list(rep(list(learner_pars$params), 1)), 1)
   
-  Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+  # we rename the z variable to have non default names in the unit tests
+  data = data_iivm[[i_setting]]
+  names(data)[names(data) == "z"] <- "Z_IV"
+  
+  Xnames = names(data)[names(data) %in% c("y", "d", "Z_IV") == FALSE]
    
-  data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]], y_col = "y", 
-                              d_cols = "d", x_cols = Xnames, z_col = "z")
+  data_ml = double_ml_data_from_data_frame(data, y_col = "y", 
+                              d_cols = "d", x_cols = Xnames, z_col = "Z_IV")
 
   double_mliivm_obj = DoubleMLIIVM$new(data_ml, 
                                      n_folds = 5,
