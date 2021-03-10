@@ -26,6 +26,10 @@ navbar:
       text: User Guide
       icon: fa fa-file-alt
       href: https://docs.doubleml.org/
+    news: 
+      text: Release Notes
+      href: https://docs.doubleml.org/stable/release/release.html
+      
 
 reference:
   - title: Double machine learning data class
