@@ -176,6 +176,7 @@ private = list(
                             learner_class = private$learner_class$ml_g,
                             fold_specific_params = private$fold_specific_params)
     
+    g1_hat = NULL
     if (self$score == "ATE" | is.function(self$score)) {
       g1_hat = dml_cv_predict(self$learner$ml_g, c(self$data$x_cols, self$data$other_treat_cols), self$data$y_col, 
                              self$data$data_model, nuisance_id = "nuis_g1",  
@@ -188,8 +189,11 @@ private = list(
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
     
-    psis = private$score_elements(y, d, g0_hat, g1_hat, m_hat, smpls)
-    return(psis)
+    res = private$score_elements(y, d, g0_hat, g1_hat, m_hat, smpls)
+    res$preds = list("ml_g0" = g0_hat,
+                     "ml_g1" = g1_hat,
+                     "ml_m" = m_hat)
+    return(res)
   },
   score_elements = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
     if (self$score == "ATTE") {

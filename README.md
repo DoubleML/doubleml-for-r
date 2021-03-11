@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DoubleML - Double Machine Learning in R
+# DoubleML - Double Machine Learning in R <a href="https://docs.doubleml.org"><img src="man/figures/logo.png" align="right" width = "120" /></a>
 
 [![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
 [![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/master/graph/badge.svg?token=C5aiyo2MVL)](https://codecov.io/gh/DoubleML/doubleml-for-r)
@@ -54,7 +54,8 @@ learning models and to perform statistical inference via the methods
 object-oriented implementation allows a high flexibility for the model
 specification in terms of …
 
--   … the machine learners for the nuisance functions,
+-   … the machine learning methods for estimation of the nuisance
+    functions,
 -   … the resampling schemes,
 -   … the double machine learning algorithm,
 -   … the Neyman orthogonal score functions,
@@ -93,6 +94,7 @@ remotes::install_github("DoubleML/doubleml-for-r")
 -   checkmate
 -   mlr3 (&gt;= 0.5.0)
 -   mlr3tuning (&gt;= 0.3.0)
+-   mlr3learners (&gt;= 0.3.0)
 -   mvtnorm
 -   utils
 -   clusterGeneration
@@ -104,7 +106,7 @@ If you use the DoubleML package a citation is highly appreciated:
 
 Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2020),
 DoubleML - Double Machine Learning in R. URL:
-<https://github.com/DoubleML/doubleml-for-r>, R-Package version 0.1.0.
+<https://github.com/DoubleML/doubleml-for-r>, R-Package version 0.2.0.
 
 Bibtex-entry:
 
@@ -112,7 +114,7 @@ Bibtex-entry:
       title = {DoubleML - Double Machine Learning in R},
       author = {Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M.},
       year = {2020},
-      note = {URL: \url{https://github.com/DoubleML/doubleml-for-r}, R-Package version 0.1.0}
+      note = {URL: \url{https://github.com/DoubleML/doubleml-for-r}, R-Package version 0.2.0}
     }
 
 ## References

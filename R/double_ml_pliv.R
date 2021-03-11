@@ -231,8 +231,11 @@ private = list(
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
     
-    psis = private$score_elements(y, z, d, g_hat, m_hat, r_hat, smpls)
-    return(psis)
+    res = private$score_elements(y, z, d, g_hat, m_hat, r_hat, smpls)
+    res$preds = list("ml_g" = g_hat,
+                     "ml_m" = m_hat,
+                     "ml_r" = r_hat)
+    return(res)
   },
   score_elements = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
     u_hat = y - g_hat
@@ -319,13 +322,16 @@ private = list(
           psi_a = -w_hat * (m_hat - m_hat_tilde)
           psi_b = (m_hat - m_hat_tilde) * u_hat
       }
-      psis = list(psi_a = psi_a,
+      res = list(psi_a = psi_a,
                   psi_b = psi_b)
     } else if (is.function(self$score)) {
       stop("Callable score not implemented for DoubleMLPLIV with partialX=TRUE and partialZ=TRUE.")
-      # psis = self$score(y, d, g_hat, m_hat, m_hat_tilde) 
+      # res = self$score(y, d, g_hat, m_hat, m_hat_tilde) 
     }
-    return(psis)
+    res$preds = list("ml_g" = g_hat,
+                     "ml_m" = m_hat,
+                     "ml_r" = m_hat_tilde)
+    return(res)
   },
   
   ml_nuisance_and_score_elements_partialZ = function(smpls, ...) {
@@ -347,12 +353,13 @@ private = list(
           psi_a = -r_hat* d
           psi_b =  r_hat* y
        }
-      psis = list(psi_a = psi_a, psi_b = psi_b)
+      res = list(psi_a = psi_a, psi_b = psi_b)
     } else if (is.function(self$score)) {
       stop("Callable score not implemented for DoubleMLPLIV with partialX=FALSE and partialZ=TRUE.")
-      # psis = self$score(y, z, d, r_hat)
+      # res = self$score(y, z, d, r_hat)
     }
-    return(psis)
+    res$preds = list("ml_r" = r_hat)
+    return(res)
   },
   
   
@@ -439,7 +446,10 @@ private = list(
                                private$learner_class$ml_m)
  
     m_params = tuning_result_m$params
-    ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m, private$learner_class$ml_m, params = x))
+    ml_m = lapply(m_params, function(x) initiate_learner(self$learner$ml_m,
+                                                         private$learner_class$ml_m,
+                                                         params = x,
+                                                         return_train_preds=TRUE))
     task_m = lapply(data_tune_list, function(x) initiate_task("nuis_m", x,
                                                               target = self$data$treat_col,
                                                               select_cols = c(self$data$x_cols, self$data$z_cols), 

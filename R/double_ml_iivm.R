@@ -194,7 +194,7 @@ private = list(
     if (self$subgroups$always_takers == FALSE & self$subgroups$never_takers == FALSE) {
         message("If there are no always-takers and no never-takers, ATE is estimated")
     }
-    cond_smpls = get_cond_samples(smpls, self$data$data_model$z)
+    cond_smpls = get_cond_samples(smpls, self$data$data_model[[self$data$z_cols]])
 
     m_hat = dml_cv_predict(self$learner$ml_m, c(self$data$x_cols, self$data$other_treat_cols), self$data$z_cols, 
                            self$data$data_model, nuisance_id = "nuis_m",  
@@ -244,8 +244,13 @@ private = list(
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
 
-    psis = private$score_elements(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls)
-    return(psis)
+    res = private$score_elements(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls)
+    res$preds = list("ml_g0" = g0_hat,
+                     "ml_g1" = g1_hat,
+                     "ml_m" = m_hat,
+                     "ml_r0" = r0_hat,
+                     "ml_r1" = r1_hat)
+    return(res)
   },
   score_elements = function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls) {
 
