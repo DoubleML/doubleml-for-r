@@ -4,7 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DoubleML - Double Machine Learning in R <img src="man/figures/logo.png" align="right" width = "120" />
+# DoubleML - Double Machine Learning in R <a href="https://docs.doubleml.org"><img src="man/figures/logo.png" align="right" width = "120" /></a>
 
 
 [![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
