@@ -77,6 +77,10 @@ DoubleML = R6Class("DoubleML", public = list(
   #' Value of the score function component \eqn{\psi_b(W;\eta)} after calling `fit()`. 
   psi_b = NULL, 
   
+  #' @field predictions (`array()`) \cr
+  #' Predictions of the nuisance models after calling `fit(store_predictions=TRUE)`. 
+  predictions = NULL,
+  
   #' @field pval (`numeric()`) \cr
   #' p-values for the causal parameter(s) after calling `fit()`. 
   pval = NULL, 
@@ -149,8 +153,14 @@ DoubleML = R6Class("DoubleML", public = list(
   #' @description 
   #' Estimate DoubleML models. 
   #' 
+  #' @param store_predictions (`logical(1)`) \cr
+  #' Indicates whether the predictions for the nuisance functions should be be stored in field `predictions`. Default is `FALSE`.
+  #' 
   #' @return self
-  fit = function() {
+  fit = function(store_predictions=FALSE) {
+    if (store_predictions) {
+      private$initialize_predictions()
+    }
     
     # TODO: insert check for tuned params
     for (i_rep in 1:self$n_rep) {
@@ -164,9 +174,12 @@ DoubleML = R6Class("DoubleML", public = list(
         }
         
         # ml estimation of nuisance models and computation of psi elements
-        psis = private$ml_nuisance_and_score_elements(private$get__smpls())
-        private$set__psi_a(psis$psi_a)
-        private$set__psi_b(psis$psi_b)
+        res = private$ml_nuisance_and_score_elements(private$get__smpls())
+        private$set__psi_a(res$psi_a)
+        private$set__psi_b(res$psi_b)
+        if (store_predictions) {
+          private$store_predictions(res$preds)
+        }
         
         # estimate the causal parameter
         coef = private$est_causal_pars()
@@ -866,6 +879,19 @@ private = list(
     private$n_rep_boot = n_rep_boot
     self$boot_coef = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
     self$boot_t_stat = array(NA, dim=c(self$data$n_treat, n_rep_boot * self$n_rep))
+  },
+  initialize_predictions = function() {
+    self$predictions = sapply(self$params_names(),
+                              function(key) array(NA, dim=c(self$data$n_obs, self$n_rep, self$data$n_treat)),
+                              simplify=F)
+  },
+  store_predictions = function(preds) {
+    for (learner in self$params_names())
+    {
+      if (!is.null(preds[[learner]])) {
+        self$predictions[[learner]][, private$i_rep, private$i_treat] = preds[[learner]]
+      }
+    }
   },
   # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
   # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and

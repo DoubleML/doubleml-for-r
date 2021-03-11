@@ -153,8 +153,10 @@ private = list(
     d = self$data$data_model[[self$data$treat_col]]
     y = self$data$data_model[[self$data$y_col]]
     
-    psis = private$score_elements(y, d, g_hat, m_hat, smpls)
-    return(psis)
+    res = private$score_elements(y, d, g_hat, m_hat, smpls)
+    res$preds = list("ml_g" = g_hat,
+                     "ml_m" = m_hat)
+    return(res)
   },
    score_elements = function(y, d, g_hat, m_hat, smpls) {
     v_hat = d - m_hat
