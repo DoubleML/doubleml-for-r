@@ -2,7 +2,8 @@
 % Please edit documentation in R/datasets.R
 \name{make_pliv_CHS2015}
 \alias{make_pliv_CHS2015}
-\title{Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015).}
+\title{Generates data from a partially linear IV regression model used in
+Chernozhukov, Hansen and Spindler (2015).}
 \usage{
 make_pliv_CHS2015(
   n_obs,
@@ -26,13 +27,20 @@ The number of covariates.}
 The number of instruments.}
 
 \item{return_type}{(\code{character(1)}) \cr
-If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and \code{z} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
+If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object.
+If \code{"data.frame"} returns a \code{data.frame()}.
+If \code{"data.table"} returns a \code{data.table()}.
+If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and
+\code{z} is returned.
+Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
 }
 \value{
 A data object according to the choice of \code{return_type}.
 }
 \description{
-Generates data from a partially linear IV regression model used in Chernozhukov, Hansen and Spindler (2015). The data generating process is defined as
+Generates data from a partially linear IV regression model used in
+Chernozhukov, Hansen and Spindler (2015). The data generating process
+is defined as
 
 \eqn{z_i = \Pi x_i + \zeta_i,}
 
@@ -42,10 +50,24 @@ Generates data from a partially linear IV regression model used in Chernozhukov,
 
 with
 
-\eqn{\left(\begin{array}{c} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i \end{array} \right) \sim \mathcal{N}\left(0, \left(\begin{array}{cccc} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0 \\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{array} \right) \right)}
+\eqn{\left(\begin{array}{c} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i
+\end{array} \right)
+\sim \mathcal{N}\left(0,
+\left(\begin{array}{cccc} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0
+\\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{array}
+\right) \right)}
 
-where \eqn{\Sigma} is a \eqn{p_n^x \times p_n^x} matrix with entries \eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{I_{p_n^z}} is the \eqn{p^z_n \times p^z_n} identity matrix. \eqn{\beta=\gamma} iis a \eqn{p^x_n}-vector with entries \eqn{\beta_j = \frac{1}{j^2}}, \eqn{\delta} is a \eqn{p^z_n}-vector with entries \eqn{\delta_j = \frac{1}{j^2}} and \eqn{\Pi = (I_{p_n^z}, O_{p_n^z \times (p_n^x - p_n^z)})}.
+where \eqn{\Sigma} is a \eqn{p_n^x \times p_n^x} matrix with entries
+\eqn{\Sigma_{kj} = 0.5^{|j-k|}} and
+\eqn{I_{p_n^z}} is the \eqn{p^z_n \times p^z_n}
+identity matrix. \eqn{\beta=\gamma} iis a \eqn{p^x_n}-vector with entries
+\eqn{\beta_j = \frac{1}{j^2}}, \eqn{\delta} is a \eqn{p^z_n}-vector with
+entries \eqn{\delta_j = \frac{1}{j^2}} and
+\eqn{\Pi = (I_{p_n^z}, O_{p_n^z \times (p_n^x - p_n^z)})}.
 }
 \references{
-Chernozhukov, V., Hansen, C. and Spindler, M. (2015), Post-Selection and Post-Regularization Inference in Linear Models with Many Controls and Instruments. American Economic Review: Papers and Proceedings, 105 (5): 486-90.
+Chernozhukov, V., Hansen, C. and Spindler, M. (2015),
+Post-Selection and Post-Regularization Inference in Linear Models with
+Many Controls and Instruments.
+American Economic Review: Papers and Proceedings, 105 (5): 486-90.
 }

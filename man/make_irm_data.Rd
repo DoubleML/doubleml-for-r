@@ -30,23 +30,37 @@ The value of the parameter \eqn{R_d^2}.}
 The value of the parameter \eqn{R_y^2}.}
 
 \item{return_type}{(\code{character(1)}) \cr
-If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and \code{z} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
+If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object.
+If \code{"data.frame"} returns a \code{data.frame()}.
+If \code{"data.table"} returns a \code{data.table()}.
+If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and \code{z}
+is returned.
+Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
 }
 \description{
-Generates data from a interactive regression (IRM) model. The data generating process is defined as
+Generates data from a interactive regression (IRM) model.
+The data generating process is defined as
 
-\eqn{d_i = 1\left\lbrace \frac{\exp(c_d x_i' \beta)}{1+\exp(c_d x_i' \beta)} > v_i \right\rbrace,}
+\eqn{d_i = 1\left\lbrace \frac{\exp(c_d x_i' \beta)}{1+\exp(c_d x_i' \beta)}
+> v_i \right\rbrace,}
 
 \eqn{ y_i = \theta d_i + c_y x_i' \beta d_i + \zeta_i,}
 
-with \eqn{v_i \sim \mathcal{U}(0,1)}, \eqn{\zeta_i \sim \mathcal{N}(0,1)} and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where \eqn{\Sigma} is a matrix with entries \eqn{\Sigma_{kj} = 0.5^{|j-k|}}. \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j = \frac{1}{j^2}} and the constancts \eqn{c_y} and \eqn{c_d} are given by
+with \eqn{v_i \sim \mathcal{U}(0,1)}, \eqn{\zeta_i \sim \mathcal{N}(0,1)}
+and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where \eqn{\Sigma}
+is a matrix with entries \eqn{\Sigma_{kj} = 0.5^{|j-k|}}.
+\eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j = \frac{1}{j^2}}
+and the constancts \eqn{c_y} and \eqn{c_d} are given by
 
 \eqn{ c_y = \sqrt{\frac{R_y^2}{(1-R_y^2) \beta' \Sigma \beta}},}
 
 \eqn{c_d = \sqrt{\frac{(\pi^2 /3) R_d^2}{(1-R_d^2) \beta' \Sigma \beta}}.}
 
-The data generating process is inspired by a process used in the simulation experiment (see Appendix P) of Belloni et al. (2017).
+The data generating process is inspired by a process used in the simulation
+experiment (see Appendix P) of Belloni et al. (2017).
 }
 \references{
-Belloni, A., Chernozhukov, V., Fernández-Val, I. and Hansen, C. (2017). Program Evaluation and Causal Inference With High-Dimensional Data. Econometrica, 85: 233-298.
+Belloni, A., Chernozhukov, V., Fernández-Val, I. and
+Hansen, C. (2017). Program Evaluation and Causal Inference With
+High-Dimensional Data. Econometrica, 85: 233-298.
 }
