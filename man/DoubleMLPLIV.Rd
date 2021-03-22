@@ -44,13 +44,14 @@ set.seed(2)
 ml_g = lrn("regr.rpart")
 ml_m = ml_g$clone()
 ml_r = ml_g$clone()
-obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
+obj_dml_data = make_pliv_CHS2015(
+  alpha = 1, n_obs = 500, dim_x = 20,
+  dim_z = 1)
 dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
 param_grid = list(
-  "ml_g" = paradox::ParamSet$new(
-    list(
-      paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-      paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+  "ml_g" = paradox::ParamSet$new(list(
+    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
   "ml_m" = paradox::ParamSet$new(list(
     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),

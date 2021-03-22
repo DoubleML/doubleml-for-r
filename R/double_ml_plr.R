@@ -48,14 +48,12 @@
 #' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 #'
 #' param_grid = list(
-#'   "ml_g" = paradox::ParamSet$new(
-#'     list(
-#'       paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-#'       paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-#'   "ml_m" = paradox::ParamSet$new(
-#'     list(
-#'       paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-#'       paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+#'   "ml_g" = paradox::ParamSet$new(list(
+#'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+#'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+#'   "ml_m" = paradox::ParamSet$new(list(
+#'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+#'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
 #'
 #' # minimum requirements for tune_settings
 #' tune_settings = list(

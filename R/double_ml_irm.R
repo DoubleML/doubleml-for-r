@@ -35,8 +35,12 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
-#' ml_m = lrn("classif.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+#' ml_g = lrn("regr.ranger",
+#'   num.trees = 100, mtry = 20,
+#'   min.node.size = 2, max.depth = 5)
+#' ml_m = lrn("classif.ranger",
+#'   num.trees = 100, mtry = 20,
+#'   min.node.size = 2, max.depth = 5)
 #' obj_dml_data = make_irm_data(theta = 0.5)
 #' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 #' dml_irm_obj$fit()
@@ -55,10 +59,9 @@
 #' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 #'
 #' param_grid = list(
-#'   "ml_g" = paradox::ParamSet$new(
-#'     list(
-#'       paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-#'       paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+#'   "ml_g" = paradox::ParamSet$new(list(
+#'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+#'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
 #'   "ml_m" = paradox::ParamSet$new(list(
 #'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
 #'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
