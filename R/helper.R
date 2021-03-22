@@ -1,76 +1,117 @@
 
 dml_cv_predict = function(learner, X_cols, y_col,
-                          data_model, nuisance_id, 
-                          smpls = NULL, est_params = NULL, 
-                          return_train_preds = FALSE, learner_class = NULL, 
-                          fold_specific_params = FALSE) {
-  
-  # TODO: Asserts 
+  data_model, nuisance_id,
+  smpls = NULL, est_params = NULL,
+  return_train_preds = FALSE, learner_class = NULL,
+  fold_specific_params = FALSE) {
+
+  # TODO: Asserts
+
   if (fold_specific_params) {
     stopifnot(length(smpls$train_ids) == length(smpls$test_ids))
   }
-  
+
   fold_specific_target = (all(class(data_model) == "list"))
-                      
+
   if (!fold_specific_target) {
     n_obs = nrow(data_model)
-    task_pred = initiate_task(id = nuisance_id, data = data_model, 
-                              target = y_col,
-                              select_cols = X_cols,  
-                              learner_class = learner_class)
-    
+    task_pred = initiate_task(
+      id = nuisance_id, data = data_model,
+      target = y_col,
+      select_cols = X_cols,
+      learner_class = learner_class)
+
     if (!fold_specific_params) {
-      ml_learner = initiate_learner(learner, learner_class, est_params, return_train_preds)
-      resampling_smpls = rsmp("custom")$instantiate(task_pred, smpls$train_ids,
-                                                               smpls$test_ids)
-      resampling_pred = resample(task_pred, ml_learner, resampling_smpls, store_models = TRUE)
+      ml_learner = initiate_learner(
+        learner, learner_class,
+        est_params, return_train_preds)
+      resampling_smpls = rsmp("custom")$instantiate(
+        task_pred, smpls$train_ids,
+        smpls$test_ids)
+      resampling_pred = resample(task_pred, ml_learner, resampling_smpls,
+        store_models = TRUE)
       preds = extract_prediction(resampling_pred, learner_class, n_obs)
       if (return_train_preds) {
-        train_preds = extract_prediction(resampling_pred, learner_class, n_obs, return_train_preds = TRUE)
+        train_preds = extract_prediction(resampling_pred, learner_class, n_obs,
+          return_train_preds = TRUE)
       }
     } else {
       # learners initiated according to fold-specific learners, proceed foldwise
-      ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x, return_train_preds))
-      resampling_smpls = lapply(1:length(smpls$train_ids), function(x) 
-                                                      rsmp("custom")$instantiate(task_pred, list(smpls$train_ids[[x]]),
-                                                                                            list(smpls$test_ids[[x]])))
-      
-      resampling_pred = lapply(1:length(ml_learners), function(x) resample(task_pred, ml_learners[[x]], 
-                                                                           resampling_smpls[[x]], store_models = TRUE))
-      
+      ml_learners = lapply(
+        est_params,
+        function(x) {
+          initiate_learner(
+            learner,
+            learner_class, x,
+            return_train_preds)
+        })
+      resampling_smpls = lapply(
+        seq_len(length(smpls$train_ids)),
+        function(x) {
+          rsmp("custom")$instantiate(
+            task_pred, list(smpls$train_ids[[x]]),
+            list(smpls$test_ids[[x]]))
+        })
+
+      resampling_pred = lapply(seq_len(length(ml_learners)), function(x) {
+        resample(task_pred, ml_learners[[x]],
+          resampling_smpls[[x]],
+          store_models = TRUE)
+      })
+
       preds = extract_prediction(resampling_pred, learner_class, n_obs)
       if (return_train_preds) {
-        train_preds = extract_prediction(resampling_pred, learner_class, n_obs, return_train_preds = TRUE)
+        train_preds = extract_prediction(resampling_pred, learner_class,
+          n_obs,
+          return_train_preds = TRUE)
       }
     }
   } else {
     n_obs = nrow(data_model[[1]])
-    task_pred = lapply(data_model, function(x) 
-                                    initiate_task(id = nuisance_id, data = x, 
-                                                  target = y_col,
-                                                  select_cols = X_cols,  
-                                                  learner_class = learner_class))
+    task_pred = lapply(data_model, function(x) {
+      initiate_task(
+        id = nuisance_id, data = x,
+        target = y_col,
+        select_cols = X_cols,
+        learner_class = learner_class)
+    })
     # fold_specific_target == TRUE; only required for pliv_partialXZ
-     if (!fold_specific_params) {
-       ml_learner = initiate_learner(learner, learner_class, est_params)
-       
-       resampling_smpls = lapply(1:length(data_model), function(x) 
-                                                        rsmp("custom")$instantiate(task_pred[[x]], 
-                                                                                    list(smpls$train_ids[[x]]), 
-                                                                                    list(smpls$test_ids[[x]])))
-       resampling_pred = lapply(1:length(data_model), function(x) resample(task_pred[[x]], ml_learner, 
-                                                                           resampling_smpls[[x]], store_models = TRUE))
-       preds = extract_prediction(resampling_pred, learner_class, n_obs)
-     } else { 
-       # learners initiated according to fold-specific learners, proceed foldwise
-       ml_learners = lapply(est_params, function(x) initiate_learner(learner, learner_class, x))
-       resampling_smpls = lapply(1:length(smpls$train_ids), function(x) 
-                                                               rsmp("custom")$instantiate(task_pred[[x]], list(smpls$train_ids[[x]]),
-                                                                                                          list(smpls$test_ids[[x]])))
-       resampling_pred = lapply(1:length(ml_learners), function(x) resample(task_pred[[x]], ml_learners[[x]], 
-                                                                             resampling_smpls[[x]], store_models = TRUE))
-       preds = extract_prediction(resampling_pred, learner_class, n_obs)
-     }
+    if (!fold_specific_params) {
+      ml_learner = initiate_learner(learner, learner_class, est_params)
+
+      resampling_smpls = lapply(
+        seq_len(length(data_model)),
+        function(x) {
+          rsmp("custom")$instantiate(
+            task_pred[[x]],
+            list(smpls$train_ids[[x]]),
+            list(smpls$test_ids[[x]]))
+        })
+      resampling_pred = lapply(
+        seq_len(length(data_model)),
+        function(x) {
+          resample(task_pred[[x]], ml_learner,
+            resampling_smpls[[x]],
+            store_models = TRUE)
+        })
+      preds = extract_prediction(resampling_pred, learner_class, n_obs)
+    } else {
+      # learners initiated according to fold-specific learners, proceed foldwise
+      ml_learners = lapply(
+        est_params,
+        function(x) initiate_learner(learner, learner_class, x))
+      resampling_smpls = lapply(seq_len(length(smpls$train_ids)), function(x) {
+        rsmp("custom")$instantiate(
+          task_pred[[x]], list(smpls$train_ids[[x]]),
+          list(smpls$test_ids[[x]]))
+      })
+      resampling_pred = lapply(seq_len(length(ml_learners)), function(x) {
+        resample(task_pred[[x]], ml_learners[[x]],
+          resampling_smpls[[x]],
+          store_models = TRUE)
+      })
+      preds = extract_prediction(resampling_pred, learner_class, n_obs)
+    }
   }
   if (return_train_preds) {
     return(list("preds" = preds, "train_preds" = train_preds))
@@ -79,31 +120,41 @@ dml_cv_predict = function(learner, X_cols, y_col,
   }
 }
 
-dml_tune = function(learner, X_cols, y_col, data_tune_list, 
-                    nuisance_id, param_set, tune_settings, measure, learner_class) {
-  
-  task_tune = lapply(data_tune_list, function(x) initiate_task(id = nuisance_id, 
-                                                               data = x, 
-                                                               target = y_col, 
-                                                               select_cols = X_cols, 
-                                                               learner_class = learner_class))
+dml_tune = function(learner, X_cols, y_col, data_tune_list,
+  nuisance_id, param_set, tune_settings, measure, learner_class) {
+  task_tune = lapply(data_tune_list, function(x) {
+    initiate_task(
+      id = nuisance_id,
+      data = x,
+      target = y_col,
+      select_cols = X_cols,
+      learner_class = learner_class)
+  })
   ml_learner = initiate_learner(learner, learner_class, params = list())
-  tuning_instance = lapply(task_tune, function(x) 
-                                        TuningInstanceSingleCrit$new(task = x, 
-                                                                     learner = ml_learner, 
-                                                                     resampling = tune_settings$rsmp_tune, 
-                                                                     measure = measure, 
-                                                                     search_space = param_set, 
-                                                                     terminator = tune_settings$terminator))
-  tuning_result = lapply(tuning_instance, function(x) tune_instance(tune_settings$tuner, x))
-  params = vapply(tuning_result, function(x) x$tuning_result$learner_param_vals, list(1L))
-  
-  return(list("tuning_result" = tuning_result,
-              "params" = params))
+  tuning_instance = lapply(task_tune, function(x) {
+    TuningInstanceSingleCrit$new(
+      task = x,
+      learner = ml_learner,
+      resampling = tune_settings$rsmp_tune,
+      measure = measure,
+      search_space = param_set,
+      terminator = tune_settings$terminator)
+  })
+  tuning_result = lapply(
+    tuning_instance,
+    function(x) tune_instance(tune_settings$tuner, x))
+  params = vapply(
+    tuning_result,
+    function(x) x$tuning_result$learner_param_vals, list(1L))
+
+  return(list(
+    "tuning_result" = tuning_result,
+    "params" = params))
 }
 
-extract_prediction = function(obj_resampling, learner_class, n_obs, return_train_preds = FALSE) {
-  if (utils::compareVersion(as.character(utils::packageVersion("mlr3")), "0.11.0") < 0) {
+extract_prediction = function(obj_resampling, learner_class, n_obs,
+  return_train_preds = FALSE) {
+  if (compareVersion(as.character(packageVersion("mlr3")), "0.11.0") < 0) {
     ind_name = "row_id"
   } else {
     ind_name = "row_ids"
@@ -113,12 +164,14 @@ extract_prediction = function(obj_resampling, learner_class, n_obs, return_train
   } else if (learner_class == "LearnerClassif") {
     resp_name = "prob.1"
   }
-  
+
   if (return_train_preds) {
-    if (checkmate::testR6(obj_resampling, classes='ResampleResult')) {
+    if (testR6(obj_resampling, classes = "ResampleResult")) {
       n_iters = obj_resampling$resampling$iters
       preds = vector("list", n_iters)
-      f_hat_list = lapply(1:n_iters, function(x) as.data.table(obj_resampling$predictions('train')[[x]]))
+      f_hat_list = lapply(
+        1:n_iters,
+        function(x) as.data.table(obj_resampling$predictions("train")[[x]]))
       for (i_iter in 1:n_iters) {
         preds_vec = vector("numeric", length = n_obs)
         f_hat = f_hat_list[[i_iter]]
@@ -130,54 +183,55 @@ extract_prediction = function(obj_resampling, learner_class, n_obs, return_train
       preds = vector("list", n_obj_rsmp)
       for (i_obj_rsmp in 1:n_obj_rsmp) {
         preds_vec = vector("numeric", length = n_obs)
-        f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction('train'))
+        f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction("train"))
         preds_vec[f_hat[[ind_name]]] = f_hat[[resp_name]]
         preds[[i_obj_rsmp]] = preds_vec
       }
     }
   } else {
     preds = vector("numeric", length = n_obs)
-    if (checkmate::testR6(obj_resampling, classes='ResampleResult')) obj_resampling = list(obj_resampling)
+    if (testR6(obj_resampling, classes = "ResampleResult")) obj_resampling = list(obj_resampling)
     n_obj_rsmp = length(obj_resampling)
     for (i_obj_rsmp in 1:n_obj_rsmp) {
-      f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction('test'))
+      f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction("test"))
       preds[f_hat[[ind_name]]] = f_hat[[resp_name]]
     }
   }
-  
+
   return(preds)
 }
 
-initiate_learner = function(learner, learner_class, params, return_train_preds=FALSE) {
+initiate_learner = function(learner, learner_class, params, return_train_preds = FALSE) {
   ml_learner = learner$clone()
-  
+
   if (!is.null(params)) {
     ml_learner$param_set$values = params
   } # else if (is.null(params) | length(params) == 0) {
-    # message("No parameters provided for learners. Default values are used.")
+  # message("No parameters provided for learners. Default values are used.")
   # }
-  
+
   if (learner_class == "LearnerClassif") {
-    ml_learner$predict_type = 'prob'
+    ml_learner$predict_type = "prob"
   }
   if (return_train_preds) {
-    ml_learner$predict_sets = c('test', 'train')
+    ml_learner$predict_sets = c("test", "train")
   }
   return(ml_learner)
 }
 
 # Function to initialize task (regression or classification)
 initiate_task = function(id, data, target, select_cols, learner_class) {
-  if (!is.null(select_cols)){
+  if (!is.null(select_cols)) {
     indx = (names(data) %in% c(select_cols, target))
-    data = data[ , indx, with = FALSE]
+    data = data[, indx, with = FALSE]
   }
   if (learner_class == "LearnerRegr") {
-    task = mlr3::TaskRegr$new(id = id, backend = data, target = target)
+    task = TaskRegr$new(id = id, backend = data, target = target)
   } else if (learner_class == "LearnerClassif") {
     data[[target]] = factor(data[[target]])
-    task = mlr3::TaskClassif$new(id = id, backend = data, target = target, 
-                                 positive = "1")
+    task = TaskClassif$new(
+      id = id, backend = data, target = target,
+      positive = "1")
   }
   return(task)
 }
@@ -186,31 +240,36 @@ initiate_task = function(id, data, target, select_cols, learner_class) {
 # helper to draw weights in multiplier bootstrap
 draw_weights = function(method, n_rep_boot, n_obs) {
   if (method == "Bayes") {
-    weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
+    weights = rexp(n_rep_boot * n_obs, rate = 1) - 1
   } else if (method == "normal") {
-    weights = stats::rnorm(n_rep_boot * n_obs)
+    weights = rnorm(n_rep_boot * n_obs)
   } else if (method == "wild") {
-    weights = stats::rnorm(n_rep_boot * n_obs)/sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1)/2
+    weights = rnorm(n_rep_boot * n_obs) / sqrt(2) +
+      (stats::rnorm(n_rep_boot * n_obs)^2 - 1) / 2
   } else {
     stop("invalid boot method")
   }
-  weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow=TRUE)
+  weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow = TRUE)
   return(weights)
 }
 
 get_cond_samples = function(smpls, D) {
-  train_ids_0 = lapply(1:length(smpls$train_ids), function(x)
-                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0])
-  train_ids_1 =  lapply(1:length(smpls$test_ids), function(x) 
-                                                      smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1])
-  return(list(smpls_0 = list("train_ids" = train_ids_0,
-                             "test_ids" = smpls$test_ids), 
-              smpls_1 = list("train_ids" = train_ids_1, 
-                             "test_ids" = smpls$test_ids)))
+  train_ids_0 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+    smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0]
+  })
+  train_ids_1 = lapply(seq_len(length(smpls$test_ids)), function(x) {
+    smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1]
+  })
+  return(list(
+    smpls_0 = list(
+      "train_ids" = train_ids_0,
+      "test_ids" = smpls$test_ids),
+    smpls_1 = list(
+      "train_ids" = train_ids_1,
+      "test_ids" = smpls$test_ids)))
 }
 
 set_default_measure = function(measure_in = NA, learner_class) {
-  
   if (is.na(measure_in)) {
     if (learner_class == "LearnerRegr") {
       measure = msr("regr.mse")
@@ -224,49 +283,52 @@ set_default_measure = function(measure_in = NA, learner_class) {
 }
 
 
-format.perc = function (probs, digits) {
-  paste(format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
-        "%" ) }
+format.perc = function(probs, digits) {
+  paste(
+    format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
+    "%")
+}
 
 
 # Take x (vector or matrix) as input and return it as a matrix
-assure_matrix = function(x){
-  if (is.vector(x)){
+assure_matrix = function(x) {
+  if (is.vector(x)) {
     x = matrix(x, ncol = 1)
   }
   else {
-    checkmate::check_matrix(x)
+    check_matrix(x)
   }
   return(x)
-  
+
 }
 
 # Check if matrices in a list have the same number of rows
-check_matrix_row = function(mat_list){
-  checkmate::check_list(mat_list)
-  
+check_matrix_row = function(mat_list) {
+  check_list(mat_list)
+
   n_rows = vapply(mat_list, nrow, integer(1L))
- 
-  if ( isFALSE(all(n_rows == n_rows[1]))){
+
+  if (isFALSE(all(n_rows == n_rows[1]))) {
     stop("Matrices do not have same number of rows.")
   }
 }
 
 extract_training_data = function(data, smpls) {
   data_train = data[smpls, , drop = FALSE]
-  
+
   return(data_train)
 }
 
-tune_instance = function(tuner, tuning_instance){
+tune_instance = function(tuner, tuning_instance) {
   tuning_result = tuner$optimize(tuning_instance)
-  if (utils::compareVersion(as.character(utils::packageVersion('mlr3tuning')), '0.6.0') < 0) {
+  if (compareVersion(as.character(packageVersion("mlr3tuning")), "0.6.0") < 0) {
     tuning_archive = tuning_instance$archive$data()
   } else {
     tuning_archive = tuning_instance$archive$data
   }
-  tuning_results = list(tuning_result = tuning_result, 
-                        tuning_archive = tuning_archive, 
-                        params = tuning_instance$result$params)
+  tuning_results = list(
+    tuning_result = tuning_result,
+    tuning_archive = tuning_archive,
+    params = tuning_instance$result$params)
   return(tuning_results)
 }

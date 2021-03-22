@@ -6,7 +6,11 @@
 \description{
 Double machine learning data-backend.
 
-\code{DoubleMLData} objects can be initialized from a \link[data.table:data.table]{data.table}. Alternatively \code{DoubleML} provides functions to initialize from a collection of \code{matrix} objects or a \code{data.frame}. The following functions can be used to create a new instance of \code{DoubleMLData}.
+\code{DoubleMLData} objects can be initialized from a
+\link[data.table:data.table]{data.table}. Alternatively \code{DoubleML} provides
+functions to initialize from a collection of \code{matrix} objects or
+a \code{data.frame}. The following functions can be used to create a new
+instance of \code{DoubleMLData}.
 \itemize{
 \item \code{DoubleMLData$new()} for initialization from a \code{data.table}.
 \item \code{\link[=double_ml_data_from_matrix]{double_ml_data_from_matrix()}} for initialization from \code{matrix} objects,
@@ -17,8 +21,8 @@ Double machine learning data-backend.
 library(DoubleML)
 df = make_plr_CCDDHNR2018(return_type = "data.table")
 obj_dml_data = DoubleMLData$new(df,
-                               y_col = "y",
-                               d_cols = "d")
+  y_col = "y",
+  d_cols = "d")
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -33,7 +37,8 @@ The treatment variable(s).}
 Data object.}
 
 \item{\code{data_model}}{(\code{\link[data.table:data.table]{data.table}})\cr
-Internal data object that implements the causal model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols}.}
+Internal data object that implements the causal model as specified by
+the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols}.}
 
 \item{\code{n_instr}}{(\code{NULL}, \code{integer(1)}) \cr
 The number of instruments.}
@@ -45,16 +50,24 @@ The number of observations.}
 The umber of treatment variables.}
 
 \item{\code{other_treat_cols}}{(\code{NULL}, \code{character()}) \cr
-If \code{use_other_treat_as_covariate} is \code{TRUE}, \code{other_treat_cols} are the treatment variables that are not "active" in the multiple-treatment case. These variables then are internally added to the covariates \code{x_cols} during the fitting stage. If \code{use_other_treat_as_covariate} is \code{FALSE}, \code{other_treat_cols} is \code{NULL}.}
+If \code{use_other_treat_as_covariate} is \code{TRUE}, \code{other_treat_cols} are the
+treatment variables that are not "active" in the multiple-treatment case.
+These variables then are internally added to the covariates \code{x_cols} during
+the fitting stage. If \code{use_other_treat_as_covariate} is \code{FALSE},
+\code{other_treat_cols} is \code{NULL}.}
 
 \item{\code{treat_col}}{(\code{character(1)}) \cr
 "Active" treatment variable in the multiple-treatment case.}
 
 \item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
-Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
+Indicates whether in the multiple-treatment case the other treatment
+variables should be added as covariates. Default is \code{TRUE}.}
 
 \item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
-The covariates. If \code{NULL}, all variables (columns of \code{data}) which are neither specified as outcome variable \code{y_col}, nor as treatment variables \code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates. Default is \code{NULL}.}
+The covariates. If \code{NULL}, all variables (columns of \code{data}) which are
+neither specified as outcome variable \code{y_col}, nor as treatment variables
+\code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates.
+Default is \code{NULL}.}
 
 \item{\code{y_col}}{(\code{character(1)}) \cr
 The outcome variable.}
@@ -95,7 +108,10 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 Data object.}
 
 \item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
-The covariates. If \code{NULL}, all variables (columns of \code{data}) which are neither specified as outcome variable \code{y_col}, nor as treatment variables \code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates. Default is \code{NULL}.}
+The covariates. If \code{NULL}, all variables (columns of \code{data}) which are
+neither specified as outcome variable \code{y_col}, nor as treatment variables
+\code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates.
+Default is \code{NULL}.}
 
 \item{\code{y_col}}{(\code{character(1)}) \cr
 The outcome variable.}
@@ -107,7 +123,8 @@ The treatment variable(s).}
 The instrumental variables. Default is \code{NULL}.}
 
 \item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
-Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
+Indicates whether in the multiple-treatment case the other treatment
+variables should be added as covariates. Default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -116,7 +133,10 @@ Indicates whether in the multiple-treatment case the other treatment variables s
 \if{html}{\out{<a id="method-set_data_model"></a>}}
 \if{latex}{\out{\hypertarget{method-set_data_model}{}}}
 \subsection{Method \code{set_data_model()}}{
-Setter function for \code{data_model}. The function implements the causal model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols} and assigns the role for the treatment variables in the multiple-treatment case.
+Setter function for \code{data_model}. The function implements the causal model
+as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols} and
+assigns the role for the treatment variables in the multiple-treatment
+case.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set_data_model(treatment_var)}\if{html}{\out{</div>}}
 }

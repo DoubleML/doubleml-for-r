@@ -16,7 +16,11 @@ Interactive regression (IRM) models take the form
 
 \eqn{D = m_0(X) + V},
 
-with \eqn{E[U|X,D]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable and \eqn{D \in \{0,1\}} is the binary treatment variable. We consider estimation of the average treamtent effects when treatment effects are fully heterogeneous. Target parameters of interest in this model are the average treatment effect (ATE),
+with \eqn{E[U|X,D]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable
+and \eqn{D \in \{0,1\}} is the binary treatment variable. We consider
+estimation of the average treamtent effects when treatment effects are
+fully heterogeneous. Target parameters of interest in this model are the
+average treatment effect (ATE),
 
 \eqn{\theta_0 = E[g_0(1,X) - g_0(0,X)]}
 
@@ -50,16 +54,19 @@ ml_m = lrn("classif.rpart")
 obj_dml_data = make_irm_data(theta = 0.5)
 dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 
-param_grid = list("ml_g" = paradox::ParamSet$new(
-                            list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                 paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-                 "ml_m" = paradox::ParamSet$new(list(
-                                 paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                                 paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+param_grid = list(
+  "ml_g" = paradox::ParamSet$new(
+    list(
+      paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+      paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+  "ml_m" = paradox::ParamSet$new(list(
+    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
 
 # minimum requirements for tune_settings
-tune_settings = list(terminator = mlr3tuning::trm("evals", n_evals = 5), 
-                      algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+tune_settings = list(
+  terminator = mlr3tuning::trm("evals", n_evals = 5),
+  algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
 dml_irm_obj$tune(param_set = param_grid, tune_settings = tune_settings)
 dml_irm_obj$fit()
 dml_irm_obj$summary()
@@ -139,16 +146,32 @@ Creates a new instance of this R6 class.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{(\code{DoubleMLData}) \cr
-The \code{DoubleMLData} object providing the data and specifying the variables of the causal model.}
+The \code{DoubleMLData} object providing the data and specifying the variables
+of the causal model.}
 
 \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
-Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}.  \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to
+pass a learner, possibly with specified parameters, for example
+\code{lrn("regr.cv_glmnet", s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a
+\link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in
+\href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages
+\href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
+\href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example
+\code{"regr.cv_glmnet"}.  \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y|X,D]}.}
 
 \item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner, possibly with specified parameters, for example \code{lrn("classif.cv_glmnet", s = "lambda.min")}.
-Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerClassif]{mlr3 classification learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
+An object of the class
+\link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner,
+possibly with specified parameters, for example
+\code{lrn("classif.cv_glmnet", s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a
+\link[mlr3:LearnerClassif]{mlr3 classification learner} that is available
+in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages
+\href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
+\href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners},
+for example \code{"classif.cv_glmnet"}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[D|X]}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
@@ -158,21 +181,27 @@ Number of folds. Default is \code{5}.}
 Number of repetitions for the sample splitting. Default is \code{1}.}
 
 \item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
-A \code{character(1)} (\code{"ATE"} or \code{ATTE}) or a \verb{function()} specifying the score function. If a \verb{function()}
-is provided, it must be of the form \verb{function(y, d, g0_hat, g1_hat, m_hat, smpls)} and the returned output
-must be a named \code{list()} with elements \code{psi_a} and \code{psi_b}. Default is \code{"ATE"}.}
+A \code{character(1)} (\code{"ATE"} or \code{ATTE}) or a \verb{function()} specifying the
+score function. If a \verb{function()}
+is provided, it must be of the form
+\verb{function(y, d, g0_hat, g1_hat, m_hat, smpls)} and the returned output
+must be a named \code{list()} with elements \code{psi_a} and \code{psi_b}.
+Default is \code{"ATE"}.}
 
 \item{\code{trimming_rule}}{(\code{character(1)}) \cr
-A \code{character(1)} (\code{"truncate"} is the only choice) specifying the trimming approach. Default is \code{"truncate"}.}
+A \code{character(1)} (\code{"truncate"} is the only choice) specifying the
+trimming approach. Default is \code{"truncate"}.}
 
 \item{\code{trimming_threshold}}{(\code{numeric(1)}) \cr
 The threshold used for timming. Default is \code{1e-12}.}
 
 \item{\code{dml_procedure}}{(\code{character(1)}) \cr
-A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine learning algorithm. Default is \code{"dml2"}.}
+A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine
+learning algorithm. Default is \code{"dml2"}.}
 
 \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
-Indicates whether the sample splitting should be drawn during initialization of the object. Default is \code{TRUE}.}
+Indicates whether the sample splitting should be drawn during
+initialization of the object. Default is \code{TRUE}.}
 
 \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}

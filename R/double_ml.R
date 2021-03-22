@@ -10,15 +10,18 @@
 DoubleML = R6Class("DoubleML",
   public = list(
     #' @field all_coef (`matrix()`) \cr
-    #' Estimates of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()`.
+    #' Estimates of the causal parameter(s) for the `n_rep` different sample
+    #' splits after calling `fit()`.
     all_coef = NULL,
 
     #' @field all_dml1_coef (`array()`) \cr
-    #' Estimates of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()` with `dml_procedure = "dml1"`.
+    #' Estimates of the causal parameter(s) for the `n_rep` different sample
+    #' splits after calling `fit()` with `dml_procedure = "dml1"`.
     all_dml1_coef = NULL,
 
     #' @field all_se (`matrix()`) \cr
-    #' Standard errors of the causal parameter(s) for the `n_rep` different sample splits after calling `fit()`.
+    #' Standard errors of the causal parameter(s) for the `n_rep` different
+    #' sample splits after calling `fit()`.
     all_se = NULL,
 
     #' @field apply_cross_fitting (`logical(1)`) \cr
@@ -26,11 +29,13 @@ DoubleML = R6Class("DoubleML",
     apply_cross_fitting = NULL,
 
     #' @field boot_coef (`matrix()`) \cr
-    #' Bootstrapped coefficients for the causal parameter(s) after calling `fit()` and `bootstrap()`.
+    #' Bootstrapped coefficients for the causal parameter(s) after calling
+    #' `fit()` and `bootstrap()`.
     boot_coef = NULL,
 
     #' @field boot_t_stat (`matrix()`) \cr
-    #' Bootstrapped t-statistics for the causal parameter(s) after calling `fit()` and `bootstrap()`.
+    #' Bootstrapped t-statistics for the causal parameter(s) after calling
+    #' `fit()` and `bootstrap()`.
     boot_t_stat = NULL,
 
     #' @field coef (`numeric()`) \cr
@@ -42,11 +47,13 @@ DoubleML = R6Class("DoubleML",
     data = NULL,
 
     #' @field dml_procedure (`character(1)`) \cr
-    #' A `character()` (`"dml1"` or `"dml2"`) specifying the double machine learning algorithm. Default is `"dml2"`.
+    #' A `character()` (`"dml1"` or `"dml2"`) specifying the double machine
+    #' learning algorithm. Default is `"dml2"`.
     dml_procedure = NULL,
 
     #' @field draw_sample_splitting (`logical(1)`) \cr
-    #' Indicates whether the sample splitting should be drawn during initialization of the object. Default is `TRUE`.
+    #' Indicates whether the sample splitting should be drawn during
+    #' initialization of the object. Default is `TRUE`.
     draw_sample_splitting = NULL,
 
     #' @field learner (named `list()`) \cr
@@ -67,19 +74,23 @@ DoubleML = R6Class("DoubleML",
 
     #' @field psi (`array()`) \cr
     #' Value of the score function
-    #' \eqn{\psi(W;\theta, \eta)=\psi_a(W;\eta) \theta + \psi_b (W; \eta)} after calling `fit()`.
+    #' \eqn{\psi(W;\theta, \eta)=\psi_a(W;\eta) \theta + \psi_b (W; \eta)}
+    #' after calling `fit()`.
     psi = NULL,
 
     #' @field psi_a (`array()`) \cr
-    #' Value of the score function component \eqn{\psi_a(W;\eta)} after calling `fit()`.
+    #' Value of the score function component \eqn{\psi_a(W;\eta)} after
+    #' calling `fit()`.
     psi_a = NULL,
 
     #' @field psi_b (`array()`) \cr
-    #' Value of the score function component \eqn{\psi_b(W;\eta)} after calling `fit()`.
+    #' Value of the score function component \eqn{\psi_b(W;\eta)} after
+    #' calling `fit()`.
     psi_b = NULL,
 
     #' @field predictions (`array()`) \cr
-    #' Predictions of the nuisance models after calling `fit(store_predictions=TRUE)`.
+    #' Predictions of the nuisance models after calling
+    #' `fit(store_predictions=TRUE)`.
     predictions = NULL,
 
     #' @field pval (`numeric()`) \cr
@@ -116,10 +127,13 @@ DoubleML = R6Class("DoubleML",
     print = function() {
 
       class_name = class(self)[1]
-      header = paste0("================= ", class_name, " Object ==================\n")
+      header = paste0(
+        "================= ", class_name,
+        " Object ==================\n")
       data_info = paste0(
         "Outcome variable: ", self$data$y_col, "\n",
-        "Treatment variable(s): ", paste0(self$data$d_cols, collapse = ", "), "\n",
+        "Treatment variable(s): ", paste0(self$data$d_cols, collapse = ", "),
+        "\n",
         "Covariates: ", paste0(self$data$x_cols, collapse = ", "), "\n",
         "Instrument(s): ", paste0(self$data$z_cols, collapse = ", "), "\n",
         "No. Observations: ", self$data$n_obs, "\n")
@@ -134,11 +148,15 @@ DoubleML = R6Class("DoubleML",
           "DML algorithm: ", self$dml_procedure, "\n")
       }
       learner_info = character(length(self$learner))
-      for (i_lrn in 1:length(self$learner)) {
+      for (i_lrn in seq_len(length(self$learner))) {
         if (any(class(self$learner[[i_lrn]]) == "Learner")) {
-          learner_info[i_lrn] = paste0(self$learner_names()[[i_lrn]], ": ", self$learner[[i_lrn]]$id, "\n")
+          learner_info[i_lrn] = paste0(
+            self$learner_names()[[i_lrn]], ": ",
+            self$learner[[i_lrn]]$id, "\n")
         } else {
-          learner_info[i_lrn] = paste0(self$learner_names()[[i_lrn]], ": ", self$learner[i_lrn], "\n")
+          learner_info[i_lrn] = paste0(
+            self$learner_names()[[i_lrn]], ": ",
+            self$learner[i_lrn], "\n")
         }
       }
       resampling_info = paste0(
@@ -146,10 +164,14 @@ DoubleML = R6Class("DoubleML",
         "No. repeated sample splits: ", self$n_rep, "\n",
         "Apply cross-fitting: ", self$apply_cross_fitting, "\n")
       res = cat(header, "\n",
-        "\n------------------ Data summary      ------------------\n", data_info,
-        "\n------------------ Score & algorithm ------------------\n", score_info,
-        "\n------------------ Machine learner   ------------------\n", learner_info,
-        "\n------------------ Resampling        ------------------\n", resampling_info,
+        "\n------------------ Data summary      ------------------\n",
+        data_info,
+        "\n------------------ Score & algorithm ------------------\n",
+        score_info,
+        "\n------------------ Machine learner   ------------------\n",
+        learner_info,
+        "\n------------------ Resampling        ------------------\n",
+        resampling_info,
         "\n------------------ Fit summary       ------------------\n ",
         sep = "")
       self$summary()
@@ -161,7 +183,8 @@ DoubleML = R6Class("DoubleML",
     #' Estimate DoubleML models.
     #'
     #' @param store_predictions (`logical(1)`) \cr
-    #' Indicates whether the predictions for the nuisance functions should be be stored in field `predictions`. Default is `FALSE`.
+    #' Indicates whether the predictions for the nuisance functions should be
+    #' stored in field `predictions`. Default is `FALSE`.
     #'
     #' @return self
     fit = function(store_predictions = FALSE) {
@@ -204,8 +227,9 @@ DoubleML = R6Class("DoubleML",
       private$agg_cross_fit()
 
       self$t_stat = self$coef / self$se
-      self$pval = 2 * stats::pnorm(-abs(self$t_stat))
-      names(self$coef) = names(self$se) = names(self$t_stat) = names(self$pval) = self$data$d_cols
+      self$pval = 2 * pnorm(-abs(self$t_stat))
+      names(self$coef) = names(self$se) = names(self$t_stat) =
+        names(self$pval) = self$data$d_cols
 
       invisible(self)
     },
@@ -214,7 +238,8 @@ DoubleML = R6Class("DoubleML",
     #' Multiplier bootstrap for DoubleML models.
     #'
     #' @param method (`character(1)`) \cr
-    #' A `character(1)` (`"Bayes"`, `"normal"` or `"wild"`) specifying the multiplier bootstrap method.
+    #' A `character(1)` (`"Bayes"`, `"normal"` or `"wild"`) specifying the
+    #' multiplier bootstrap method.
     #'
     #' @param n_rep_boot (`integer(1)`) \cr
     #' The number of bootstrap replications.
@@ -224,8 +249,8 @@ DoubleML = R6Class("DoubleML",
       if (all(is.na(self$psi))) {
         stop("Apply fit() before bootstrap().")
       }
-      checkmate::assert_choice(method, c("normal", "Bayes", "wild"))
-      checkmate::assert_count(n_rep_boot, positive = TRUE)
+      assert_choice(method, c("normal", "Bayes", "wild"))
+      assert_count(n_rep_boot, positive = TRUE)
 
       private$initialize_boot_arrays(n_rep_boot)
 
@@ -257,14 +282,16 @@ DoubleML = R6Class("DoubleML",
     #' @description
     #' Draw sample splitting for DoubleML models.
     #'
-    #' The samples are drawn according to the attributes `n_folds`, `n_rep` and `apply_cross_fitting`.
+    #' The samples are drawn according to the attributes `n_folds`, `n_rep`
+    #' and `apply_cross_fitting`.
     #'
     #' @return self
     split_samples = function() {
-      dummy_task = mlr3::Task$new("dummy_resampling", "regr", self$data$data)
+      dummy_task = Task$new("dummy_resampling", "regr", self$data$data)
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+        message("apply_cross_fitting is set to FALSE.
+                Cross-fitting is not supported for n_folds = 1.")
         self$apply_cross_fitting = FALSE
       }
 
@@ -282,18 +309,22 @@ DoubleML = R6Class("DoubleML",
 
         smpls = lapply(1:self$n_rep, function(i_repeat) {
           list(
-            train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):(i_repeat * self$n_folds)],
-            test_ids = test_ids[((i_repeat - 1) * self$n_folds + 1):(i_repeat * self$n_folds)])
+            train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):
+            (i_repeat * self$n_folds)],
+            test_ids = test_ids[((i_repeat - 1) * self$n_folds + 1):
+            (i_repeat * self$n_folds)])
         })
       } else {
         if (self$n_folds > 2) {
-          stop("Estimation without cross-fitting not supported for n_folds > 2.")
+          stop("Estimation without cross-fitting not supported for
+               n_folds > 2.")
         }
 
         if (self$n_folds == 2) {
 
           if (self$n_rep != 1) {
-            stop("Repeated sample splitting without cross-fitting not implemented.")
+            stop("Repeated sample splitting without cross-fitting not
+                 implemented.")
           }
 
           dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
@@ -314,8 +345,10 @@ DoubleML = R6Class("DoubleML",
 
           smpls = lapply(1:self$n_rep, function(i_repeat) {
             list(
-              train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):(i_repeat * self$n_folds)],
-              test_ids = test_ids[((i_repeat - 1) * self$n_folds + 1):(i_repeat * self$n_folds)])
+              train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):
+              (i_repeat * self$n_folds)],
+              test_ids = test_ids[((i_repeat - 1) * self$n_folds + 1):
+              (i_repeat * self$n_folds)])
           })
         }
       }
@@ -325,18 +358,27 @@ DoubleML = R6Class("DoubleML",
     #' @description
     #' Set the sample splitting for DoubleML models.
     #'
-    #' The attributes `n_folds` and `n_rep` are derived from the provided partition.
+    #' The attributes `n_folds` and `n_rep` are derived from the provided
+    #' partition.
     #'
     #' @param smpls (`list()`) \cr
-    #' A nested `list()`. The outer lists needs to provide an entry per repeated sample splitting (length of the list is set as `n_rep`). The inner list is a named `list()` with names `train_ids` and `test_ids`. The entries in `train_ids` and `test_ids` must be partitions per fold (length of `train_ids` and `test_ids` is set as `n_folds`).
+    #' A nested `list()`. The outer lists needs to provide an entry per
+    #' repeated sample splitting (length of the list is set as `n_rep`).
+    #' The inner list is a named `list()` with names `train_ids` and `test_ids`.
+    #' The entries in `train_ids` and `test_ids` must be partitions per fold
+    #' (length of `train_ids` and `test_ids` is set as `n_folds`).
     #'
     #' @return self
     set_sample_splitting = function(smpls) {
 
-      checkmate::assert_list(smpls)
+      assert_list(smpls)
       self$n_rep = length(smpls)
-      n_folds_each_train_smpl = vapply(smpls, function(x) length(x$train_ids), integer(1L))
-      n_folds_each_test_smpl = vapply(smpls, function(x) length(x$test_ids), integer(1L))
+      n_folds_each_train_smpl = vapply(
+        smpls, function(x) length(x$train_ids),
+        integer(1L))
+      n_folds_each_test_smpl = vapply(
+        smpls, function(x) length(x$test_ids),
+        integer(1L))
 
       if (!all(n_folds_each_train_smpl == n_folds_each_test_smpl)) {
         stop("Number of folds for train and test samples do not match.")
@@ -349,7 +391,8 @@ DoubleML = R6Class("DoubleML",
       self$n_folds = n_folds_each_train_smpl[1]
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+        message("apply_cross_fitting is set to FALSE. Cross-fitting is not
+                supported for n_folds = 1.")
         self$apply_cross_fitting = FALSE
       }
 
@@ -362,50 +405,79 @@ DoubleML = R6Class("DoubleML",
     #' @description
     #' Hyperparameter-tuning for DoubleML models.
     #'
-    #' The hyperparameter-tuning is performed using the tuning methods provided in the [mlr3tuning](https://mlr3tuning.mlr-org.com/) package. For more information on tuning in [mlr3](https://mlr3.mlr-org.com/), we refer to the section on parameter tuning in the [mlr3 book](https://mlr3book.mlr-org.com/tuning.html).
+    #' The hyperparameter-tuning is performed using the tuning methods provided
+    #' in the [mlr3tuning](https://mlr3tuning.mlr-org.com/) package. For more
+    #' information on tuning in [mlr3](https://mlr3.mlr-org.com/), we refer to
+    #' the section on parameter tuning in the
+    #' [mlr3 book](https://mlr3book.mlr-org.com/tuning.html).
     #'
     #' @param param_set (named `list()`) \cr
-    #' A named `list` with a parameter grid for each nuisance model/learner (see method `learner_names()`). The parameter grid must be an object of class [ParamSet][paradox::ParamSet].
+    #' A named `list` with a parameter grid for each nuisance model/learner
+    #' (see method `learner_names()`). The parameter grid must be an object of
+    #' class [ParamSet][paradox::ParamSet].
     #'
     #' @param tune_settings (named `list()`) \cr
-    #' A named `list()` with arguments passed to the hyperparameter-tuning with [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects. `tune_settings` has entries
+    #' A named `list()` with arguments passed to the hyperparameter-tuning with
+    #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
+    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' `tune_settings` has entries
     #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
-    #' A [Terminator][bbotk::Terminator] object. Specification of `terminator` is required to perform tuning.
+    #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`
+    #' is required to perform tuning.
     #' * `algorithm` ([Tuner][mlr3tuning::Tuner] or `character(1)`) \cr
-    #' A [Tuner][mlr3tuning::Tuner] object (recommended) or key passed to the respective dictionary to specify the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to [tnr()][mlr3tuning::tnr()]. If `algorithm` is not specified by the users, default is set to `"grid_search"`. If set to `"grid_search"`, then additional argument `"resolution"` is required.
+    #' A [Tuner][mlr3tuning::Tuner] object (recommended) or key passed to the
+    #' respective dictionary to specify the tuning algorithm used in
+    #' [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to
+    #' [tnr()][mlr3tuning::tnr()]. If `algorithm` is not specified by the users,
+    #' default is set to `"grid_search"`. If set to `"grid_search"`, then
+    #' additional argument `"resolution"` is required.
     #' * `rsmp_tune` ([Resampling][mlr3::Resampling] or `character(1)`)\cr
-    #' A [Resampling][mlr3::Resampling] object (recommended) or option passed to [rsmp()][mlr3::mlr_sugar] to initialize a [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`. If not specified by the user, default is set to `"cv"` (cross-validation).
+    #' A [Resampling][mlr3::Resampling] object (recommended) or option passed
+    #' to [rsmp()][mlr3::mlr_sugar] to initialize a
+    #' [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`.
+    #' If not specified by the user, default is set to `"cv"`
+    #' (cross-validation).
     #' * `n_folds_tune` (`integer(1)`, optional) \cr
-    #' If `rsmp_tune = "cv"`, number of folds used for cross-validation. If not specified by the user, default is set to `5`.
+    #' If `rsmp_tune = "cv"`, number of folds used for cross-validation.
+    #' If not specified by the user, default is set to `5`.
     #' * `measure` (`NULL`, named `list()`, optional) \cr
-    #' Named list containing the measures used for parameter tuning. Entries in list must either be [Measure][mlr3::Measure] objects or keys to be passed to passed to [msr()][mlr3::msr()]. The names of the entries must match the learner names (see method `learner_names()`). If set to `NULL`, default measures are used, i.e., `"regr.mse"` for continuous outcome variables and `"classif.ce"` for binary outcomes.
-    #' * `resolution` (`character(1)`) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to [tnr()][mlr3tuning::tnr()].
+    #' Named list containing the measures used for parameter tuning. Entries in
+    #' list must either be [Measure][mlr3::Measure] objects or keys to be
+    #' passed to passed to [msr()][mlr3::msr()]. The names of the entries must
+    #' match the learner names (see method `learner_names()`). If set to `NULL`,
+    #' default measures are used, i.e., `"regr.mse"` for continuous outcome
+    #' variables and `"classif.ce"` for binary outcomes.
+    #' * `resolution` (`character(1)`) \cr The key passed to the respective
+    #' dictionary to specify  the tuning algorithm used in
+    #' [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to
+    #' [tnr()][mlr3tuning::tnr()].
     #'
     #' @param tune_on_folds (`logical(1)`) \cr
-    #' Indicates whether the tuning should be done fold-specific or globally. Default is `FALSE`.
+    #' Indicates whether the tuning should be done fold-specific or globally.
+    #' Default is `FALSE`.
     #'
     #' @return self
     tune = function(param_set, tune_settings = list(
       n_folds_tune = 5,
       rsmp_tune = mlr3::rsmp("cv", folds = 5),
       measure = NULL,
-      terminator = mlr3tuning::trm("evals", n_evals = 20),
+      terminator = mlr3tunin::trm("evals", n_evals = 20),
       algorithm = mlr3tuning::tnr("grid_search"),
       resolution = 5),
     tune_on_folds = FALSE) {
 
-      checkmate::assert_list(param_set)
+      assert_list(param_set)
       valid_learner = self$learner_names()
-      if (!checkmate::test_names(names(param_set), subset.of = valid_learner)) {
+      if (!test_names(names(param_set), subset.of = valid_learner)) {
         stop(paste(
           "Invalid param_set", paste0(names(param_set), collapse = ", "),
           "\n param_grids must be a named list with elements named",
           paste0(valid_learner, collapse = ", ")))
       }
       for (i_grid in seq_len(length(param_set))) {
-        checkmate::assert_class(param_set[[i_grid]], "ParamSet")
+        assert_class(param_set[[i_grid]], "ParamSet")
       }
-      checkmate::assert_logical(tune_on_folds, len = 1)
+      assert_logical(tune_on_folds, len = 1)
       tune_settings = private$assert_tune_settings(tune_settings)
 
       if (!self$apply_cross_fitting) {
@@ -479,7 +551,7 @@ DoubleML = R6Class("DoubleML",
     summary = function(digits = max(3L, getOption("digits") -
       3L)) {
       if (all(is.na(self$coef))) {
-        print("fit() not yet called.")
+        message("fit() not yet called.")
       } else {
         k = length(self$coef)
         table = matrix(NA, ncol = 4, nrow = k)
@@ -492,8 +564,12 @@ DoubleML = R6Class("DoubleML",
         private$summary_table = table
 
         if (length(k)) {
-          print("Estimates and significance testing of the effect of target variables")
-          res = as.matrix(stats::printCoefmat(private$summary_table, digits = digits, P.values = TRUE, has.Pvalue = TRUE))
+          print("Estimates and significance testing of the effect of target
+                variables")
+          res = as.matrix(printCoefmat(private$summary_table,
+            digits = digits,
+            P.values = TRUE,
+            has.Pvalue = TRUE))
           cat("\n")
         }
         else {
@@ -507,17 +583,21 @@ DoubleML = R6Class("DoubleML",
     #' Confidence intervals for DoubleML models.
     #'
     #' @param joint (`logical(1)`) \cr
-    #' Indicates whether joint confidence intervals are computed. Default is `FALSE`.
+    #' Indicates whether joint confidence intervals are computed.
+    #' Default is `FALSE`.
     #'
     #' @param level (`numeric(1)`) \cr
     #' The confidence level. Default is `0.95`.
     #'
     #' @param parm (`numeric()` or `character()`) \cr
-    #' A specification of which parameters are to be given confidence intervals among the variables for which inference was done, either a vector of numbers or a vector of names. If missing, all parameters are considered (default).
+    #' A specification of which parameters are to be given confidence intervals
+    #' among the variables for which inference was done, either a vector of
+    #' numbers or a vector of names. If missing, all parameters are considered
+    #' (default).
     #' @return A `matrix()` with the confidence interval(s).
     confint = function(parm, joint = FALSE, level = 0.95) {
-      checkmate::assert_logical(joint, len = 1)
-      checkmate::assert_numeric(level, len = 1)
+      assert_logical(joint, len = 1)
+      assert_numeric(level, len = 1)
       if (level <= 0 | level >= 1) {
         stop("'level' must be > 0 and < 1.")
       }
@@ -525,9 +605,9 @@ DoubleML = R6Class("DoubleML",
         parm = names(self$coef)
       }
       else {
-        checkmate::assert(
-          checkmate::check_character(parm, max.len = self$data$n_treat),
-          checkmate::check_numeric(parm, max.len = self$data$n_treat))
+        assert(
+          check_character(parm, max.len = self$data$n_treat),
+          check_numeric(parm, max.len = self$data$n_treat))
         if (is.numeric(parm)) {
           parm = names(self$coef)[parm]
         }
@@ -537,7 +617,7 @@ DoubleML = R6Class("DoubleML",
         a = (1 - level) / 2
         a = c(a, 1 - a)
         pct = format.perc(a, 3)
-        fac = stats::qnorm(a)
+        fac = qnorm(a)
         ci = array(NA_real_, dim = c(length(parm), 2L), dimnames = list(
           parm,
           pct))
@@ -552,11 +632,12 @@ DoubleML = R6Class("DoubleML",
         ci = array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
 
         if (all(is.na(self$boot_coef))) {
-          stop("Multiplier bootstrap has not yet been performed. First call bootstrap() and then try confint() again.")
+          stop("Multiplier bootstrap has not yet been performed.
+               First call bootstrap() and then try confint() again.")
         }
 
         sim = apply(abs(self$boot_t_stat), 2, max)
-        hatc = stats::quantile(sim, probs = 1 - a)
+        hatc = quantile(sim, probs = 1 - a)
 
         ci[, 1] = self$coef[parm] - hatc * self$se[parm]
         ci[, 2] = self$coef[parm] + hatc * self$se[parm]
@@ -580,29 +661,41 @@ DoubleML = R6Class("DoubleML",
     #' @description
     #' Set hyperparameters for the nuisance models of DoubleML models.
     #'
-    #' Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific.
+    #' Note that in the current implementation, either all parameters have to
+    #' be set globally or all parameters have to be provided fold-specific.
     #'
     #' @param learner (`character(1)`) \cr
     #' The nuisance model/learner (see method `params_names`).
     #'
     #' @param treat_var (`character(1)`) \cr
-    #' The treatment varaible (hyperparameters can be set treatment-variable specific).
+    #' The treatment varaible (hyperparameters can be set treatment-variable
+    #' specific).
     #'
     #' @param params (named `list()`) \cr
-    #' A named `list()` with estimator parameters. Parameters are used for all folds by default. Alternatively, parameters can be passed in a fold-specific way if option  `fold_specific`is `TRUE`. In this case, the outer list needs to be of length `n_rep` and the inner list of length `n_folds`.
+    #' A named `list()` with estimator parameters. Parameters are used for all
+    #' folds by default. Alternatively, parameters can be passed in a
+    #' fold-specific way if option  `fold_specific`is `TRUE`. In this case, the
+    #' outer list needs to be of length `n_rep` and the inner list of length
+    #' `n_folds`.
     #'
     #' @param set_fold_specific (`logical(1)`) \cr
-    #' Indicates if the parameters passed in `params` should be passed in fold-specific way. Default is `FALSE`. If `TRUE`, the outer list needs to be of length `n_rep` and the inner list of length `n_folds`. Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific.
+    #' Indicates if the parameters passed in `params` should be passed in
+    #' fold-specific way. Default is `FALSE`. If `TRUE`, the outer list needs
+    #' to be of length `n_rep` and the inner list of length `n_folds`.
+    #' Note that in the current implementation, either all parameters have to
+    #' be set globally or all parameters have to be provided fold-specific.
     #'
     #' @return self
-    set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params, set_fold_specific = FALSE) {
-      valid_learner = self$params_names()
-      checkmate::assert_character(learner, len = 1)
-      checkmate::assert_choice(learner, valid_learner)
+    set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
+      set_fold_specific = FALSE) {
 
-      checkmate::assert_choice(treat_var, self$data$d_cols)
-      checkmate::assert_list(params)
-      checkmate::assert_logical(set_fold_specific, len = 1)
+      valid_learner = self$params_names()
+      assert_character(learner, len = 1)
+      assert_choice(learner, valid_learner)
+
+      assert_choice(treat_var, self$data$d_cols)
+      assert_list(params)
+      assert_logical(set_fold_specific, len = 1)
 
       if (!set_fold_specific) {
         if (private$fold_specific_params) {
@@ -626,11 +719,16 @@ DoubleML = R6Class("DoubleML",
     #' Multiple testing adjustment for DoubleML models.
     #'
     #' @param method (`character(1)`) \cr
-    #' A `character(1)`(`"romano-wolf"`, `"bonferroni"`, `"holm"`, etc) specifying the adjustment method. In addition to `"romano-wolf"`, all methods implemented in [p.adjust()][stats::p.adjust()] can be applied. Default is `"romano-wolf"`.
+    #' A `character(1)`(`"romano-wolf"`, `"bonferroni"`, `"holm"`, etc)
+    #' specifying the adjustment method. In addition to `"romano-wolf"`,
+    #' all methods implemented in [p.adjust()][stats::p.adjust()] can be
+    #' applied. Default is `"romano-wolf"`.
     #' @param return_matrix (`logical(1)`) \cr
-    #' Indicates if the output is returned as a matrix with corresponding coefficient names.
+    #' Indicates if the output is returned as a matrix with corresponding
+    #' coefficient names.
     #'
-    #' @return `numeric()` with adjusted p-values. If `return_matrix = TRUE`, a `matrix()` with adjusted p_values.
+    #' @return `numeric()` with adjusted p-values. If `return_matrix = TRUE`,
+    #' a `matrix()` with adjusted p_values.
     p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
       if (all(is.na(self$coef))) {
         stop("apply fit() before p_adust().")
@@ -653,7 +751,9 @@ DoubleML = R6Class("DoubleML",
             sim = apply(abs(boot_t_stat), 2, max)
             pinit[i_d] = pmin(1, mean(sim > abs(t_stat[stepdown_ind][i_d])))
           } else {
-            sim = apply(abs(boot_t_stat[-stepdown_ind[1:(i_d - 1)], , drop = FALSE]), 2, max)
+            sim = apply(
+              abs(boot_t_stat[-stepdown_ind[1:(i_d - 1)], , drop = FALSE]), 2,
+              max)
             pinit[i_d] = pmin(1, mean(sim > abs(t_stat[stepdown_ind][i_d])))
           }
         }
@@ -667,10 +767,14 @@ DoubleML = R6Class("DoubleML",
         }
         p_val = p_val_corrected[ro]
       } else {
-        if (is.element(method, stats::p.adjust.methods)) {
-          p_val = stats::p.adjust(self$pval, method = method, n = self$data$n_treat)
+        if (is.element(method, p.adjust.methods)) {
+          p_val = p.adjust(self$pval,
+            method = method,
+            n = self$data$n_treat)
         } else {
-          stop(paste("Invalid method", method, "argument specified in p_adjust()."))
+          stop(paste(
+            "Invalid method", method,
+            "argument specified in p_adjust()."))
         }
       }
 
@@ -691,8 +795,8 @@ DoubleML = R6Class("DoubleML",
     #' @return named `list()`with paramers for the nuisance model/learner.
     get_params = function(learner) {
       valid_learner = self$params_names()
-      checkmate::assert_character(learner, len = 1)
-      checkmate::assert_choice(learner, valid_learner)
+      assert_character(learner, len = 1)
+      assert_choice(learner, valid_learner)
 
       if (private$fold_specific_params) {
         params = self$params[[learner]][[self$data$treat_col]][[private$i_rep]]
@@ -718,7 +822,7 @@ DoubleML = R6Class("DoubleML",
       apply_cross_fitting) {
       # check and pick up obj_dml_data
 
-      checkmate::assert_class(data, "DoubleMLData")
+      assert_class(data, "DoubleMLData")
       private$check_data(data)
       self$data = data
 
@@ -729,10 +833,10 @@ DoubleML = R6Class("DoubleML",
       private$fold_specific_params = FALSE
 
       # check resampling specifications
-      checkmate::assert_count(n_folds)
-      checkmate::assert_count(n_rep)
-      checkmate::assert_logical(apply_cross_fitting, len = 1)
-      checkmate::assert_logical(draw_sample_splitting, len = 1)
+      assert_count(n_folds)
+      assert_count(n_rep)
+      assert_logical(apply_cross_fitting, len = 1)
+      assert_logical(draw_sample_splitting, len = 1)
 
       # set resampling specifications
       self$n_folds = n_folds
@@ -741,21 +845,24 @@ DoubleML = R6Class("DoubleML",
       self$draw_sample_splitting = draw_sample_splitting
 
       # check and set dml_procedure and score
-      checkmate::assert_choice(dml_procedure, c("dml1", "dml2"))
+      assert_choice(dml_procedure, c("dml1", "dml2"))
       self$dml_procedure = dml_procedure
       self$score = private$check_score(score)
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message("apply_cross_fitting is set to FALSE. Cross-fitting is not supported for n_folds = 1.")
+        message("apply_cross_fitting is set to FALSE.
+                Cross-fitting is not supported for n_folds = 1.")
         self$apply_cross_fitting = FALSE
       }
 
       if (!self$apply_cross_fitting) {
         if (self$n_folds > 2) {
-          stop("Estimation without cross-fitting not supported for n_folds > 2.")
+          stop("Estimation without cross-fitting not supported for
+               n_folds > 2.")
         }
         if (self$dml_procedure == "dml2") {
-          # redirect to dml1 which works out-of-the-box; dml_procedure is of no relevance without cross-fitting
+          # redirect to dml1 which works out-of-the-box; dml_procedure is of no
+          # relevance without cross-fitting
           self$dml_procedure = "dml1"
         }
       }
@@ -770,7 +877,8 @@ DoubleML = R6Class("DoubleML",
       # initialize arrays according to obj_dml_data and the resampling settings
       private$initialize_arrays()
 
-      # also initialize bootstrap arrays with the default number of bootstrap replications
+      # also initialize bootstrap arrays with the default number of
+      # bootstrap replications
       private$initialize_boot_arrays(n_rep_boot = 500)
 
       # initialize instance attributes which are later used for iterating
@@ -778,27 +886,32 @@ DoubleML = R6Class("DoubleML",
     },
     assert_learner = function(learner, learner_name, Regr, Classif) {
 
-      checkmate::assert(
-        checkmate::check_character(learner, max.len = 1),
-        checkmate::check_class(learner, "Learner"))
+      assert(
+        check_character(learner, max.len = 1),
+        check_class(learner, "Learner"))
 
       if (is.character(learner)) {
-        # warning("Learner provision by character() will be deprecated in the future.")
+        # warning("Learner provision by character() will be deprecated in the
+        # future.")
         learner = lrn(learner)
       }
 
-      if (Regr & checkmate::test_class(learner, "LearnerRegr")) {
+      if (Regr & test_class(learner, "LearnerRegr")) {
         private$learner_class[learner_name] = "LearnerRegr"
       }
-      if (Classif & checkmate::test_class(learner, "LearnerClassif")) {
+      if (Classif & test_class(learner, "LearnerClassif")) {
         private$learner_class[learner_name] = "LearnerClassif"
       }
 
-      if ((Regr & !Classif & !checkmate::test_class(learner, "LearnerRegr"))) {
-        stop(paste0("Invalid learner provided for ", learner_name, ": must be of class 'LearnerRegr'"))
+      if ((Regr & !Classif & !test_class(learner, "LearnerRegr"))) {
+        stop(paste0(
+          "Invalid learner provided for ", learner_name,
+          ": must be of class 'LearnerRegr'"))
       }
-      if ((Classif & !Regr & !checkmate::test_class(learner, "LearnerClassif"))) {
-        stop(paste0("Invalid learner provided for ", learner_name, ": must be of class 'LearnerClassif'"))
+      if ((Classif & !Regr & !test_class(learner, "LearnerClassif"))) {
+        stop(paste0(
+          "Invalid learner provided for ", learner_name,
+          ": must be of class 'LearnerClassif'"))
       }
       invisible(learner)
     },
@@ -806,26 +919,27 @@ DoubleML = R6Class("DoubleML",
 
       valid_learner = self$learner_names()
 
-      if (!checkmate::test_names(names(tune_settings), must.include = "terminator")) {
+      if (!test_names(names(tune_settings), must.include = "terminator")) {
         stop(paste(
           "Invalid tune_settings\n",
           "object 'terminator' is missing."))
       }
-      checkmate::assert_class(tune_settings$terminator, "Terminator")
+      assert_class(tune_settings$terminator, "Terminator")
 
-      if (checkmate::test_names(names(tune_settings), must.include = "n_folds_tune")) {
-        checkmate::assert_integerish(tune_settings$n_folds_tune, len = 1, lower = 2)
+      if (test_names(names(tune_settings), must.include = "n_folds_tune")) {
+        assert_integerish(tune_settings$n_folds_tune, len = 1, lower = 2)
       } else {
         tune_settings$n_folds_tune = 5
       }
 
-      if (checkmate::test_names(names(tune_settings), must.include = "rsmp_tune")) {
-        checkmate::assert(
-          checkmate::check_character(tune_settings$rsmp_tune),
-          checkmate::check_class(tune_settings$rsmp_tune, "Resampling"))
-        if (!checkmate::test_class(tune_settings$rsmp_tune, "Resampling")) {
+      if (test_names(names(tune_settings), must.include = "rsmp_tune")) {
+        assert(
+          check_character(tune_settings$rsmp_tune),
+          check_class(tune_settings$rsmp_tune, "Resampling"))
+        if (!test_class(tune_settings$rsmp_tune, "Resampling")) {
           if (tune_settings$rsmp_tune == "cv") {
-            tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune, folds = tune_settings$n_folds_tune)
+            tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune,
+              folds = tune_settings$n_folds_tune)
           } else {
             tune_settings$rsmp_tune = rsmp(tune_settings$rsmp_tune)
           }
@@ -834,18 +948,20 @@ DoubleML = R6Class("DoubleML",
         tune_settings$rsmp_tune = rsmp("cv", folds = tune_settings$n_folds_tune)
       }
 
-      if (checkmate::test_names(names(tune_settings), must.include = "measure")) {
-        checkmate::assert_list(tune_settings$measure)
-        if (!checkmate::test_names(names(tune_settings$measure), subset.of = valid_learner)) {
+      if (test_names(names(tune_settings), must.include = "measure")) {
+        assert_list(tune_settings$measure)
+        if (!test_names(names(tune_settings$measure),
+          subset.of = valid_learner)) {
           stop(paste(
-            "Invalid name of measure", paste0(names(tune_settings$measure), collapse = ", "),
+            "Invalid name of measure", paste0(names(tune_settings$measure),
+              collapse = ", "),
             "\n measure must be a named list with elements named",
             paste0(valid_learner, collapse = ", ")))
         }
         for (i_msr in seq_len(length(tune_settings$measure))) {
-          checkmate::assert(
-            checkmate::check_character(tune_settings$measure[[i_msr]]),
-            checkmate::check_class(tune_settings$measure[[i_msr]], "Measure"))
+          assert(
+            check_character(tune_settings$measure[[i_msr]]),
+            check_class(tune_settings$measure[[i_msr]], "Measure"))
         }
       } else {
         tune_settings$measure = rep(list(NA), length(valid_learner))
@@ -853,7 +969,7 @@ DoubleML = R6Class("DoubleML",
       }
 
       for (i_msr in seq_len(length(tune_settings$measure))) {
-        if (!checkmate::test_class(tune_settings$measure[[i_msr]], "Measure")) {
+        if (!test_class(tune_settings$measure[[i_msr]], "Measure")) {
           this_learner = names(tune_settings$measure)[i_msr]
           tune_settings$measure[[this_learner]] = set_default_measure(
             tune_settings$measure[[this_learner]],
@@ -861,22 +977,22 @@ DoubleML = R6Class("DoubleML",
         }
       }
 
-      if (!checkmate::test_names(names(tune_settings), must.include = "algorithm")) {
+      if (!test_names(names(tune_settings), must.include = "algorithm")) {
         tune_settings$algorithm = "grid_search"
       } else {
-        checkmate::assert(
-          checkmate::check_character(tune_settings$algorithm, len = 1),
-          checkmate::check_class(tune_settings$algorithm, "Tuner"))
+        assert(
+          check_character(tune_settings$algorithm, len = 1),
+          check_class(tune_settings$algorithm, "Tuner"))
       }
 
-      if (checkmate::test_character(tune_settings$algorithm)) {
+      if (test_character(tune_settings$algorithm)) {
         if (tune_settings$algorithm == "grid_search") {
           if (is.null(tune_settings$resolution)) {
             stop(paste(
               "Invalid tune_settings\n",
               "object 'resolution' is missing."))
           } else {
-            checkmate::assert_count(tune_settings$resolution, positive = TRUE)
+            assert_count(tune_settings$resolution, positive = TRUE)
           }
           tune_settings$tuner = tnr(tune_settings$algorithm,
             resolution = tune_settings$resolution)
@@ -889,9 +1005,15 @@ DoubleML = R6Class("DoubleML",
     },
     initialize_arrays = function() {
 
-      self$psi = array(NA, dim = c(self$data$n_obs, self$n_rep, self$data$n_treat))
-      self$psi_a = array(NA, dim = c(self$data$n_obs, self$n_rep, self$data$n_treat))
-      self$psi_b = array(NA, dim = c(self$data$n_obs, self$n_rep, self$data$n_treat))
+      self$psi = array(NA, dim = c(
+        self$data$n_obs, self$n_rep,
+        self$data$n_treat))
+      self$psi_a = array(NA, dim = c(
+        self$data$n_obs, self$n_rep,
+        self$data$n_treat))
+      self$psi_b = array(NA, dim = c(
+        self$data$n_obs, self$n_rep,
+        self$data$n_treat))
 
       self$coef = array(NA, dim = c(self$data$n_treat))
       self$se = array(NA, dim = c(self$data$n_treat))
@@ -901,45 +1023,72 @@ DoubleML = R6Class("DoubleML",
 
       if (self$dml_procedure == "dml1") {
         if (self$apply_cross_fitting) {
-          self$all_dml1_coef = array(NA, dim = c(self$data$n_treat, self$n_rep, self$n_folds))
+          self$all_dml1_coef = array(NA, dim = c(
+            self$data$n_treat, self$n_rep,
+            self$n_folds))
         } else {
-          self$all_dml1_coef = array(NA, dim = c(self$data$n_treat, self$n_rep, 1))
+          self$all_dml1_coef = array(NA, dim = c(
+            self$data$n_treat, self$n_rep,
+            1))
         }
       }
     },
     initialize_boot_arrays = function(n_rep_boot) {
       private$n_rep_boot = n_rep_boot
-      self$boot_coef = array(NA, dim = c(self$data$n_treat, n_rep_boot * self$n_rep))
-      self$boot_t_stat = array(NA, dim = c(self$data$n_treat, n_rep_boot * self$n_rep))
+      self$boot_coef = array(NA, dim = c(
+        self$data$n_treat,
+        n_rep_boot * self$n_rep))
+      self$boot_t_stat = array(NA, dim = c(
+        self$data$n_treat,
+        n_rep_boot * self$n_rep))
     },
     initialize_predictions = function() {
       self$predictions = sapply(self$params_names(),
-        function(key) array(NA, dim = c(self$data$n_obs, self$n_rep, self$data$n_treat)),
+        function(key) {
+          array(NA, dim = c(
+            self$data$n_obs, self$n_rep,
+            self$data$n_treat))
+        },
         simplify = F)
     },
     store_predictions = function(preds) {
-      for (learner in self$params_names())
-      {
+      for (learner in self$params_names()) {
         if (!is.null(preds[[learner]])) {
-          self$predictions[[learner]][, private$i_rep, private$i_treat] = preds[[learner]]
+          self$predictions[[learner]][
+            , private$i_rep,
+            private$i_treat] = preds[[learner]]
         }
       }
     },
-    # Comment from python: The private properties with __ always deliver the single treatment, single (cross-fitting) sample subselection
-    # The slicing is based on the two properties self._i_treat, the index of the treatment variable, and
+    # Comment from python: The private properties with __ always deliver the
+    # single treatment, single (cross-fitting) sample subselection
+    # The slicing is based on the two properties self._i_treat,
+    # the index of the treatment variable, and
     # self._i_rep, the index of the cross-fitting sample.
     get__smpls = function() self$smpls[[private$i_rep]],
     get__psi_a = function() self$psi_a[, private$i_rep, private$i_treat],
-    set__psi_a = function(value) self$psi_a[, private$i_rep, private$i_treat] = value,
+    set__psi_a = function(value) {
+      self$psi_a[, private$i_rep, private$i_treat] = value
+    },
     get__psi_b = function() self$psi_b[, private$i_rep, private$i_treat],
-    set__psi_b = function(value) self$psi_b[, private$i_rep, private$i_treat] = value,
+    set__psi_b = function(value) {
+      self$psi_b[, private$i_rep, private$i_treat] = value
+    },
     get__psi = function() self$psi[, private$i_rep, private$i_treat],
-    set__psi = function(value) self$psi[, private$i_rep, private$i_treat] = value,
+    set__psi = function(value) {
+      self$psi[, private$i_rep, private$i_treat] = value
+    },
     get__all_coef = function() self$all_coef[private$i_treat, private$i_rep],
-    set__all_dml1_coef = function(value) self$all_dml1_coef[private$i_treat, private$i_rep, ] = value,
-    set__all_coef = function(value) self$all_coef[private$i_treat, private$i_rep] = value,
+    set__all_dml1_coef = function(value) {
+      self$all_dml1_coef[private$i_treat, private$i_rep, ] = value
+    },
+    set__all_coef = function(value) {
+      self$all_coef[private$i_treat, private$i_rep] = value
+    },
     get__all_se = function() self$all_se[private$i_treat, private$i_rep],
-    set__all_se = function(value) self$all_se[private$i_treat, private$i_rep] = value,
+    set__all_se = function(value) {
+      self$all_se[private$i_treat, private$i_rep] = value
+    },
     set__boot_coef = function(value) {
       ind_start = (private$i_rep - 1) * private$n_rep_boot + 1
       ind_end = private$i_rep * private$n_rep_boot
@@ -957,9 +1106,10 @@ DoubleML = R6Class("DoubleML",
       test_ids = smpls$test_ids
 
       if (dml_procedure == "dml1") {
-        # Note that length(test_ids) is only not equal to self.n_folds if self$apply_cross_fitting ==False
+        # Note that length(test_ids) is only not equal to self.n_folds
+        # if self$apply_cross_fitting ==False
         thetas = rep(NA, length(test_ids))
-        for (i_fold in 1:length(test_ids)) {
+        for (i_fold in seq_len(length(test_ids))) {
           test_index = test_ids[[i_fold]]
           thetas[i_fold] = private$orth_est(inds = test_index)
         }
@@ -986,11 +1136,14 @@ DoubleML = R6Class("DoubleML",
     },
     agg_cross_fit = function() {
       # aggregate parameters from the repeated cross-fitting
-      # don't use the getter (always for one treatment variable and one sample), but the private variable
-      self$coef = apply(self$all_coef, 1, function(x) stats::median(x, na.rm = TRUE))
+      # don't use the getter (always for one treatment variable and one sample),
+      # but the private variable
+      self$coef = apply(
+        self$all_coef, 1,
+        function(x) median(x, na.rm = TRUE))
       self$se = sqrt(apply(
         self$all_se^2 + (self$all_coef - self$coef)^2, 1,
-        function(x) stats::median(x, na.rm = TRUE)))
+        function(x) median(x, na.rm = TRUE)))
 
       invisible(self)
     },
@@ -1009,17 +1162,20 @@ DoubleML = R6Class("DoubleML",
 
       if (self$apply_cross_fitting) {
         if (dml_procedure == "dml1") {
-          boot_coefs = boot_t_stat = matrix(NA, nrow = n_rep_boot, ncol = self$n_folds)
+          boot_coefs = boot_t_stat = matrix(NA,
+            nrow = n_rep_boot,
+            ncol = self$n_folds)
           ii = 0
           for (i_fold in 1:self$n_folds) {
             test_index = test_ids[[i_fold]]
             n_obs_in_fold = length(test_index)
 
             J = mean(private$get__psi_a()[test_index])
-            boot_coefs[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*% private$get__psi()[test_index] / (
-              n_obs_in_fold * J)
-            boot_t_stat[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*% private$get__psi()[test_index] / (
-              n_obs_in_fold * private$get__all_se() * J)
+            boot_coefs[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*%
+              private$get__psi()[test_index] / (n_obs_in_fold * J)
+            boot_t_stat[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*%
+              private$get__psi()[test_index] /
+              (n_obs_in_fold * private$get__all_se() * J)
             ii = ii + n_obs_in_fold
           }
           boot_coef = rowMeans(boot_coefs)
@@ -1028,13 +1184,16 @@ DoubleML = R6Class("DoubleML",
         else if (dml_procedure == "dml2") {
           J = mean(private$get__psi_a())
           boot_coef = weights %*% private$get__psi() / (n_obs * J)
-          boot_t_stat = weights %*% private$get__psi() / (n_obs * private$get__all_se() * J)
+          boot_t_stat = weights %*% private$get__psi() /
+            (n_obs * private$get__all_se() * J)
         }
 
       } else {
         J = mean(private$get__psi_a()[test_index])
-        boot_coef = weights %*% private$get__psi()[test_index] / (n_obs * private$get__all_se() * J)
-        boot_t_stat = weights %*% private$get__psi()[test_index] / (n_obs * J)
+        boot_coef = weights %*% private$get__psi()[test_index] /
+          (n_obs * private$get__all_se() * J)
+        boot_t_stat = weights %*% private$get__psi()[test_index] /
+          (n_obs * J)
       }
 
       res = list(boot_coef = boot_coef, boot_t_stat = boot_t_stat)
