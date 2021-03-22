@@ -115,7 +115,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
       use_other_treat_as_covariate = FALSE)
     D7_setd = D7$set_data_model("d2")
 
-    expect_error(double_ml_data_from_data_frame(data))
+    expect_error(double_ml_data_from_data_frame(data), 
+                 regexp = "Column indices y_col and d_cols not specified.")
 
     expect_equal(D1$data, D4$data)
     expect_equal(D2$data, D5$data)
@@ -133,10 +134,6 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
     expect_identical(D1$data[, c("y", "d", "z")], D1b$data)
     expect_identical(D4$data, D4b$data)
     expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
-
-
-
-
 
     # Instantiate DoubleMLData
     data = data.table::data.table(data)
