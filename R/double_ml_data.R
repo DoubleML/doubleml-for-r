@@ -136,20 +136,17 @@ DoubleMLData = R6Class("DoubleMLData", public = list(
     if (y_col %in% x_cols) {
       stop(paste(
         "Invalid model specification.\n",
-        "Dependent variable must not be an element of the control
-        variables X."))
+        "Dependent variable must not be an element of the control variables X."))
     }
     if (any(z_cols %in% x_cols)) {
       stop(paste(
         "Invalid model specification.\n",
-        "Instrumental variables must not be an element of the control
-        variables X."))
+        "Instrumental variables must not be an element of the control variables X."))
     }
     if (any(z_cols %in% d_cols)) {
       stop(paste(
         "Invalid model specification.\n",
-        "Instrumental variables must not be an element of the treatment
-        variables d."))
+        "Instrumental variables must not be an element of the treatment variables d."))
     }
 
 
@@ -202,13 +199,11 @@ DoubleMLData = R6Class("DoubleMLData", public = list(
     check_subset(treatment_var, self$d_cols)
 
     if (treatment_var %in% self$x_cols) {
-      stop("The specified treatment variable must not be an element of the
-           control variables X.")
+      stop("The specified treatment variable must not be an element of the control variables X.")
     }
 
     if (any(self$d_cols %in% self$x_cols)) {
-      stop("The specified treatment variables must not be an element of the
-           control variables X.")
+      stop("The specified treatment variables must not be an element of the control variables X.")
     }
 
     self$treat_col = treatment_var
@@ -311,14 +306,12 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   if (any(z_cols %in% x_cols)) {
     stop(paste(
       "Invalid model specification.\n",
-      "Instrumental variables must not be an element of the control
-      variables X."))
+      "Instrumental variables must not be an element of the control variables X."))
   }
   if (any(z_cols %in% d_cols)) {
     stop(paste(
       "Invalid model specification.\n",
-      "Instrumental variables must not be an element of the treatment
-      variables d."))
+      "Instrumental variables must not be an element of the treatment variables d."))
   }
 
   if (!is.null(x_cols)) {
