@@ -1,10 +1,10 @@
 context("Regression tests for dml estimates for partial linear regression model, 'IV-type'")
 
 test_cases = expand.grid(
-  model = c("plr"),
+  model = "plr",
   learner = c("regr.lm", "regr.glmnet"),
   dml_procedure = c("dml1", "dml2"),
-  score = c("IV-type"),
+  score = "IV-type",
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
@@ -42,10 +42,10 @@ patrick::with_parameters_test_that("Regression tests for dlm estimates for parti
 context("Regression tests for dml estimates for partial linear regression model, 'partialling out'")
 
 test_cases = expand.grid(
-  model = c("plr"),
+  model = "plr",
   learner = c("regr.lm", "regr.glmnet"),
   dml_procedure = c("dml1", "dml2"),
-  score = c("partialling out"),
+  score = "partialling out",
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 

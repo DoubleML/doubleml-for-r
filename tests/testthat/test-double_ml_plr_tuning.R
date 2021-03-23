@@ -16,8 +16,8 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = "regr.rpart",
     m_learner = "regr.rpart",
-    dml_procedure = c("dml2"),
-    score = c("partialling out"),
+    dml_procedure = "dml2",
+    score = "partialling out",
     n_rep = c(1),
     tune_on_folds = c(FALSE, TRUE),
     i_setting = 1:(length(data_plr)),

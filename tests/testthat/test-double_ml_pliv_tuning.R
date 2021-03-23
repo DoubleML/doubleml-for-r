@@ -8,7 +8,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 
 # settings for parameter provision
-learner = c("regr.rpart")
+learner = "regr.rpart"
 
 tune_settings = list(
   n_folds_tune = 2,
@@ -28,17 +28,17 @@ tune_settings = list(
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    dml_procedure = c("dml2"),
-    score = c("partialling out"),
+    dml_procedure = "dml2",
+    score = "partialling out",
     i_setting = 1:(length(data_pliv)),
     n_rep = c(1),
-    tune_on_folds = c(FALSE),
+    tune_on_folds = FALSE,
     z_indx = c(1),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     dml_procedure = c("dml1", "dml2"),
-    score = c("partialling out"),
+    score = "partialling out",
     i_setting = 1:(length(data_pliv)),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),

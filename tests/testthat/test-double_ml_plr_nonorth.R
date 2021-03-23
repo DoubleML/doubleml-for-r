@@ -15,8 +15,8 @@ non_orth_score = function(y, d, g_hat, m_hat, smpls) {
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = c("regr.cv_glmnet"),
-    dml_procedure = c("dml1"),
+    learner = "regr.cv_glmnet",
+    dml_procedure = "dml1",
     score = c(non_orth_score),
     n_folds = c(3),
     n_rep = c(2),

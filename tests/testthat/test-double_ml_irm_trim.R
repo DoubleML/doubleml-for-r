@@ -6,8 +6,8 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     learner = c("rpart"),
-    dml_procedure = c("dml2"),
-    score = c("ATTE"),
+    dml_procedure = "dml2",
+    score = "ATTE",
     trimming_rule = c("truncate"),
     trimming_threshold = c(0.05),
     i_setting = 1:(length(data_irm)),

@@ -6,10 +6,10 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = c("regr.lm"),
-    dml_procedure = c("dml1"),
-    score = c("IV-type"),
-    set_params = c(FALSE),
+    learner = "regr.lm",
+    dml_procedure = "dml1",
+    score = "IV-type",
+    set_params = FALSE,
     n_folds = c(4),
     n_rep = c(1),
     apply_cross_fitting = c(TRUE),
@@ -17,8 +17,8 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = c("regr.cv_glmnet"),
-    dml_procedure = c("dml1"),
+    learner = "regr.cv_glmnet",
+    dml_procedure = "dml1",
     score = c("IV-type", "partialling out"),
     set_params = c(TRUE, FALSE),
     n_folds = c(1, 5),

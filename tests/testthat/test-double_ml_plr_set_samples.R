@@ -7,16 +7,16 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = c("regr.cv_glmnet"), # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
-    dml_procedure = c("dml2"),
-    score = c("partialling out"),
+    learner = "regr.cv_glmnet", # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
+    dml_procedure = "dml2",
+    score = "partialling out",
     i_setting = 1:(length(data_plr)),
     n_folds = c(2),
     n_rep = c(1),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = c("regr.cv_glmnet"), # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
+    learner = "regr.cv_glmnet", # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
     i_setting = 1:(length(data_plr)),

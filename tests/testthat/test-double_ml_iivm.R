@@ -8,8 +8,8 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     learner = c("cv_glmnet"),
-    dml_procedure = c("dml2"),
-    score = c("LATE"),
+    dml_procedure = "dml2",
+    score = "LATE",
     i_setting = 1:(length(data_iivm)),
     trimming_threshold = c(0),
     stringsAsFactors = FALSE)
@@ -17,7 +17,7 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = c("cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
-    score = c("LATE"),
+    score = "LATE",
     i_setting = 1:(length(data_iivm)),
     trimming_threshold = c(0),
     stringsAsFactors = FALSE)

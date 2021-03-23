@@ -5,10 +5,10 @@ library("mlr3learners")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 test_cases = expand.grid(
-  g_learner = c("regr.cv_glmnet"),
-  m_learner = c("regr.cv_glmnet"),
-  dml_procedure = c("dml2"),
-  score = c("partialling out"),
+  g_learner = "regr.cv_glmnet",
+  m_learner = "regr.cv_glmnet",
+  dml_procedure = "dml2",
+  score = "partialling out",
   i_setting = 1:(length(data_plr)),
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")

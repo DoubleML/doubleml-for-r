@@ -11,8 +11,8 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     learner = learner,
-    dml_procedure = c("dml2"),
-    score = c("LATE"),
+    dml_procedure = "dml2",
+    score = "LATE",
     i_setting = 1:(length(data_iivm)),
     n_rep = c(1),
     stringsAsFactors = FALSE)
@@ -20,7 +20,7 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = learner,
     dml_procedure = c("dml1", "dml2"),
-    score = c("LATE"),
+    score = "LATE",
     i_setting = 1:(length(data_iivm)),
     n_rep = c(1, 3),
     stringsAsFactors = FALSE)

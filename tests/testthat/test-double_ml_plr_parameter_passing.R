@@ -3,7 +3,7 @@ context("Unit tests for parameter passing for PLR")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision
-learner = c("regr.rpart")
+learner = "regr.rpart"
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 learner_list_mlr3 = list("mlmethod_m" = lrn(learner), "mlmethod_g" = lrn(learner))
@@ -13,8 +13,8 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     learner = learner,
-    dml_procedure = c("dml2"),
-    score = c("partialling out"),
+    dml_procedure = "dml2",
+    score = "partialling out",
     i_setting = 1:(length(data_plr)),
     n_rep = c(1),
     stringsAsFactors = FALSE)
