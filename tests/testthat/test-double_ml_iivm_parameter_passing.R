@@ -3,7 +3,7 @@ context("Unit tests for parameter passing of IIVM")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision
-learner = c("rpart")
+learner = "rpart"
 
 learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m" = learner)
 

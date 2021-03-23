@@ -7,7 +7,7 @@ logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision
-learner = c("rpart")
+learner = "rpart"
 
 learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
