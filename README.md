@@ -104,10 +104,9 @@ remotes::install_github("DoubleML/doubleml-for-r")
 
 If you use the DoubleML package a citation is highly appreciated:
 
-Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2020),
-DoubleML - An Object-Oriented Implementation of Double Machine Learning
-in R, 2021. arXiv:[2103.09603](https://arxiv.org/abs/2103.09603)
-\[stat.ML\].
+Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M., DoubleML - An
+Object-Oriented Implementation of Double Machine Learning in R, 2021.
+arXiv:[2103.09603](https://arxiv.org/abs/2103.09603) \[stat.ML\].
 
 Bibtex-entry:
 
