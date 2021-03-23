@@ -7,7 +7,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = c("cv_glmnet"),
+    learner = "cv_glmnet",
     dml_procedure = "dml2",
     score = "ATE",
     i_setting = 1:(length(data_irm)),
@@ -16,7 +16,7 @@ if (on_cran) {
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
-    learner = c("cv_glmnet"),
+    learner = "cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
     i_setting = 1:(length(data_irm)),

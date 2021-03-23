@@ -8,7 +8,7 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     g_learner = c("regr.cv_glmnet", "classif.cv_glmnet"),
-    m_learner = c("classif.cv_glmnet"),
+    m_learner = "classif.cv_glmnet",
     dml_procedure = "dml2",
     score = "partialling out",
     i_setting = 1:(length(data_plr)),
@@ -16,7 +16,7 @@ if (on_cran) {
 } else {
   test_cases = expand.grid(
     g_learner = "regr.cv_glmnet",
-    m_learner = c("classif.cv_glmnet"),
+    m_learner = "classif.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
     i_setting = 1:(length(data_plr)),
