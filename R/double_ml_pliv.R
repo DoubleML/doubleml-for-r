@@ -665,9 +665,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         check_class(score, "function"))
       if (is.character(score)) {
         valid_score = c("partialling out")
-        if (!(score %in% valid_score)) {
-          assertChoice(score, valid_score)
-        }
+        assertChoice(score, valid_score)
       }
       return(score)
     },

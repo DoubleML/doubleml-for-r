@@ -259,9 +259,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         check_class(score, "function"))
       if (is.character(score)) {
         valid_score = c("IV-type", "partialling out")
-        if (!(score %in% valid_score)) {
-          assertChoice(score, valid_score)
-        }
+        assertChoice(score, valid_score)
       }
       return(score)
     },

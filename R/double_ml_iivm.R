@@ -454,9 +454,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         check_class(score, "function"))
       if (is.character(score)) {
         valid_score = c("LATE")
-        if (!(score %in% valid_score)) {
-          assertChoice(score, valid_score)
-        }
+        assertChoice(score, valid_score)
       }
       return(score)
     },
