@@ -16,7 +16,10 @@ Partially linear regression (PLR) models take the form
 
 \eqn{D = m_0(X) + V,}
 
-with \eqn{E[\zeta|D,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable variable and \eqn{D} is the policy variable of interest. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
+with \eqn{E[\zeta|D,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome
+variable variable and \eqn{D} is the policy variable of interest.
+The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other
+confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
 }
 \examples{
 \donttest{
@@ -45,16 +48,18 @@ ml_m = ml_g$clone()
 obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
 dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 
-param_grid = list("ml_g" = paradox::ParamSet$new(
-                     list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                          paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-                 "ml_m" = paradox::ParamSet$new(
-                     list(paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-                          paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+param_grid = list(
+  "ml_g" = paradox::ParamSet$new(list(
+    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
+  "ml_m" = paradox::ParamSet$new(list(
+    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
+    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
 
 # minimum requirements for tune_settings
-tune_settings = list(terminator = mlr3tuning::trm("evals", n_evals = 5), 
-                      algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+tune_settings = list(
+  terminator = mlr3tuning::trm("evals", n_evals = 5),
+  algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
 dml_plr_obj$tune(param_set = param_grid, tune_settings = tune_settings)
 dml_plr_obj$fit()
 dml_plr_obj$summary()
@@ -120,15 +125,35 @@ Creates a new instance of this R6 class.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{data}}{(\code{DoubleMLData}) \cr
-The \code{DoubleMLData} object providing the data and specifying the variables of the causal model.}
+The \code{DoubleMLData} object providing the data and specifying the
+variables of the causal model.}
 
 \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)},) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
-Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner}
+to pass a learner, possibly with specified parameters, for example
+\code{lrn("regr.cv_glmnet", s = "lambda.min")}.
+Alternatively, a \code{character(1)} specifying the name of a
+\link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in
+\href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages
+\href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
+\href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners},
+for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.}
 
-\item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)},) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to pass a learner, possibly with specified parameters, for example \code{lrn("regr.cv_glmnet", s = "lambda.min")}. For binary treatment variables, an object of the class \code{\link[mlr3:LearnerClassif]{LearnerClassif}} can be passed, for example \code{lrn("classif.cv_glmnet", s = "lambda.min")}. Alternatively, a \code{character(1)} specifying the name of a \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example \code{"regr.cv_glmnet"}. \cr
+\item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)},) \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to
+pass a learner, possibly with specified parameters, for example
+\code{lrn("regr.cv_glmnet", s = "lambda.min")}. For binary treatment
+variables, an object of the class
+\code{\link[mlr3:LearnerClassif]{LearnerClassif}} can be passed, for example
+\code{lrn("classif.cv_glmnet", s = "lambda.min")}. Alternatively, a
+\code{character(1)} specifying the name of a
+\link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in
+\href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages
+\href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
+\href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}, for example
+\code{"regr.cv_glmnet"}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[D|X]}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
@@ -138,15 +163,20 @@ Number of folds. Default is \code{5}.}
 Number of repetitions for the sample splitting. Default is \code{1}.}
 
 \item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
-A \code{character(1)} (\code{"partialling out"} or \code{IV-type}) or a \verb{function()} specifying the score function.
-If a \verb{function()} is provided, it must be of the form \verb{function(y, d, g_hat, m_hat, smpls)} and
-the returned output must be a named \code{list()} with elements \code{psi_a} and \code{psi_b}. Default is \code{"partialling out"}.}
+A \code{character(1)} (\code{"partialling out"} or \code{IV-type}) or a \verb{function()}
+specifying the score function.
+If a \verb{function()} is provided, it must be of the form
+\verb{function(y, d, g_hat, m_hat, smpls)} and
+the returned output must be a named \code{list()} with elements \code{psi_a} and
+\code{psi_b}. Default is \code{"partialling out"}.}
 
 \item{\code{dml_procedure}}{(\code{character(1)}) \cr
-A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine learning algorithm. Default is \code{"dml2"}.}
+A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine
+learning algorithm. Default is \code{"dml2"}.}
 
 \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
-Indicates whether the sample splitting should be drawn during initialization of the object. Default is \code{TRUE}.}
+Indicates whether the sample splitting should be drawn during
+initialization of the object. Default is \code{TRUE}.}
 
 \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}

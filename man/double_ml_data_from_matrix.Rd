@@ -2,7 +2,8 @@
 % Please edit documentation in R/double_ml_data.R
 \name{double_ml_data_from_matrix}
 \alias{double_ml_data_from_matrix}
-\title{Wrapper for Double machine learning data-backend initialization from matrix.}
+\title{Wrapper for Double machine learning data-backend initialization
+from matrix.}
 \usage{
 double_ml_data_from_matrix(
   X = NULL,
@@ -27,10 +28,13 @@ Matrix of treatment variables.}
 Matrix of instruments.}
 
 \item{data_class}{(\code{character(1)}) \cr
-Class of returned object. By default, an object of class \code{DoubleMLData} is returned. Setting \code{data_class = "data.table"} returns an object of class \code{data.table}.}
+Class of returned object. By default, an object of class \code{DoubleMLData} is
+returned. Setting \code{data_class = "data.table"} returns an object of class
+\code{data.table}.}
 
 \item{use_other_treat_as_covariate}{(\code{logical(1)}) \cr
-Indicates whether in the multiple-treatment case the other treatment variables should be added as covariates. Default is \code{TRUE}.}
+Indicates whether in the multiple-treatment case the other treatment
+variables should be added as covariates. Default is \code{TRUE}.}
 }
 \value{
 Creates a new instance of class \code{DoubleMLData}.
@@ -40,7 +44,8 @@ Initalization of DoubleMLData from \code{matrix()} objects.
 }
 \examples{
 matrix_list = make_plr_CCDDHNR2018(return_type = "matrix")
-obj_dml_data = double_ml_data_from_matrix(X = matrix_list$X, 
-                                          y = matrix_list$y, 
-                                          d = matrix_list$d)
+obj_dml_data = double_ml_data_from_matrix(
+  X = matrix_list$X,
+  y = matrix_list$y,
+  d = matrix_list$d)
 }

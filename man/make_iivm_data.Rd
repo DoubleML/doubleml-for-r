@@ -26,10 +26,16 @@ The value of the causal parameter.}
 The value of the parameter \eqn{\alpha_x}.}
 
 \item{return_type}{(\code{character(1)}) \cr
-If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object. If \code{"data.frame"} returns a \code{data.frame()}. If \code{"data.table"} returns a \code{data.table()}. If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and \code{z} is returned. Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
+If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object.
+If \code{"data.frame"} returns a \code{data.frame()}.
+If \code{"data.table"} returns a \code{data.table()}.
+If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and \code{z}
+is returned.
+Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
 }
 \description{
-Generates data from a interactive IV regression (IIVM) model. The data generating process is defined as
+Generates data from a interactive IV regression (IIVM) model.
+The data generating process is defined as
 
 \eqn{d_i = 1\left\lbrace \alpha_x Z + v_i > 0 \right\rbrace,}
 
@@ -37,13 +43,21 @@ Generates data from a interactive IV regression (IIVM) model. The data generatin
 
 \eqn{Z \sim \textstyle{Bernoulli} (0.5)} and
 
-\eqn{\left(\begin{array}{c} u_i \\ v_i \end{array} \right) \sim \mathcal{N}\left(0, \left(\begin{array}{cc} 1 & 0.3 \\ 0.3 & 1 \end{array} \right) \right).}
+\eqn{\left(\begin{array}{c} u_i \\ v_i \end{array} \right) \sim
+\mathcal{N}\left(0, \left(\begin{array}{cc} 1 & 0.3 \\ 0.3 & 1
+\end{array} \right) \right).}
 
-The covariates :\eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma} is a matrix with entries
-\eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{1}{j^2}}.
+The covariates :\eqn{x_i \sim \mathcal{N}(0, \Sigma)}, where  \eqn{\Sigma}
+is a matrix with entries
+\eqn{\Sigma_{kj} = 0.5^{|j-k|}} and \eqn{\beta} is a \code{dim_x}-vector with
+entries \eqn{\beta_j=\frac{1}{j^2}}.
 
-The data generating process is inspired by a process used in the simulation experiment of Farbmacher, Gruber and Klaaßen (2020).
+The data generating process is inspired by a process used in the
+simulation experiment of Farbmacher, Gruber and Klaaßen (2020).
 }
 \references{
-Farbmacher, H., Guber, R. and Klaaßen, S. (2020). Instrument Validity Tests with Causal Forests. MEA Discussion Paper No. 13-2020. Available at SSRN: \doi{10.2139/ssrn.3619201}.
+Farbmacher, H., Guber, R. and Klaaßen, S. (2020).
+Instrument Validity Tests with Causal Forests.
+MEA Discussion Paper No. 13-2020.
+Available at SSRN:\doi{10.2139/ssrn.3619201}.
 }

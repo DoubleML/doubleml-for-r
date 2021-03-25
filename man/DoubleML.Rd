@@ -21,22 +21,27 @@ Other DoubleML:
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
 \item{\code{all_coef}}{(\code{matrix()}) \cr
-Estimates of the causal parameter(s) for the \code{n_rep} different sample splits after calling \code{fit()}.}
+Estimates of the causal parameter(s) for the \code{n_rep} different sample
+splits after calling \code{fit()}.}
 
 \item{\code{all_dml1_coef}}{(\code{array()}) \cr
-Estimates of the causal parameter(s) for the \code{n_rep} different sample splits after calling \code{fit()} with \code{dml_procedure = "dml1"}.}
+Estimates of the causal parameter(s) for the \code{n_rep} different sample
+splits after calling \code{fit()} with \code{dml_procedure = "dml1"}.}
 
 \item{\code{all_se}}{(\code{matrix()}) \cr
-Standard errors of the causal parameter(s) for the \code{n_rep} different sample splits after calling \code{fit()}.}
+Standard errors of the causal parameter(s) for the \code{n_rep} different
+sample splits after calling \code{fit()}.}
 
 \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}
 
 \item{\code{boot_coef}}{(\code{matrix()}) \cr
-Bootstrapped coefficients for the causal parameter(s) after calling \code{fit()} and \code{bootstrap()}.}
+Bootstrapped coefficients for the causal parameter(s) after calling
+\code{fit()} and \code{bootstrap()}.}
 
 \item{\code{boot_t_stat}}{(\code{matrix()}) \cr
-Bootstrapped t-statistics for the causal parameter(s) after calling \code{fit()} and \code{bootstrap()}.}
+Bootstrapped t-statistics for the causal parameter(s) after calling
+\code{fit()} and \code{bootstrap()}.}
 
 \item{\code{coef}}{(\code{numeric()}) \cr
 Estimates for the causal parameter(s) after calling \code{fit()}.}
@@ -45,10 +50,12 @@ Estimates for the causal parameter(s) after calling \code{fit()}.}
 Data object.}
 
 \item{\code{dml_procedure}}{(\code{character(1)}) \cr
-A \code{character()} (\code{"dml1"} or \code{"dml2"}) specifying the double machine learning algorithm. Default is \code{"dml2"}.}
+A \code{character()} (\code{"dml1"} or \code{"dml2"}) specifying the double machine
+learning algorithm. Default is \code{"dml2"}.}
 
 \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
-Indicates whether the sample splitting should be drawn during initialization of the object. Default is \code{TRUE}.}
+Indicates whether the sample splitting should be drawn during
+initialization of the object. Default is \code{TRUE}.}
 
 \item{\code{learner}}{(named \code{list()}) \cr
 The machine learners for the nuisance functions.}
@@ -64,16 +71,20 @@ The hyperparameters of the learners.}
 
 \item{\code{psi}}{(\code{array()}) \cr
 Value of the score function
-\eqn{\psi(W;\theta, \eta)=\psi_a(W;\eta) \theta + \psi_b (W; \eta)} after calling \code{fit()}.}
+\eqn{\psi(W;\theta, \eta)=\psi_a(W;\eta) \theta + \psi_b (W; \eta)}
+after calling \code{fit()}.}
 
 \item{\code{psi_a}}{(\code{array()}) \cr
-Value of the score function component \eqn{\psi_a(W;\eta)} after calling \code{fit()}.}
+Value of the score function component \eqn{\psi_a(W;\eta)} after
+calling \code{fit()}.}
 
 \item{\code{psi_b}}{(\code{array()}) \cr
-Value of the score function component \eqn{\psi_b(W;\eta)} after calling \code{fit()}.}
+Value of the score function component \eqn{\psi_b(W;\eta)} after
+calling \code{fit()}.}
 
 \item{\code{predictions}}{(\code{array()}) \cr
-Predictions of the nuisance models after calling \code{fit(store_predictions=TRUE)}.}
+Predictions of the nuisance models after calling
+\code{fit(store_predictions=TRUE)}.}
 
 \item{\code{pval}}{(\code{numeric()}) \cr
 p-values for the causal parameter(s) after calling \code{fit()}.}
@@ -148,7 +159,8 @@ Estimate DoubleML models.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{store_predictions}}{(\code{logical(1)}) \cr
-Indicates whether the predictions for the nuisance functions should be be stored in field \code{predictions}. Default is \code{FALSE}.}
+Indicates whether the predictions for the nuisance functions should be
+stored in field \code{predictions}. Default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -169,7 +181,8 @@ Multiplier bootstrap for DoubleML models.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{method}}{(\code{character(1)}) \cr
-A \code{character(1)} (\code{"Bayes"}, \code{"normal"} or \code{"wild"}) specifying the multiplier bootstrap method.}
+A \code{character(1)} (\code{"Bayes"}, \code{"normal"} or \code{"wild"}) specifying the
+multiplier bootstrap method.}
 
 \item{\code{n_rep_boot}}{(\code{integer(1)}) \cr
 The number of bootstrap replications.}
@@ -186,7 +199,8 @@ self
 \subsection{Method \code{split_samples()}}{
 Draw sample splitting for DoubleML models.
 
-The samples are drawn according to the attributes \code{n_folds}, \code{n_rep} and \code{apply_cross_fitting}.
+The samples are drawn according to the attributes \code{n_folds}, \code{n_rep}
+and \code{apply_cross_fitting}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$split_samples()}\if{html}{\out{</div>}}
 }
@@ -201,7 +215,8 @@ self
 \subsection{Method \code{set_sample_splitting()}}{
 Set the sample splitting for DoubleML models.
 
-The attributes \code{n_folds} and \code{n_rep} are derived from the provided partition.
+The attributes \code{n_folds} and \code{n_rep} are derived from the provided
+partition.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_sample_splitting(smpls)}\if{html}{\out{</div>}}
 }
@@ -210,7 +225,11 @@ The attributes \code{n_folds} and \code{n_rep} are derived from the provided par
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{smpls}}{(\code{list()}) \cr
-A nested \code{list()}. The outer lists needs to provide an entry per repeated sample splitting (length of the list is set as \code{n_rep}). The inner list is a named \code{list()} with names \code{train_ids} and \code{test_ids}. The entries in \code{train_ids} and \code{test_ids} must be partitions per fold (length of \code{train_ids} and \code{test_ids} is set as \code{n_folds}).}
+A nested \code{list()}. The outer lists needs to provide an entry per
+repeated sample splitting (length of the list is set as \code{n_rep}).
+The inner list is a named \code{list()} with names \code{train_ids} and \code{test_ids}.
+The entries in \code{train_ids} and \code{test_ids} must be partitions per fold
+(length of \code{train_ids} and \code{test_ids} is set as \code{n_folds}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -224,12 +243,16 @@ self
 \subsection{Method \code{tune()}}{
 Hyperparameter-tuning for DoubleML models.
 
-The hyperparameter-tuning is performed using the tuning methods provided in the \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} package. For more information on tuning in \href{https://mlr3.mlr-org.com/}{mlr3}, we refer to the section on parameter tuning in the \href{https://mlr3book.mlr-org.com/tuning.html}{mlr3 book}.
+The hyperparameter-tuning is performed using the tuning methods provided
+in the \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} package. For more
+information on tuning in \href{https://mlr3.mlr-org.com/}{mlr3}, we refer to
+the section on parameter tuning in the
+\href{https://mlr3book.mlr-org.com/tuning.html}{mlr3 book}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
   param_set,
   tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5),
-    measure = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
+    measure = NULL, terminator = mlr3tunin::trm("evals", n_evals = 20), algorithm =
     mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
 )}\if{html}{\out{</div>}}
@@ -239,26 +262,51 @@ The hyperparameter-tuning is performed using the tuning methods provided in the 
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{param_set}}{(named \code{list()}) \cr
-A named \code{list} with a parameter grid for each nuisance model/learner (see method \code{learner_names()}). The parameter grid must be an object of class \link[paradox:ParamSet]{ParamSet}.}
+A named \code{list} with a parameter grid for each nuisance model/learner
+(see method \code{learner_names()}). The parameter grid must be an object of
+class \link[paradox:ParamSet]{ParamSet}.}
 
 \item{\code{tune_settings}}{(named \code{list()}) \cr
-A named \code{list()} with arguments passed to the hyperparameter-tuning with \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up \link[mlr3tuning:TuningInstanceSingleCrit]{TuningInstance} objects. \code{tune_settings} has entries
+A named \code{list()} with arguments passed to the hyperparameter-tuning with
+\href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up
+\link[mlr3tuning:TuningInstanceSingleCrit]{TuningInstance} objects.
+\code{tune_settings} has entries
 \itemize{
 \item \code{terminator} (\link[bbotk:Terminator]{Terminator}) \cr
-A \link[bbotk:Terminator]{Terminator} object. Specification of \code{terminator} is required to perform tuning.
+A \link[bbotk:Terminator]{Terminator} object. Specification of \code{terminator}
+is required to perform tuning.
 \item \code{algorithm} (\link[mlr3tuning:Tuner]{Tuner} or \code{character(1)}) \cr
-A \link[mlr3tuning:Tuner]{Tuner} object (recommended) or key passed to the respective dictionary to specify the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{algorithm} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}. If \code{algorithm} is not specified by the users, default is set to \code{"grid_search"}. If set to \code{"grid_search"}, then additional argument \code{"resolution"} is required.
+A \link[mlr3tuning:Tuner]{Tuner} object (recommended) or key passed to the
+respective dictionary to specify the tuning algorithm used in
+\link[mlr3tuning:tnr]{tnr()}. \code{algorithm} is passed as an argument to
+\link[mlr3tuning:tnr]{tnr()}. If \code{algorithm} is not specified by the users,
+default is set to \code{"grid_search"}. If set to \code{"grid_search"}, then
+additional argument \code{"resolution"} is required.
 \item \code{rsmp_tune} (\link[mlr3:Resampling]{Resampling} or \code{character(1)})\cr
-A \link[mlr3:Resampling]{Resampling} object (recommended) or option passed to \link[mlr3:mlr_sugar]{rsmp()} to initialize a \link[mlr3:Resampling]{Resampling} for parameter tuning in \code{mlr3}. If not specified by the user, default is set to \code{"cv"} (cross-validation).
+A \link[mlr3:Resampling]{Resampling} object (recommended) or option passed
+to \link[mlr3:mlr_sugar]{rsmp()} to initialize a
+\link[mlr3:Resampling]{Resampling} for parameter tuning in \code{mlr3}.
+If not specified by the user, default is set to \code{"cv"}
+(cross-validation).
 \item \code{n_folds_tune} (\code{integer(1)}, optional) \cr
-If \code{rsmp_tune = "cv"}, number of folds used for cross-validation. If not specified by the user, default is set to \code{5}.
+If \code{rsmp_tune = "cv"}, number of folds used for cross-validation.
+If not specified by the user, default is set to \code{5}.
 \item \code{measure} (\code{NULL}, named \code{list()}, optional) \cr
-Named list containing the measures used for parameter tuning. Entries in list must either be \link[mlr3:Measure]{Measure} objects or keys to be passed to passed to \link[mlr3:mlr_sugar]{msr()}. The names of the entries must match the learner names (see method \code{learner_names()}). If set to \code{NULL}, default measures are used, i.e., \code{"regr.mse"} for continuous outcome variables and \code{"classif.ce"} for binary outcomes.
-\item \code{resolution} (\code{character(1)}) \cr The key passed to the respective dictionary to specify  the tuning algorithm used in \link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to \link[mlr3tuning:tnr]{tnr()}.
+Named list containing the measures used for parameter tuning. Entries in
+list must either be \link[mlr3:Measure]{Measure} objects or keys to be
+passed to passed to \link[mlr3:mlr_sugar]{msr()}. The names of the entries must
+match the learner names (see method \code{learner_names()}). If set to \code{NULL},
+default measures are used, i.e., \code{"regr.mse"} for continuous outcome
+variables and \code{"classif.ce"} for binary outcomes.
+\item \code{resolution} (\code{character(1)}) \cr The key passed to the respective
+dictionary to specify  the tuning algorithm used in
+\link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to
+\link[mlr3tuning:tnr]{tnr()}.
 }}
 
 \item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
-Indicates whether the tuning should be done fold-specific or globally. Default is \code{FALSE}.}
+Indicates whether the tuning should be done fold-specific or globally.
+Default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -297,10 +345,14 @@ Confidence intervals for DoubleML models.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{parm}}{(\code{numeric()} or \code{character()}) \cr
-A specification of which parameters are to be given confidence intervals among the variables for which inference was done, either a vector of numbers or a vector of names. If missing, all parameters are considered (default).}
+A specification of which parameters are to be given confidence intervals
+among the variables for which inference was done, either a vector of
+numbers or a vector of names. If missing, all parameters are considered
+(default).}
 
 \item{\code{joint}}{(\code{logical(1)}) \cr
-Indicates whether joint confidence intervals are computed. Default is \code{FALSE}.}
+Indicates whether joint confidence intervals are computed.
+Default is \code{FALSE}.}
 
 \item{\code{level}}{(\code{numeric(1)}) \cr
 The confidence level. Default is \code{0.95}.}
@@ -343,7 +395,8 @@ Returns the names of the nuisance models with hyperparameters.
 \subsection{Method \code{set_ml_nuisance_params()}}{
 Set hyperparameters for the nuisance models of DoubleML models.
 
-Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific.
+Note that in the current implementation, either all parameters have to
+be set globally or all parameters have to be provided fold-specific.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_ml_nuisance_params(
   learner = NULL,
@@ -360,13 +413,22 @@ Note that in the current implementation, either all parameters have to be set gl
 The nuisance model/learner (see method \code{params_names}).}
 
 \item{\code{treat_var}}{(\code{character(1)}) \cr
-The treatment varaible (hyperparameters can be set treatment-variable specific).}
+The treatment varaible (hyperparameters can be set treatment-variable
+specific).}
 
 \item{\code{params}}{(named \code{list()}) \cr
-A named \code{list()} with estimator parameters. Parameters are used for all folds by default. Alternatively, parameters can be passed in a fold-specific way if option  \code{fold_specific}is \code{TRUE}. In this case, the outer list needs to be of length \code{n_rep} and the inner list of length \code{n_folds}.}
+A named \code{list()} with estimator parameters. Parameters are used for all
+folds by default. Alternatively, parameters can be passed in a
+fold-specific way if option  \code{fold_specific}is \code{TRUE}. In this case, the
+outer list needs to be of length \code{n_rep} and the inner list of length
+\code{n_folds}.}
 
 \item{\code{set_fold_specific}}{(\code{logical(1)}) \cr
-Indicates if the parameters passed in \code{params} should be passed in fold-specific way. Default is \code{FALSE}. If \code{TRUE}, the outer list needs to be of length \code{n_rep} and the inner list of length \code{n_folds}. Note that in the current implementation, either all parameters have to be set globally or all parameters have to be provided fold-specific.}
+Indicates if the parameters passed in \code{params} should be passed in
+fold-specific way. Default is \code{FALSE}. If \code{TRUE}, the outer list needs
+to be of length \code{n_rep} and the inner list of length \code{n_folds}.
+Note that in the current implementation, either all parameters have to
+be set globally or all parameters have to be provided fold-specific.}
 }
 \if{html}{\out{</div>}}
 }
@@ -387,15 +449,20 @@ Multiple testing adjustment for DoubleML models.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{method}}{(\code{character(1)}) \cr
-A \code{character(1)}(\code{"romano-wolf"}, \code{"bonferroni"}, \code{"holm"}, etc) specifying the adjustment method. In addition to \code{"romano-wolf"}, all methods implemented in \link[stats:p.adjust]{p.adjust()} can be applied. Default is \code{"romano-wolf"}.}
+A \code{character(1)}(\code{"romano-wolf"}, \code{"bonferroni"}, \code{"holm"}, etc)
+specifying the adjustment method. In addition to \code{"romano-wolf"},
+all methods implemented in \link[stats:p.adjust]{p.adjust()} can be
+applied. Default is \code{"romano-wolf"}.}
 
 \item{\code{return_matrix}}{(\code{logical(1)}) \cr
-Indicates if the output is returned as a matrix with corresponding coefficient names.}
+Indicates if the output is returned as a matrix with corresponding
+coefficient names.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-\code{numeric()} with adjusted p-values. If \code{return_matrix = TRUE}, a \code{matrix()} with adjusted p_values.
+\code{numeric()} with adjusted p-values. If \code{return_matrix = TRUE},
+a \code{matrix()} with adjusted p_values.
 }
 }
 \if{html}{\out{<hr>}}
