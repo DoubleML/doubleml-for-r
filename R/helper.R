@@ -130,7 +130,7 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
       select_cols = X_cols,
       learner_class = learner_class)
   })
-  ml_learner = initiate_learner(learner, learner_class, params = list())
+  ml_learner = initiate_learner(learner, learner_class, params = learner$param_set$values)
   tuning_instance = lapply(task_tune, function(x) {
     TuningInstanceSingleCrit$new(
       task = x,
