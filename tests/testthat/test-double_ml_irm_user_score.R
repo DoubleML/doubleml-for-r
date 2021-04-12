@@ -40,7 +40,7 @@ if (on_cran) {
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
-patrick::with_parameters_test_that("Unit tests for IRM:",
+patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
   .cases = test_cases, {
     n_rep_boot = 498
 
