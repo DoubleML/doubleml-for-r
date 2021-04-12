@@ -14,7 +14,7 @@ score_fct = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
     psi_a = psi_a,
     psi_b = psi_b)
 }
-  
+
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
@@ -52,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
-    
+
     set.seed(i_setting)
     double_mlpliv_obj_score = DoubleMLPLIV$new(data_ml,
       n_folds = 5,

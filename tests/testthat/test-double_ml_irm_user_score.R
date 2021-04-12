@@ -9,7 +9,7 @@ score_fct = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
   n_obs = length(y)
   u1_hat = y - g1_hat
   u0_hat = y - g0_hat
-  
+
   psi_b = g1_hat - g0_hat + d * (u1_hat) / m_hat -
     (1 - d) * u0_hat / (1 - m_hat)
   psi_a = rep(-1, n_obs)
@@ -60,7 +60,7 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
     double_mlirm_obj$fit()
     theta_obj = double_mlirm_obj$coef
     se_obj = double_mlirm_obj$se
-    
+
     set.seed(i_setting)
     double_mlirm_obj_score = DoubleMLIRM$new(data_ml,
       n_folds = 5,

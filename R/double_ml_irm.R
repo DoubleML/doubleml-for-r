@@ -256,7 +256,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
             self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
         }
       }
-      
+
       if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
         m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
         m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold

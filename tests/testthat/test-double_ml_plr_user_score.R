@@ -57,7 +57,7 @@ patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
     t_obj = double_mlplr_obj$t_stat
     pval_obj = double_mlplr_obj$pval
     ci_obj = double_mlplr_obj$confint(level = 0.95, joint = FALSE)
-    
+
     set.seed(i_setting)
     double_mlplr_obj_score = DoubleMLPLR$new(
       data = data_ml,
@@ -66,7 +66,7 @@ patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score_fct)
-        double_mlplr_obj_score$fit()
+    double_mlplr_obj_score$fit()
     theta_obj_score = double_mlplr_obj_score$coef
     se_obj_score = double_mlplr_obj_score$se
     t_obj_score = double_mlplr_obj_score$t_stat

@@ -4,9 +4,9 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-score_fct =  function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
-                      r1_hat, smpls) {
-  
+score_fct = function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
+  r1_hat, smpls) {
+
   u0_hat = y - g0_hat
   u1_hat = y - g1_hat
   w0_hat = d - r0_hat
@@ -14,8 +14,8 @@ score_fct =  function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
   psi_b = g1_hat - g0_hat + z * (u1_hat) / m_hat -
     (1 - z) * u0_hat / (1 - m_hat)
   psi_a = -1 * (r1_hat - r0_hat + z * (w1_hat) / m_hat -
-                  (1 - z) * w0_hat / (1 - m_hat))
-  
+    (1 - z) * w0_hat / (1 - m_hat))
+
   psis = list(psi_a = psi_a, psi_b = psi_b)
   return(psis)
 }
@@ -47,7 +47,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
     set.seed(i_setting)
     # params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
     Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in%
-                                             c("y", "d", "z") == FALSE]
+      c("y", "d", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
       y_col = "y",
       d_cols = "d", x_cols = Xnames, z_col = "z")
@@ -63,7 +63,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
     double_mliivm_obj$fit()
     theta_obj = double_mliivm_obj$coef
     se_obj = double_mliivm_obj$se
-    
+
     set.seed(i_setting)
     double_mliivm_obj_score = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
@@ -76,7 +76,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
     double_mliivm_obj_score$fit()
     theta_obj_score = double_mliivm_obj_score$coef
     se_obj_score = double_mliivm_obj_score$se
-    
+
     expect_equal(theta_obj, theta_obj_score, tolerance = 1e-8)
     expect_equal(se_obj, se_obj_score, tolerance = 1e-8)
   }
