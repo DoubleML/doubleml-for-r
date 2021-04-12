@@ -224,7 +224,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         fold_specific_params = private$fold_specific_params)
 
       g1_hat = NULL
-      if (self$score == "ATE" | is.function(self$score)) {
+      if ((is.character(self$score) && self$score == "ATE") | is.function(self$score)) {
         g1_hat = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
@@ -248,7 +248,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       return(res)
     },
     score_elements = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
-      if (self$score == "ATTE") {
+      if (is.character(self$score) && self$score == "ATTE") {
         # fraction of treated for ATTE
         p_hat = vector("numeric", length = self$data$n_obs)
         for (i_fold in seq_len(length(smpls$test_ids))) {
@@ -256,7 +256,6 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
             self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
         }
       }
-      u0_hat = y - g0_hat
 
       if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
         m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
@@ -264,6 +263,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       }
 
       if (is.character(self$score)) {
+        # compute residuals
+        u0_hat = y - g0_hat
         if (self$score == "ATE") {
           u1_hat = y - g1_hat
           psi_b = g1_hat - g0_hat + d * (u1_hat) / m_hat -

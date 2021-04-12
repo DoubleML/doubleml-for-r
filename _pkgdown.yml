@@ -3,29 +3,28 @@ destination: docs
 home:
   title: DoubleML - Double Machine Learning with R
   links:
-  - text: Download 
+  - text: Download
     href: https://github.com/DoubleML/doubleml-for-r/
-    
+
 development:
   mode: devel
 
 toc:
   depth: 3
-  
-navbar: 
-  structure: 
+
+navbar:
+  structure:
     left:  [home, userguide, install, reference]
     right: [github]
-  components: 
+  components:
     home: ~
     userguide:
       text: User Guide
       icon: fa fa-file-alt
       href: https://docs.doubleml.org/
-    news: 
+    news:
       text: Release Notes
       href: https://docs.doubleml.org/stable/release/release.html
-      
 
 reference:
   - title: Double machine learning data class
@@ -34,7 +33,7 @@ reference:
       - double_ml_data_from_data_frame
       - double_ml_data_from_matrix
   - title: Abstract base class for double machine learning models
-    contents: 
+    contents:
       - DoubleML
   - title: Double machine learning models
     contents:

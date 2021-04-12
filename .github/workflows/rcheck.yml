@@ -99,7 +99,7 @@ jobs:
         run: |
           remotes::install_cran("covr")
         shell: Rscript {0}
-        
+
       - name: Test coverage
         if: runner.os == 'macOS'
         run: covr::codecov()
