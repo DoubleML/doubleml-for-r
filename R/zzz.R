@@ -4,6 +4,7 @@
 #' TaskClassif
 #' @importFrom mlr3tuning TuningInstanceSingleCrit tnr trm
 #' @importFrom mlr3learners LearnerRegrLM
+#' @importFrom mlr3misc insert_named
 #' @importFrom data.table data.table as.data.table
 #' @importFrom readstata13 read.dta13
 #' @importFrom stats formula model.matrix rnorm runif rexp toeplitz pnorm qnorm
