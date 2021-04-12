@@ -363,7 +363,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         psis = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
         psis = self$score(
-          y, z, d, g0_hat, g1_hat1, m_hat, r0_hat,
+          y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
           r1_hat, smpls)
       }
       return(psis)
