@@ -201,6 +201,17 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
     expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
 
     # Instantiate DoubleMLData
+    
+    # Failure, from data.frame
+    msg_df = "'data' is a data.frame, use 'double_ml_data_from_data_frame' call to instantiate DoubleMLData."
+    expect_error(
+      DoubleMLData$new(data,
+                       x_cols = X_cols1,
+                       y_col = y_indx,
+                       d_cols = d_indx,
+                       z_cols = z_indx),
+      regexp = msg_df)
+    
     data = data.table::data.table(data)
     data2 = data.table::data.table(data2)
     D8 = DoubleMLData$new(data,
@@ -260,34 +271,53 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
     D10_1d_setd = D10_1d$clone()$set_data_model("d2")
 
     msg1 = "At least one variable/column is set as treatment variable (`d_cols`) and as a covariate (`x_cols`). Consider using parameter 'use_other_treat_as_covariate'."
-
+    
     expect_error(double_ml_data_from_data_frame(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = c(d_indx, X_cols1[1]),
-      z_cols = z_indx))
-
+                                                x_cols = X_cols1,
+                                                y_col = y_indx,
+                                                d_cols = c(d_indx, X_cols1[1]),
+                                                z_cols = z_indx))
+    
     msg2 = "At least one variable/column is set as covariate ('x_cols') and instrumental variable in 'z_cols')."
     expect_error(double_ml_data_from_data_frame(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = c(z_indx, X_cols1[1])))
-
-    msg3 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
+                                                x_cols = X_cols1,
+                                                y_col = y_indx,
+                                                d_cols = d_indx,
+                                                z_cols = c(z_indx, X_cols1[1])))
+    
+    msg3 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
     expect_error(double_ml_data_from_data_frame(data,
-      x_cols = c(y_indx, X_cols1),
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = z_indx))
-
+                                                x_cols = c(y_indx, X_cols1),
+                                                y_col = y_indx,
+                                                d_cols = d_indx,
+                                                z_cols = z_indx),
+                 regexp = msg3)
+    
     msg4 = "At least one variable/column is set as treatment variable ('d_cols') and instrumental variable in 'z_cols')."
     expect_error(double_ml_data_from_data_frame(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = c(z_indx, d_indx),
-      z_cols = z_indx))
-
+                                                x_cols = X_cols1,
+                                                y_col = y_indx,
+                                                d_cols = c(z_indx, d_indx),
+                                                z_cols = z_indx), 
+                 regexpr = msg4)
+    
+    msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
+    expect_error(double_ml_data_from_data_frame(data,
+                                                x_cols = X_cols1,
+                                                y_col = y_indx,
+                                                d_cols = c(d_indx, y_indx),
+                                                z_cols = z_indx), 
+                 regexp = msg5)
+    
+    msg6 = "y cannot be set as outcome variable 'y_col' and instrumental variable in 'z_cols'."
+    expect_error(double_ml_data_from_data_frame(data,
+                                                x_cols = X_cols1,
+                                                y_col = y_indx,
+                                                d_cols = d_indx,
+                                                z_cols = c(z_indx, y_indx)), 
+                 regexp = msg6)
+    
+    
     expect_identical(D1$data_model, D8$data_model)
     expect_identical(D2$data_model, D9$data_model)
     expect_identical(D2_1X$data_model, D9_1X$data_model)
