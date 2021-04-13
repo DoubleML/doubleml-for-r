@@ -117,17 +117,18 @@ DoubleMLData = R6Class("DoubleMLData",
       # TBD: Input data.frame
 
       if (all(class(data) == "data.frame")) {
-        stop("'data' is a data.frame, use 'double_ml_data_from_data_frame'
-           call to instantiate DoubleMLData.")
+        stop(paste("'data' is a data.frame, use",
+                   "'double_ml_data_from_data_frame' call to instantiate",
+                   "DoubleMLData."))
       }
       assert_class(data, "data.table")
       if (!is.null(x_cols)) {
-        assert_character(x_cols)
+        assert_character(x_cols, unique = TRUE)
       }
       assert_character(y_col, len = 1)
-      assert_character(d_cols)
+      assert_character(d_cols, unique = TRUE)
       if (!is.null(z_cols)) {
-        assert_character(z_cols)
+        assert_character(z_cols, unique = TRUE)
       }
       assert_logical(use_other_treat_as_covariate, len = 1)
 
@@ -311,13 +312,13 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   check_choice(data_class, c("DoubleMLData", "data.table"))
 
   if (!is.null(x_cols)) {
-    check_character(x_cols)
+    check_character(x_cols, unique = TRUE)
   }
   check_character(y_col, len = 1)
-  check_character(d_cols)
+  check_character(d_cols, unique = TRUE)
 
   if (!is.null(z_cols)) {
-    check_character(z_cols)
+    check_character(z_cols, unique = TRUE)
   }
   if (!is.null(x_cols)) {
     x_cols = x_cols
