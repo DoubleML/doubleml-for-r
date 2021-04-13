@@ -20,214 +20,240 @@
 #'   y_col = "y",
 #'   d_cols = "d")
 #' @export
-DoubleMLData = R6Class("DoubleMLData", public = list(
-  #' @field all_variables (`character()`)\cr
-  #' All variables available in the dataset.
-  all_variables = NULL,
+DoubleMLData = R6Class("DoubleMLData",
+  public = list(
+    #' @field all_variables (`character()`)\cr
+    #' All variables available in the dataset.
+    all_variables = NULL,
 
-  #' @field d_cols (`character()`)\cr
-  #' The treatment variable(s).
-  d_cols = NULL,
-
-  #' @field data ([`data.table`][data.table::data.table()])\cr
-  #' Data object.
-  data = NULL,
-
-  #' @field data_model ([`data.table`][data.table::data.table()])\cr
-  #' Internal data object that implements the causal model as specified by
-  #' the user via `y_col`, `d_cols`, `x_cols` and `z_cols`.
-  data_model = NULL,
-
-  #' @field n_instr (`NULL`, `integer(1)`) \cr
-  #' The number of instruments.
-  n_instr = NULL,
-
-  #' @field n_obs (`integer(1)`) \cr
-  #' The number of observations.
-  n_obs = NULL,
-
-  #' @field n_treat (`integer(1)`) \cr
-  #' The umber of treatment variables.
-  n_treat = NULL,
-
-  #' @field other_treat_cols (`NULL`, `character()`) \cr
-  #' If `use_other_treat_as_covariate` is `TRUE`, `other_treat_cols` are the
-  #' treatment variables that are not "active" in the multiple-treatment case.
-  #' These variables then are internally added to the covariates `x_cols` during
-  #' the fitting stage. If `use_other_treat_as_covariate` is `FALSE`,
-  #' `other_treat_cols` is `NULL`.
-  other_treat_cols = NULL,
-
-  #' @field treat_col (`character(1)`) \cr
-  #' "Active" treatment variable in the multiple-treatment case.
-  treat_col = NULL,
-
-  #' @field use_other_treat_as_covariate (`logical(1)`) \cr
-  #' Indicates whether in the multiple-treatment case the other treatment
-  #' variables should be added as covariates. Default is `TRUE`.
-  use_other_treat_as_covariate = TRUE,
-
-  #' @field x_cols (`NULL`, `character()`) \cr
-  #' The covariates. If `NULL`, all variables (columns of `data`) which are
-  #' neither specified as outcome variable `y_col`, nor as treatment variables
-  #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
-  #' Default is `NULL`.
-  x_cols = NULL,
-
-  #' @field y_col (`character(1)`) \cr
-  #' The outcome variable.
-  y_col = NULL,
-
-  #' @field z_cols (`NULL`, `character()`) \cr
-  #' The instrumental variables. Default is `NULL`.
-  z_cols = NULL,
-
-  #' @description
-  #' Creates a new instance of this [R6][R6::R6Class] class.
-  #'
-  #' @param data ([`data.table`][data.table::data.table()])\cr
-  #' Data object.
-  #'
-  #' @param y_col (`character(1)`) \cr
-  #' The outcome variable.
-  #'
-  #' @param d_cols (`character()`) \cr
-  #' The treatment variable(s).
-  #'
-  #' @param x_cols (`NULL`, `character()`) \cr
-  #' The covariates. If `NULL`, all variables (columns of `data`) which are
-  #' neither specified as outcome variable `y_col`, nor as treatment variables
-  #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
-  #' Default is `NULL`.
-  #'
-  #' @param z_cols (`NULL`, `character()`) \cr
-  #' The instrumental variables. Default is `NULL`.
-  #'
-  #' @param use_other_treat_as_covariate (`logical(1)`) \cr
-  #' Indicates whether in the multiple-treatment case the other treatment
-  #' variables should be added as covariates. Default is `TRUE`.
-  initialize = function(data = NULL,
-    x_cols = NULL,
-    y_col = NULL,
+    #' @field d_cols (`character()`)\cr
+    #' The treatment variable(s).
     d_cols = NULL,
+
+    #' @field data ([`data.table`][data.table::data.table()])\cr
+    #' Data object.
+    data = NULL,
+
+    #' @field data_model ([`data.table`][data.table::data.table()])\cr
+    #' Internal data object that implements the causal model as specified by
+    #' the user via `y_col`, `d_cols`, `x_cols` and `z_cols`.
+    data_model = NULL,
+
+    #' @field n_instr (`NULL`, `integer(1)`) \cr
+    #' The number of instruments.
+    n_instr = NULL,
+
+    #' @field n_obs (`integer(1)`) \cr
+    #' The number of observations.
+    n_obs = NULL,
+
+    #' @field n_treat (`integer(1)`) \cr
+    #' The umber of treatment variables.
+    n_treat = NULL,
+
+    #' @field other_treat_cols (`NULL`, `character()`) \cr
+    #' If `use_other_treat_as_covariate` is `TRUE`, `other_treat_cols` are the
+    #' treatment variables that are not "active" in the multiple-treatment case.
+    #' These variables then are internally added to the covariates `x_cols` during
+    #' the fitting stage. If `use_other_treat_as_covariate` is `FALSE`,
+    #' `other_treat_cols` is `NULL`.
+    other_treat_cols = NULL,
+
+    #' @field treat_col (`character(1)`) \cr
+    #' "Active" treatment variable in the multiple-treatment case.
+    treat_col = NULL,
+
+    #' @field use_other_treat_as_covariate (`logical(1)`) \cr
+    #' Indicates whether in the multiple-treatment case the other treatment
+    #' variables should be added as covariates. Default is `TRUE`.
+    use_other_treat_as_covariate = TRUE,
+
+    #' @field x_cols (`NULL`, `character()`) \cr
+    #' The covariates. If `NULL`, all variables (columns of `data`) which are
+    #' neither specified as outcome variable `y_col`, nor as treatment variables
+    #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
+    #' Default is `NULL`.
+    x_cols = NULL,
+
+    #' @field y_col (`character(1)`) \cr
+    #' The outcome variable.
+    y_col = NULL,
+
+    #' @field z_cols (`NULL`, `character()`) \cr
+    #' The instrumental variables. Default is `NULL`.
     z_cols = NULL,
-    use_other_treat_as_covariate = TRUE) {
 
-    # TBD: Input data.frame
+    #' @description
+    #' Creates a new instance of this [R6][R6::R6Class] class.
+    #'
+    #' @param data ([`data.table`][data.table::data.table()])\cr
+    #' Data object.
+    #'
+    #' @param y_col (`character(1)`) \cr
+    #' The outcome variable.
+    #'
+    #' @param d_cols (`character()`) \cr
+    #' The treatment variable(s).
+    #'
+    #' @param x_cols (`NULL`, `character()`) \cr
+    #' The covariates. If `NULL`, all variables (columns of `data`) which are
+    #' neither specified as outcome variable `y_col`, nor as treatment variables
+    #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
+    #' Default is `NULL`.
+    #'
+    #' @param z_cols (`NULL`, `character()`) \cr
+    #' The instrumental variables. Default is `NULL`.
+    #'
+    #' @param use_other_treat_as_covariate (`logical(1)`) \cr
+    #' Indicates whether in the multiple-treatment case the other treatment
+    #' variables should be added as covariates. Default is `TRUE`.
+    initialize = function(data = NULL,
+      x_cols = NULL,
+      y_col = NULL,
+      d_cols = NULL,
+      z_cols = NULL,
+      use_other_treat_as_covariate = TRUE) {
 
-    if (all(class(data) == "data.frame")) {
-      stop("'data' is a data.frame, use 'double_ml_data_from_data_frame'
+      # TBD: Input data.frame
+
+      if (all(class(data) == "data.frame")) {
+        stop("'data' is a data.frame, use 'double_ml_data_from_data_frame'
            call to instantiate DoubleMLData.")
-    }
-    assert_class(data, "data.table")
-    if (!is.null(x_cols)) {
-      assert_character(x_cols)
-    }
-    assert_character(y_col)
-    assert_character(d_cols)
-    if (!is.null(z_cols)) {
-      assert_character(z_cols)
-    }
-    if (any(d_cols %in% x_cols)) {
-      stop(paste(
-        "Invalid model specification.\n",
-        "Treatment variables must not be elements of the control variables X."))
-    }
-    if (y_col %in% x_cols) {
-      stop(paste(
-        "Invalid model specification.\n",
-        "Dependent variable must not be an element of the control variables X."))
-    }
-    if (any(z_cols %in% x_cols)) {
-      stop(paste(
-        "Invalid model specification.\n",
-        "Instrumental variables must not be an element of the control variables X."))
-    }
-    if (any(z_cols %in% d_cols)) {
-      stop(paste(
-        "Invalid model specification.\n",
-        "Instrumental variables must not be an element of the treatment variables d."))
-    }
+      }
+      assert_class(data, "data.table")
+      if (!is.null(x_cols)) {
+        assert_character(x_cols)
+      }
+      assert_character(y_col, len = 1)
+      assert_character(d_cols)
+      if (!is.null(z_cols)) {
+        assert_character(z_cols)
+      }
+      assert_logical(use_other_treat_as_covariate, len = 1)
 
+      self$data = data
+      self$data_model = NULL
 
-    assert_logical(use_other_treat_as_covariate, len = 1)
+      self$y_col = y_col
+      self$d_cols = d_cols
+      self$z_cols = z_cols
 
-    self$data = data
-    self$data_model = NULL
-
-    self$y_col = y_col
-    self$d_cols = d_cols
-    self$z_cols = z_cols
-
-    if (!is.null(x_cols)) {
-      self$x_cols = x_cols
-    } else {
-      if (!is.null(self$z_cols)) {
-        y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
-        self$x_cols = setdiff(names(data), y_d_z)
+      if (!is.null(x_cols)) {
+        self$x_cols = x_cols
       } else {
-        y_d = union(self$y_col, self$d_cols)
-        self$x_cols = setdiff(names(data), y_d)
+        if (!is.null(self$z_cols)) {
+          y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
+          self$x_cols = setdiff(names(data), y_d_z)
+        } else {
+          y_d = union(self$y_col, self$d_cols)
+          self$x_cols = setdiff(names(data), y_d)
+        }
+      }
+
+      private$check_disjoint_sets()
+
+      self$treat_col = NULL
+      self$other_treat_cols = NULL
+      self$use_other_treat_as_covariate = use_other_treat_as_covariate
+
+      self$all_variables = names(self$data)
+      self$n_treat = length(self$d_cols)
+      self$n_instr = length(self$z_cols)
+      self$n_obs = dim(self$data)[1]
+
+      # by default, we initialize to the first treatment variable
+      self$set_data_model(d_cols[1])
+
+      invisible(self)
+    },
+
+    #' @description
+    #' Setter function for `data_model`. The function implements the causal model
+    #' as specified by the user via `y_col`, `d_cols`, `x_cols` and `z_cols` and
+    #' assigns the role for the treatment variables in the multiple-treatment
+    #' case.
+    #' @param treatment_var (`character()`)\cr
+    #' Active treatment variable that will be set to `treat_col`.
+    set_data_model = function(treatment_var) {
+
+      check_character(treatment_var, max.len = 1)
+      check_subset(treatment_var, self$d_cols)
+
+      if (treatment_var %in% self$x_cols) {
+        stop(paste(
+          "The specified treatment variable must not be an element of",
+          "the covariates 'x_cols'."))
+      }
+      self$treat_col = treatment_var
+
+      if (self$n_treat > 1) {
+        if (self$use_other_treat_as_covariate) {
+          self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
+        } else {
+          message("Controls variables do not include other treatment variables")
+          self$other_treat_cols = NULL
+        }
+      }
+      col_indx = c(
+        self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
+        self$z_cols)
+      self$data_model = self$data[, col_indx, with = FALSE]
+      stopifnot(nrow(self$data) == nrow(self$data_model))
+
+      # successful assigning treatment variable
+      if (self$n_treat > 1) {
+        message(paste0("Set treatment variable d to ", treatment_var, "."))
+      }
+      invisible(self)
+    }
+  ),
+  private = list(
+    check_disjoint_sets = function() {
+      y_col = self$y_col
+      x_cols = self$x_cols
+      d_cols = self$d_cols
+
+      if (y_col %in% x_cols) {
+        stop(paste(
+          y_col,
+          "cannot be set as outcome variable `y_col` and",
+          "covariate in 'x_cols'."))
+      }
+      if (y_col %in% d_cols) {
+        stop(paste(
+          y_col,
+          "cannot be set as outcome variable 'y_col' and",
+          "treatment variable in 'd_cols'."))
+      }
+      if (any(d_cols %in% x_cols)) {
+        stop(paste(
+          "At least one variable/column is set as treatment",
+          "variable (`d_cols`) and as a covariate (`x_cols`).",
+          "Consider using parameter 'use_other_treat_as_covariate'."))
+      }
+
+      if (!is.null(self$z_cols)) {
+        z_cols = self$z_cols
+
+        if (y_col %in% z_cols) {
+          stop(paste(
+            y_col,
+            "cannot be set as outcome variable 'y_col' and",
+            "instrumental variable in 'z_cols'."))
+        }
+        if (any(z_cols %in% d_cols)) {
+          stop(paste(
+            "At least one variable/column is set as treatment",
+            "variable ('d_cols') and instrumental variable in 'z_cols')."))
+        }
+        if (any(z_cols %in% x_cols)) {
+          stop(paste(
+            "At least one variable/column is set as covariate ('x_cols')",
+            "and instrumental variable in 'z_cols')."))
+        }
       }
     }
-
-    self$treat_col = NULL
-    self$other_treat_cols = NULL
-    self$use_other_treat_as_covariate = use_other_treat_as_covariate
-
-    self$all_variables = names(self$data)
-    self$n_treat = length(self$d_cols)
-    self$n_instr = length(self$z_cols)
-    self$n_obs = dim(self$data)[1]
-
-    # by default, we initialize to the first treatment variable
-    self$set_data_model(d_cols[1])
-
-    invisible(self)
-  },
-
-  #' @description
-  #' Setter function for `data_model`. The function implements the causal model
-  #' as specified by the user via `y_col`, `d_cols`, `x_cols` and `z_cols` and
-  #' assigns the role for the treatment variables in the multiple-treatment
-  #' case.
-  #' @param treatment_var (`character()`)\cr
-  #' Active treatment variable that will be set to `treat_col`.
-  set_data_model = function(treatment_var) {
-
-    check_character(treatment_var, max.len = 1)
-    check_subset(treatment_var, self$d_cols)
-
-    if (treatment_var %in% self$x_cols) {
-      stop("The specified treatment variable must not be an element of the control variables X.")
-    }
-
-    if (any(self$d_cols %in% self$x_cols)) {
-      stop("The specified treatment variables must not be an element of the control variables X.")
-    }
-
-    self$treat_col = treatment_var
-
-    if (self$n_treat > 1) {
-      self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
-    }
-    if (self$n_treat > 1 & self$use_other_treat_as_covariate == FALSE) {
-      message("Controls variables do not include other treatment variables")
-      self$other_treat_cols = NULL
-    }
-    col_indx = c(
-      self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
-      self$z_cols)
-    self$data_model = self$data[, col_indx, with = FALSE]
-    stopifnot(nrow(self$data) == nrow(self$data_model))
-
-    # successful assigning treatment variable
-    if (self$n_treat > 1) {
-      message(paste0("Set treatment variable d to ", treatment_var, "."))
-    }
-    invisible(self)
-  }
-)
+  )
 )
 
 #' @title Wrapper for Double machine learning data-backend initialization from
@@ -287,33 +313,12 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   if (!is.null(x_cols)) {
     check_character(x_cols)
   }
-  check_character(y_col)
+  check_character(y_col, len = 1)
   check_character(d_cols)
 
   if (!is.null(z_cols)) {
     check_character(z_cols)
   }
-  if (any(d_cols %in% x_cols)) {
-    stop(paste(
-      "Invalid model specification.\n",
-      "Treatment variables must not be elements of the control variables X."))
-  }
-  if (y_col %in% x_cols) {
-    stop(paste(
-      "Invalid model specification.\n",
-      "Dependent variable must not be an element of the control variables X."))
-  }
-  if (any(z_cols %in% x_cols)) {
-    stop(paste(
-      "Invalid model specification.\n",
-      "Instrumental variables must not be an element of the control variables X."))
-  }
-  if (any(z_cols %in% d_cols)) {
-    stop(paste(
-      "Invalid model specification.\n",
-      "Instrumental variables must not be an element of the treatment variables d."))
-  }
-
   if (!is.null(x_cols)) {
     x_cols = x_cols
   } else {
