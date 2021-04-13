@@ -317,6 +317,13 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                                 z_cols = c(z_indx, y_indx)), 
                  regexp = msg6)
     
+    msg7 = "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
+    expect_error(double_ml_data_from_data_frame(data,
+                                                x_cols = rep(X_cols1, 2),
+                                                y_col = y_indx,
+                                                d_cols = d_indx,
+                                                z_cols = z_indx), 
+                 regexp = msg7)
     
     expect_identical(D1$data_model, D8$data_model)
     expect_identical(D2$data_model, D9$data_model)
