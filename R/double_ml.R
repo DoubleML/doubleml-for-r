@@ -290,8 +290,8 @@ DoubleML = R6Class("DoubleML",
       dummy_task = Task$new("dummy_resampling", "regr", self$data$data)
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message("apply_cross_fitting is set to FALSE.
-                Cross-fitting is not supported for n_folds = 1.")
+        message(paste("apply_cross_fitting is set to FALSE.",
+                      "Cross-fitting is not supported for n_folds = 1."))
         self$apply_cross_fitting = FALSE
       }
 
@@ -316,15 +316,15 @@ DoubleML = R6Class("DoubleML",
         })
       } else {
         if (self$n_folds > 2) {
-          stop("Estimation without cross-fitting not supported for
-               n_folds > 2.")
+          stop(paste("Estimation without cross-fitting not supported for",
+                     "n_folds > 2."))
         }
 
         if (self$n_folds == 2) {
 
           if (self$n_rep != 1) {
-            stop("Repeated sample splitting without cross-fitting not
-                 implemented.")
+            stop(paste("Repeated sample splitting without cross-fitting not", 
+                       "implemented."))
           }
 
           dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
@@ -391,8 +391,8 @@ DoubleML = R6Class("DoubleML",
       self$n_folds = n_folds_each_train_smpl[1]
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message("apply_cross_fitting is set to FALSE. Cross-fitting is not
-                supported for n_folds = 1.")
+        message(paste("apply_cross_fitting is set to FALSE.",
+                      "Cross-fitting is not supported for n_folds = 1."))
         self$apply_cross_fitting = FALSE
       }
 
@@ -564,8 +564,8 @@ DoubleML = R6Class("DoubleML",
         private$summary_table = table
 
         if (length(k)) {
-          print("Estimates and significance testing of the effect of target
-                variables")
+          print(paste("Estimates and significance testing of the", 
+                "effect of target variables"))
           res = as.matrix(printCoefmat(private$summary_table,
             digits = digits,
             P.values = TRUE,
@@ -632,8 +632,8 @@ DoubleML = R6Class("DoubleML",
         ci = array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
 
         if (all(is.na(self$boot_coef))) {
-          stop("Multiplier bootstrap has not yet been performed.
-               First call bootstrap() and then try confint() again.")
+          stop(paste("Multiplier bootstrap has not yet been performed.",
+                     "First call bootstrap() and then try confint() again."))
         }
 
         sim = apply(abs(self$boot_t_stat), 2, max)
@@ -850,15 +850,15 @@ DoubleML = R6Class("DoubleML",
       self$score = private$check_score(score)
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message("apply_cross_fitting is set to FALSE.
-                Cross-fitting is not supported for n_folds = 1.")
+        message(paste("apply_cross_fitting is set to FALSE.",
+                      "Cross-fitting is not supported for n_folds = 1."))
         self$apply_cross_fitting = FALSE
       }
 
       if (!self$apply_cross_fitting) {
         if (self$n_folds > 2) {
-          stop("Estimation without cross-fitting not supported for
-               n_folds > 2.")
+          stop(paste("Estimation without cross-fitting not supported for",
+                     "n_folds > 2."))
         }
         if (self$dml_procedure == "dml2") {
           # redirect to dml1 which works out-of-the-box; dml_procedure is of no
