@@ -1,11 +1,8 @@
 # Double Machine Learning for Partially Linear Instrumental Variable Regression.
-dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
-  params = list(
-    params_m = list(), params_r = list(),
-    params_g = list()),
-  dml_procedure = "dml2",
-  score = "partialling out",
-  bootstrap = "normal", nRep = 500, ...) {
+dml_plriv = function(data, y, d, z,
+                     k, mlmethod,
+                     params, dml_procedure, score,
+                     smpls=NULL) {
 
   if (is.null(smpls)) {
     smpls = sample_splitting(k, data)

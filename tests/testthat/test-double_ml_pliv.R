@@ -32,8 +32,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
       y = "y", d = "d", z = "z",
       k = 5, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
-      dml_procedure = dml_procedure, score = score,
-      bootstrap = "normal", nRep = n_rep_boot)
+      dml_procedure = dml_procedure, score = score)
     theta = coef(pliv_hat)
     se = pliv_hat$se
 

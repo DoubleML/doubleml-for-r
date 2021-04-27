@@ -1,10 +1,8 @@
 # Double Machine Learning for Interactive Regression Model.
-dml_irm = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
-  params_m = list(),
-  params_g = list()),
-dml_procedure = "dml2",
-score = "ATE",
-bootstrap = "normal", nRep = 500, ...) {
+dml_irm = function(data, y, d,
+                   k, mlmethod,
+                   params, dml_procedure, score,
+                   smpls = NULL) {
 
   if (is.null(smpls)) {
     smpls = sample_splitting(k, data)

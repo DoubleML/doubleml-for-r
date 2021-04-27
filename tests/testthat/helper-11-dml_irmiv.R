@@ -1,8 +1,9 @@
 # Double Machine Learning for Interactive Instrumental Variable Regression Model.
-dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()),
-  dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
-  score = "LATE",
-  bootstrap = "normal", nRep = 500, ...) {
+dml_irmiv = function(data, y, d, z,
+                     k, mlmethod,
+                     params, dml_procedure, score,
+                     always_takers = TRUE, never_takers = TRUE,
+                     smpls = NULL) {
 
   if (is.null(smpls)) {
     smpls = sample_splitting(k, data)
