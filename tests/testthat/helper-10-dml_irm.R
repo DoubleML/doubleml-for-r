@@ -17,8 +17,7 @@ bootstrap = "normal", nRep = 500, ...) {
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
   # tbd: parameter passing
   n = nrow(data)
-  theta = se = te = pval = boot_se = NA
-  boot_theta = matrix(NA, nrow = 1, ncol = nRep)
+  theta = se = te = pval = NA
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
@@ -135,8 +134,7 @@ bootstrap = "normal", nRep = 500, ...) {
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = boot_vars = rep(NA, n_iters)
-    boot_thetas = matrix(NA, ncol = nRep, nrow = n_iters)
+    thetas = vars = rep(NA, n_iters)
     se_i = NA
 
     g0_hat = g1_hat = u0_hat = u1_hat = m_hat_k = d_k = p_hat_k = y_k = matrix(NA, nrow = max(n_k), ncol = n_iters)
@@ -218,7 +216,7 @@ bootstrap = "normal", nRep = 500, ...) {
     g0_hat_list = g0_hat_list,
     g1_hat_list = g1_hat_list)
 
-  names(theta) = names(se) = names(boot_se) = d
+  names(theta) = names(se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
     all_preds = all_preds)

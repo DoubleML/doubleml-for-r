@@ -22,8 +22,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
   # tbd: parameter passing
   n = nrow(data)
-  theta = se = te = pval = boot_se = NA
-  boot_theta = matrix(NA, nrow = 1, ncol = nRep)
+  theta = se = te = pval = NA
 
   if (score != "partialling out" & score != "ivreg") {
     stop("Value for score is not valid.")
@@ -134,8 +133,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = boot_vars = rep(NA, n_iters)
-    boot_thetas = matrix(NA, ncol = nRep, nrow = n_iters)
+    thetas = vars = rep(NA, n_iters)
     se_i = NA
 
     v_hat = u_hat = w_hat = matrix(NA, nrow = max(n_k), ncol = n_iters)
@@ -173,17 +171,6 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     t = theta / se
 
     pval = 2 * stats::pnorm(-abs(t))
-
-    if (bootstrap != "none") {
-
-      boot = bootstrap_plriv(
-        theta = theta, u_hat = u_hat, v_hat = v_hat,
-        w_hat = w_hat, score = score, se = se,
-        bootstrap = bootstrap, nRep = nRep)
-      #    boot_se = sqrt(boot$boot_var)
-      boot_theta = boot$boot_theta
-    }
-
   }
 
   if (dml_procedure == "dml2") {
@@ -224,7 +211,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     g_hat_list = g_hat_list,
     r_hat_list = r_hat_list)
 
-  names(theta) = names(se) = names(boot_se) = d
+  names(theta) = names(se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
     all_preds)

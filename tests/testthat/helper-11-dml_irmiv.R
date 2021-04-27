@@ -15,8 +15,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
   # tbd: ml_method handling: default mlmethod_g = mlmethod_m
   # tbd: parameter passing
   n = nrow(data)
-  theta = se = te = pval = boot_se = NA
-  boot_theta = matrix(NA, nrow = 1, ncol = nRep)
+  theta = se = te = pval = NA
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
@@ -208,8 +207,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = boot_vars = rep(NA, n_iters)
-    boot_thetas = matrix(NA, ncol = nRep, nrow = n_iters)
+    thetas = vars = rep(NA, n_iters)
     se_i = NA
 
     p_hat = mu0_hat = mu1_hat = m0_hat = m1_hat = d_k = y_k = z_k = matrix(NA, nrow = max(n_k), ncol = n_iters)
@@ -293,7 +291,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
     m0_hat = m0_hat,
     m1_hat = m1_hat)
 
-  names(theta) = names(se) = names(boot_se) = d
+  names(theta) = names(se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
     all_preds = all_preds)
