@@ -1,22 +1,4 @@
-#' Double Machine Learning for Partially Linear Instrumental Variable Regression.
-#'
-#' @param data Data frame.
-#' @param y Name of outcome variable. The variable must be included in \code{data}.
-#' @param d Name of treatment variables for which inference should be performed.
-#' @param z Name of instrumental variables.
-#' @inheritParams DML
-#' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
-#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of z on X (nuisance part m). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part r).
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g, \code{params_m} for nuisance m, and \code{params_r} for nuisance r.
-#' @param score Inference model for final estimation, default \code{"partialling out"}. Alternatively, specify \code{"ivreg"}.
-#' @param se_type Method to estimate standard errors. Default \code{"partialling out"}. Alternatively, specify \code{"ivreg"}. The options chosen for \code{score} and \code{se_type} are required to match.
-#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
-#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
-#' @param ... further options passed to underlying functions.
-#' @return Result object with estimated coefficient and standard errors.
-#' @export
-
+# Double Machine Learning for Partially Linear Instrumental Variable Regression.
 dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   params = list(
     params_m = list(), params_r = list(),
@@ -268,13 +250,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
 
 
 
-#' Orthogonalized Estimation of Coefficient in PLR
-#'
-#' Function to estimate the structural parameter in a partially linear regression model with instrumental variables (PLRIV).
-#'
-#' @inheritParams var_plriv
-#' @return List with estimate (\code{theta}).
-#' @export
+# Orthogonalized Estimation of Coefficient in PLR
 orth_plriv_dml = function(u_hat, v_hat, w_hat, score) { # , se_type) {
   theta = NA
 
@@ -296,15 +272,7 @@ orth_plriv_dml = function(u_hat, v_hat, w_hat, score) { # , se_type) {
 }
 
 
-#' Variance estimation for DML estimator in the partially linear regression model
-#'
-#' Variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
-#' @inheritParams dml_plriv
-#' @param theta final dml estimator for the partially linear model.
-#' @param v_hat Residuals from \eqn{d-r(x)}.
-#' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param w_hat Residuals from \eqn{z-m(x)}.
-#' @return Variance estimator (\code{var}).
+# Variance estimation for DML estimator in the partially linear regression model
 var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
   var = NA
 
@@ -329,15 +297,7 @@ var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
 
 
 
-#' Bootstrap Implementation for Partially Linear Regression Model
-#'
-#' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a partially linear regression model (PLR) with double machine learning.
-#'
-#' @inheritParams var_plriv
-#' @inheritParams dml_plriv
-#' @inheritParams DMLIV
-#' @param se Estimated standard error from DML procedure.
-#' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
+# Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plriv = function(theta, u_hat, v_hat, w_hat, score, se, bootstrap, nRep) {
 
   boot_var = NA

@@ -1,21 +1,4 @@
-#' Double Machine Learning for Partially Linear Regression.
-#'
-#' @param data Data frame.
-#' @param y Name of outcome variable. The variable must be included in \code{data}.
-#' @param d Name of treatment variables for which inference should be performed.
-#' @inheritParams DML
-#' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
-#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m).
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
-#' @param score Inference model for final estimation, default \code{"IV-type"} (...)
-#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"partialling out"} to obtain standard errors that correspond to the specified \code{score}. The options chosen for \code{score} and \code{se_type} are required to match.
-#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
-#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
-#' @param ... further options passed to underlying functions.
-#' @return Result object with estimated coefficient and standard errors.
-#' @export
-
+# Double Machine Learning for Partially Linear Regression.
 dml_plr = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
   params_m = list(),
   params_g = list()),
@@ -203,7 +186,6 @@ score = "IV-type", se_type = "ls", ...) {
   return(res)
 }
 
-#' @export
 dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
   score = "IV-type", se_type = "ls",
   weights = weights, nRep = 500) {
@@ -272,13 +254,7 @@ dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2"
 }
 
 
-#' Orthogonalized Estimation of Coefficient in PLR
-#'
-#' Function to estimate the structural parameter in a partially linear regression model (PLR).
-#'
-#' @inheritParams var_plr
-#' @return List with estimate (\code{theta}).
-#' @export
+# Orthogonalized Estimation of Coefficient in PLR
 orth_plr_dml = function(u_hat, v_hat, v_hatd, score) { # , se_type) {
   theta = NA
 
@@ -301,16 +277,7 @@ orth_plr_dml = function(u_hat, v_hat, v_hatd, score) { # , se_type) {
 }
 
 
-#' Variance estimation for DML estimator in the partially linear regression model
-#'
-#' Variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
-#' @inheritParams dml_plr
-#' @param theta final dml estimator for the partially linear model.
-#' @param d treatment variable.
-#' @param v_hat Residuals from \eqn{d-m(x)}.
-#' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hatd Product of \code{v_hat} with \code{d}.
-#' @return Variance estimator (\code{var}).
+# Variance estimation for DML estimator in the partially linear regression model
 var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedure) {
 
   var = NA
@@ -342,15 +309,7 @@ var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedure
 
 
 
-#' Bootstrap Implementation for Partially Linear Regression Model
-#'
-#' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a partially linear regression model (PLR) with double machine learning.
-#'
-#' @inheritParams var_plr
-#' @inheritParams dml_plr
-#' @inheritParams DML
-#' @param se Estimated standard error from DML procedure.
-#' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
+# Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se, weights, nRep) {
 
   boot_var = NA

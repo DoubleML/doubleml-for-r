@@ -1,24 +1,4 @@
-#' Double Machine Learning for Interactive Instrumental Variable Regression Model.
-#'
-#' @param data Data frame.
-#' @param y Name of outcome variable. The variable must be included in \code{data}.
-#' @param d Name of treatment variables for which inference should be performed.
-#' @param z Name of instrumental variables.
-#' @inheritParams DML
-#' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
-#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_mu1} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X for individuals with Z = 1  (nuisance part mu1) and \code{mlmethod_mu0} for individuals with Z = 0 (nuisance part mu0). Set \code{mlmethod_m1} for  classification method for regression of d on X for individuals with Z = 1 (nuisance part m1) and \code{mlmethod_m0} for observations with Z = 0 (nuisance part m0). Set \code{mlmethod_p} for classification method for propensity score (nuisance part p).
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_mu1} for predictions of nuisance part g1, \code{params_mu0} for nuisance part mu0, and so forth (names must match those in \code{mlmethod}).
-#' @param score Estimator for final estimation, default average treatment effect \code{"LATE"}. Alternatively switch to \code{"LATTE"} for average treatment effect on the treated.
-#' @param se_type Method to estimate standard errors (redundant / identical to score).
-#' @param always_takers option to adapt to cases with (default) and without always-takers. If \code{FALSE}, the estimator is adapted to a setting without always-takers.
-#' @param never_takers option to adapt to cases with (default) and without never-takers. If \code{FALSE}, the estimator is adapted to a setting without never-takers.
-#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
-#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
-#' @param ... further options passed to underlying functions.
-#' @return Result object with estimated coefficient and standard errors.
-#' @export
-
+# Double Machine Learning for Interactive Instrumental Variable Regression Model.
 dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()),
   dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
   score = "LATE", se_type = "LATE",
@@ -353,13 +333,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
 
 
 
-#' Orthogonalized Estimation of Coefficient in irm
-#'
-#' Function to estimate the structural parameter in an interactive regression model (irm).
-#'
-#' @inheritParams var_irm
-#' @return List with estimate (\code{theta}).
-#' @export
+# Orthogonalized Estimation of Coefficient in irm
 orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) { # , se_type) {
   theta = NA
 
@@ -386,20 +360,7 @@ orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, scor
 }
 
 
-#' Variance estimation for DML estimator in the Interactive Instrumental Variable Regression Model
-#'
-#' Variance estimation for the structural parameter estimator in an interactive regression model (irm) with double machine learning.
-#' @inheritParams dml_irmiv
-#' @param theta Final dml estimator for interactive regression model.
-#' @param d Treatment variable.
-#' @param y Outcome variable.
-#' @param z Instrumental variable.
-#' @param m Predictions from \eqn{d-m(x)}.
-#' @param g0_hat Predictions from \eqn{g(0,X)}.
-#' @param g1_hat Predictions from \eqn{g(1,X)}
-#' @param u0_hat Residuals from \eqn{y-g(0,x)}.
-#' @param u1_hat Residuals from \eqn{y-g(1,x)}.
-#' @return Variance estimator (\code{var}).
+# Variance estimation for DML estimator in the Interactive Instrumental Variable Regression Model
 var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
   var = NA
 
@@ -441,15 +402,7 @@ var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sc
 
 
 
-#' Bootstrap Implementation for Interactive Instrumental Variable Regression Model
-#'
-#' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a interactive regression model (irm) with double machine learning.
-#'
-#' @inheritParams var_irmiv
-#' @inheritParams dml_irmiv
-#' @inheritParams DML
-#' @param se Estimated standard error from DML procedure.
-#' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
+# Bootstrap Implementation for Interactive Instrumental Variable Regression Model
 bootstrap_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
   d, y, z, score, se, bootstrap, nRep) {
 

@@ -1,21 +1,4 @@
-#' Double Machine Learning for Interactive Regression Model.
-#'
-#' @param data Data frame.
-#' @param y Name of outcome variable. The variable must be included in \code{data}.
-#' @param d Name of treatment variables for which inference should be performed.
-#' @inheritParams DML
-#' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
-#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m).
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g1} for predictions of nuisance part g1, \code{params_g0} for nuisance part g0, and \code{params_m} for nuisance m.
-#' @param score Estimator for final estimation, default average treatment effect \code{"ATE"}. Alternatively switch to \code{"ATTE"} for average treatment effect on the treated.
-#' @param se_type Method to estimate standard errors (redundant / identical to score).
-#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
-#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
-#' @param ... further options passed to underlying functions.
-#' @return Result object with estimated coefficient and standard errors.
-#' @export
-
+# Double Machine Learning for Interactive Regression Model.
 dml_irm = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
   params_m = list(),
   params_g = list()),
@@ -277,13 +260,7 @@ bootstrap = "normal", nRep = 500, ...) {
 
 
 
-#' Orthogonalized Estimation of Coefficient in irm
-#'
-#' Function to estimate the structural parameter in an interactive regression model (irm).
-#'
-#' @inheritParams var_irm
-#' @return List with estimate (\code{theta}).
-#' @export
+# Orthogonalized Estimation of Coefficient in irm
 orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) { # , se_type) {
 
   obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
@@ -310,19 +287,7 @@ orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
 }
 
 
-#' Variance estimation for DML estimator in the interactive regression model
-#'
-#' Variance estimation for the structural parameter estimator in an interactive regression model (irm) with double machine learning.
-#' @inheritParams dml_irm
-#' @param theta Final dml estimator for interactive regression model.
-#' @param d Treatment variable.
-#' @param y Outcome variable.
-#' @param m Predictions from \eqn{d-m(x)}.
-#' @param g0_hat Predictions from \eqn{g(0,X)}.
-#' @param g1_hat Predictions from \eqn{g(1,X)}
-#' @param u0_hat Residuals from \eqn{y-g(0,x)}.
-#' @param u1_hat Residuals from \eqn{y-g(1,x)}.
-#' @return Variance estimator (\code{var}).
+# Variance estimation for DML estimator in the interactive regression model
 var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
   obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
 
@@ -350,15 +315,7 @@ var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score)
 
 
 
-#' Bootstrap Implementation for Interactive Regression Model
-#'
-#' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a interactive regression model (irm) with double machine learning.
-#'
-#' @inheritParams var_irm
-#' @inheritParams dml_irm
-#' @inheritParams DML
-#' @param se Estimated standard error from DML procedure.
-#' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
+# Bootstrap Implementation for Interactive Regression Model
 bootstrap_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score, se, bootstrap, nRep) {
 
   boot_var = NA
