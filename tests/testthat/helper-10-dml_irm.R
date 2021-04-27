@@ -3,7 +3,7 @@ dml_irm = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
   params_m = list(),
   params_g = list()),
 dml_procedure = "dml2",
-score = "ATE", se_type = "ATE",
+score = "ATE",
 bootstrap = "normal", nRep = 500, ...) {
 
   if (is.null(smpls)) {
@@ -19,11 +19,6 @@ bootstrap = "normal", nRep = 500, ...) {
   n = nrow(data)
   theta = se = te = pval = boot_se = NA
   boot_theta = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (se_type != score) {
-    se_type = score
-    message("Options se_type and score do not match. Set se_type to value of score")
-  }
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
@@ -166,7 +161,7 @@ bootstrap = "normal", nRep = 500, ...) {
         u0_hat = u0_hat[, i], u1_hat = u1_hat[, i],
         d = d_k[, i], p_hat = p_hat_k[, i], m = m_hat_k[, i],
         y = y_k[, i],
-        score = score) # , se_type)
+        score = score)
       thetas[i] = orth_est$theta
     }
 
@@ -261,7 +256,7 @@ bootstrap = "normal", nRep = 500, ...) {
 
 
 # Orthogonalized Estimation of Coefficient in irm
-orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) { # , se_type) {
+orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
 
   obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
 

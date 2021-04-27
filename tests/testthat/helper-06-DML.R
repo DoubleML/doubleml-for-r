@@ -20,7 +20,7 @@ DML = function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
   mlmethod,
   dml_procedure = "dml2", params = list(
     params_m = list(),
-    params_g = list()), score = "IV-type", se_type = "ls",
+    params_g = list()), score = "IV-type",
   aggreg_median = TRUE,
   ...) {
 
@@ -103,7 +103,7 @@ DML = function(data, y, d, model = "plr", k = 2, S = 1, smpls = NULL,
         smpls = this_smpls,
         mlmethod = mlmethod, dml_procedure = dml_procedure,
         params = list(params_m = params$params_m[[j]], params_g = params$params_g[[j]]),
-        score = score, se_type = se_type, ...)
+        score = score, ...)
 
       coefficients[j] = res_j$coefficients
       se[j] = res_j$se
@@ -238,7 +238,7 @@ confint.DML = function(object, parm, level = 0.95, joint = FALSE, ...) {
 
 #' @export
 bootstrap.DML = function(object, data, y, d,
-  dml_procedure, score, se_type,
+  dml_procedure, score,
   bootstrap = "normal", nRep = 500) {
 
   xx = dim(object$theta_s)
@@ -266,7 +266,7 @@ bootstrap.DML = function(object, data, y, d,
         theta = object$theta_s[j, s], se = object$se_s[j, s],
         all_preds = object$all_preds[[s]][[j]],
         dml_procedure = dml_procedure,
-        score = score, se_type = score,
+        score = score,
         weights = weights, nRep = nRep)
     }
   }

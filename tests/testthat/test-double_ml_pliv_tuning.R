@@ -64,7 +64,6 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
     #                       k = n_folds, mlmethod = learner_list,
     #                       params = learner_pars$params,
     #                       dml_procedure = dml_procedure, score = score,
-    #                       se_type = score,
     #                       bootstrap = "normal",  nRep = n_rep_boot)
     # theta = coef(pliv_hat)
     # se = pliv_hat$se

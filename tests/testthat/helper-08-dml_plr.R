@@ -3,7 +3,7 @@ dml_plr = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
   params_m = list(),
   params_g = list()),
 dml_procedure = "dml2",
-score = "IV-type", se_type = "ls", ...) {
+score = "IV-type", ...) {
 
   if (is.null(smpls)) {
     smpls = sample_splitting(k, data)
@@ -17,14 +17,6 @@ score = "IV-type", se_type = "ls", ...) {
   # tbd: parameter passing
   n = nrow(data)
   theta = se = te = pval = boot_se = NA
-
-  if (se_type != "ls") {
-    se_type = score
-  }
-
-  if (se_type == "ls" & dml_procedure == "dml1") {
-    se_type = score
-  }
 
   # nuisance g
   g_indx = names(data) != d
@@ -127,14 +119,14 @@ score = "IV-type", se_type = "ls", ...) {
       orth_est = orth_plr_dml(
         u_hat = u_hat[, i], v_hat = v_hat[, i],
         v_hatd = v_hatd[, i],
-        score = score) # , se_type)
+        score = score)
       thetas[i] = orth_est$theta
     }
 
     theta = mean(thetas, na.rm = TRUE)
     se = sqrt(var_plr(
       theta = theta, d = D, u_hat = u_hat_se, v_hat = v_hat_se,
-      v_hatd = v_hatd_se, score = score, se_type = se_type,
+      v_hatd = v_hatd_se, score = score,
       dml_procedure = dml_procedure))
 
     t = theta / se
@@ -165,7 +157,7 @@ score = "IV-type", se_type = "ls", ...) {
     theta = orth_est$theta
     se = sqrt(var_plr(
       theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score, se_type = se_type,
+      v_hatd = v_hatd, score = score,
       dml_procedure = dml_procedure))
 
     t = theta / se
@@ -187,7 +179,7 @@ score = "IV-type", se_type = "ls", ...) {
 }
 
 dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
-  score = "IV-type", se_type = "ls",
+  score = "IV-type",
   weights = weights, nRep = 500) {
 
   m_hat_list = all_preds$m_hat_list
@@ -255,7 +247,7 @@ dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2"
 
 
 # Orthogonalized Estimation of Coefficient in PLR
-orth_plr_dml = function(u_hat, v_hat, v_hatd, score) { # , se_type) {
+orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
   theta = NA
 
   if (score == "partialling out") {
@@ -278,31 +270,20 @@ orth_plr_dml = function(u_hat, v_hat, v_hatd, score) { # , se_type) {
 
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedure) {
+var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
 
   var = NA
 
-  if (se_type == score) {
-
-    if (score == "partialling out") {
-
-      var = mean(1 / length(u_hat) * 1 / (colMeans(v_hat^2, na.rm = TRUE))^2 *
-        colMeans(((u_hat - v_hat * theta) * v_hat)^2, na.rm = TRUE))
-    }
-
-    else if (score == "IV-type") {
-      var = mean(1 / length(u_hat) * (1 / colMeans(v_hatd, na.rm = TRUE))^2 *
-        colMeans(((u_hat - d * theta) * v_hat)^2, na.rm = TRUE))
-    }
-
+  if (score == "partialling out") {
+    
+    var = mean(1 / length(u_hat) * 1 / (colMeans(v_hat^2, na.rm = TRUE))^2 *
+                 colMeans(((u_hat - v_hat * theta) * v_hat)^2, na.rm = TRUE))
   }
-
-  # Q: only for "dml2"?
-  if (se_type == "ls" & score == "partialling out" & dml_procedure == "dml2") {
-    res_fit = stats::lm(u_hat ~ 0 + v_hat)
-    var = sandwich::vcovHC(res_fit)
+  
+  else if (score == "IV-type") {
+    var = mean(1 / length(u_hat) * (1 / colMeans(v_hatd, na.rm = TRUE))^2 *
+                 colMeans(((u_hat - d * theta) * v_hat)^2, na.rm = TRUE))
   }
-
 
   return(c(var))
 }

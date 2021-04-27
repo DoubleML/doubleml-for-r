@@ -4,7 +4,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     params_m = list(), params_r = list(),
     params_g = list()),
   dml_procedure = "dml2",
-  score = "partialling out", se_type = "partialling out",
+  score = "partialling out",
   bootstrap = "normal", nRep = 500, ...) {
 
   if (is.null(smpls)) {
@@ -24,10 +24,6 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   n = nrow(data)
   theta = se = te = pval = boot_se = NA
   boot_theta = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (se_type != "partialling out" & se_type != "ivreg") {
-    stop("Value for se_type is not valid.")
-  }
 
   if (score != "partialling out" & score != "ivreg") {
     stop("Value for score is not valid.")
@@ -161,7 +157,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
       orth_est = orth_plriv_dml(
         u_hat = u_hat[, i], v_hat = v_hat[, i],
         w_hat = w_hat[, i],
-        score = score) # , se_type)
+        score = score)
       thetas[i] = orth_est$theta
 
     }
@@ -251,7 +247,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
 
 
 # Orthogonalized Estimation of Coefficient in PLR
-orth_plriv_dml = function(u_hat, v_hat, w_hat, score) { # , se_type) {
+orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
   theta = NA
 
   if (score == "ivreg") {

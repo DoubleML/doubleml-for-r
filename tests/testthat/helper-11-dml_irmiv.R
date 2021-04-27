@@ -1,7 +1,7 @@
 # Double Machine Learning for Interactive Instrumental Variable Regression Model.
 dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list(params_mu = list(), params_m = list(), params_p = list()),
   dml_procedure = "dml2", always_takers = TRUE, never_takers = TRUE,
-  score = "LATE", se_type = "LATE",
+  score = "LATE",
   bootstrap = "normal", nRep = 500, ...) {
 
   if (is.null(smpls)) {
@@ -17,11 +17,6 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
   n = nrow(data)
   theta = se = te = pval = boot_se = NA
   boot_theta = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (se_type != score) {
-    se_type = score
-    message("Options se_type and score do not match. Set se_type to value of score")
-  }
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
@@ -238,7 +233,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
         mu1_hat = mu1_hat[, i],
         m0_hat = m0_hat[, i], m1_hat = m1_hat[, i],
         d = d_k[, i], y = y_k[, i], z = z_k[, i],
-        score = score) # , se_type)
+        score = score)
       thetas[i] = orth_est$theta
 
     }
@@ -334,7 +329,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
 
 
 # Orthogonalized Estimation of Coefficient in irm
-orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) { # , se_type) {
+orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
   theta = NA
 
   if (score == "LATE" | score == "partialling out") {

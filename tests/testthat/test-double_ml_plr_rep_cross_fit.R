@@ -41,15 +41,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       k = n_folds, S = n_rep,
       mlmethod = learner_pars_for_DML$mlmethod,
       params = learner_pars_for_DML$params,
-      dml_procedure = dml_procedure, score = score,
-      se_type = score)
+      dml_procedure = dml_procedure, score = score)
     theta = coef(plr_hat)
     se = plr_hat$se
 
     plr_hat$boot_theta = bootstrap.DML(plr_hat, data_plr[[i_setting]],
       y = "y", d = "d",
       dml_procedure = dml_procedure,
-      score = score, se_type = score,
+      score = score,
       bootstrap = "normal", nRep = n_rep_boot)
 
     set.seed(i_setting)

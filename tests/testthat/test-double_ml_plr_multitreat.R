@@ -41,8 +41,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       k = n_folds, S = 1,
       mlmethod = learner_pars_for_DML$mlmethod,
       params = learner_pars_for_DML$params,
-      dml_procedure = dml_procedure, score = score,
-      se_type = score)
+      dml_procedure = dml_procedure, score = score)
     theta = coef(plr_hat)
     se = plr_hat$se
     ci_ptwise = confint(plr_hat, joint = FALSE, level = 0.95)
@@ -52,7 +51,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       y = "y",
       d = c("d1", "d2", "d3"),
       dml_procedure = dml_procedure,
-      score = score, se_type = score,
+      score = score,
       bootstrap = "normal", nRep = n_rep_boot)
     ci_joint = confint(plr_hat, joint = TRUE, level = 0.95)
 

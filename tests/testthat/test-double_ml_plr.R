@@ -38,8 +38,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       k = n_folds, S = 1,
       mlmethod = learner_pars_for_DML$mlmethod,
       params = learner_pars_for_DML$params,
-      dml_procedure = dml_procedure, score = score,
-      se_type = score)
+      dml_procedure = dml_procedure, score = score)
     theta = coef(plr_hat)
     se = plr_hat$se
 
