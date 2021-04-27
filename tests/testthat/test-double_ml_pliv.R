@@ -39,7 +39,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
 
 
     set.seed(i_setting)
-    params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
     Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
       y_col = "y",

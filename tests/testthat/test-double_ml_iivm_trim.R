@@ -40,7 +40,6 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     #
 
     set.seed(i_setting)
-    # params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
 
     # we rename the z variable to have non default names in the unit tests
     data = data_iivm[[i_setting]]

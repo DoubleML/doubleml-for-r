@@ -24,7 +24,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     # TODO: Comparison case (functional)
 
     set.seed(i_setting)
-    params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
     Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
       y_col = "y",
@@ -67,7 +66,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     export_params_exact_r = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
 
     set.seed(i_setting)
-    params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
     Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
       y_col = "y",

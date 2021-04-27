@@ -56,8 +56,6 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     ci_joint = confint(plr_hat, joint = TRUE, level = 0.95)
 
     set.seed(i_setting)
-    params_OOP = rep(list(rep(list(learner_pars$params), 3)), 1)
-
     Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "d3", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
       y_col = "y",

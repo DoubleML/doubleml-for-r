@@ -36,7 +36,6 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
 
       set.seed(i_setting)
-      params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
       Xnames = names(data_irm[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
       data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
         y_col = "y",

@@ -48,8 +48,6 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
     }
 
     set.seed(i_setting)
-    params_OOP = rep(list(rep(list(learner_pars$params), 1)), n_rep)
-
     Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d") == FALSE]
 
     data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],

@@ -37,8 +37,6 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
     learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
     n_rep_boot = 498
 
-    params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
-
     data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
       y_col = "y",
       d_cols = c("d", "X1"))
