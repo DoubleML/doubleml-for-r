@@ -176,18 +176,6 @@ bootstrap = "normal", nRep = 500, ...) {
 
     pval = 2 * stats::pnorm(-abs(t))
 
-    if (bootstrap != "none") {
-
-      boot = bootstrap_irm(
-        theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
-        u0_hat = u0_hat, u1_hat = u1_hat,
-        d = d_k, p_hat = p_hat_k, m = m_hat_k, y = y_k,
-        score = score, se = se,
-        bootstrap = bootstrap, nRep = nRep)
-      #    boot_se = sqrt(boot$boot_var)
-      boot_theta = boot$boot_theta
-    }
-
   }
 
   if (dml_procedure == "dml2") {
@@ -223,19 +211,6 @@ bootstrap = "normal", nRep = 500, ...) {
     t = theta / se
 
     pval = 2 * stats::pnorm(-abs(t))
-
-    if (bootstrap != "none") {
-
-      boot = bootstrap_irm(
-        theta = theta,
-        g0_hat = g0_hat, g1_hat = g1_hat,
-        u0_hat = u0_hat, u1_hat = u1_hat,
-        d = D, p_hat = p_hat, m = m_hat, y = Y,
-        score = score, se = se,
-        bootstrap = bootstrap, nRep = nRep)
-      #    boot_se = sqrt(boot$boot_var)
-      boot_theta = boot$boot_theta
-    }
   }
 
   all_preds = list(
@@ -246,7 +221,6 @@ bootstrap = "normal", nRep = 500, ...) {
   names(theta) = names(se) = names(boot_se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
-    boot_se = boot_se, boot_theta = boot_theta,
     all_preds = all_preds)
 
   class(res) = "DML"

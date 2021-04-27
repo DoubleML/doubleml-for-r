@@ -217,16 +217,6 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
     t = theta / se
 
     pval = 2 * stats::pnorm(-abs(t))
-
-    if (bootstrap != "none") {
-
-      boot = bootstrap_plriv(
-        theta = theta, u_hat = u_hat, v_hat = v_hat,
-        w_hat = w_hat, score = score, se = se,
-        bootstrap = bootstrap, nRep = nRep)
-      #    boot_se = sqrt(boot$boot_var)
-      boot_theta = boot$boot_theta
-    }
   }
 
   all_preds = list(
@@ -237,7 +227,6 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   names(theta) = names(se) = names(boot_se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
-    boot_se = boot_se, boot_theta = boot_theta,
     all_preds)
 
   class(res) = "DML"

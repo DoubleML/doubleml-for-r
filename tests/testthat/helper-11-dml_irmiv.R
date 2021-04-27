@@ -248,18 +248,6 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
     t = theta / se
 
     pval = 2 * stats::pnorm(-abs(t))
-
-    if (bootstrap != "none") {
-
-      boot = bootstrap_irmiv(
-        theta = theta, p_hat = p_hat, mu0_hat = mu0_hat,
-        mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
-        d = d_k, y = y_k, z = z_k, score = score, se = se,
-        bootstrap = bootstrap, nRep = nRep)
-      #    boot_se = sqrt(boot$boot_var)
-      boot_theta = boot$boot_theta
-    }
-
   }
 
   if (dml_procedure == "dml2") {
@@ -295,17 +283,6 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
     t = theta / se
 
     pval = 2 * stats::pnorm(-abs(t))
-
-    if (bootstrap != "none") {
-
-      boot = bootstrap_irmiv(
-        theta = theta, p_hat = p_hat, mu0_hat = mu0_hat,
-        mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
-        d = D, y = Y, z = Z, score = score, se = se,
-        bootstrap = bootstrap, nRep = nRep)
-      #    boot_se = sqrt(boot$boot_var)
-      boot_theta = boot$boot_theta
-    }
   }
 
 
@@ -319,7 +296,6 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
   names(theta) = names(se) = names(boot_se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
-    boot_se = boot_se, boot_theta = boot_theta,
     all_preds = all_preds)
 
   class(res) = "DML"
