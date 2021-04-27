@@ -9,117 +9,16 @@ dml_plriv = function(data, y, d, z,
   }
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
-
-  if (is.null(z)) {
-    stop("No instrument in z specified.")
-  }
-
-  checkmate::checkDataFrame(data)
-
-  # tbd: ml_method handling: default mlmethod_g = mlmethod_m
-  # tbd: parameter passing
+  
+  all_preds = fit_nuisance_pliv(data, y, d, z,
+                                mlmethod, params,
+                                train_ids, test_ids)
+  m_hat_list = all_preds$m_hat_list
+  g_hat_list = all_preds$g_hat_list
+  r_hat_list = all_preds$r_hat_list
+  
   n = nrow(data)
   theta = se = te = pval = NA
-
-  if (score != "partialling out" & score != "ivreg") {
-    stop("Value for score is not valid.")
-  }
-
-
-  # nuisance g: E[Y|X]
-  g_indx = names(data) != d & names(data) != z
-  data_g = data[, g_indx, drop = FALSE]
-  task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
-
-  resampling_g = mlr3::rsmp("custom")
-  resampling_g$instantiate(task_g, train_ids, test_ids)
-  n_iters = resampling_g$iters
-
-  # tbd: handling learners from mlr3 base and mlr3learners package
-  # ml_g = mlr3::mlr_learners$get(mlmethod$mlmethod_g)
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g # tbd: check if parameter passing really works
-
-  # ml_g =  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
-  r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-
-  # # r_g = mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  # g_hat_list = r_g$data$prediction
-  # # g_hat_list = mlr::getRRPredictionList(r_g)
-  # #g_hat_list = lapply(g_hat_list$test, extract_test_pred)
-  # g_hat_list = lapply(g_hat_list, function(x) x$response)
-  # g_hat_list = lapply(r_g$data$prediction, function(x) x$test$response)
-  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
-
-  # nuisance m: E[Z|X]
-  m_indx = names(data) != y & names(data) != d
-  data_m = data[, m_indx, drop = FALSE]
-  task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m # tbd: check if parameter passing really works
-
-  # ml_m = mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  resampling_m = mlr3::rsmp("custom")
-  resampling_m$instantiate(task_m, train_ids, test_ids)
-
-  train_ids_m = lapply(1:n_iters, function(x) resampling_m$train_set(x))
-  test_ids_m = lapply(1:n_iters, function(x) resampling_m$test_set(x))
-
-  r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-
-  # r_m = mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  # m_hat_list = r_m$data$prediction # alternatively, r_m$prediction (not listed)
-  # # m_hat_list = mlr::getRRPredictionList(r_m)
-  # m_hat_list = lapply(m_hat_list, function(x) x$response)
-  # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
-  # m_hat_list = lapply(r_m$data$prediction, function(x) x$test$response)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
-
-
-  # nuisance r: E[D|X]
-  r_indx = names(data) != y & names(data) != z
-  data_r = data[, r_indx, drop = FALSE]
-  task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
-  ml_r = mlr3::lrn(mlmethod$mlmethod_r)
-  ml_r$param_set$values = params$params_r # tbd: check if parameter passing really works
-
-  # ml_m = mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  resampling_r = mlr3::rsmp("custom")
-  resampling_r$instantiate(task_r, train_ids, test_ids)
-
-  train_ids_r = lapply(1:n_iters, function(x) resampling_r$train_set(x))
-  test_ids_r = lapply(1:n_iters, function(x) resampling_r$test_set(x))
-
-  r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-
-  # r_m = mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  # r_hat_list = r_r$data$prediction # alternatively, r_r$prediction (not listed)
-  # # m_hat_list = mlr::getRRPredictionList(r_m)
-  # r_hat_list = lapply(r_hat_list, function(x) x$response)
-  # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
-  # r_hat_list = lapply(r_r$data$prediction, function(x) x$test$response)
-  r_hat_list = lapply(r_r$data$predictions(), function(x) x$response)
-
-
-
-  # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
-  #     (rin$desc$iters != r_m$pred$instance$desc$iters) ||
-  #     !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
-  #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
-  #   stop('Resampling instances not equal')
-  # }
-  if ((resampling_g$iters != resampling_m$iters) ||
-    (resampling_g$iters != resampling_r$iters) ||
-    (resampling_g$iters != n_iters) ||
-    (resampling_m$iters != n_iters) ||
-    (resampling_r$iters != n_iters) ||
-    (!identical(train_ids, train_ids_m)) ||
-    (!identical(train_ids, train_ids_r)) ||
-    (!identical(test_ids, test_ids_m)) ||
-    (!identical(test_ids, test_ids_r))) {
-    stop("Resampling instances not equal")
-  }
-
   # test_index_list = rin$test.inds
   #  n_k = vapply(test_index_list, length, double(1))
   n_k = vapply(test_ids, length, double(1L))
@@ -130,14 +29,14 @@ dml_plriv = function(data, y, d, z,
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_iters)
+    thetas = vars = rep(NA, k)
     se_i = NA
 
-    v_hat = u_hat = w_hat = matrix(NA, nrow = max(n_k), ncol = n_iters)
+    v_hat = u_hat = w_hat = matrix(NA, nrow = max(n_k), ncol = k)
     v_hat_se = u_hat_se = w_hat_se = matrix(NA, nrow = max(n), ncol = 1)
 
 
-    for (i in 1:n_iters) {
+    for (i in 1:k) {
       # test_index = test_index_list[[i]]
       test_index = test_ids[[i]]
 
@@ -174,7 +73,7 @@ dml_plriv = function(data, y, d, z,
 
     v_hat = u_hat = w_hat = matrix(NA, nrow = n, ncol = 1)
 
-    for (i in 1:n_iters) {
+    for (i in 1:k) {
 
       # test_index = test_index_list[[i]]
       test_index = test_ids[[i]]
@@ -203,11 +102,6 @@ dml_plriv = function(data, y, d, z,
     pval = 2 * stats::pnorm(-abs(t))
   }
 
-  all_preds = list(
-    m_hat_list = m_hat_list,
-    g_hat_list = g_hat_list,
-    r_hat_list = r_hat_list)
-
   names(theta) = names(se) = d
   res = list(
     coefficients = theta, se = se, t = t, pval = pval,
@@ -217,6 +111,57 @@ dml_plriv = function(data, y, d, z,
   return(res)
 }
 
+fit_nuisance_pliv = function(data, y, d, z,
+                             mlmethod, params,
+                             train_ids, test_ids) {
+  # nuisance g: E[Y|X]
+  g_indx = names(data) != d & names(data) != z
+  data_g = data[, g_indx, drop = FALSE]
+  task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
+  
+  resampling_g = mlr3::rsmp("custom")
+  resampling_g$instantiate(task_g, train_ids, test_ids)
+  
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  
+  r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  
+  # nuisance m: E[Z|X]
+  m_indx = names(data) != y & names(data) != d
+  data_m = data[, m_indx, drop = FALSE]
+  task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m$param_set$values = params$params_m
+  
+  resampling_m = mlr3::rsmp("custom")
+  resampling_m$instantiate(task_m, train_ids, test_ids)
+  
+  r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+  m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
+  
+  
+  # nuisance r: E[D|X]
+  r_indx = names(data) != y & names(data) != z
+  data_r = data[, r_indx, drop = FALSE]
+  task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
+  ml_r = mlr3::lrn(mlmethod$mlmethod_r)
+  ml_r$param_set$values = params$params_r
+  
+  resampling_r = mlr3::rsmp("custom")
+  resampling_r$instantiate(task_r, train_ids, test_ids)
+  
+  r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+  r_hat_list = lapply(r_r$data$predictions(), function(x) x$response)
+  
+  all_preds = list(
+    m_hat_list = m_hat_list,
+    g_hat_list = g_hat_list,
+    r_hat_list = r_hat_list)
+
+  return(all_preds)
+}
 
 
 # Orthogonalized Estimation of Coefficient in PLR
