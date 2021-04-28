@@ -12,81 +12,44 @@ dml_irm = function(data, y, d,
 
   all_preds = fit_nuisance_irm(data, y, d,
                                mlmethod, params,
-                               train_ids, test_ids)
-  m_hat_list = all_preds$m_hat_list
-  g0_hat_list = all_preds$g0_hat_list
-  g1_hat_list = all_preds$g1_hat_list
-  
-  n = nrow(data)
-  theta = se = te = pval = NA
-  n_k = vapply(test_ids, length, double(1L))
-
+                               train_ids, test_ids, score)
+  res = compute_irm_residuals(data, y, d, k, smpls, all_preds, score)
+  u0_hat = res$u0_hat
+  u1_hat = res$u1_hat
+  m_hat = res$m_hat
+  p_hat = res$p_hat
+  g0_hat = res$g0_hat
+  g1_hat = res$g1_hat
   D = data[, d]
   Y = data[, y]
+  
+  theta = se = te = pval = NA
 
   # DML 1
   if (dml_procedure == "dml1") {
     thetas = vars = rep(NA, k)
-    se_i = NA
-
-    g0_hat = g1_hat = u0_hat = u1_hat = m_hat_k = d_k = p_hat_k = y_k = matrix(NA, nrow = max(n_k), ncol = k)
-    g0_hat_se = g1_hat_se = u0_hat_se = u1_hat_se = m_hat_k_se = p_hat_k_se = matrix(NA, nrow = n, ncol = 1)
-
+    
     for (i in 1:k) {
-      # test_index = test_index_list[[i]]
       test_index = test_ids[[i]]
-      g0_hat[, i] = g0_hat_se[test_index, 1] = g0_hat_list[[i]]
-      g1_hat[, i] = g1_hat_se[test_index, 1] = g1_hat_list[[i]]
-
-      m_hat_k[, i] = m_hat_k_se[test_index, 1] = m_hat_list[[i]]
-      d_k[, i] = D[test_index]
-      p_hat_k[, i] = p_hat_k_se[test_index, 1] = mean(D[test_index])
-      y_k[, i] = Y[test_index]
-      u0_hat[, i] = u0_hat_se[test_index, 1] = Y[test_index] - g0_hat[, i]
-      u1_hat[, i] = u1_hat_se[test_index, 1] = Y[test_index] - g1_hat[, i]
-
 
       orth_est = orth_irm_dml(
-        g0_hat = g0_hat[, i], g1_hat = g1_hat[, i],
-        u0_hat = u0_hat[, i], u1_hat = u1_hat[, i],
-        d = d_k[, i], p_hat = p_hat_k[, i], m = m_hat_k[, i],
-        y = y_k[, i],
+        g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
+        u0_hat = u0_hat[test_index], u1_hat = u1_hat[test_index],
+        d = D[test_index], p_hat = p_hat[test_index], m = m_hat[test_index],
+        y = Y[test_index],
         score = score)
       thetas[i] = orth_est$theta
     }
 
     theta = mean(thetas, na.rm = TRUE)
-
     se = sqrt(var_irm(
-      theta = theta, g0_hat = g0_hat_se, g1_hat = g1_hat_se,
-      u0_hat = u0_hat_se, u1_hat = u1_hat_se,
-      d = D, p_hat = p_hat_k_se, m = m_hat_k_se, y = Y, score = score))
-
-    t = theta / se
-
-    pval = 2 * stats::pnorm(-abs(t))
+      theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
+      u0_hat = u0_hat, u1_hat = u1_hat,
+      d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
 
   }
 
   if (dml_procedure == "dml2") {
-
-    g0_hat = g1_hat = u0_hat = u1_hat = m_hat = p_hat = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:k) {
-
-      # test_index = test_index_list[[i]]
-      test_index = test_ids[[i]]
-
-      m_hat[test_index, 1] = m_hat_list[[i]]
-      p_hat[test_index, 1] = mean(D[test_index])
-      g0_hat[test_index, 1] = g0_hat_list[[i]]
-      g1_hat[test_index, 1] = g1_hat_list[[i]]
-
-      u0_hat[test_index, 1] = Y[test_index] - g0_hat[test_index, 1]
-      u1_hat[test_index, 1] = Y[test_index] - g1_hat[test_index, 1]
-
-    }
-
     orth_est = orth_irm_dml(
       g0_hat = g0_hat, g1_hat = g1_hat,
       u0_hat = u0_hat, u1_hat = u1_hat, d = D, p_hat = p_hat,
@@ -97,23 +60,22 @@ dml_irm = function(data, y, d,
       theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
       u0_hat = u0_hat, u1_hat = u1_hat,
       d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
-
-    t = theta / se
-
-    pval = 2 * stats::pnorm(-abs(t))
   }
+
+  t = theta / se
+  pval = 2 * stats::pnorm(-abs(t))
 
   names(theta) = names(se) = d
   res = list(
     coef = theta, se = se, t = t, pval = pval,
-    all_preds = all_preds)
+    all_preds = all_preds, smpls=smpls)
 
   return(res)
 }
 
 fit_nuisance_irm = function(data, y, d,
                             mlmethod, params,
-                            train_ids, test_ids) {
+                            train_ids, test_ids, score) {
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
   m_indx = names(data) != y
@@ -160,16 +122,20 @@ fit_nuisance_irm = function(data, y, d,
   g0_hat_list = lapply(r_g0$data$predictions(), function(x) x$response)
   
   # nuisance g1: E[Y|D=1, X]
-  task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
-  ml_g1 = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g1$param_set$values = params$params_g
-  resampling_g1 = mlr3::rsmp("custom")
-  resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
-  train_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$train_set(x))
-  test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
-  
-  r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
-  g1_hat_list = lapply(r_g1$data$predictions(), function(x) x$response)
+  if (score == "ATE") {
+    task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
+    ml_g1 = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g1$param_set$values = params$params_g
+    resampling_g1 = mlr3::rsmp("custom")
+    resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
+    train_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$train_set(x))
+    test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
+    
+    r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
+    g1_hat_list = lapply(r_g1$data$predictions(), function(x) x$response)
+  } else {
+    g1_hat_list = NULL
+  }
 
   all_preds = list(
     m_hat_list = m_hat_list,
@@ -179,24 +145,53 @@ fit_nuisance_irm = function(data, y, d,
   return(all_preds)
 }
 
+compute_irm_residuals = function(data, y, d, k, smpls, all_preds, score) {
+  test_ids = smpls$test_ids
+  
+  m_hat_list = all_preds$m_hat_list
+  g0_hat_list = all_preds$g0_hat_list
+  g1_hat_list = all_preds$g1_hat_list
+  
+  n = nrow(data)
+  D = data[, d]
+  Y = data[, y]
+  
+  g0_hat = g1_hat = u0_hat = u1_hat = m_hat = p_hat = rep(NA, n)
+  
+  for (i in 1:k) {
+    test_index = test_ids[[i]]
+    
+    m_hat[test_index] = m_hat_list[[i]]
+    p_hat[test_index] = mean(D[test_index])
+    g0_hat[test_index] = g0_hat_list[[i]]
+    
+    if (score == "ATE") {
+      g1_hat[test_index] = g1_hat_list[[i]]
+    }
+    
+    u0_hat[test_index] = Y[test_index] - g0_hat[test_index]
+    
+    if (score == "ATE") {
+      u1_hat[test_index] = Y[test_index] - g1_hat[test_index]
+    }
+  }
+  
+  res = list(u0_hat=u0_hat, u1_hat=u1_hat,
+             m_hat=m_hat, p_hat=p_hat,
+             g0_hat=g0_hat, g1_hat=g1_hat)
+  
+  return(res)
+}
+
 # Orthogonalized Estimation of Coefficient in irm
 orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
 
-  obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
-
-  if (any(lapply(obj_list, length) != length(g0_hat))) {
-    stop("dimensions don't match.")
-  }
-  theta = NA
-
   if (score == "ATE") {
-    theta = mean(g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m), na.rm = TRUE)
+    theta = mean(g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m))
   }
-
   else if (score == "ATTE") {
-    theta = mean(d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m)), na.rm = TRUE) / mean(d / p_hat, na.rm = TRUE)
+    theta = mean(d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m))) / mean(d / p_hat)
   }
-
   else {
     stop("Inference framework for orthogonal estimation unknown")
   }
@@ -208,80 +203,38 @@ orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
 
 # Variance estimation for DML estimator in the interactive regression model
 var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
-  obj_list = list(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y)
-
-  if (any(lapply(obj_list, length) != length(g0_hat))) {
-    stop("dimensions don't match.")
-  }
-  var = NA
-
+  n = length(d)
   if (score == "ATE") {
-
-    # var = mean( 1/length(d) * colMeans(((g1_hat - g0_hat + d*(u1_hat)/m + (1-d)*u0_hat/(1-m))^2), na.rm = TRUE))
-
-    var = mean(1 / length(d) * colMeans(((g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m) - theta)^2), na.rm = TRUE))
-
+    var = 1 / n * mean(((g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m) - theta)^2))
   }
-
   else if (score == "ATTE") {
-
-    var = mean(1 / length(d) * colMeans((d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m)) - d / p_hat * theta)^2, na.rm = TRUE))
-
+    var = 1 / n * mean((d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m)) - d / p_hat * theta)^2) / (mean(d/p_hat)^2)
   }
 
   return(c(var))
 }
 
-
-
 # Bootstrap Implementation for Interactive Regression Model
-bootstrap_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score, se, bootstrap, nRep) {
-
-  boot_var = NA
+bootstrap_irm = function(theta, se, data, y, d, k, smpls, all_preds, dml_procedure, score, bootstrap, nRep) {
+  
+  res = compute_irm_residuals(data, y, d, k, smpls, all_preds, score)
+  u0_hat = res$u0_hat
+  u1_hat = res$u1_hat
+  m_hat = res$m_hat
+  p_hat = res$p_hat
+  g0_hat = res$g0_hat
+  g1_hat = res$g1_hat
+  D = data[, d]
 
   if (score == "ATE") {
-
-    psi = g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m) - theta
-    J = -1
-    if (!is.vector(psi)) {
-      J = rep(J, ncol(psi))
-    }
+    psi = g1_hat - g0_hat + D * u1_hat / m_hat - (1 - D) * u0_hat / (1 - m_hat) - theta
+    psi_a = rep(-1, length(D))
+  }
+  else if (score == "ATTE") {
+    psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) - D / p_hat * theta
+    psi_a = -D / p_hat
   }
 
-  if (score == "ATTE") {
-
-    psi = d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m)) - d / p_hat * theta
-
-    # note that the J here is by construction always equal to -1
-    J = -colMeans(d / p_hat, na.rm = TRUE)
-
-  }
-
-  n = length(d)
-  pertub = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (!is.vector(psi)) {
-    J = matrix(rep(J, each = nrow(psi)), nrow = nrow(psi))
-  }
-
-  for (i in seq(nRep)) {
-
-    if (bootstrap == "Bayes") {
-      weights = stats::rexp(n, rate = 1) - 1
-    }
-
-    if (bootstrap == "normal") {
-      weights = stats::rnorm(n)
-    }
-
-    if (bootstrap == "wild") {
-      weights = stats::rnorm(n) / sqrt(2) + (stats::rnorm(n)^2 - 1) / 2
-    }
-
-    pertub[1, i] = mean(colMeans(weights * 1 / se * 1 / J * psi, na.rm = TRUE))
-
-  }
-
-  res = list(boot_theta = pertub)
-  return(c(res))
+  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
+  return(res)
 }

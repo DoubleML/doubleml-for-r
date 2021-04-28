@@ -150,7 +150,6 @@ compute_plriv_residuals = function(data, y, d, z, k, smpls, all_preds) {
   return(residuals)
 }
 
-
 # Orthogonalized Estimation of Coefficient in PLR
 orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
   if (score == "partialling out") {
@@ -162,7 +161,6 @@ orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
   return(res)
 }
 
-
 # Variance estimation for DML estimator in the partially linear regression model
 var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
   if (score == "partialling out") {
@@ -173,8 +171,6 @@ var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
   }
   return(c(var))
 }
-
-
 
 # Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plriv = function(theta, se, data, y, d, z, k, smpls, all_preds, dml_procedure, bootstrap, nRep) {

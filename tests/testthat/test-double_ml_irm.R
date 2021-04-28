@@ -8,8 +8,8 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     learner = "cv_glmnet",
-    dml_procedure = "dml2",
-    score = "ATE",
+    dml_procedure = "dml1",
+    score = "ATTE",
     i_setting = 1:(length(data_irm)),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
@@ -38,6 +38,14 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       dml_procedure = dml_procedure, score = score)
     theta = irm_hat$coef
     se = irm_hat$se
+    
+    boot_theta = bootstrap_irm(theta, se, data_irm[[i_setting]],
+                               y = "y", d = "d",
+                               k = 5, smpls = irm_hat$smpls,
+                               all_preds= irm_hat$all_preds,
+                               dml_procedure = dml_procedure,
+                               score = score,
+                               bootstrap = "normal", nRep = n_rep_boot)$boot_coef
 
 
     set.seed(i_setting)
@@ -45,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
       y_col = "y",
       d_cols = "d", x_cols = Xnames)
-
+    
     double_mlirm_obj = DoubleMLIRM$new(data_ml,
       n_folds = 5,
       ml_g = learner_pars$mlmethod$mlmethod_g,
@@ -72,12 +80,12 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     se_obj = double_mlirm_obj$se
 
     # bootstrap
-    # double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlirm_obj$boot_coef
-    #
+    double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mlirm_obj$boot_coef
+
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
-    # expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )
