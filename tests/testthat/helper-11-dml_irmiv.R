@@ -15,102 +15,59 @@ dml_irmiv = function(data, y, d, z,
                                 mlmethod, params,
                                 train_ids, test_ids,
                                 always_takers, never_takers)
-  p_hat_list = all_preds$p_hat_list
-  mu0_hat_list = all_preds$mu0_hat_list
-  mu1_hat_list = all_preds$mu1_hat_list
-  m0_hat_list = all_preds$m0_hat_list
-  m1_hat_list = all_preds$m1_hat_list
-
-  n = nrow(data)
-  theta = se = te = pval = NA
-  n_k = vapply(test_ids, length, double(1L))
-
+  res = extract_iivm_preds(data, y, d, z, k, smpls, all_preds)
+  p_hat = res$p_hat
+  mu0_hat = res$mu0_hat
+  mu1_hat = res$mu1_hat
+  m0_hat = res$m0_hat
+  m1_hat = res$m1_hat
   D = data[, d]
   Y = data[, y]
   Z = data[, z]
 
+  theta = se = te = pval = NA
+
   # DML 1
   if (dml_procedure == "dml1") {
     thetas = vars = rep(NA, k)
-    se_i = NA
-
-    p_hat = mu0_hat = mu1_hat = m0_hat = m1_hat = d_k = y_k = z_k = matrix(NA, nrow = max(n_k), ncol = k)
-    p_hat_se = mu0_hat_se = mu1_hat_se = m0_hat_se = m1_hat_se = matrix(NA, nrow = n, ncol = 1)
-
     for (i in 1:k) {
       test_index = test_ids[[i]]
-
-      p_hat[, i] = p_hat_se[test_index, 1] = p_hat_list[[i]]
-      mu0_hat[, i] = mu0_hat_se[test_index, 1] = mu0_hat_list[[i]]
-      mu1_hat[, i] = mu1_hat_se[test_index, 1] = mu1_hat_list[[i]]
-      m0_hat[, i] = m0_hat_se[test_index, 1] = m0_hat_list[[i]]
-      m1_hat[, i] = m1_hat_se[test_index, 1] = m1_hat_list[[i]]
-      d_k[, i] = D[test_index]
-      y_k[, i] = Y[test_index]
-      z_k[, i] = Z[test_index]
-
       orth_est = orth_irmiv_dml(
-        p_hat = p_hat[, i], mu0_hat = mu0_hat[, i],
-        mu1_hat = mu1_hat[, i],
-        m0_hat = m0_hat[, i], m1_hat = m1_hat[, i],
-        d = d_k[, i], y = y_k[, i], z = z_k[, i],
+        p_hat = p_hat[test_index],
+        mu0_hat = mu0_hat[test_index], mu1_hat = mu1_hat[test_index],
+        m0_hat = m0_hat[test_index], m1_hat = m1_hat[test_index],
+        d = D[test_index], y = Y[test_index], z = Z[test_index],
         score = score)
       thetas[i] = orth_est$theta
-
     }
-
     theta = mean(thetas, na.rm = TRUE)
-
-    se = sqrt(var_irmiv(
-      theta = theta, p_hat = p_hat_se, mu0_hat = mu0_hat_se,
-      mu1_hat = mu1_hat_se, m0_hat = m0_hat_se, m1_hat = m1_hat_se,
-      d = D, y = Y, z = Z, score = score))
-
-    t = theta / se
-
-    pval = 2 * stats::pnorm(-abs(t))
   }
-
   if (dml_procedure == "dml2") {
-
-    p_hat = mu0_hat = mu1_hat = m0_hat = m1_hat = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:k) {
-      test_index = test_ids[[i]]
-
-      p_hat[test_index, 1] = p_hat_list[[i]]
-      mu0_hat[test_index, 1] = mu0_hat_list[[i]]
-      mu1_hat[test_index, 1] = mu1_hat_list[[i]]
-      m0_hat[test_index, 1] = m0_hat_list[[i]]
-      m1_hat[test_index, 1] = m1_hat_list[[i]]
-
-    }
-
     orth_est = orth_irmiv_dml(
       p_hat = p_hat, mu0_hat = mu0_hat,
       mu1_hat = mu1_hat,
       m0_hat = m0_hat, m1_hat = m1_hat,
       d = D, y = Y, z = Z,
       score = score)
-
     theta = orth_est$theta
-    se = sqrt(var_irmiv(
-      theta = theta, p_hat = p_hat, mu0_hat = mu0_hat,
-      mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
-      d = D, y = Y, z = Z, score = score))
-
-    t = theta / se
-
-    pval = 2 * stats::pnorm(-abs(t))
   }
+
+  se = sqrt(var_irmiv(
+    theta = theta, p_hat = p_hat, mu0_hat = mu0_hat,
+    mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
+    d = D, y = Y, z = Z, score = score))
+  
+  t = theta / se
+  pval = 2 * stats::pnorm(-abs(t))
 
   names(theta) = names(se) = d
   res = list(
     coef = theta, se = se, t = t, pval = pval,
-    all_preds = all_preds)
+    all_preds = all_preds, smpls = smpls)
 
   return(res)
 }
+
 
 fit_nuisance_iivm = function(data, y, d, z,
                              mlmethod, params,
@@ -245,6 +202,38 @@ fit_nuisance_iivm = function(data, y, d, z,
   return(all_preds)
 }
 
+
+extract_iivm_preds = function(data, y, d, z, k, smpls, all_preds) {
+  test_ids = smpls$test_ids
+  
+  p_hat_list = all_preds$p_hat_list
+  mu0_hat_list = all_preds$mu0_hat_list
+  mu1_hat_list = all_preds$mu1_hat_list
+  m0_hat_list = all_preds$m0_hat_list
+  m1_hat_list = all_preds$m1_hat_list
+  
+  n = nrow(data)
+  D = data[, d]
+  Y = data[, y]
+  Z = data[, z]
+  p_hat = mu0_hat = mu1_hat = m0_hat = m1_hat = rep(NA, n)
+  
+  for (i in 1:k) {
+    test_index = test_ids[[i]]
+    
+    p_hat[test_index] = p_hat_list[[i]]
+    mu0_hat[test_index] = mu0_hat_list[[i]]
+    mu1_hat[test_index] = mu1_hat_list[[i]]
+    m0_hat[test_index] = m0_hat_list[[i]]
+    m1_hat[test_index] = m1_hat_list[[i]]
+  }
+  
+  res = list(p_hat=p_hat, mu0_hat=mu0_hat, mu1_hat=mu1_hat,
+             m0_hat=m0_hat, m1_hat=m1_hat)
+  return(res)
+}
+
+
 # Orthogonalized Estimation of Coefficient in irm
 orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
   theta = NA
@@ -253,16 +242,6 @@ orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, scor
     theta = 1 / mean(m1_hat - m0_hat + z * (d - m1_hat) / p_hat - ((1 - z) * (d - m0_hat) / (1 - p_hat))) *
       mean(mu1_hat - mu0_hat + z * (y - mu1_hat) / p_hat - ((1 - z) * (y - mu0_hat) / (1 - p_hat)))
   }
-
-  else if (score == "LATTE") {
-
-    # tbd: LATTE
-
-    # Ep = mean(d)
-
-    # theta = mean( d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m))) / mean(d/Ep)
-  }
-
   else {
     stop("Inference framework for orthogonal estimation unknown")
   }
@@ -274,38 +253,11 @@ orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, scor
 
 # Variance estimation for DML estimator in the Interactive Instrumental Variable Regression Model
 var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
-  var = NA
-
+  n = length(d)
   if (score == "LATE") {
-
-    var = mean(1 / length(d) * 1 / (colMeans((m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat)), na.rm = TRUE))^2 *
-      colMeans((mu1_hat - mu0_hat + z * (y - mu1_hat) / p_hat - (1 - z) * (y - mu0_hat) / (1 - p_hat) -
-        (m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat)) * theta)^2, na.rm = TRUE))
-
-  }
-
-  # else if (score == "partialling out") {
-  #
-  #      score_mat = 1/(m1_hat - m0_hat + z*(d-m1_hat)/p_hat - ((1-z)*(d-m0_hat)/(1-p_hat)))*
-  #                     (mu1_hat - mu0_hat + z*(y - mu1_hat)/p_hat - ((1-z)*(y - mu0_hat)/(1-p_hat)))
-  #
-  #      var = 1/length(d) * apply(score_mat, 2, function(x) var(x, na.rm = TRUE))
-  #   }
-  #
-  else if (score == "LATTE") {
-
-    # tbd: LATTE
-
-    #    if (is.numeric(d)) {
-    #      d = as.matrix(d)
-    #    }
-    #
-    #  Ep = colMeans(d)
-    #
-    # var = mean( 1/length(d) * colMeans( (d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta)^2, na.rm = TRUE))
-    #
-
-    message("LATTE not yet implemented.")
+    var = 1 / n * 1 / (mean((m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat))))^2 *
+      mean((mu1_hat - mu0_hat + z * (y - mu1_hat) / p_hat - (1 - z) * (y - mu0_hat) / (1 - p_hat) -
+        (m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat)) * theta)^2)
   } else {
     stop("Inference framework for variance estimation unknown")
   }
@@ -313,61 +265,30 @@ var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sc
 }
 
 
-
 # Bootstrap Implementation for Interactive Instrumental Variable Regression Model
-bootstrap_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat,
-  d, y, z, score, se, bootstrap, nRep) {
+bootstrap_irmiv = function(theta, se, data, y, d, z, k, smpls, all_preds, dml_procedure, score, bootstrap, nRep) {
 
-  boot_var = NA
+  res = extract_iivm_preds(data, y, d, z, k, smpls, all_preds)
+  p_hat = res$p_hat
+  mu0_hat = res$mu0_hat
+  mu1_hat = res$mu1_hat
+  m0_hat = res$m0_hat
+  m1_hat = res$m1_hat
+  D = data[, d]
+  Y = data[, y]
+  Z = data[, z]
 
   if (score == "LATE") {
 
-    score = mu1_hat - mu0_hat + z * (y - mu1_hat) / p_hat - (1 - z) * (y - mu0_hat) / (1 - p_hat) -
-      (m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat)) * theta
+    psi = mu1_hat - mu0_hat + Z * (Y - mu1_hat) / p_hat - (1 - Z) * (Y - mu0_hat) / (1 - p_hat) -
+      (m1_hat - m0_hat + Z * (D - m1_hat) / p_hat - (1 - Z) * (D - m0_hat) / (1 - p_hat)) * theta
 
-    J = -colMeans(m1_hat - m0_hat + z * (d - m1_hat) / p_hat
-      - (1 - z) * (d - m0_hat) / (1 - p_hat), na.rm = TRUE)
-  }
-
-  else if (score == "LATTE") {
-
-    # if (is.numeric(d)) {
-    #     d = as.matrix(d)
-    #   }
-    #
-    # Ep = colMeans(d)
-    #
-    # score = d*(y - g0_hat)/Ep - m*(1-d)*u0_hat/(Ep*(1-m)) - d/Ep * theta
-
+    psi_a = -(m1_hat - m0_hat + Z * (D - m1_hat) / p_hat
+              - (1 - Z) * (D - m0_hat) / (1 - p_hat))
   } else {
     stop("Inference framework for multiplier bootstrap unknown")
   }
 
-  n = length(d)
-  pertub = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (!is.vector(score)) {
-    J = matrix(rep(J, each = nrow(score)), nrow = nrow(score))
-  }
-
-  for (i in seq(nRep)) {
-
-    if (bootstrap == "Bayes") {
-      weights = stats::rexp(n, rate = 1) - 1
-    }
-
-    if (bootstrap == "normal") {
-      weights = stats::rnorm(n)
-    }
-
-    if (bootstrap == "wild") {
-      weights = stats::rnorm(n) / sqrt(2) + (stats::rnorm(n)^2 - 1) / 2
-    }
-
-    pertub[1, i] = mean(colMeans(weights * 1 / se * 1 / J * score, na.rm = TRUE))
-
-  }
-
-  res = list(boot_theta = pertub)
-  return(c(res))
+  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
+  return(res)
 }

@@ -38,6 +38,14 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       dml_procedure = dml_procedure, score = score)
     theta = iivm_hat$coef
     se = iivm_hat$se
+    
+    boot_theta = bootstrap_irmiv(theta, se, data_iivm[[i_setting]],
+                                 y = "y", d = "d", z = "z",
+                                 k = 5, smpls = iivm_hat$smpls,
+                                 all_preds= iivm_hat$all_preds,
+                                 dml_procedure = dml_procedure,
+                                 score = score,
+                                 bootstrap = "normal", nRep = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
     Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
@@ -62,12 +70,12 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se_obj = double_mliivm_obj$se
 
     # bootstrap
-    # double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mliivm_obj$boot_coef
-    #
+    double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mliivm_obj$boot_coef
+
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
-    # expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )

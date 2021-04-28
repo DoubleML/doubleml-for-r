@@ -26,34 +26,26 @@ dml_plriv = function(data, y, d, z,
     thetas = vars = rep(NA, k)
     for (i in 1:k) {
       test_index = test_ids[[i]]
-
       orth_est = orth_plriv_dml(
         u_hat = u_hat[test_index],
         v_hat = v_hat[test_index],
         w_hat = w_hat[test_index],
         score = score)
       thetas[i] = orth_est$theta
-
     }
-
     theta = mean(thetas, na.rm = TRUE)
-    se = sqrt(var_plriv(
-      theta = theta, u_hat = u_hat, v_hat = v_hat,
-      w_hat = w_hat, score = score,
-      dml_procedure = dml_procedure))
   }
-
   if (dml_procedure == "dml2") {
     orth_est = orth_plriv_dml(
       u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
       score = score)
-
     theta = orth_est$theta
-    se = sqrt(var_plriv(
-      theta = theta, u_hat = u_hat, v_hat = v_hat,
-      w_hat = w_hat, score = score,
-      dml_procedure = dml_procedure))
   }
+
+  se = sqrt(var_plriv(
+    theta = theta, u_hat = u_hat, v_hat = v_hat,
+    w_hat = w_hat, score = score,
+    dml_procedure = dml_procedure))
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))

@@ -13,7 +13,7 @@ dml_irm = function(data, y, d,
   all_preds = fit_nuisance_irm(data, y, d,
                                mlmethod, params,
                                train_ids, test_ids, score)
-  res = compute_irm_residuals(data, y, d, k, smpls, all_preds, score)
+  res = extract_irm_residuals(data, y, d, k, smpls, all_preds, score)
   u0_hat = res$u0_hat
   u1_hat = res$u1_hat
   m_hat = res$m_hat
@@ -31,7 +31,6 @@ dml_irm = function(data, y, d,
     
     for (i in 1:k) {
       test_index = test_ids[[i]]
-
       orth_est = orth_irm_dml(
         g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
         u0_hat = u0_hat[test_index], u1_hat = u1_hat[test_index],
@@ -40,27 +39,20 @@ dml_irm = function(data, y, d,
         score = score)
       thetas[i] = orth_est$theta
     }
-
     theta = mean(thetas, na.rm = TRUE)
-    se = sqrt(var_irm(
-      theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
-      u0_hat = u0_hat, u1_hat = u1_hat,
-      d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
-
   }
-
   if (dml_procedure == "dml2") {
     orth_est = orth_irm_dml(
       g0_hat = g0_hat, g1_hat = g1_hat,
       u0_hat = u0_hat, u1_hat = u1_hat, d = D, p_hat = p_hat,
       y = Y, m = m_hat, score = score)
-
     theta = orth_est$theta
-    se = sqrt(var_irm(
-      theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
-      u0_hat = u0_hat, u1_hat = u1_hat,
-      d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
   }
+
+  se = sqrt(var_irm(
+    theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
+    u0_hat = u0_hat, u1_hat = u1_hat,
+    d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -145,7 +137,7 @@ fit_nuisance_irm = function(data, y, d,
   return(all_preds)
 }
 
-compute_irm_residuals = function(data, y, d, k, smpls, all_preds, score) {
+extract_irm_residuals = function(data, y, d, k, smpls, all_preds, score) {
   test_ids = smpls$test_ids
   
   m_hat_list = all_preds$m_hat_list
@@ -217,7 +209,7 @@ var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score)
 # Bootstrap Implementation for Interactive Regression Model
 bootstrap_irm = function(theta, se, data, y, d, k, smpls, all_preds, dml_procedure, score, bootstrap, nRep) {
   
-  res = compute_irm_residuals(data, y, d, k, smpls, all_preds, score)
+  res = extract_irm_residuals(data, y, d, k, smpls, all_preds, score)
   u0_hat = res$u0_hat
   u1_hat = res$u1_hat
   m_hat = res$m_hat
