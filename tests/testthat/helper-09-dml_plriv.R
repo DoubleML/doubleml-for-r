@@ -19,8 +19,6 @@ dml_plriv = function(data, y, d, z,
   
   n = nrow(data)
   theta = se = te = pval = NA
-  # test_index_list = rin$test.inds
-  #  n_k = vapply(test_index_list, length, double(1))
   n_k = vapply(test_ids, length, double(1L))
 
   D = data[, d]
