@@ -178,47 +178,14 @@ var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
 
 # Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plriv = function(theta, se, data, y, d, z, k, smpls, all_preds, dml_procedure, bootstrap, nRep) {
-  test_ids = smpls$test_ids
   residuals = compute_plriv_residuals(data, y, d, z, k, smpls, all_preds)
   u_hat = residuals$u_hat
   v_hat = residuals$v_hat
   w_hat = residuals$w_hat
-  n = length(u_hat)
-
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, k)
-    boot_coef = matrix(NA, nrow = k, ncol = nRep)
-    boot_t_stat = matrix(NA, nrow = k, ncol = nRep)
-    weights = draw_bootstrap_weights(bootstrap, nRep, n)
-    ii = 0
-    for (i_fold in 1:k) {
-      test_index = test_ids[[i_fold]]
-      
-      score = (u_hat[test_index] - v_hat[test_index] * theta) * w_hat[test_index]
-      J = -mean(v_hat[test_index] * w_hat[test_index])
-
-      n_obs_in_fold = length(test_index)
-      for (i in seq(nRep)) {
-        boot_coef[i_fold, i] = mean(weights[i, (ii + 1):(ii + n_obs_in_fold)] * 1 / J * score)
-        boot_t_stat[i_fold, i] = boot_coef[i_fold, i] / se
-      }
-      ii = ii + n_obs_in_fold
-    }
-    boot_coef = colMeans(boot_coef)
-    boot_t_stat = colMeans(boot_t_stat)
-  } else {
-    # DML2
-    score = (u_hat - v_hat * theta) * w_hat
-    J = -mean(v_hat * w_hat)
-    boot_coef = matrix(NA, nrow = 1, ncol = nRep)
-    boot_t_stat = matrix(NA, nrow = 1, ncol = nRep)
-    weights = draw_bootstrap_weights(bootstrap, nRep, n)
-    for (i in seq(nRep)) {
-      boot_coef[1, i] = mean(weights[i, ] * 1 / J * score)
-      boot_t_stat[1, i] = boot_coef[1, i] / se
-    }
-  }
-
-  res = list(boot_coef = boot_coef, boot_t_stat = boot_t_stat)
+  
+  psi = (u_hat - v_hat * theta) * w_hat
+  psi_a = - v_hat * w_hat
+  
+  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
   return(res)
 }

@@ -67,3 +67,43 @@ draw_bootstrap_weights = function(bootstrap, nRep, n_obs) {
 
   return(weights)
 }
+
+functional_bootstrap = function(theta, se, psi, psi_a, k, smpls, dml_procedure,
+                                bootstrap, nRep) {
+  n = length(psi)
+  weights = draw_bootstrap_weights(bootstrap, nRep, n)
+  if (dml_procedure == "dml1") {
+    test_ids = smpls$test_ids
+    boot_coef = matrix(NA, nrow = k, ncol = nRep)
+    boot_t_stat = matrix(NA, nrow = k, ncol = nRep)
+    ii = 0
+    for (i_fold in 1:k) {
+      test_index = test_ids[[i_fold]]
+      
+      score = psi[test_index]
+      J = mean(psi_a[test_index])
+      
+      n_obs_in_fold = length(test_index)
+      for (i in seq(nRep)) {
+        boot_coef[i_fold, i] = mean(weights[i, (ii + 1):(ii + n_obs_in_fold)] * 1 / J * score)
+        boot_t_stat[i_fold, i] = boot_coef[i_fold, i] / se
+      }
+      ii = ii + n_obs_in_fold
+    }
+    boot_coef = colMeans(boot_coef)
+    boot_t_stat = colMeans(boot_t_stat)
+  } else {
+    # DML2
+    score = psi
+    J = mean(psi_a)
+    boot_coef = matrix(NA, nrow = 1, ncol = nRep)
+    boot_t_stat = matrix(NA, nrow = 1, ncol = nRep)
+    for (i in seq(nRep)) {
+      boot_coef[1, i] = mean(weights[i, ] * 1 / J * score)
+      boot_t_stat[1, i] = boot_coef[1, i] / se
+    }
+  }
+  
+  res = list(boot_coef = boot_coef, boot_t_stat = boot_t_stat)
+  return(res)
+}
