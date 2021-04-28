@@ -12,79 +12,38 @@ dml_plriv = function(data, y, d, z,
   
   all_preds = fit_nuisance_pliv(data, y, d, z,
                                 mlmethod, params,
-                                train_ids, test_ids)
-  m_hat_list = all_preds$m_hat_list
-  g_hat_list = all_preds$g_hat_list
-  r_hat_list = all_preds$r_hat_list
-  
-  n = nrow(data)
-  theta = se = te = pval = NA
-  n_k = vapply(test_ids, length, double(1L))
+                                smpls)
 
-  D = data[, d]
-  Y = data[, y]
-  Z = data[, z]
+  residuals = compute_plriv_residuals(data, y, d, z, k, smpls, all_preds)
+  u_hat = residuals$u_hat
+  v_hat = residuals$v_hat
+  w_hat = residuals$w_hat
+
+  theta = se = te = pval = NA
 
   # DML 1
   if (dml_procedure == "dml1") {
     thetas = vars = rep(NA, k)
-    se_i = NA
-
-    v_hat = u_hat = w_hat = matrix(NA, nrow = max(n_k), ncol = k)
-    v_hat_se = u_hat_se = w_hat_se = matrix(NA, nrow = max(n), ncol = 1)
-
-
     for (i in 1:k) {
-      # test_index = test_index_list[[i]]
       test_index = test_ids[[i]]
 
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-      r_hat = r_hat_list[[i]]
-
-      v_hat[, i] = v_hat_se[test_index, ] = D[test_index] - r_hat
-      u_hat[, i] = u_hat_se[test_index, ] = Y[test_index] - g_hat
-      w_hat[, i] = w_hat_se[test_index, ] = Z[test_index] - m_hat
-
       orth_est = orth_plriv_dml(
-        u_hat = u_hat[, i], v_hat = v_hat[, i],
-        w_hat = w_hat[, i],
+        u_hat = u_hat[test_index],
+        v_hat = v_hat[test_index],
+        w_hat = w_hat[test_index],
         score = score)
       thetas[i] = orth_est$theta
 
     }
 
     theta = mean(thetas, na.rm = TRUE)
-
     se = sqrt(var_plriv(
-      theta = theta, u_hat = u_hat_se, v_hat = v_hat_se,
-      w_hat = w_hat_se, score = score,
+      theta = theta, u_hat = u_hat, v_hat = v_hat,
+      w_hat = w_hat, score = score,
       dml_procedure = dml_procedure))
-
-
-    t = theta / se
-
-    pval = 2 * stats::pnorm(-abs(t))
   }
 
   if (dml_procedure == "dml2") {
-
-    v_hat = u_hat = w_hat = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:k) {
-
-      # test_index = test_index_list[[i]]
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-      r_hat = r_hat_list[[i]]
-
-      v_hat[test_index, 1] = D[test_index] - r_hat
-      u_hat[test_index, 1] = Y[test_index] - g_hat
-      w_hat[test_index, 1] = Z[test_index] - m_hat
-    }
-
     orth_est = orth_plriv_dml(
       u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
       score = score)
@@ -94,11 +53,10 @@ dml_plriv = function(data, y, d, z,
       theta = theta, u_hat = u_hat, v_hat = v_hat,
       w_hat = w_hat, score = score,
       dml_procedure = dml_procedure))
-
-    t = theta / se
-
-    pval = 2 * stats::pnorm(-abs(t))
   }
+
+  t = theta / se
+  pval = 2 * stats::pnorm(-abs(t))
 
   names(theta) = names(se) = d
   res = list(
@@ -110,7 +68,10 @@ dml_plriv = function(data, y, d, z,
 
 fit_nuisance_pliv = function(data, y, d, z,
                              mlmethod, params,
-                             train_ids, test_ids) {
+                             smpls) {
+  train_ids = smpls$train_ids
+  test_ids = smpls$test_ids
+
   # nuisance g: E[Y|X]
   g_indx = names(data) != d & names(data) != z
   data_g = data[, g_indx, drop = FALSE]
@@ -137,8 +98,7 @@ fit_nuisance_pliv = function(data, y, d, z,
   
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
-  
-  
+
   # nuisance r: E[D|X]
   r_indx = names(data) != y & names(data) != z
   data_r = data[, r_indx, drop = FALSE]
@@ -160,24 +120,44 @@ fit_nuisance_pliv = function(data, y, d, z,
   return(all_preds)
 }
 
+compute_plriv_residuals = function(data, y, d, z, k, smpls, all_preds) {
+  test_ids = smpls$test_ids
+
+  m_hat_list = all_preds$m_hat_list
+  g_hat_list = all_preds$g_hat_list
+  r_hat_list = all_preds$r_hat_list
+  
+  n = nrow(data)
+  D = data[, d]
+  Y = data[, y]
+  Z = data[, z]
+  
+  v_hat = u_hat = w_hat = rep(NA, n)
+  
+  for (i in 1:k) {
+    test_index = test_ids[[i]]
+    
+    m_hat = m_hat_list[[i]]
+    g_hat = g_hat_list[[i]]
+    r_hat = r_hat_list[[i]]
+    
+    v_hat[test_index] = D[test_index] - r_hat
+    u_hat[test_index] = Y[test_index] - g_hat
+    w_hat[test_index] = Z[test_index] - m_hat
+  }
+  residuals = list(u_hat=u_hat, v_hat=v_hat, w_hat=w_hat)
+
+  return(residuals)
+}
+
 
 # Orthogonalized Estimation of Coefficient in PLR
 orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
-  theta = NA
-
-  if (score == "ivreg") {
-    res_fit = AER::ivreg(u_hat ~ 0 + v_hat | 0 + w_hat)
-    theta = stats::coef(res_fit)
-  }
-
-  else if (score == "partialling out") {
+  if (score == "partialling out") {
     theta = mean(u_hat * w_hat) / mean(v_hat * w_hat)
-  }
-
-  else {
+  } else {
     stop("Inference framework for orthogonal estimation unknown")
   }
-
   res = list(theta = theta)
   return(res)
 }
@@ -185,24 +165,12 @@ orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
 
 # Variance estimation for DML estimator in the partially linear regression model
 var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
-  var = NA
-
   if (score == "partialling out") {
-
-    var = mean(1 / length(u_hat) * 1 / (colMeans(v_hat * w_hat, na.rm = TRUE))^2 *
-      colMeans(((u_hat - v_hat * theta) * w_hat)^2), na.rm = TRUE)
-  }
-
-  # Q: only for "dml2"?
-  else if (score == "ivreg" & dml_procedure == "dml2") {
-    res_fit = AER::ivreg(u_hat ~ 0 + v_hat | 0 + w_hat)
-    var = sandwich::vcovHC(res_fit)
-  }
-
-  else {
+    var = mean(1 / length(u_hat) * 1 / (mean(v_hat * w_hat))^2 *
+      mean(((u_hat - v_hat * theta) * w_hat)^2))
+  } else {
     stop("Inference framework for variance estimation unknown")
   }
-
   return(c(var))
 }
 
