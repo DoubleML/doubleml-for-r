@@ -102,10 +102,9 @@ dml_plriv = function(data, y, d, z,
 
   names(theta) = names(se) = d
   res = list(
-    coefficients = theta, se = se, t = t, pval = pval,
+    coef = theta, se = se, t = t, pval = pval,
     all_preds)
 
-  class(res) = "DML"
   return(res)
 }
 

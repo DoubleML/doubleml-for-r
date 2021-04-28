@@ -33,7 +33,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
       k = 5, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
       dml_procedure = dml_procedure, score = score)
-    theta = coef(pliv_hat)
+    theta = pliv_hat$coef
     se = pliv_hat$se
 
 

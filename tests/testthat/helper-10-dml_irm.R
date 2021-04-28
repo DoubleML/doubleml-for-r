@@ -105,10 +105,9 @@ dml_irm = function(data, y, d,
 
   names(theta) = names(se) = d
   res = list(
-    coefficients = theta, se = se, t = t, pval = pval,
+    coef = theta, se = se, t = t, pval = pval,
     all_preds = all_preds)
 
-  class(res) = "DML"
   return(res)
 }
 

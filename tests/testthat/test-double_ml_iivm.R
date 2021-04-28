@@ -36,9 +36,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       k = 5, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
       dml_procedure = dml_procedure, score = score)
-    theta = coef(iivm_hat)
+    theta = iivm_hat$coef
     se = iivm_hat$se
-
 
     set.seed(i_setting)
     Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
