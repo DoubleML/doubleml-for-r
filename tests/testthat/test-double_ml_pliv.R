@@ -8,7 +8,7 @@ on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
     learner = "regr.glmnet",
-    dml_procedure = "dml2",
+    dml_procedure = "dml1",
     score = "partialling out",
     i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
@@ -35,7 +35,13 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
-
+    
+    boot_theta = bootstrap_plriv(theta, se, data_pliv[[i_setting]],
+                                 y = "y", d = "d", z = "z",
+                                 k = 5, smpls = pliv_hat$smpls,
+                                 all_preds= pliv_hat$all_preds,
+                                 dml_procedure = dml_procedure,
+                                 bootstrap = "normal", nRep = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
     Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
@@ -69,12 +75,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     se_obj = double_mlpliv_obj$se
 
     # bootstrap
-    # double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlpliv_obj$boot_coef
+    double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mlpliv_obj$boot_coef
 
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
-    # expect_equal(as.vector(pliv_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )

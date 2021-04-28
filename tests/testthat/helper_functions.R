@@ -52,3 +52,18 @@ sample_splitting = function(k, data) {
 
   return(list(train_ids = train_ids, test_ids = test_ids))
 }
+
+draw_bootstrap_weights = function(bootstrap, nRep, n_obs) {
+  if (bootstrap == "Bayes") {
+    weights = stats::rexp(nRep * n_obs, rate = 1) - 1
+  } else if (bootstrap == "normal") {
+    weights = stats::rnorm(nRep * n_obs)
+  } else if (bootstrap == "wild") {
+    weights = stats::rnorm(nRep * n_obs) / sqrt(2) + (stats::rnorm(nRep * n_obs)^2 - 1) / 2
+  } else {
+    stop("invalid boot method")
+  }
+  weights = matrix(weights, nrow = nRep, ncol = n_obs, byrow = TRUE)
+
+  return(weights)
+}
