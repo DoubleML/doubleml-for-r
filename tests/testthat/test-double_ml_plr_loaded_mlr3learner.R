@@ -106,7 +106,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     pval_semiloaded = double_mlplr_semiloaded$pval
     ci_semiloaded = double_mlplr_semiloaded$confint(level = 0.95, joint = FALSE)
 
-
+    expect_equal(theta, theta_loaded, tolerance = 1e-8)
+    expect_equal(se, se_loaded, tolerance = 1e-8)
+    expect_equal(t, t_loaded, tolerance = 1e-8)
+    expect_equal(pval, pval_loaded, tolerance = 1e-8)
+    expect_equal(ci, ci_loaded, tolerance = 1e-8)
+    
     expect_equal(theta_semiloaded, theta_loaded, tolerance = 1e-8)
     expect_equal(se_semiloaded, se_loaded, tolerance = 1e-8)
     expect_equal(t_semiloaded, t_loaded, tolerance = 1e-8)
