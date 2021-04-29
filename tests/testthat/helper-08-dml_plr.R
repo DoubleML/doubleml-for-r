@@ -83,17 +83,31 @@ fit_nuisance_plr = function(data, y, d,
   g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
   
   # nuisance m
-  m_indx = names(data) != y
-  data_m = data[, m_indx, drop = FALSE]
-  task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
   ml_m = mlr3::lrn(mlmethod$mlmethod_m)
   ml_m$param_set$values = params$params_m
+  m_indx = names(data) != y
+  data_m = data[, m_indx, drop = FALSE]
   
-  resampling_m = mlr3::rsmp("custom")
-  resampling_m$instantiate(task_m, train_ids, test_ids)
-  
-  r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
+  if (checkmate::test_class(ml_m, "LearnerRegr")) {
+    task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
+    
+    resampling_m = mlr3::rsmp("custom")
+    resampling_m$instantiate(task_m, train_ids, test_ids)
+    
+    r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
+  } else if (checkmate::test_class(ml_m, "LearnerClassif")) {
+    ml_m$predict_type = "prob"
+    data_m[[d]] = factor(data_m[[d]])
+    task_m = mlr3::TaskClassif$new(id = paste0("nuis_m_", d), backend = data_m,
+                                   target = d, positive = "1")
+    
+    resampling_m = mlr3::rsmp("custom")
+    resampling_m$instantiate(task_m, train_ids, test_ids)
+    
+    r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    m_hat_list = lapply(r_m$data$predictions(), function(x) as.data.table(x)$prob.1)
+  }
   
   all_preds = list(
     m_hat_list = m_hat_list,
