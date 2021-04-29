@@ -1,181 +1,131 @@
 # Double Machine Learning for Partially Linear Regression.
-dml_plr = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
-  params_m = list(),
-  params_g = list()),
-dml_procedure = "dml2",
-score = "IV-type", ...) {
+dml_plr = function(data, y, d,
+                   k, mlmethod,
+                   params, dml_procedure, score,
+                   smpls = NULL) {
 
   if (is.null(smpls)) {
     smpls = sample_splitting(k, data)
   }
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
+  
+  all_preds = fit_nuisance_plr(data, y, d,
+                               mlmethod, params,
+                               smpls)
+  
+  residuals = compute_plr_residuals(data, y, d, k, smpls, all_preds)
+  u_hat = residuals$u_hat
+  v_hat = residuals$v_hat
+  D = data[, d]
+  Y = data[, y]
+  v_hatd =  v_hat * D
+  
+  theta = se = te = pval = NA
 
-  checkmate::checkDataFrame(data)
+  # DML 1
+  if (dml_procedure == "dml1") {
+    thetas = vars = rep(NA, k)
+    for (i in 1:k) {
+      test_index = test_ids[[i]]
 
-  # tbd: ml_method handling: default mlmethod_g = mlmethod_m
-  # tbd: parameter passing
-  n = nrow(data)
-  theta = se = te = pval = boot_se = NA
+      orth_est = orth_plr_dml(
+        u_hat = u_hat[test_index], v_hat = v_hat[test_index],
+        v_hatd = v_hatd[test_index],
+        score = score)
+      thetas[i] = orth_est$theta
+    }
+    theta = mean(thetas, na.rm = TRUE)
+  }
 
+  if (dml_procedure == "dml2") {
+    orth_est = orth_plr_dml(u_hat = u_hat, v_hat = v_hat,
+                            v_hatd = v_hatd, score = score)
+    theta = orth_est$theta
+  }
+
+  se = sqrt(var_plr(
+    theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
+    v_hatd = v_hatd, score = score,
+    dml_procedure = dml_procedure))
+
+  t = theta / se
+  pval = 2 * stats::pnorm(-abs(t))
+  
+  ci = c()
+
+  names(theta) = names(se) = names(t) = names(pval) =d
+  res = list(
+    coef = theta, se = se, t = t, pval = pval,
+    all_preds = all_preds, smpls=smpls)
+
+  return(res)
+}
+
+fit_nuisance_plr = function(data, y, d,
+                            mlmethod, params,
+                            smpls) {
+  train_ids = smpls$train_ids
+  test_ids = smpls$test_ids
+  
   # nuisance g
   g_indx = names(data) != d
   data_g = data[, g_indx, drop = FALSE]
   task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
-
+  
   resampling_g = mlr3::rsmp("custom")
   resampling_g$instantiate(task_g, train_ids, test_ids)
-  n_iters = resampling_g$iters
-
-  # tbd: handling learners from mlr3 base and mlr3learners package
-  # ml_g = mlr3::mlr_learners$get(mlmethod$mlmethod_g)
+  
   ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g # tbd: check if parameter passing really works
-
-  # ml_g =  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
+  ml_g$param_set$values = params$params_g
+  
   r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-
-  # r_g = mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  # g_hat_list = r_g$data$prediction
-  # # g_hat_list = mlr::getRRPredictionList(r_g)
-  # #g_hat_list = lapply(g_hat_list$test, extract_test_pred)
-  # g_hat_list = lapply(g_hat_list, function(x) x$response)
   g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  
   # nuisance m
   m_indx = names(data) != y
   data_m = data[, m_indx, drop = FALSE]
   task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
   ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m # tbd: check if parameter passing really works
-
-  # ml_m = mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
+  ml_m$param_set$values = params$params_m
+  
   resampling_m = mlr3::rsmp("custom")
   resampling_m$instantiate(task_m, train_ids, test_ids)
-
-  train_ids_m = lapply(1:n_iters, function(x) resampling_m$train_set(x))
-  test_ids_m = lapply(1:n_iters, function(x) resampling_m$test_set(x))
-
-
+  
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-
-  # r_m = mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  # m_hat_list = r_m$data$prediction # alternatively, r_m$prediction (not listed)
-  # # m_hat_list = mlr::getRRPredictionList(r_m)
-  # m_hat_list = lapply(m_hat_list, function(x) x$response)
-  # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
   m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
-
-
-  # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
-  #     (rin$desc$iters != r_m$pred$instance$desc$iters) ||
-  #     !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
-  #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
-  #   stop('Resampling instances not equal')
-  # }
-  if ((resampling_g$iters != resampling_m$iters) ||
-    (resampling_g$iters != n_iters) ||
-    (resampling_m$iters != n_iters) ||
-    (!identical(train_ids, train_ids_m)) ||
-    (!identical(test_ids, test_ids_m))) {
-    stop("Resampling instances not equal")
-  }
-
-  # tbd: handling case: (is.null(rownames(data)))
-  if (any(vapply(train_ids, function(x) is.character(x), logical(1L)))) {
-    train_ids = lapply(train_ids, function(x) as.integer(x))
-  }
-
-  if (any(vapply(test_ids, function(x) is.character(x), logical(1L)))) {
-    test_ids = lapply(test_ids, function(x) as.integer(x))
-  }
-
-  # test_index_list = rin$test.inds
-  #  n_k = vapply(test_index_list, length, double(1))
-  n_k = vapply(test_ids, length, double(1L))
-
-  D = data[, d]
-  Y = data[, y]
-
-  # DML 1
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_iters)
-    se_i = NA
-
-    v_hat = u_hat = v_hatd = d_k = matrix(NA, nrow = max(n_k), ncol = n_iters)
-    v_hat_se = u_hat_se = v_hatd_se = matrix(NA, nrow = max(n), ncol = 1)
-
-    for (i in 1:n_iters) {
-      # test_index = test_index_list[[i]]
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      d_k[, i] = D[test_index]
-      v_hat[, i] = v_hat_se[test_index, ] = D[test_index] - m_hat
-      u_hat[, i] = u_hat_se[test_index, ] = Y[test_index] - g_hat
-      v_hatd[, i] = v_hatd_se[test_index, ] = v_hat[, i] * D[test_index]
-
-      orth_est = orth_plr_dml(
-        u_hat = u_hat[, i], v_hat = v_hat[, i],
-        v_hatd = v_hatd[, i],
-        score = score)
-      thetas[i] = orth_est$theta
-    }
-
-    theta = mean(thetas, na.rm = TRUE)
-    se = sqrt(var_plr(
-      theta = theta, d = D, u_hat = u_hat_se, v_hat = v_hat_se,
-      v_hatd = v_hatd_se, score = score,
-      dml_procedure = dml_procedure))
-
-    t = theta / se
-    pval = 2 * stats::pnorm(-abs(t))
-
-  }
-
-  if (dml_procedure == "dml2") {
-
-    v_hat = u_hat = v_hatd = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:n_iters) {
-
-      # test_index = test_index_list[[i]]
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      v_hat[test_index, 1] = D[test_index] - m_hat
-      u_hat[test_index, 1] = Y[test_index] - g_hat
-      v_hatd[test_index, 1] = v_hat[test_index] * D[test_index]
-
-    }
-
-    orth_est = orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, score = score)
-
-    theta = orth_est$theta
-    se = sqrt(var_plr(
-      theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score,
-      dml_procedure = dml_procedure))
-
-    t = theta / se
-    pval = 2 * stats::pnorm(-abs(t))
-  }
-
+  
   all_preds = list(
     m_hat_list = m_hat_list,
-    g_hat_list = g_hat_list,
-    smpls = smpls)
+    g_hat_list = g_hat_list)
+  
+  return(all_preds)
+}
 
-  names(theta) = names(se) = d
-  res = list(
-    coefficients = theta, se = se, t = t, pval = pval,
-    all_preds = all_preds)
-
-  class(res) = "DML"
-  return(res)
+compute_plr_residuals = function(data, y, d, k, smpls, all_preds) {
+  test_ids = smpls$test_ids
+  
+  g_hat_list = all_preds$g_hat_list
+  m_hat_list = all_preds$m_hat_list
+  
+  n = nrow(data)
+  D = data[, d]
+  Y = data[, y]
+  
+  v_hat = u_hat = w_hat = rep(NA, n)
+  
+  for (i in 1:k) {
+    test_index = test_ids[[i]]
+    
+    g_hat = g_hat_list[[i]]
+    m_hat = m_hat_list[[i]]
+    
+    u_hat[test_index] = Y[test_index] - g_hat
+    v_hat[test_index] = D[test_index] - m_hat
+  }
+  residuals = list(u_hat=u_hat, v_hat=v_hat)
+  
+  return(residuals)
 }
 
 dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
@@ -271,53 +221,38 @@ orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
 
 # Variance estimation for DML estimator in the partially linear regression model
 var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
-
-  var = NA
-
+  n = length(d)
   if (score == "partialling out") {
-    
-    var = mean(1 / length(u_hat) * 1 / (colMeans(v_hat^2, na.rm = TRUE))^2 *
-                 colMeans(((u_hat - v_hat * theta) * v_hat)^2, na.rm = TRUE))
+    var = 1 / n * 1 / (mean(v_hat^2))^2 *
+      mean(((u_hat - v_hat * theta) * v_hat)^2)
   }
-  
   else if (score == "IV-type") {
-    var = mean(1 / length(u_hat) * (1 / colMeans(v_hatd, na.rm = TRUE))^2 *
-                 colMeans(((u_hat - d * theta) * v_hat)^2, na.rm = TRUE))
+    var = 1 / n * 1 / mean(v_hatd)^2 *
+      mean(((u_hat - d * theta) * v_hat)^2)
   }
-
   return(c(var))
 }
 
 
-
 # Bootstrap Implementation for Partially Linear Regression Model
-bootstrap_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se, weights, nRep) {
-
-  boot_var = NA
+bootstrap_plr = function(theta, se, data, y, d,
+                         k, smpls, all_preds, dml_procedure,
+                         bootstrap, nRep, score) {
+  residuals = compute_plr_residuals(data, y, d, k, smpls, all_preds)
+  u_hat = residuals$u_hat
+  v_hat = residuals$v_hat
+  D = data[, d]
+  v_hatd =  v_hat * D
 
   if (score == "partialling out") {
-
-    score = (u_hat - v_hat * theta) * v_hat
-    J = -colMeans(v_hat * v_hat, na.rm = TRUE)
-
+    psi = (u_hat - v_hat * theta) * v_hat
+    psi_a = -v_hat * v_hat
   }
-
   else if (score == "IV-type") {
-    score = (u_hat - d * theta) * v_hat
-    J = -colMeans(v_hatd, na.rm = TRUE)
+    psi = (u_hat - D * theta) * v_hat
+    psi_a = -v_hatd
   }
 
-  n = length(d)
-  pertub = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (!is.vector(score)) {
-    J = matrix(rep(J, each = nrow(score)), nrow = nrow(score))
-  }
-  for (i in seq(nRep)) {
-    pertub[1, i] = mean(colMeans(weights[i, ] * 1 / se * 1 / J * score, na.rm = TRUE))
-
-  }
-
-  res = list(boot_theta = pertub)
-  return(c(res))
+  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
+  return(res)
 }
