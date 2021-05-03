@@ -1,11 +1,11 @@
 # Double Machine Learning for Partially Linear Regression.
 dml_plr = function(data, y, d,
-                   k, mlmethod,
+                   n_folds, mlmethod,
                    params, dml_procedure, score,
                    smpls = NULL) {
 
   if (is.null(smpls)) {
-    smpls = sample_splitting(k, data)
+    smpls = sample_splitting(n_folds, data)
   }
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
@@ -14,7 +14,7 @@ dml_plr = function(data, y, d,
                                mlmethod, params,
                                smpls)
   
-  residuals = compute_plr_residuals(data, y, d, k, smpls, all_preds)
+  residuals = compute_plr_residuals(data, y, d, n_folds, smpls, all_preds)
   u_hat = residuals$u_hat
   v_hat = residuals$v_hat
   D = data[, d]
@@ -25,8 +25,8 @@ dml_plr = function(data, y, d,
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, k)
-    for (i in 1:k) {
+    thetas = vars = rep(NA, n_folds)
+    for (i in 1:n_folds) {
       test_index = test_ids[[i]]
 
       orth_est = orth_plr_dml(
@@ -116,7 +116,7 @@ fit_nuisance_plr = function(data, y, d,
   return(all_preds)
 }
 
-compute_plr_residuals = function(data, y, d, k, smpls, all_preds) {
+compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   test_ids = smpls$test_ids
   
   g_hat_list = all_preds$g_hat_list
@@ -128,7 +128,7 @@ compute_plr_residuals = function(data, y, d, k, smpls, all_preds) {
   
   v_hat = u_hat = w_hat = rep(NA, n)
   
-  for (i in 1:k) {
+  for (i in 1:n_folds) {
     test_index = test_ids[[i]]
     
     g_hat = g_hat_list[[i]]
@@ -250,9 +250,9 @@ var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
 
 # Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plr = function(theta, se, data, y, d,
-                         k, smpls, all_preds, dml_procedure,
+                         n_folds, smpls, all_preds, dml_procedure,
                          bootstrap, nRep, score) {
-  residuals = compute_plr_residuals(data, y, d, k, smpls, all_preds)
+  residuals = compute_plr_residuals(data, y, d, n_folds, smpls, all_preds)
   u_hat = residuals$u_hat
   v_hat = residuals$v_hat
   D = data[, d]
@@ -267,6 +267,6 @@ bootstrap_plr = function(theta, se, data, y, d,
     psi_a = -v_hatd
   }
 
-  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
+  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, nRep)
   return(res)
 }

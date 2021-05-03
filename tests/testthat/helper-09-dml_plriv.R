@@ -1,11 +1,11 @@
 # Double Machine Learning for Partially Linear Instrumental Variable Regression.
 dml_plriv = function(data, y, d, z,
-                     k, mlmethod,
+                     n_folds, mlmethod,
                      params, dml_procedure, score,
                      smpls=NULL) {
 
   if (is.null(smpls)) {
-    smpls = sample_splitting(k, data)
+    smpls = sample_splitting(n_folds, data)
   }
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
@@ -14,7 +14,7 @@ dml_plriv = function(data, y, d, z,
                                 mlmethod, params,
                                 smpls)
 
-  residuals = compute_plriv_residuals(data, y, d, z, k, smpls, all_preds)
+  residuals = compute_plriv_residuals(data, y, d, z, n_folds, smpls, all_preds)
   u_hat = residuals$u_hat
   v_hat = residuals$v_hat
   w_hat = residuals$w_hat
@@ -23,8 +23,8 @@ dml_plriv = function(data, y, d, z,
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, k)
-    for (i in 1:k) {
+    thetas = vars = rep(NA, n_folds)
+    for (i in 1:n_folds) {
       test_index = test_ids[[i]]
       orth_est = orth_plriv_dml(
         u_hat = u_hat[test_index],
@@ -112,7 +112,7 @@ fit_nuisance_pliv = function(data, y, d, z,
   return(all_preds)
 }
 
-compute_plriv_residuals = function(data, y, d, z, k, smpls, all_preds) {
+compute_plriv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
   test_ids = smpls$test_ids
 
   m_hat_list = all_preds$m_hat_list
@@ -126,7 +126,7 @@ compute_plriv_residuals = function(data, y, d, z, k, smpls, all_preds) {
   
   v_hat = u_hat = w_hat = rep(NA, n)
   
-  for (i in 1:k) {
+  for (i in 1:n_folds) {
     test_index = test_ids[[i]]
     
     m_hat = m_hat_list[[i]]
@@ -165,8 +165,8 @@ var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
 }
 
 # Bootstrap Implementation for Partially Linear Regression Model
-bootstrap_plriv = function(theta, se, data, y, d, z, k, smpls, all_preds, dml_procedure, bootstrap, nRep) {
-  residuals = compute_plriv_residuals(data, y, d, z, k, smpls, all_preds)
+bootstrap_plriv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds, dml_procedure, bootstrap, nRep) {
+  residuals = compute_plriv_residuals(data, y, d, z, n_folds, smpls, all_preds)
   u_hat = residuals$u_hat
   v_hat = residuals$v_hat
   w_hat = residuals$w_hat
@@ -174,6 +174,6 @@ bootstrap_plriv = function(theta, se, data, y, d, z, k, smpls, all_preds, dml_pr
   psi = (u_hat - v_hat * theta) * w_hat
   psi_a = - v_hat * w_hat
   
-  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
+  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, nRep)
   return(res)
 }

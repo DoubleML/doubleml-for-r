@@ -1,11 +1,11 @@
 # Double Machine Learning for Interactive Regression Model.
 dml_irm = function(data, y, d,
-                   k, mlmethod,
+                   n_folds, mlmethod,
                    params, dml_procedure, score,
                    smpls = NULL) {
 
   if (is.null(smpls)) {
-    smpls = sample_splitting(k, data)
+    smpls = sample_splitting(n_folds, data)
   }
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
@@ -13,7 +13,7 @@ dml_irm = function(data, y, d,
   all_preds = fit_nuisance_irm(data, y, d,
                                mlmethod, params,
                                train_ids, test_ids, score)
-  res = extract_irm_residuals(data, y, d, k, smpls, all_preds, score)
+  res = extract_irm_residuals(data, y, d, n_folds, smpls, all_preds, score)
   u0_hat = res$u0_hat
   u1_hat = res$u1_hat
   m_hat = res$m_hat
@@ -27,9 +27,9 @@ dml_irm = function(data, y, d,
 
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, k)
+    thetas = vars = rep(NA, n_folds)
     
-    for (i in 1:k) {
+    for (i in 1:n_folds) {
       test_index = test_ids[[i]]
       orth_est = orth_irm_dml(
         g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
@@ -137,7 +137,7 @@ fit_nuisance_irm = function(data, y, d,
   return(all_preds)
 }
 
-extract_irm_residuals = function(data, y, d, k, smpls, all_preds, score) {
+extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score) {
   test_ids = smpls$test_ids
   
   m_hat_list = all_preds$m_hat_list
@@ -150,7 +150,7 @@ extract_irm_residuals = function(data, y, d, k, smpls, all_preds, score) {
   
   g0_hat = g1_hat = u0_hat = u1_hat = m_hat = p_hat = rep(NA, n)
   
-  for (i in 1:k) {
+  for (i in 1:n_folds) {
     test_index = test_ids[[i]]
     
     m_hat[test_index] = m_hat_list[[i]]
@@ -207,9 +207,9 @@ var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score)
 }
 
 # Bootstrap Implementation for Interactive Regression Model
-bootstrap_irm = function(theta, se, data, y, d, k, smpls, all_preds, dml_procedure, score, bootstrap, nRep) {
+bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds, dml_procedure, score, bootstrap, nRep) {
   
-  res = extract_irm_residuals(data, y, d, k, smpls, all_preds, score)
+  res = extract_irm_residuals(data, y, d, n_folds, smpls, all_preds, score)
   u0_hat = res$u0_hat
   u1_hat = res$u1_hat
   m_hat = res$m_hat
@@ -227,6 +227,6 @@ bootstrap_irm = function(theta, se, data, y, d, k, smpls, all_preds, dml_procedu
     psi_a = -D / p_hat
   }
 
-  res = functional_bootstrap(theta, se, psi, psi_a, k, smpls, dml_procedure, bootstrap, nRep)
+  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, nRep)
   return(res)
 }
