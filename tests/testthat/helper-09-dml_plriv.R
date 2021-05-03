@@ -2,50 +2,59 @@
 dml_plriv = function(data, y, d, z,
                      n_folds, mlmethod,
                      params, dml_procedure, score,
-                     smpls=NULL) {
-
-  if (is.null(smpls)) {
-    smpls = sample_splitting(n_folds, data)
-  }
-  train_ids = smpls$train_ids
-  test_ids = smpls$test_ids
+                     n_rep = 1, smpls=NULL) {
   
-  all_preds = fit_nuisance_pliv(data, y, d, z,
-                                mlmethod, params,
-                                smpls)
-
-  residuals = compute_plriv_residuals(data, y, d, z, n_folds, smpls, all_preds)
-  u_hat = residuals$u_hat
-  v_hat = residuals$v_hat
-  w_hat = residuals$w_hat
-
-  theta = se = te = pval = NA
-
-  # DML 1
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_folds)
-    for (i in 1:n_folds) {
-      test_index = test_ids[[i]]
-      orth_est = orth_plriv_dml(
-        u_hat = u_hat[test_index],
-        v_hat = v_hat[test_index],
-        w_hat = w_hat[test_index],
-        score = score)
-      thetas[i] = orth_est$theta
+  if (is.null(smpls)) {
+    smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
+  }
+  
+  all_thetas = all_ses = rep(NA, n_rep)
+  all_preds = list()
+  
+  for (i_rep in 1:n_rep) {
+    this_smpl = smpls[[i_rep]]
+    train_ids = this_smpl$train_ids
+    test_ids = this_smpl$test_ids
+    
+    all_preds[[i_rep]] = fit_nuisance_pliv(data, y, d, z,
+                                           mlmethod, params,
+                                           this_smpl)
+    
+    residuals = compute_plriv_residuals(data, y, d, z, n_folds, this_smpl,
+                                        all_preds[[i_rep]])
+    u_hat = residuals$u_hat
+    v_hat = residuals$v_hat
+    w_hat = residuals$w_hat
+    
+    # DML 1
+    if (dml_procedure == "dml1") {
+      thetas = vars = rep(NA, n_folds)
+      for (i in 1:n_folds) {
+        test_index = test_ids[[i]]
+        orth_est = orth_plriv_dml(
+          u_hat = u_hat[test_index],
+          v_hat = v_hat[test_index],
+          w_hat = w_hat[test_index],
+          score = score)
+        thetas[i] = orth_est$theta
+      }
+      all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
     }
-    theta = mean(thetas, na.rm = TRUE)
+    if (dml_procedure == "dml2") {
+      orth_est = orth_plriv_dml(
+        u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
+        score = score)
+      all_thetas[i_rep] = orth_est$theta
+    }
+    
+    all_ses[i_rep] = sqrt(var_plriv(
+      theta = all_thetas[i_rep], u_hat = u_hat, v_hat = v_hat,
+      w_hat = w_hat, score = score,
+      dml_procedure = dml_procedure))
   }
-  if (dml_procedure == "dml2") {
-    orth_est = orth_plriv_dml(
-      u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
-      score = score)
-    theta = orth_est$theta
-  }
-
-  se = sqrt(var_plriv(
-    theta = theta, u_hat = u_hat, v_hat = v_hat,
-    w_hat = w_hat, score = score,
-    dml_procedure = dml_procedure))
+  
+  theta = stats::median(all_thetas)
+  se = se = sqrt(stats::median(all_ses^2 - (all_thetas - theta)^2))
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -165,15 +174,27 @@ var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
 }
 
 # Bootstrap Implementation for Partially Linear Regression Model
-bootstrap_plriv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds, dml_procedure, bootstrap, nRep) {
-  residuals = compute_plriv_residuals(data, y, d, z, n_folds, smpls, all_preds)
-  u_hat = residuals$u_hat
-  v_hat = residuals$v_hat
-  w_hat = residuals$w_hat
-  
-  psi = (u_hat - v_hat * theta) * w_hat
-  psi_a = - v_hat * w_hat
-  
-  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, nRep)
+bootstrap_plriv = function(theta, se, data, y, d, z, n_folds, smpls,
+                           all_preds, dml_procedure, bootstrap, n_rep_boot,
+                           n_rep=1) {
+  for (i_rep in 1:n_rep) {
+    residuals = compute_plriv_residuals(data, y, d, z, n_folds,
+                                        smpls[[i_rep]], all_preds[[i_rep]])
+    u_hat = residuals$u_hat
+    v_hat = residuals$v_hat
+    w_hat = residuals$w_hat
+    
+    psi = (u_hat - v_hat * theta) * w_hat
+    psi_a = - v_hat * w_hat
+    
+    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+                                    smpls[[i_rep]],
+                                    dml_procedure, bootstrap, n_rep_boot)
+    if (i_rep==1) {
+      res = this_res
+    } else {
+      res = cbind(res, this_res)
+    }
+  }
   return(res)
 }
