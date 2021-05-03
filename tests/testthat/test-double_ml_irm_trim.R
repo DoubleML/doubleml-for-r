@@ -31,7 +31,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
 
     # set.seed(i_setting)
     # irm_hat = dml_irm(data_irm[[i_setting]], y = "y", d = "d",
-    #                    k = 5, mlmethod = learner_pars$mlmethod,
+    #                    n_folds = 5, mlmethod = learner_pars$mlmethod,
     #                    params = learner_pars$params,
     #                    dml_procedure = dml_procedure, score = score,
     #                    bootstrap = "normal",  nRep = n_rep_boot)

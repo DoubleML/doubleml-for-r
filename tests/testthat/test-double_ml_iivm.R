@@ -33,7 +33,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     set.seed(i_setting)
     iivm_hat = dml_irmiv(data_iivm[[i_setting]],
       y = "y", d = "d", z = "z",
-      k = 5, mlmethod = learner_pars$mlmethod,
+      n_folds = 5, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
       dml_procedure = dml_procedure, score = score)
     theta = iivm_hat$coef
@@ -41,7 +41,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     
     boot_theta = bootstrap_irmiv(theta, se, data_iivm[[i_setting]],
                                  y = "y", d = "d", z = "z",
-                                 k = 5, smpls = iivm_hat$smpls,
+                                 n_folds = 5, smpls = iivm_hat$smpls,
                                  all_preds= iivm_hat$all_preds,
                                  dml_procedure = dml_procedure,
                                  score = score,

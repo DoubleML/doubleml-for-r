@@ -31,7 +31,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     n_folds = 5
     plr_hat = dml_plr(data_plr[[i_setting]],
       y = "y", d = "d",
-      k = n_folds, mlmethod = learner_pars$mlmethod,
+      n_folds = n_folds, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
       dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
@@ -39,7 +39,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     
     boot_theta = bootstrap_plr(theta, se, data_plr[[i_setting]],
                                y = "y", d = "d",
-                               k = n_folds, smpls = plr_hat$smpls,
+                               n_folds = n_folds, smpls = plr_hat$smpls,
                                all_preds= plr_hat$all_preds,
                                dml_procedure = dml_procedure,
                                bootstrap = "normal", nRep = n_rep_boot,

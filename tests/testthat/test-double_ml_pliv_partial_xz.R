@@ -29,7 +29,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     #
     # set.seed(i_setting)
     # pliv_hat = dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
-    #                       k = 5, mlmethod = learner_pars$mlmethod,
+    #                       n_folds = 5, mlmethod = learner_pars$mlmethod,
     #                       params = learner_pars$params,
     #                       dml_procedure = dml_procedure, score = score,
     #                       bootstrap = "normal",  nRep = n_rep_boot)

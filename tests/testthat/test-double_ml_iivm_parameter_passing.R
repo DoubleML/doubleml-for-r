@@ -35,7 +35,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     #
     # set.seed(i_setting)
     # iivm_hat = dml_irmiv(data_iivm[[i_setting]], y = "y", d = "d", z = "z",
-    #                       k = n_folds, mlmethod = learner_pars$mlmethod,
+    #                       n_folds = n_folds, mlmethod = learner_pars$mlmethod,
     #                       params = learner_pars$params,
     #                       dml_procedure = dml_procedure, score = score,
     #                       bootstrap = "normal",  S = n_rep,

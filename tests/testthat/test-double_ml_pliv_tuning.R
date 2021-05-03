@@ -61,7 +61,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
     # set.seed(i_setting)
     # pliv_hat = dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
-    #                       k = n_folds, mlmethod = learner_list,
+    #                       n_folds = n_folds, mlmethod = learner_list,
     #                       params = learner_pars$params,
     #                       dml_procedure = dml_procedure, score = score,
     #                       bootstrap = "normal",  nRep = n_rep_boot)

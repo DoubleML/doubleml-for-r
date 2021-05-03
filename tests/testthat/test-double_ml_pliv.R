@@ -30,7 +30,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     set.seed(i_setting)
     pliv_hat = dml_plriv(data_pliv[[i_setting]],
       y = "y", d = "d", z = "z",
-      k = 5, mlmethod = learner_pars$mlmethod,
+      n_folds = 5, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
@@ -38,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     
     boot_theta = bootstrap_plriv(theta, se, data_pliv[[i_setting]],
                                  y = "y", d = "d", z = "z",
-                                 k = 5, smpls = pliv_hat$smpls,
+                                 n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,
                                  dml_procedure = dml_procedure,
                                  bootstrap = "normal", nRep = n_rep_boot)$boot_coef

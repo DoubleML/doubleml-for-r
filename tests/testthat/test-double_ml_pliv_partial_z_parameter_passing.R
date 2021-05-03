@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     # TODO: Functional implementation of partialXZ and check
     # set.seed(i_setting)
     # pliv_hat = dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
-    #                       k = n_folds, S = n_rep,
+    #                       n_folds = n_folds, S = n_rep,
     #                       mlmethod = learner_list,
     #                       params = learner_pars_once$params,
     #                       dml_procedure = dml_procedure, score = score,

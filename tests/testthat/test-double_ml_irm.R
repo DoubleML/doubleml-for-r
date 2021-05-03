@@ -33,7 +33,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     set.seed(i_setting)
     irm_hat = dml_irm(data_irm[[i_setting]],
       y = "y", d = "d",
-      k = 5, mlmethod = learner_pars$mlmethod,
+      n_folds = 5, mlmethod = learner_pars$mlmethod,
       params = learner_pars$params,
       dml_procedure = dml_procedure, score = score)
     theta = irm_hat$coef
@@ -41,7 +41,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     
     boot_theta = bootstrap_irm(theta, se, data_irm[[i_setting]],
                                y = "y", d = "d",
-                               k = 5, smpls = irm_hat$smpls,
+                               n_folds = 5, smpls = irm_hat$smpls,
                                all_preds= irm_hat$all_preds,
                                dml_procedure = dml_procedure,
                                score = score,
