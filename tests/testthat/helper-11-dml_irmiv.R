@@ -64,7 +64,7 @@ dml_irmiv = function(data, y, d, z,
   }
   
   theta = stats::median(all_thetas)
-  se = se = sqrt(stats::median(all_ses^2 - (all_thetas - theta)^2))
+  se = se = sqrt(stats::median(all_ses^2 + (all_thetas - theta)^2))
   
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -72,6 +72,7 @@ dml_irmiv = function(data, y, d, z,
   names(theta) = names(se) = d
   res = list(
     coef = theta, se = se, t = t, pval = pval,
+    thetas = all_thetas, ses = all_ses,
     all_preds = all_preds, smpls = smpls)
 
   return(res)
@@ -305,10 +306,11 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
                                     smpls[[i_rep]],
                                     dml_procedure, bootstrap, n_rep_boot)
     if (i_rep==1) {
-      res = this_res
+      boot_res = this_res
     } else {
-      res = cbind(res, this_res)
+      boot_res$boot_coef = cbind(boot_res$boot_coef, this_res$boot_coef)
+      boot_res$boot_t_stat = cbind(boot_res$boot_t_stat, this_res$boot_t_stat)
     }
   }
-  return(res)
+  return(boot_res)
 }

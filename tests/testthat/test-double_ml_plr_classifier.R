@@ -42,7 +42,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       theta = plr_hat$coef
       se = plr_hat$se
       
-      boot_theta = bootstrap_plr(theta, se, data_irm[[i_setting]],
+      boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
+                                 data_irm[[i_setting]],
                                  y = "y", d = "d",
                                  n_folds = n_folds, smpls = plr_hat$smpls,
                                  all_preds= plr_hat$all_preds,

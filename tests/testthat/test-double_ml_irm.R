@@ -39,7 +39,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     theta = irm_hat$coef
     se = irm_hat$se
     
-    boot_theta = bootstrap_irm(theta, se, data_irm[[i_setting]],
+    boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
+                               data_irm[[i_setting]],
                                y = "y", d = "d",
                                n_folds = 5, smpls = irm_hat$smpls,
                                all_preds= irm_hat$all_preds,

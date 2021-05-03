@@ -27,11 +27,11 @@ extract_test_pred = function(x) {
 #' @rdname helpers
 se_repeated = function(se_s, coefficients, theta_s, aggreg_median) {
   if (aggreg_median) {
-    se = sqrt(stats::median(se_s^2 - (theta_s - coefficients)^2))
+    se = sqrt(stats::median(se_s^2 + (theta_s - coefficients)^2))
   }
 
   if (!aggreg_median) {
-    se = sqrt(mean(se_s^2 - (theta_s - coefficients)^2))
+    se = sqrt(mean(se_s^2 + (theta_s - coefficients)^2))
   }
 
   return(se)

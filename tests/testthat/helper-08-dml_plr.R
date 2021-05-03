@@ -56,7 +56,7 @@ dml_plr = function(data, y, d,
   }
 
   theta = stats::median(all_thetas)
-  se = se = sqrt(stats::median(all_ses^2 - (all_thetas - theta)^2))
+  se = se = sqrt(stats::median(all_ses^2 + (all_thetas - theta)^2))
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -66,6 +66,7 @@ dml_plr = function(data, y, d,
   names(theta) = names(se) = names(t) = names(pval) =d
   res = list(
     coef = theta, se = se, t = t, pval = pval,
+    thetas = all_thetas, ses = all_ses,
     all_preds = all_preds, smpls=smpls)
 
   return(res)
@@ -191,7 +192,7 @@ var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
 
 
 # Bootstrap Implementation for Partially Linear Regression Model
-bootstrap_plr = function(theta, se, data, y, d,
+bootstrap_plr = function(thetas, ses, data, y, d,
                          n_folds, smpls, all_preds, dml_procedure,
                          bootstrap, n_rep_boot, score,
                          n_rep=1) {
@@ -204,22 +205,24 @@ bootstrap_plr = function(theta, se, data, y, d,
     v_hatd =  v_hat * D
     
     if (score == "partialling out") {
-      psi = (u_hat - v_hat * theta) * v_hat
+      psi = (u_hat - v_hat * thetas[i_rep]) * v_hat
       psi_a = -v_hat * v_hat
     }
     else if (score == "IV-type") {
-      psi = (u_hat - D * theta) * v_hat
+      psi = (u_hat - D * thetas[i_rep]) * v_hat
       psi_a = -v_hatd
     }
     
-    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+    this_res = functional_bootstrap(thetas[i_rep], ses[i_rep],
+                                    psi, psi_a, n_folds,
                                     smpls[[i_rep]],
                                     dml_procedure, bootstrap, n_rep_boot)
     if (i_rep==1) {
-      res = this_res
+      boot_res = this_res
     } else {
-      res = cbind(res, this_res)
+      boot_res$boot_coef = cbind(boot_res$boot_coef, this_res$boot_coef)
+      boot_res$boot_t_stat = cbind(boot_res$boot_t_stat, this_res$boot_t_stat)
     }
   }
-  return(res)
+  return(boot_res)
 }

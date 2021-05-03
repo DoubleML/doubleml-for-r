@@ -39,7 +39,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     theta = iivm_hat$coef
     se = iivm_hat$se
     
-    boot_theta = bootstrap_irmiv(theta, se, data_iivm[[i_setting]],
+    boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
+                                 data_iivm[[i_setting]],
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = iivm_hat$smpls,
                                  all_preds= iivm_hat$all_preds,

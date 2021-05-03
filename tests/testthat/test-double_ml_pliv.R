@@ -36,7 +36,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     theta = pliv_hat$coef
     se = pliv_hat$se
     
-    boot_theta = bootstrap_plriv(theta, se, data_pliv[[i_setting]],
+    boot_theta = bootstrap_plriv(pliv_hat$thetas, pliv_hat$ses,
+                                 data_pliv[[i_setting]],
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,

@@ -36,18 +36,18 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
+    t = plr_hat$t
+    pval = plr_hat$pval
+    #ci = confint(plr_hat, level = 0.95, joint = FALSE)
     
-    boot_theta = bootstrap_plr(theta, se, data_plr[[i_setting]],
+    boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
+                               data_plr[[i_setting]],
                                y = "y", d = "d",
                                n_folds = n_folds, smpls = plr_hat$smpls,
                                all_preds= plr_hat$all_preds,
                                dml_procedure = dml_procedure,
                                bootstrap = "normal", n_rep_boot = n_rep_boot,
                                score = score)$boot_coef
-
-    t = plr_hat$t
-    pval = plr_hat$pval
-    #ci = confint(plr_hat, level = 0.95, joint = FALSE)
 
     set.seed(i_setting)
     Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
