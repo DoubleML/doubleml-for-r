@@ -3,59 +3,68 @@ dml_irmiv = function(data, y, d, z,
                      n_folds, mlmethod,
                      params, dml_procedure, score,
                      always_takers = TRUE, never_takers = TRUE,
-                     smpls = NULL) {
-
+                     n_rep = 1, smpls = NULL) {
+  
   if (is.null(smpls)) {
-    smpls = sample_splitting(n_folds, data)
+    smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
-  train_ids = smpls$train_ids
-  test_ids = smpls$test_ids
-
-  all_preds = fit_nuisance_iivm(data, y, d, z,
-                                mlmethod, params,
-                                train_ids, test_ids,
-                                always_takers, never_takers)
-  res = extract_iivm_preds(data, y, d, z, n_folds, smpls, all_preds)
-  p_hat = res$p_hat
-  mu0_hat = res$mu0_hat
-  mu1_hat = res$mu1_hat
-  m0_hat = res$m0_hat
-  m1_hat = res$m1_hat
-  D = data[, d]
-  Y = data[, y]
-  Z = data[, z]
-
-  theta = se = te = pval = NA
-
-  # DML 1
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_folds)
-    for (i in 1:n_folds) {
-      test_index = test_ids[[i]]
-      orth_est = orth_irmiv_dml(
-        p_hat = p_hat[test_index],
-        mu0_hat = mu0_hat[test_index], mu1_hat = mu1_hat[test_index],
-        m0_hat = m0_hat[test_index], m1_hat = m1_hat[test_index],
-        d = D[test_index], y = Y[test_index], z = Z[test_index],
-        score = score)
-      thetas[i] = orth_est$theta
+  
+  all_thetas = all_ses = rep(NA, n_rep)
+  all_preds = list()
+  
+  for (i_rep in 1:n_rep) {
+    this_smpl = smpls[[i_rep]]
+    train_ids = this_smpl$train_ids
+    test_ids = this_smpl$test_ids
+    
+    all_preds[[i_rep]] = fit_nuisance_iivm(data, y, d, z,
+                                           mlmethod, params,
+                                           train_ids, test_ids,
+                                           always_takers, never_takers)
+    res = extract_iivm_preds(data, y, d, z, n_folds,
+                             this_smpl, all_preds[[i_rep]])
+    p_hat = res$p_hat
+    mu0_hat = res$mu0_hat
+    mu1_hat = res$mu1_hat
+    m0_hat = res$m0_hat
+    m1_hat = res$m1_hat
+    D = data[, d]
+    Y = data[, y]
+    Z = data[, z]
+    
+    # DML 1
+    if (dml_procedure == "dml1") {
+      thetas = vars = rep(NA, n_folds)
+      for (i in 1:n_folds) {
+        test_index = test_ids[[i]]
+        orth_est = orth_irmiv_dml(
+          p_hat = p_hat[test_index],
+          mu0_hat = mu0_hat[test_index], mu1_hat = mu1_hat[test_index],
+          m0_hat = m0_hat[test_index], m1_hat = m1_hat[test_index],
+          d = D[test_index], y = Y[test_index], z = Z[test_index],
+          score = score)
+        thetas[i] = orth_est$theta
+      }
+      all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
     }
-    theta = mean(thetas, na.rm = TRUE)
+    if (dml_procedure == "dml2") {
+      orth_est = orth_irmiv_dml(
+        p_hat = p_hat, mu0_hat = mu0_hat,
+        mu1_hat = mu1_hat,
+        m0_hat = m0_hat, m1_hat = m1_hat,
+        d = D, y = Y, z = Z,
+        score = score)
+      all_thetas[i_rep] = orth_est$theta
+    }
+    
+    all_ses[i_rep] = sqrt(var_irmiv(
+      theta = all_thetas[i_rep], p_hat = p_hat, mu0_hat = mu0_hat,
+      mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
+      d = D, y = Y, z = Z, score = score))
   }
-  if (dml_procedure == "dml2") {
-    orth_est = orth_irmiv_dml(
-      p_hat = p_hat, mu0_hat = mu0_hat,
-      mu1_hat = mu1_hat,
-      m0_hat = m0_hat, m1_hat = m1_hat,
-      d = D, y = Y, z = Z,
-      score = score)
-    theta = orth_est$theta
-  }
-
-  se = sqrt(var_irmiv(
-    theta = theta, p_hat = p_hat, mu0_hat = mu0_hat,
-    mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
-    d = D, y = Y, z = Z, score = score))
+  
+  theta = stats::median(all_thetas)
+  se = se = sqrt(stats::median(all_ses^2 - (all_thetas - theta)^2))
   
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -266,29 +275,40 @@ var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sc
 
 
 # Bootstrap Implementation for Interactive Instrumental Variable Regression Model
-bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds, dml_procedure, score, bootstrap, n_rep_boot) {
-
-  res = extract_iivm_preds(data, y, d, z, n_folds, smpls, all_preds)
-  p_hat = res$p_hat
-  mu0_hat = res$mu0_hat
-  mu1_hat = res$mu1_hat
-  m0_hat = res$m0_hat
-  m1_hat = res$m1_hat
-  D = data[, d]
-  Y = data[, y]
-  Z = data[, z]
-
-  if (score == "LATE") {
-
-    psi = mu1_hat - mu0_hat + Z * (Y - mu1_hat) / p_hat - (1 - Z) * (Y - mu0_hat) / (1 - p_hat) -
-      (m1_hat - m0_hat + Z * (D - m1_hat) / p_hat - (1 - Z) * (D - m0_hat) / (1 - p_hat)) * theta
-
-    psi_a = -(m1_hat - m0_hat + Z * (D - m1_hat) / p_hat
-              - (1 - Z) * (D - m0_hat) / (1 - p_hat))
-  } else {
-    stop("Inference framework for multiplier bootstrap unknown")
+bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
+                           dml_procedure, score, bootstrap, n_rep_boot,
+                           n_rep=1) {
+  for (i_rep in 1:n_rep) {
+    res = extract_iivm_preds(data, y, d, z, n_folds,
+                             smpls[[i_rep]], all_preds[[i_rep]])
+    p_hat = res$p_hat
+    mu0_hat = res$mu0_hat
+    mu1_hat = res$mu1_hat
+    m0_hat = res$m0_hat
+    m1_hat = res$m1_hat
+    D = data[, d]
+    Y = data[, y]
+    Z = data[, z]
+    
+    if (score == "LATE") {
+      
+      psi = mu1_hat - mu0_hat + Z * (Y - mu1_hat) / p_hat - (1 - Z) * (Y - mu0_hat) / (1 - p_hat) -
+        (m1_hat - m0_hat + Z * (D - m1_hat) / p_hat - (1 - Z) * (D - m0_hat) / (1 - p_hat)) * theta
+      
+      psi_a = -(m1_hat - m0_hat + Z * (D - m1_hat) / p_hat
+                - (1 - Z) * (D - m0_hat) / (1 - p_hat))
+    } else {
+      stop("Inference framework for multiplier bootstrap unknown")
+    }
+    
+    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+                                    smpls[[i_rep]],
+                                    dml_procedure, bootstrap, n_rep_boot)
+    if (i_rep==1) {
+      res = this_res
+    } else {
+      res = cbind(res, this_res)
+    }
   }
-
-  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, n_rep_boot)
   return(res)
 }

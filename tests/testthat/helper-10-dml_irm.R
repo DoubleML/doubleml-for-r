@@ -2,57 +2,66 @@
 dml_irm = function(data, y, d,
                    n_folds, mlmethod,
                    params, dml_procedure, score,
-                   smpls = NULL) {
-
-  if (is.null(smpls)) {
-    smpls = sample_splitting(n_folds, data)
-  }
-  train_ids = smpls$train_ids
-  test_ids = smpls$test_ids
-
-  all_preds = fit_nuisance_irm(data, y, d,
-                               mlmethod, params,
-                               train_ids, test_ids, score)
-  res = extract_irm_residuals(data, y, d, n_folds, smpls, all_preds, score)
-  u0_hat = res$u0_hat
-  u1_hat = res$u1_hat
-  m_hat = res$m_hat
-  p_hat = res$p_hat
-  g0_hat = res$g0_hat
-  g1_hat = res$g1_hat
-  D = data[, d]
-  Y = data[, y]
+                   n_rep = 1, smpls = NULL) {
   
-  theta = se = te = pval = NA
-
-  # DML 1
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_folds)
+  if (is.null(smpls)) {
+    smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
+  }
+  
+  all_thetas = all_ses = rep(NA, n_rep)
+  all_preds = list()
+  
+  for (i_rep in 1:n_rep) {
+    this_smpl = smpls[[i_rep]]
+    train_ids = this_smpl$train_ids
+    test_ids = this_smpl$test_ids
     
-    for (i in 1:n_folds) {
-      test_index = test_ids[[i]]
-      orth_est = orth_irm_dml(
-        g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
-        u0_hat = u0_hat[test_index], u1_hat = u1_hat[test_index],
-        d = D[test_index], p_hat = p_hat[test_index], m = m_hat[test_index],
-        y = Y[test_index],
-        score = score)
-      thetas[i] = orth_est$theta
+    all_preds[[i_rep]] = fit_nuisance_irm(data, y, d,
+                                          mlmethod, params,
+                                          train_ids, test_ids, score)
+    res = extract_irm_residuals(data, y, d, n_folds, this_smpl,
+                                all_preds[[i_rep]], score)
+    u0_hat = res$u0_hat
+    u1_hat = res$u1_hat
+    m_hat = res$m_hat
+    p_hat = res$p_hat
+    g0_hat = res$g0_hat
+    g1_hat = res$g1_hat
+    D = data[, d]
+    Y = data[, y]
+    
+    # DML 1
+    if (dml_procedure == "dml1") {
+      thetas = vars = rep(NA, n_folds)
+      
+      for (i in 1:n_folds) {
+        test_index = test_ids[[i]]
+        orth_est = orth_irm_dml(
+          g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
+          u0_hat = u0_hat[test_index], u1_hat = u1_hat[test_index],
+          d = D[test_index], p_hat = p_hat[test_index], m = m_hat[test_index],
+          y = Y[test_index],
+          score = score)
+        thetas[i] = orth_est$theta
+      }
+      all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
     }
-    theta = mean(thetas, na.rm = TRUE)
+    if (dml_procedure == "dml2") {
+      orth_est = orth_irm_dml(
+        g0_hat = g0_hat, g1_hat = g1_hat,
+        u0_hat = u0_hat, u1_hat = u1_hat, d = D, p_hat = p_hat,
+        y = Y, m = m_hat, score = score)
+      all_thetas[i_rep] = orth_est$theta
+    }
+    
+    all_ses[i_rep] = sqrt(var_irm(
+      theta = all_thetas[i_rep], g0_hat = g0_hat, g1_hat = g1_hat,
+      u0_hat = u0_hat, u1_hat = u1_hat,
+      d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
   }
-  if (dml_procedure == "dml2") {
-    orth_est = orth_irm_dml(
-      g0_hat = g0_hat, g1_hat = g1_hat,
-      u0_hat = u0_hat, u1_hat = u1_hat, d = D, p_hat = p_hat,
-      y = Y, m = m_hat, score = score)
-    theta = orth_est$theta
-  }
-
-  se = sqrt(var_irm(
-    theta = theta, g0_hat = g0_hat, g1_hat = g1_hat,
-    u0_hat = u0_hat, u1_hat = u1_hat,
-    d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
+  
+  theta = stats::median(all_thetas)
+  se = se = sqrt(stats::median(all_ses^2 - (all_thetas - theta)^2))
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -207,26 +216,37 @@ var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score)
 }
 
 # Bootstrap Implementation for Interactive Regression Model
-bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds, dml_procedure, score, bootstrap, n_rep_boot) {
-  
-  res = extract_irm_residuals(data, y, d, n_folds, smpls, all_preds, score)
-  u0_hat = res$u0_hat
-  u1_hat = res$u1_hat
-  m_hat = res$m_hat
-  p_hat = res$p_hat
-  g0_hat = res$g0_hat
-  g1_hat = res$g1_hat
-  D = data[, d]
-
-  if (score == "ATE") {
-    psi = g1_hat - g0_hat + D * u1_hat / m_hat - (1 - D) * u0_hat / (1 - m_hat) - theta
-    psi_a = rep(-1, length(D))
+bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
+                         dml_procedure, score, bootstrap, n_rep_boot,
+                         n_rep=1) {
+  for (i_rep in 1:n_rep) {
+    res = extract_irm_residuals(data, y, d, n_folds,
+                                smpls[[i_rep]], all_preds[[i_rep]], score)
+    u0_hat = res$u0_hat
+    u1_hat = res$u1_hat
+    m_hat = res$m_hat
+    p_hat = res$p_hat
+    g0_hat = res$g0_hat
+    g1_hat = res$g1_hat
+    D = data[, d]
+    
+    if (score == "ATE") {
+      psi = g1_hat - g0_hat + D * u1_hat / m_hat - (1 - D) * u0_hat / (1 - m_hat) - theta
+      psi_a = rep(-1, length(D))
+    }
+    else if (score == "ATTE") {
+      psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) - D / p_hat * theta
+      psi_a = -D / p_hat
+    }
+    
+    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+                                    smpls[[i_rep]],
+                                    dml_procedure, bootstrap, n_rep_boot)
+    if (i_rep==1) {
+      res = this_res
+    } else {
+      res = cbind(res, this_res)
+    }
   }
-  else if (score == "ATTE") {
-    psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) - D / p_hat * theta
-    psi_a = -D / p_hat
-  }
-
-  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, n_rep_boot)
   return(res)
 }
