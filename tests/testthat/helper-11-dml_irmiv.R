@@ -266,7 +266,7 @@ var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sc
 
 
 # Bootstrap Implementation for Interactive Instrumental Variable Regression Model
-bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds, dml_procedure, score, bootstrap, nRep) {
+bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds, dml_procedure, score, bootstrap, n_rep_boot) {
 
   res = extract_iivm_preds(data, y, d, z, n_folds, smpls, all_preds)
   p_hat = res$p_hat
@@ -289,6 +289,6 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds, 
     stop("Inference framework for multiplier bootstrap unknown")
   }
 
-  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, nRep)
+  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, n_rep_boot)
   return(res)
 }

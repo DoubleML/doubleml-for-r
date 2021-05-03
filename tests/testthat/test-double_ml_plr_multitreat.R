@@ -52,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       d = c("d1", "d2", "d3"),
       dml_procedure = dml_procedure,
       score = score,
-      bootstrap = "normal", nRep = n_rep_boot)
+      bootstrap = "normal", n_rep_boot = n_rep_boot)
     ci_joint = confint(plr_hat, joint = TRUE, level = 0.95)
 
     set.seed(i_setting)

@@ -47,7 +47,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
                                  n_folds = n_folds, smpls = plr_hat$smpls,
                                  all_preds= plr_hat$all_preds,
                                  dml_procedure = dml_procedure,
-                                 bootstrap = "normal", nRep = n_rep_boot,
+                                 bootstrap = "normal", n_rep_boot = n_rep_boot,
                                  score = score)$boot_coef
       
       t = plr_hat$t

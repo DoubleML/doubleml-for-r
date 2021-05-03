@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     #                       n_folds = 5, mlmethod = learner_pars$mlmethod,
     #                       params = learner_pars$params,
     #                       dml_procedure = dml_procedure, score = score,
-    #                       bootstrap = "normal",  nRep = n_rep_boot)
+    #                       bootstrap = "normal",  n_rep_boot = n_rep_boot)
     # theta = coef(iivm_hat)
     # se = iivm_hat$se
     #

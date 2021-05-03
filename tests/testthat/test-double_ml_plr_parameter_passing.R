@@ -51,7 +51,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
       mlmethod = learner_pars_for_DML$mlmethod,
       params = learner_pars_for_DML$params,
       dml_procedure = dml_procedure, score = score,
-      bootstrap = "none", nRep = 500)
+      bootstrap = "none", n_rep_boot = 500)
     theta = coef(plr_hat)
     se = plr_hat$se
 

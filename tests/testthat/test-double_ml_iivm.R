@@ -45,7 +45,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                  all_preds= iivm_hat$all_preds,
                                  dml_procedure = dml_procedure,
                                  score = score,
-                                 bootstrap = "normal", nRep = n_rep_boot)$boot_coef
+                                 bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
     Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]

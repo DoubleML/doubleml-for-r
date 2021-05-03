@@ -53,29 +53,29 @@ sample_splitting = function(k, data) {
   return(list(train_ids = train_ids, test_ids = test_ids))
 }
 
-draw_bootstrap_weights = function(bootstrap, nRep, n_obs) {
+draw_bootstrap_weights = function(bootstrap, n_rep_boot, n_obs) {
   if (bootstrap == "Bayes") {
-    weights = stats::rexp(nRep * n_obs, rate = 1) - 1
+    weights = stats::rexp(n_rep_boot * n_obs, rate = 1) - 1
   } else if (bootstrap == "normal") {
-    weights = stats::rnorm(nRep * n_obs)
+    weights = stats::rnorm(n_rep_boot * n_obs)
   } else if (bootstrap == "wild") {
-    weights = stats::rnorm(nRep * n_obs) / sqrt(2) + (stats::rnorm(nRep * n_obs)^2 - 1) / 2
+    weights = stats::rnorm(n_rep_boot * n_obs) / sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1) / 2
   } else {
     stop("invalid boot method")
   }
-  weights = matrix(weights, nrow = nRep, ncol = n_obs, byrow = TRUE)
+  weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow = TRUE)
 
   return(weights)
 }
 
 functional_bootstrap = function(theta, se, psi, psi_a, k, smpls, dml_procedure,
-                                bootstrap, nRep) {
+                                bootstrap, n_rep_boot) {
   n = length(psi)
-  weights = draw_bootstrap_weights(bootstrap, nRep, n)
+  weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
   if (dml_procedure == "dml1") {
     test_ids = smpls$test_ids
-    boot_coef = matrix(NA, nrow = k, ncol = nRep)
-    boot_t_stat = matrix(NA, nrow = k, ncol = nRep)
+    boot_coef = matrix(NA, nrow = k, ncol = n_rep_boot)
+    boot_t_stat = matrix(NA, nrow = k, ncol = n_rep_boot)
     ii = 0
     for (i_fold in 1:k) {
       test_index = test_ids[[i_fold]]
@@ -84,7 +84,7 @@ functional_bootstrap = function(theta, se, psi, psi_a, k, smpls, dml_procedure,
       J = mean(psi_a[test_index])
       
       n_obs_in_fold = length(test_index)
-      for (i in seq(nRep)) {
+      for (i in seq(n_rep_boot)) {
         boot_coef[i_fold, i] = mean(weights[i, (ii + 1):(ii + n_obs_in_fold)] * 1 / J * score)
         boot_t_stat[i_fold, i] = boot_coef[i_fold, i] / se
       }
@@ -96,9 +96,9 @@ functional_bootstrap = function(theta, se, psi, psi_a, k, smpls, dml_procedure,
     # DML2
     score = psi
     J = mean(psi_a)
-    boot_coef = matrix(NA, nrow = 1, ncol = nRep)
-    boot_t_stat = matrix(NA, nrow = 1, ncol = nRep)
-    for (i in seq(nRep)) {
+    boot_coef = matrix(NA, nrow = 1, ncol = n_rep_boot)
+    boot_t_stat = matrix(NA, nrow = 1, ncol = n_rep_boot)
+    for (i in seq(n_rep_boot)) {
       boot_coef[1, i] = mean(weights[i, ] * 1 / J * score)
       boot_t_stat[1, i] = boot_coef[1, i] / se
     }

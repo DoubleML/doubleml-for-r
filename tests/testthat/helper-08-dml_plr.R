@@ -193,7 +193,7 @@ var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
 # Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plr = function(theta, se, data, y, d,
                          n_folds, smpls, all_preds, dml_procedure,
-                         bootstrap, nRep, score,
+                         bootstrap, n_rep_boot, score,
                          n_rep=1) {
   for (i_rep in 1:n_rep) {
     residuals = compute_plr_residuals(data, y, d, n_folds,
@@ -214,7 +214,7 @@ bootstrap_plr = function(theta, se, data, y, d,
     
     this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
                                     smpls[[i_rep]],
-                                    dml_procedure, bootstrap, nRep)
+                                    dml_procedure, bootstrap, n_rep_boot)
     if (i_rep==1) {
       res = this_res
     } else {

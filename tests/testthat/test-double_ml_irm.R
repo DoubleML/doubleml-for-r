@@ -45,7 +45,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                                all_preds= irm_hat$all_preds,
                                dml_procedure = dml_procedure,
                                score = score,
-                               bootstrap = "normal", nRep = n_rep_boot)$boot_coef
+                               bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
 
     set.seed(i_setting)
