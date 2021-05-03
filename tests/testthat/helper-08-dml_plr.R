@@ -2,52 +2,61 @@
 dml_plr = function(data, y, d,
                    n_folds, mlmethod,
                    params, dml_procedure, score,
-                   smpls = NULL) {
+                   n_rep = 1, smpls = NULL) {
 
   if (is.null(smpls)) {
-    smpls = sample_splitting(n_folds, data)
+    smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
-  train_ids = smpls$train_ids
-  test_ids = smpls$test_ids
-  
-  all_preds = fit_nuisance_plr(data, y, d,
-                               mlmethod, params,
-                               smpls)
-  
-  residuals = compute_plr_residuals(data, y, d, n_folds, smpls, all_preds)
-  u_hat = residuals$u_hat
-  v_hat = residuals$v_hat
-  D = data[, d]
-  Y = data[, y]
-  v_hatd =  v_hat * D
-  
-  theta = se = te = pval = NA
 
-  # DML 1
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_folds)
-    for (i in 1:n_folds) {
-      test_index = test_ids[[i]]
+  all_thetas = all_ses = rep(NA, n_rep)
+  all_preds = list()
 
-      orth_est = orth_plr_dml(
-        u_hat = u_hat[test_index], v_hat = v_hat[test_index],
-        v_hatd = v_hatd[test_index],
-        score = score)
-      thetas[i] = orth_est$theta
+  for (i_rep in 1:n_rep) {
+    this_smpl = smpls[[i_rep]]
+    train_ids = this_smpl$train_ids
+    test_ids = this_smpl$test_ids
+    
+    all_preds[[i_rep]] = fit_nuisance_plr(data, y, d,
+                                          mlmethod, params,
+                                          this_smpl)
+    
+    residuals = compute_plr_residuals(data, y, d, n_folds, this_smpl,
+                                      all_preds[[i_rep]])
+    u_hat = residuals$u_hat
+    v_hat = residuals$v_hat
+    D = data[, d]
+    Y = data[, y]
+    v_hatd =  v_hat * D
+  
+    # DML 1
+    if (dml_procedure == "dml1") {
+      thetas = rep(NA, n_folds)
+      for (i in 1:n_folds) {
+        test_index = test_ids[[i]]
+  
+        orth_est = orth_plr_dml(
+          u_hat = u_hat[test_index], v_hat = v_hat[test_index],
+          v_hatd = v_hatd[test_index],
+          score = score)
+        thetas[i] = orth_est$theta
+      }
+      all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
     }
-    theta = mean(thetas, na.rm = TRUE)
+  
+    if (dml_procedure == "dml2") {
+      orth_est = orth_plr_dml(u_hat = u_hat, v_hat = v_hat,
+                              v_hatd = v_hatd, score = score)
+      all_thetas[i_rep] = orth_est$theta
+    }
+  
+    all_ses[i_rep] = sqrt(var_plr(
+      theta = all_thetas[i_rep], d = D, u_hat = u_hat, v_hat = v_hat,
+      v_hatd = v_hatd, score = score,
+      dml_procedure = dml_procedure))
   }
 
-  if (dml_procedure == "dml2") {
-    orth_est = orth_plr_dml(u_hat = u_hat, v_hat = v_hat,
-                            v_hatd = v_hatd, score = score)
-    theta = orth_est$theta
-  }
-
-  se = sqrt(var_plr(
-    theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-    v_hatd = v_hatd, score = score,
-    dml_procedure = dml_procedure))
+  theta = stats::median(all_thetas)
+  se = se = sqrt(stats::median(all_ses^2 - (all_thetas - theta)^2))
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -184,22 +193,33 @@ var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
 # Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plr = function(theta, se, data, y, d,
                          n_folds, smpls, all_preds, dml_procedure,
-                         bootstrap, nRep, score) {
-  residuals = compute_plr_residuals(data, y, d, n_folds, smpls, all_preds)
-  u_hat = residuals$u_hat
-  v_hat = residuals$v_hat
-  D = data[, d]
-  v_hatd =  v_hat * D
-
-  if (score == "partialling out") {
-    psi = (u_hat - v_hat * theta) * v_hat
-    psi_a = -v_hat * v_hat
+                         bootstrap, nRep, score,
+                         n_rep=1) {
+  for (i_rep in 1:n_rep) {
+    residuals = compute_plr_residuals(data, y, d, n_folds,
+                                      smpls[[i_rep]], all_preds[[i_rep]])
+    u_hat = residuals$u_hat
+    v_hat = residuals$v_hat
+    D = data[, d]
+    v_hatd =  v_hat * D
+    
+    if (score == "partialling out") {
+      psi = (u_hat - v_hat * theta) * v_hat
+      psi_a = -v_hat * v_hat
+    }
+    else if (score == "IV-type") {
+      psi = (u_hat - D * theta) * v_hat
+      psi_a = -v_hatd
+    }
+    
+    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+                                    smpls[[i_rep]],
+                                    dml_procedure, bootstrap, nRep)
+    if (i_rep==1) {
+      res = this_res
+    } else {
+      res = cbind(res, this_res)
+    }
   }
-  else if (score == "IV-type") {
-    psi = (u_hat - D * theta) * v_hat
-    psi_a = -v_hatd
-  }
-
-  res = functional_bootstrap(theta, se, psi, psi_a, n_folds, smpls, dml_procedure, bootstrap, nRep)
   return(res)
 }
