@@ -1149,9 +1149,17 @@ DoubleML = R6Class("DoubleML",
       self$coef = apply(
         self$all_coef, 1,
         function(x) median(x, na.rm = TRUE))
+      if (self$apply_cross_fitting) {
+        n_obs = self$data$n_obs
+      } else {
+        smpls = private$get__smpls()
+        test_ids = smpls$test_ids
+        test_index = test_ids[[1]]
+        n_obs = length(test_index)
+      }
       self$se = sqrt(apply(
-        self$all_se^2 + (self$all_coef - self$coef)^2, 1,
-        function(x) median(x, na.rm = TRUE)))
+        n_obs * self$all_se^2 + (self$all_coef - self$coef)^2, 1,
+        function(x) median(x, na.rm = TRUE))/n_obs)
 
       invisible(self)
     },
