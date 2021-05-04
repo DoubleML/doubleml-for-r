@@ -191,7 +191,7 @@ DoubleMLData = R6Class("DoubleMLData",
         if (self$use_other_treat_as_covariate) {
           self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
         } else {
-          message("Controls variables do not include other treatment variables")
+          message("Control variables do not include other treatment variables")
           self$other_treat_cols = NULL
         }
       }
