@@ -177,8 +177,8 @@ DoubleMLData = R6Class("DoubleMLData",
     #' Active treatment variable that will be set to `treat_col`.
     set_data_model = function(treatment_var) {
 
-      check_character(treatment_var, max.len = 1)
-      check_subset(treatment_var, self$d_cols)
+      assert_character(treatment_var, max.len = 1)
+      assert_subset(treatment_var, self$d_cols)
 
       if (treatment_var %in% self$x_cols) {
         stop(paste(
@@ -309,16 +309,16 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   if (is.null(y_col) | is.null(d_cols)) {
     stop("Column indices y_col and d_cols not specified.")
   }
-  check_choice(data_class, c("DoubleMLData", "data.table"))
+  assert_choice(data_class, c("DoubleMLData", "data.table"))
 
   if (!is.null(x_cols)) {
-    check_character(x_cols, unique = TRUE)
+    assert_character(x_cols, unique = TRUE)
   }
-  check_character(y_col, len = 1)
-  check_character(d_cols, unique = TRUE)
+  assert_character(y_col, len = 1)
+  assert_character(d_cols, unique = TRUE)
 
   if (!is.null(z_cols)) {
-    check_character(z_cols, unique = TRUE)
+    assert_character(z_cols, unique = TRUE)
   }
   if (!is.null(x_cols)) {
     x_cols = x_cols
@@ -384,8 +384,8 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
   data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE) {
 
-  check_choice(data_class, c("DoubleMLData", "data.table"))
-  check_logical(use_other_treat_as_covariate, len = 1)
+  assert_choice(data_class, c("DoubleMLData", "data.table"))
+  assert_logical(use_other_treat_as_covariate, len = 1)
   if (!is.null(X)) {
     X = assure_matrix(X)
   }
