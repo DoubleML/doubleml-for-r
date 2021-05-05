@@ -13,6 +13,10 @@ dml_plr = function(data, y, d,
 
   for (i_rep in 1:n_rep) {
     this_smpl = smpls[[i_rep]]
+    stopifnot(length(this_smpl$train_ids) == length(this_smpl$test_ids))
+    if (length(this_smpl$train_ids) == 1) {
+      dml_procedure = 'dml1'
+    }
     
     res_single_split = fit_plr_single_split(data, y, d,
                                             n_folds, mlmethod,
@@ -130,6 +134,12 @@ fit_plr_single_split = function(data, y, d,
       thetas[i] = orth_est$theta
     }
     theta = mean(thetas, na.rm = TRUE)
+    if (length(train_ids) == 1) {
+      D = D[test_index]
+      u_hat = u_hat[test_index]
+      v_hat = v_hat[test_index]
+      v_hatd = v_hatd[test_index]
+    }
   }
   
   if (dml_procedure == "dml2") {
