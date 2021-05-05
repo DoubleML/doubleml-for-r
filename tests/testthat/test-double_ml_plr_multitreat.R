@@ -35,26 +35,28 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     n_folds = 5
 
     set.seed(i_setting)
-    plr_hat = DML(data_plr_multi[[i_setting]],
-      y = "y", d = c("d1", "d2", "d3"),
-      model = "plr",
-      k = n_folds, S = 1,
-      mlmethod = learner_pars_for_DML$mlmethod,
-      params = learner_pars_for_DML$params,
-      dml_procedure = dml_procedure, score = score)
-    theta = coef(plr_hat)
+    plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
+                                 y = "y", d = c("d1", "d2", "d3"),
+                                 n_folds = n_folds,
+                                 mlmethod = learner_pars$mlmethod,
+                                 params = learner_pars_for_DML$params,
+                                 dml_procedure = dml_procedure, score = score)
+    theta = plr_hat$coef
     se = plr_hat$se
-    ci_ptwise = confint(plr_hat, joint = FALSE, level = 0.95)
+    t = plr_hat$t
+    pval = plr_hat$pval
+    #ci_ptwise = confint(plr_hat, joint = FALSE, level = 0.95)
 
     set.seed(i_setting)
-    plr_hat$boot_theta = bootstrap.DML(plr_hat, data_plr_multi[[i_setting]],
-      y = "y",
-      d = c("d1", "d2", "d3"),
-      dml_procedure = dml_procedure,
-      score = score,
-      bootstrap = "normal", n_rep_boot = n_rep_boot)
-    ci_joint = confint(plr_hat, joint = TRUE, level = 0.95)
-
+    boot_theta = boot_plr_multitreat(plr_hat$thetas, plr_hat$ses,
+                                     data_plr_multi[[i_setting]],
+                                     y = "y", d = c("d1", "d2", "d3"),
+                                     n_folds = n_folds, smpls = plr_hat$smpls,
+                                     all_preds= plr_hat$all_preds,
+                                     dml_procedure = dml_procedure,
+                                     bootstrap = "normal", n_rep_boot = n_rep_boot,
+                                     score = score)$boot_coef
+    
     set.seed(i_setting)
     Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "d3", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
@@ -77,21 +79,26 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef
     se_obj = double_mlplr_obj$se
+    t_obj = double_mlplr_obj$t_stat
+    pval_obj = double_mlplr_obj$pval
 
     # bootstrap
     set.seed(i_setting)
     double_mlplr_obj$bootstrap(method = "normal", n_rep_boot = n_rep_boot)
-    boot_theta_obj = double_mlplr_obj$boot_t_stat
+    boot_theta_obj = double_mlplr_obj$boot_coef
 
     # joint confint
     ci_ptwise_obj = double_mlplr_obj$confint(joint = FALSE, level = 0.95)
     ci_joint_obj = double_mlplr_obj$confint(joint = TRUE, level = 0.95)
 
     # at the moment the object result comes without a name
-    expect_equal(theta, c(theta_obj), tolerance = 1e-8)
-    expect_equal(se, c(se_obj), tolerance = 1e-8)
-    expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
-    expect_equal(ci_ptwise, ci_ptwise_obj)
-    expect_equal(ci_joint, ci_joint_obj)
+    expect_equal(theta, theta_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
+    expect_equal(t, t_obj, tolerance = 1e-8)
+    expect_equal(pval, pval_obj, tolerance = 1e-8)
+
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    #expect_equal(ci_ptwise, ci_ptwise_obj)
+    #expect_equal(ci_joint, ci_joint_obj)
   }
 )

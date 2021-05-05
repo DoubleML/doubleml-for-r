@@ -188,9 +188,11 @@ bootstrap_plriv = function(theta, se, data, y, d, z, n_folds, smpls,
     psi = (u_hat - v_hat * theta) * w_hat
     psi_a = - v_hat * w_hat
     
+    n = length(psi)
+    weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
     this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
                                     smpls[[i_rep]],
-                                    dml_procedure, bootstrap, n_rep_boot)
+                                    dml_procedure, n_rep_boot, weights)
     if (i_rep==1) {
       boot_res = this_res
     } else {

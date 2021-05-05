@@ -69,9 +69,7 @@ draw_bootstrap_weights = function(bootstrap, n_rep_boot, n_obs) {
 }
 
 functional_bootstrap = function(theta, se, psi, psi_a, k, smpls, dml_procedure,
-                                bootstrap, n_rep_boot) {
-  n = length(psi)
-  weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
+                                n_rep_boot, weights) {
   if (dml_procedure == "dml1") {
     test_ids = smpls$test_ids
     boot_coef = matrix(NA, nrow = k, ncol = n_rep_boot)
