@@ -23,6 +23,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
     n_folds = 2
+    n_rep_boot = 498
     set.seed(i_setting)
     Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
@@ -60,6 +61,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t = double_mlplr$t_stat
     pval = double_mlplr$pval
     ci = double_mlplr$confint(level = 0.95, joint = FALSE)
+    double_mlplr$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta = double_mlplr$boot_coef
 
     set.seed(123)
     loaded_learner = mlr3::lrn("regr.cv_glmnet", "s" = "lambda.min", "family" = "gaussian", "nfolds" = 5)
@@ -77,6 +80,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t_loaded = double_mlplr_loaded$t_stat
     pval_loaded = double_mlplr_loaded$pval
     ci_loaded = double_mlplr_loaded$confint(level = 0.95, joint = FALSE)
+    double_mlplr$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_loaded = double_mlplr$boot_coef
 
     set.seed(123)
     semiloaded_learner = mlr3::lrn("regr.cv_glmnet")
@@ -105,17 +110,21 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t_semiloaded = double_mlplr_semiloaded$t_stat
     pval_semiloaded = double_mlplr_semiloaded$pval
     ci_semiloaded = double_mlplr_semiloaded$confint(level = 0.95, joint = FALSE)
+    double_mlplr$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_semiloaded = double_mlplr$boot_coef
 
     expect_equal(theta, theta_loaded, tolerance = 1e-8)
     expect_equal(se, se_loaded, tolerance = 1e-8)
     expect_equal(t, t_loaded, tolerance = 1e-8)
     expect_equal(pval, pval_loaded, tolerance = 1e-8)
     expect_equal(ci, ci_loaded, tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_loaded), tolerance = 1e-8)
     
     expect_equal(theta_semiloaded, theta_loaded, tolerance = 1e-8)
     expect_equal(se_semiloaded, se_loaded, tolerance = 1e-8)
     expect_equal(t_semiloaded, t_loaded, tolerance = 1e-8)
     expect_equal(pval_semiloaded, pval_loaded, tolerance = 1e-8)
     expect_equal(ci_semiloaded, ci_loaded, tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta_semiloaded), as.vector(boot_theta_loaded), tolerance = 1e-8)
   }
 )
