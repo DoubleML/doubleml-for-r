@@ -54,7 +54,7 @@ dml_plriv = function(data, y, d, z,
   }
   
   theta = stats::median(all_thetas)
-  se = se = sqrt(stats::median(all_ses^2 + (all_thetas - theta)^2))
+  se = se_repeated(all_ses, all_thetas, theta)
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))

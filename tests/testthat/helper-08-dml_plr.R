@@ -29,7 +29,7 @@ dml_plr = function(data, y, d,
   }
 
   theta = stats::median(all_thetas)
-  se = sqrt(stats::median(all_ses^2 + (all_thetas - theta)^2))
+  se = se_repeated(all_ses, all_thetas, theta)
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
@@ -87,7 +87,7 @@ dml_plr_multitreat = function(data, y, d,
     theta_vec = unlist(lapply(all_thetas, function(x) x[i_d]))
     se_vec = unlist(lapply(all_ses, function(x) x[i_d]))
     theta[i_d] = stats::median(theta_vec)
-    se[i_d] = sqrt(stats::median(se_vec^2 + (theta_vec - theta[i_d])^2))
+    se[i_d] = se_repeated(se_vec, theta_vec, theta[i_d])
     t[i_d] = theta[i_d] / se[i_d]
     pval[i_d] = 2 * stats::pnorm(-abs(t[i_d]))
   }
