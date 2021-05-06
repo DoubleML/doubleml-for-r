@@ -1,9 +1,3 @@
-extract_test_pred = function(x) {
-  pred = x$data$response
-  return(pred)
-}
-
-
 se_repeated = function(se_s, coefficients, theta_s) {
     se = sqrt(stats::median(se_s^2 + (theta_s - coefficients)^2))
   return(se)
