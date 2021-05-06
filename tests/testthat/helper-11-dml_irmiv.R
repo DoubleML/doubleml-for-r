@@ -3,7 +3,8 @@ dml_irmiv = function(data, y, d, z,
                      n_folds, mlmethod,
                      params, dml_procedure, score,
                      always_takers = TRUE, never_takers = TRUE,
-                     n_rep = 1, smpls = NULL) {
+                     n_rep = 1, smpls = NULL,
+                     trimming_threshold = 1e-12) {
   
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -22,7 +23,8 @@ dml_irmiv = function(data, y, d, z,
                                            train_ids, test_ids,
                                            always_takers, never_takers)
     res = extract_iivm_preds(data, y, d, z, n_folds,
-                             this_smpl, all_preds[[i_rep]])
+                             this_smpl, all_preds[[i_rep]],
+                             trimming_threshold=trimming_threshold)
     p_hat = res$p_hat
     mu0_hat = res$mu0_hat
     mu1_hat = res$mu1_hat
@@ -87,7 +89,8 @@ dml_irmiv = function(data, y, d, z,
 fit_nuisance_iivm = function(data, y, d, z,
                              mlmethod, params,
                              train_ids, test_ids,
-                             always_takers, never_takers) {
+                             always_takers, never_takers,
+                             trimming_threshold) {
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
@@ -218,7 +221,8 @@ fit_nuisance_iivm = function(data, y, d, z,
 }
 
 
-extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds) {
+extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
+                              trimming_threshold) {
   test_ids = smpls$test_ids
   
   p_hat_list = all_preds$p_hat_list
@@ -242,6 +246,8 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds) {
     m0_hat[test_index] = m0_hat_list[[i]]
     m1_hat[test_index] = m1_hat_list[[i]]
   }
+  
+  p_hat = trim_vec(p_hat, trimming_threshold)
   
   res = list(p_hat=p_hat, mu0_hat=mu0_hat, mu1_hat=mu1_hat,
              m0_hat=m0_hat, m1_hat=m1_hat)
@@ -283,10 +289,11 @@ var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sc
 # Bootstrap Implementation for Interactive Instrumental Variable Regression Model
 bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
                            dml_procedure, score, bootstrap, n_rep_boot,
-                           n_rep=1) {
+                           n_rep=1, trimming_threshold = 1e-12) {
   for (i_rep in 1:n_rep) {
     res = extract_iivm_preds(data, y, d, z, n_folds,
-                             smpls[[i_rep]], all_preds[[i_rep]])
+                             smpls[[i_rep]], all_preds[[i_rep]],
+                             trimming_threshold = trimming_threshold)
     p_hat = res$p_hat
     mu0_hat = res$mu0_hat
     mu1_hat = res$mu1_hat

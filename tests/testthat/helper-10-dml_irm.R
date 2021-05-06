@@ -19,10 +19,10 @@ dml_irm = function(data, y, d,
     
     all_preds[[i_rep]] = fit_nuisance_irm(data, y, d,
                                           mlmethod, params,
-                                          train_ids, test_ids, score,
-                                          trimming_threshold=trimming_threshold)
+                                          train_ids, test_ids, score)
     res = extract_irm_residuals(data, y, d, n_folds, this_smpl,
-                                all_preds[[i_rep]], score)
+                                all_preds[[i_rep]], score,
+                                trimming_threshold=trimming_threshold)
     u0_hat = res$u0_hat
     u1_hat = res$u1_hat
     m_hat = res$m_hat
@@ -84,8 +84,7 @@ dml_irm = function(data, y, d,
 
 fit_nuisance_irm = function(data, y, d,
                             mlmethod, params,
-                            train_ids, test_ids, score,
-                            trimming_threshold) {
+                            train_ids, test_ids, score) {
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
   m_indx = names(data) != y
@@ -115,7 +114,6 @@ fit_nuisance_irm = function(data, y, d,
   ml_m$param_set$values = params$params_m
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
-  m_hat_list = lapply(m_hat_list, function(x) trim_vec(x, trimming_threshold))
   
   # nuisance g0: E[Y|D=0, X]
   g_indx = names(data) != d
@@ -156,7 +154,8 @@ fit_nuisance_irm = function(data, y, d,
   return(all_preds)
 }
 
-extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score) {
+extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score,
+                                 trimming_threshold) {
   test_ids = smpls$test_ids
   
   m_hat_list = all_preds$m_hat_list
@@ -186,6 +185,8 @@ extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score) {
       u1_hat[test_index] = Y[test_index] - g1_hat[test_index]
     }
   }
+  
+  m_hat = trim_vec(m_hat, trimming_threshold)
   
   res = list(u0_hat=u0_hat, u1_hat=u1_hat,
              m_hat=m_hat, p_hat=p_hat,
@@ -228,10 +229,11 @@ var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score)
 # Bootstrap Implementation for Interactive Regression Model
 bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
                          dml_procedure, score, bootstrap, n_rep_boot,
-                         n_rep=1) {
+                         n_rep=1, trimming_threshold = 1e-12) {
   for (i_rep in 1:n_rep) {
     res = extract_irm_residuals(data, y, d, n_folds,
-                                smpls[[i_rep]], all_preds[[i_rep]], score)
+                                smpls[[i_rep]], all_preds[[i_rep]], score,
+                                trimming_threshold=trimming_threshold)
     u0_hat = res$u0_hat
     u1_hat = res$u1_hat
     m_hat = res$m_hat
