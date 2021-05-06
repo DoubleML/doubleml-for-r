@@ -64,7 +64,12 @@ dml_irmiv = function(data, y, d, z,
   }
   
   theta = stats::median(all_thetas)
-  se = se_repeated(all_ses, all_thetas, theta)
+  if (length(this_smpl$train_ids) > 1) {
+    n = nrow(data)
+  } else {
+    n = length(this_smpl$test_ids[[1]])
+  }
+  se = se_repeated(all_ses*sqrt(n), all_thetas, theta)/sqrt(n)
   
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
