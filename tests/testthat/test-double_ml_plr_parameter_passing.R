@@ -44,15 +44,13 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
     learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 2)
 
     set.seed(i_setting)
-    plr_hat = DML(data_plr_multi[[i_setting]],
-      y = "y", d = c("d1", "d2"),
-      model = "plr",
-      k = n_folds, S = n_rep,
-      mlmethod = learner_pars_for_DML$mlmethod,
-      params = learner_pars_for_DML$params,
-      dml_procedure = dml_procedure, score = score,
-      bootstrap = "none", n_rep_boot = 500)
-    theta = coef(plr_hat)
+    plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
+                                 y = "y", d = c("d1", "d2"),
+                                 n_folds = n_folds, n_rep = n_rep,
+                                 mlmethod = learner_pars_for_DML$mlmethod,
+                                 params = learner_pars_for_DML$params,
+                                 dml_procedure = dml_procedure, score = score)
+    theta = plr_hat$coef
     se = plr_hat$se
 
     # exact parameter provision
@@ -168,7 +166,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
     # boot_theta_obj_default = double_mlplr_obj_default$boot_coef
 
     expect_equal(theta, theta_obj_once, tolerance = 1e-8)
-    # expect_equal(se, se_obj_once, tolerance = 1e-8)
+    expect_equal(se, se_obj_once, tolerance = 1e-8)
 
     expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
     expect_equal(se_obj_default, se_obj_once, tolerance = 1e-8)
