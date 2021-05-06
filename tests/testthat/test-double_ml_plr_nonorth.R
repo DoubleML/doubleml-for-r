@@ -37,9 +37,6 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
     learner_pars = get_default_mlmethod_plr(learner)
-    learner_pars_for_DML = learner_pars
-    learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 1)
-    learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
     n_rep_boot = 498
     set.seed(i_setting)
     Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
@@ -49,8 +46,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     double_mlplr_obj = DoubleMLPLR$new(
       data = data_ml,
-      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g,
-      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m,
+      ml_g = learner_pars$mlmethod$mlmethod_g,
+      ml_m = learner_pars$mlmethod$mlmethod_m,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -85,8 +82,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     if (n_folds == 2 & n_rep == 1) {
       double_mlplr_nocf = DoubleMLPLR$new(
         data = data_ml,
-        ml_g = learner_pars_for_DML$mlmethod$mlmethod_g,
-        ml_m = learner_pars_for_DML$mlmethod$mlmethod_m,
+        ml_g = learner_pars$mlmethod$mlmethod_g,
+        ml_m = learner_pars$mlmethod$mlmethod_m,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score,
