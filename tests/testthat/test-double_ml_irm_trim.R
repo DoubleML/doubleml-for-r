@@ -29,15 +29,24 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     learner_pars = get_default_mlmethod_irm(learner)
     n_rep_boot = 498
 
-    # set.seed(i_setting)
-    # irm_hat = dml_irm(data_irm[[i_setting]], y = "y", d = "d",
-    #                    n_folds = 5, mlmethod = learner_pars$mlmethod,
-    #                    params = learner_pars$params,
-    #                    dml_procedure = dml_procedure, score = score,
-    #                    bootstrap = "normal",  n_rep_boot = n_rep_boot)
-    # theta = coef(irm_hat)
-    # se = irm_hat$se
-    #
+    set.seed(i_setting)
+    irm_hat = dml_irm(data_irm[[i_setting]],
+                      y = "y", d = "d",
+                      n_folds = 5, mlmethod = learner_pars$mlmethod,
+                      params = learner_pars$params,
+                      dml_procedure = dml_procedure, score = score,
+                      trimming_threshold = trimming_threshold)
+    theta = irm_hat$coef
+    se = irm_hat$se
+    
+    boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
+                               data_irm[[i_setting]],
+                               y = "y", d = "d",
+                               n_folds = 5, smpls = irm_hat$smpls,
+                               all_preds= irm_hat$all_preds,
+                               dml_procedure = dml_procedure,
+                               score = score,
+                               bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
     Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
@@ -72,16 +81,11 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     se_obj = double_mlirm_obj$se
 
     # bootstrap
-    # double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlirm_obj$boot_coef
-    #
+    double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mlirm_obj$boot_coef
 
-    expect_true(!is.nan(theta_obj))
-    expect_true(!is.nan(se_obj))
-
-    # at the moment the object result comes without a name
-    # expect_equal(theta, theta_obj, tolerance = 1e-8)
-    # expect_equal(se, se_obj, tolerance = 1e-8)
-    # expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(theta, theta_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )

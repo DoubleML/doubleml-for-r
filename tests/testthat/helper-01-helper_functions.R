@@ -73,3 +73,11 @@ functional_bootstrap = function(theta, se, psi, psi_a, k, smpls, dml_procedure,
   res = list(boot_coef = boot_coef, boot_t_stat = boot_t_stat)
   return(res)
 }
+
+trim_vec = function(values, trimming_threshold) {
+  if (trimming_threshold > 0) {
+    values[values < trimming_threshold] = trimming_threshold
+    values[values > 1 - trimming_threshold] = 1 - trimming_threshold
+  }
+  return(values)
+}

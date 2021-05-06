@@ -2,7 +2,8 @@
 dml_irm = function(data, y, d,
                    n_folds, mlmethod,
                    params, dml_procedure, score,
-                   n_rep = 1, smpls = NULL) {
+                   n_rep = 1, smpls = NULL,
+                   trimming_threshold = 1e-12) {
   
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -18,7 +19,8 @@ dml_irm = function(data, y, d,
     
     all_preds[[i_rep]] = fit_nuisance_irm(data, y, d,
                                           mlmethod, params,
-                                          train_ids, test_ids, score)
+                                          train_ids, test_ids, score,
+                                          trimming_threshold=trimming_threshold)
     res = extract_irm_residuals(data, y, d, n_folds, this_smpl,
                                 all_preds[[i_rep]], score)
     u0_hat = res$u0_hat
@@ -77,7 +79,8 @@ dml_irm = function(data, y, d,
 
 fit_nuisance_irm = function(data, y, d,
                             mlmethod, params,
-                            train_ids, test_ids, score) {
+                            train_ids, test_ids, score,
+                            trimming_threshold) {
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
   m_indx = names(data) != y
@@ -107,6 +110,7 @@ fit_nuisance_irm = function(data, y, d,
   ml_m$param_set$values = params$params_m
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
+  m_hat_list = lapply(m_hat_list, function(x) trim_vec(x, trimming_threshold))
   
   # nuisance g0: E[Y|D=0, X]
   g_indx = names(data) != d
