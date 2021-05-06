@@ -4,15 +4,8 @@ extract_test_pred = function(x) {
 }
 
 
-se_repeated = function(se_s, coefficients, theta_s, aggreg_median) {
-  if (aggreg_median) {
+se_repeated = function(se_s, coefficients, theta_s) {
     se = sqrt(stats::median(se_s^2 + (theta_s - coefficients)^2))
-  }
-
-  if (!aggreg_median) {
-    se = sqrt(mean(se_s^2 + (theta_s - coefficients)^2))
-  }
-
   return(se)
 }
 
