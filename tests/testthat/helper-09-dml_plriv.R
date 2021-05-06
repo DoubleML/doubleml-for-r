@@ -49,8 +49,7 @@ dml_plriv = function(data, y, d, z,
     
     all_ses[i_rep] = sqrt(var_plriv(
       theta = all_thetas[i_rep], u_hat = u_hat, v_hat = v_hat,
-      w_hat = w_hat, score = score,
-      dml_procedure = dml_procedure))
+      w_hat = w_hat, score = score))
   }
   
   theta = stats::median(all_thetas)
@@ -169,7 +168,7 @@ orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
 }
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_plriv = function(theta, u_hat, v_hat, w_hat, score, dml_procedure) {
+var_plriv = function(theta, u_hat, v_hat, w_hat, score) {
   if (score == "partialling out") {
     var = mean(1 / length(u_hat) * 1 / (mean(v_hat * w_hat))^2 *
       mean(((u_hat - v_hat * theta) * w_hat)^2))

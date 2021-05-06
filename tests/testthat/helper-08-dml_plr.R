@@ -161,8 +161,7 @@ fit_plr_single_split = function(data, y, d,
   
   se = sqrt(var_plr(
     theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-    v_hatd = v_hatd, score = score,
-    dml_procedure = dml_procedure))
+    v_hatd = v_hatd, score = score))
   
   res = list(
     theta = theta, se = se,
@@ -277,7 +276,7 @@ orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
 
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, dml_procedure) {
+var_plr = function(theta, d, u_hat, v_hat, v_hatd, score) {
   n = length(d)
   if (score == "partialling out") {
     var = 1 / n * 1 / (mean(v_hat^2))^2 *
