@@ -13,6 +13,8 @@ if (on_cran) {
   settings_irm = list(list(theta = 0.5, n = 5000, p = 20))
 }
 
+settings_pliv_partial = list(list(theta=1.0, n = 500))
+
 n_settings = length(settings)
 
 data_plr = vector("list", n_settings)
@@ -62,4 +64,35 @@ for (i_setting in 1:n_settings) {
   data_plr_multi[[i_setting]] = dgp1_toeplitz(
     settings[[i_setting]]$n,
     settings[[i_setting]]$p)
+}
+
+data_pliv_partialXZ = vector("list", length(settings_pliv_partial))
+set.seed(1282)
+
+for (i_setting in 1:length(settings_pliv_partial)) {
+  data_pliv_partialXZ[[i_setting]] = make_pliv_CHS2015(
+    settings[[i_setting]]$n,
+    alpha = settings[[i_setting]]$theta,
+    return_type = "data.frame")
+}
+
+data_pliv_partialX = vector("list", length(settings_pliv_partial))
+set.seed(1282)
+
+for (i_setting in 1:length(settings_pliv_partial)) {
+  data_pliv_partialX[[i_setting]] = make_pliv_CHS2015(
+    settings[[i_setting]]$n,
+    alpha = settings[[i_setting]]$theta,
+    dim_z = 5,
+    return_type = "data.frame")
+}
+
+data_pliv_partialZ = vector("list", length(settings_pliv_partial))
+set.seed(1282)
+
+for (i_setting in 1:length(settings_pliv_partial)) {
+  data_pliv_partialZ[[i_setting]] = make_data_pliv_partialZ(
+    settings[[i_setting]]$n,
+    alpha = settings[[i_setting]]$theta,
+    dim_x = 5)
 }
