@@ -292,7 +292,7 @@ var_plr = function(theta, d, u_hat, v_hat, v_hatd, score) {
 
 # Bootstrap Implementation for Partially Linear Regression Model
 bootstrap_plr = function(thetas, ses, data, y, d,
-                         n_folds, smpls, all_preds, dml_procedure,
+                         n_folds, smpls, all_preds,
                          bootstrap, n_rep_boot, score,
                          n_rep=1) {
   for (i_rep in 1:n_rep) {
@@ -300,7 +300,7 @@ bootstrap_plr = function(thetas, ses, data, y, d,
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
     this_res = boot_plr_single_split(thetas[i_rep], ses[i_rep],
                                      data, y, d, n_folds, smpls[[i_rep]],
-                                     all_preds[[i_rep]], dml_procedure,
+                                     all_preds[[i_rep]],
                                      weights, n_rep_boot, score)
     if (i_rep==1) {
       boot_res = this_res
@@ -314,7 +314,7 @@ bootstrap_plr = function(thetas, ses, data, y, d,
 
 
 boot_plr_multitreat = function(thetas, ses, data, y, d,
-                               n_folds, smpls, all_preds, dml_procedure,
+                               n_folds, smpls, all_preds,
                                bootstrap, n_rep_boot, score,
                                n_rep=1) {
   n_d = length(d)
@@ -325,7 +325,7 @@ boot_plr_multitreat = function(thetas, ses, data, y, d,
     for (i_d in seq(n_d)) {
       this_res = boot_plr_single_split(thetas[[i_rep]][i_d], ses[[i_rep]][i_d],
                                        data, y, d[i_d], n_folds, smpls[[i_rep]],
-                                       all_preds[[i_rep]][[i_d]], dml_procedure,
+                                       all_preds[[i_rep]][[i_d]],
                                        weights, n_rep_boot, score)
       boot_theta[i_d, ] = this_res$boot_coef
       boot_t_stat[i_d, ] = this_res$boot_t_stat
@@ -344,7 +344,7 @@ boot_plr_multitreat = function(thetas, ses, data, y, d,
 
 
 boot_plr_single_split = function(theta, se, data, y, d,
-                         n_folds, smpl, all_preds, dml_procedure,
+                         n_folds, smpl, all_preds,
                          weights, n_rep_boot, score) {
   residuals = compute_plr_residuals(data, y, d, n_folds,
                                     smpl, all_preds)
@@ -365,6 +365,6 @@ boot_plr_single_split = function(theta, se, data, y, d,
   res = functional_bootstrap(theta, se,
                              psi, psi_a, n_folds,
                              smpl,
-                             dml_procedure, n_rep_boot, weights)
+                             n_rep_boot, weights)
   return(res)
 }

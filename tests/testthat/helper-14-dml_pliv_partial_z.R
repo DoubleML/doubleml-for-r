@@ -130,7 +130,7 @@ var_pliv_partial_z = function(theta, r_hat, y, d, score) {
 
 
 bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
-                                    all_preds, dml_procedure, bootstrap,
+                                    all_preds, bootstrap,
                                     n_rep_boot, n_rep=1) {
   for (i_rep in 1:n_rep) {
     residuals = compute_pliv_partial_z_residuals(data, y, d, z, n_folds,
@@ -147,7 +147,7 @@ bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
     this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
                                     smpls[[i_rep]],
-                                    dml_procedure, n_rep_boot, weights)
+                                    n_rep_boot, weights)
     if (i_rep==1) {
       boot_res = this_res
     } else {

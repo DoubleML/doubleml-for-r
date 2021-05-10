@@ -228,7 +228,7 @@ var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score)
 
 # Bootstrap Implementation for Interactive Regression Model
 bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
-                         dml_procedure, score, bootstrap, n_rep_boot,
+                         score, bootstrap, n_rep_boot,
                          n_rep=1, trimming_threshold = 1e-12) {
   for (i_rep in 1:n_rep) {
     res = extract_irm_residuals(data, y, d, n_folds,
@@ -255,7 +255,7 @@ bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
     this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
                                     smpls[[i_rep]],
-                                    dml_procedure, n_rep_boot, weights)
+                                    n_rep_boot, weights)
     if (i_rep==1) {
       boot_res = this_res
     } else {

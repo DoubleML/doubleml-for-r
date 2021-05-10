@@ -35,7 +35,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
                                  y = "y", d = "d", z = paste0("Z", 1:dim_z),
                                  n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,
-                                 dml_procedure = dml_procedure,
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)

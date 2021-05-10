@@ -44,7 +44,6 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                                y = "y", d = "d",
                                n_folds = 5, smpls = irm_hat$smpls,
                                all_preds= irm_hat$all_preds,
-                               dml_procedure = dml_procedure,
                                score = score,
                                bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 

@@ -44,7 +44,6 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = iivm_hat$smpls,
                                  all_preds= iivm_hat$all_preds,
-                                 dml_procedure = dml_procedure,
                                  score = score,
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 

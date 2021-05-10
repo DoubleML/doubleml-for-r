@@ -288,7 +288,7 @@ var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, sc
 
 # Bootstrap Implementation for Interactive Instrumental Variable Regression Model
 bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
-                           dml_procedure, score, bootstrap, n_rep_boot,
+                           score, bootstrap, n_rep_boot,
                            n_rep=1, trimming_threshold = 1e-12) {
   for (i_rep in 1:n_rep) {
     res = extract_iivm_preds(data, y, d, z, n_folds,
@@ -318,7 +318,7 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
     this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
                                     smpls[[i_rep]],
-                                    dml_procedure, n_rep_boot, weights)
+                                    n_rep_boot, weights)
     if (i_rep==1) {
       boot_res = this_res
     } else {

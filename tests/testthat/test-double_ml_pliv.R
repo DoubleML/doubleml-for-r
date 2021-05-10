@@ -41,7 +41,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,
-                                 dml_procedure = dml_procedure,
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
