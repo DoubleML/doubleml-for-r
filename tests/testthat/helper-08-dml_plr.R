@@ -222,52 +222,26 @@ dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2"
   D = data[, d]
   Y = data[, y]
 
-  # DML 1
-  if (dml_procedure == "dml1") {
-    v_hat = u_hat = v_hatd = d_k = matrix(NA, nrow = max(n_k), ncol = n_iters)
-
-    for (i in 1:n_iters) {
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      d_k[, i] = D[test_index]
-      v_hat[, i] = D[test_index] - m_hat
-      u_hat[, i] = Y[test_index] - g_hat
-      v_hatd[, i] = v_hat[, i] * D[test_index]
-    }
-
-    boot = bootstrap_plr(
-      theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score, se = se,
-      weights = weights, nRep = nRep)
-    boot_theta = boot$boot_theta
+  v_hat = u_hat = v_hatd = matrix(NA, nrow = n, ncol = 1)
+  
+  for (i in 1:n_iters) {
+    test_index = test_ids[[i]]
+    
+    m_hat = m_hat_list[[i]]
+    g_hat = g_hat_list[[i]]
+    
+    v_hat[test_index, 1] = D[test_index] - m_hat
+    u_hat[test_index, 1] = Y[test_index] - g_hat
+    v_hatd[test_index, 1] = v_hat[test_index] * D[test_index]
+    
   }
-
-  if (dml_procedure == "dml2") {
-
-    v_hat = u_hat = v_hatd = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:n_iters) {
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      v_hat[test_index, 1] = D[test_index] - m_hat
-      u_hat[test_index, 1] = Y[test_index] - g_hat
-      v_hatd[test_index, 1] = v_hat[test_index] * D[test_index]
-
-    }
-
-    boot = bootstrap_plr(
-      theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score, se = se,
-      weights = weights, nRep = nRep)
-    boot_theta = boot$boot_theta
-  }
-
+  
+  boot = bootstrap_plr(
+    theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
+    v_hatd = v_hatd, score = score, se = se,
+    weights = weights, nRep = nRep)
+  boot_theta = boot$boot_theta
+  
   return(boot_theta)
 }
 
