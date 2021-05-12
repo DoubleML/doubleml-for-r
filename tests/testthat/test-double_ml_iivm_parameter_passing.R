@@ -53,32 +53,32 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     double_mliivm_obj_once = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
       n_rep = n_rep,
-      ml_m = learner_pars$mlmethod$mlmethod_p,
-      ml_g = learner_pars$mlmethod$mlmethod_mu,
-      ml_r = learner_pars$mlmethod$mlmethod_m,
+      ml_g = learner_pars$mlmethod$mlmethod_g,
+      ml_m = learner_pars$mlmethod$mlmethod_m,
+      ml_r = learner_pars$mlmethod$mlmethod_r,
       dml_procedure = dml_procedure,
       score = score)
 
     double_mliivm_obj_once$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = learner_pars$params$params_p)
+      params = learner_pars$params$params_m)
     double_mliivm_obj_once$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
-      params = learner_pars$params$params_mu)
+      params = learner_pars$params$params_g)
     double_mliivm_obj_once$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
-      params = learner_pars$params$params_mu)
+      params = learner_pars$params$params_g)
     double_mliivm_obj_once$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
-      params = learner_pars$params$params_m)
+      params = learner_pars$params$params_r)
     double_mliivm_obj_once$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
-      params = learner_pars$params$params_m)
+      params = learner_pars$params$params_r)
 
     double_mliivm_obj_once$fit()
     theta_obj_once = double_mliivm_obj_once$coef
@@ -93,9 +93,9 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     double_mliivm_obj_exact = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
       n_rep = n_rep,
-      ml_m = learner_pars$mlmethod$mlmethod_p,
-      ml_g = learner_pars$mlmethod$mlmethod_mu,
-      ml_r = learner_pars$mlmethod$mlmethod_m,
+      ml_g = learner_pars$mlmethod$mlmethod_g,
+      ml_m = learner_pars$mlmethod$mlmethod_m,
+      ml_r = learner_pars$mlmethod$mlmethod_r,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -128,9 +128,9 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     double_mliivm_obj_default = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
       n_rep = n_rep,
-      ml_m = learner_pars$mlmethod$mlmethod_p,
-      ml_g = learner_pars$mlmethod$mlmethod_mu,
-      ml_r = learner_pars$mlmethod$mlmethod_m,
+      ml_g = learner_pars$mlmethod$mlmethod_g,
+      ml_m = learner_pars$mlmethod$mlmethod_m,
+      ml_r = learner_pars$mlmethod$mlmethod_r,
       dml_procedure = dml_procedure,
       score = score)
     double_mliivm_obj_default$fit()

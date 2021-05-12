@@ -39,8 +39,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM:",
       irm_hat = dml_irm(data_irm[[i_setting]],
         y = "y", d = "d",
         n_folds = 5,
-        mlmethod = learner_pars$mlmethod,
-        params = learner_pars$params,
+        ml_g = learner_pars$ml_g$clone(), ml_m = learner_pars$ml_m$clone(),
         dml_procedure = dml_procedure, score = score)
       theta = irm_hat$coef
       se = irm_hat$se
