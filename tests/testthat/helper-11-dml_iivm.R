@@ -1,10 +1,12 @@
 # Double Machine Learning for Interactive Instrumental Variable Regression Model.
 dml_irmiv = function(data, y, d, z,
-                     n_folds, mlmethod,
-                     params, dml_procedure, score,
+                     n_folds,
+                     ml_g, ml_m, ml_r,
+                     dml_procedure, score,
                      always_takers = TRUE, never_takers = TRUE,
                      n_rep = 1, smpls = NULL,
-                     trimming_threshold = 1e-12) {
+                     trimming_threshold = 1e-12,
+                     params_g = NULL, params_m = NULL, params_r = NULL) {
   
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -19,9 +21,10 @@ dml_irmiv = function(data, y, d, z,
     test_ids = this_smpl$test_ids
     
     all_preds[[i_rep]] = fit_nuisance_iivm(data, y, d, z,
-                                           mlmethod, params,
+                                           ml_g, ml_m, ml_r,
                                            train_ids, test_ids,
-                                           always_takers, never_takers)
+                                           always_takers, never_takers,
+                                           params_g, params_m, params_r)
     res = extract_iivm_preds(data, y, d, z, n_folds,
                              this_smpl, all_preds[[i_rep]],
                              trimming_threshold=trimming_threshold)
@@ -87,10 +90,10 @@ dml_irmiv = function(data, y, d, z,
 
 
 fit_nuisance_iivm = function(data, y, d, z,
-                             mlmethod, params,
+                             ml_g, ml_m, ml_r,
                              train_ids, test_ids,
                              always_takers, never_takers,
-                             trimming_threshold) {
+                             params_g, params_m, params_r) {
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
@@ -124,8 +127,9 @@ fit_nuisance_iivm = function(data, y, d, z,
     resampling_m$train_set(x)[data[resampling_m$train_set(x), z] == 1]
   })
 
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
-  ml_m$param_set$values = params$params_m
+  if (!is.null(params_m)) {
+    ml_m$param_set$values = params_m
+  }
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
 
@@ -133,8 +137,10 @@ fit_nuisance_iivm = function(data, y, d, z,
   g_indx = names(data) != d & names(data) != z
   data_g = data[, g_indx, drop = FALSE]
   task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", z), backend = data_g, target = y)
-  ml_g0 = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g0$param_set$values = params$params_g
+  ml_g0 = ml_g$clone()
+  if (!is.null(params_g)) {
+    ml_g0$param_set$values = params_g
+  }
   resampling_g0 = mlr3::rsmp("custom")
   # Train on subset with z == 0 (in each fold) only, predict for all test obs
   resampling_g0$instantiate(task_g0, train_ids_0, test_ids)
@@ -146,8 +152,10 @@ fit_nuisance_iivm = function(data, y, d, z,
   
   # nuisance g1: E[Y|Z=1, X]
   task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", z), backend = data_g, target = y)
-  ml_g1 = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g1$param_set$values = params$params_g
+  ml_g1 = ml_g$clone()
+  if (!is.null(params_g)) {
+    ml_g1$param_set$values = params_g
+  }
   resampling_g1 = mlr3::rsmp("custom")
   # Train on subset with z == 1 (in each fold) only, predict for all test obs
   resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
@@ -176,8 +184,10 @@ fit_nuisance_iivm = function(data, y, d, z,
     task_r0 = mlr3::TaskClassif$new(
       id = paste0("nuis_r0_", d), backend = data_r,
       target = d, positive = "1")
-    ml_r0 = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
-    ml_r0$param_set$values = params$params_r
+    ml_r0 = ml_r$clone()
+    if (!is.null(params_r)) {
+      ml_r0$param_set$values = params_r
+    }
     
     resampling_r0 = mlr3::rsmp("custom")
     # Train on subset with z == 0 (in each fold) only, predict for all test obs
@@ -198,8 +208,10 @@ fit_nuisance_iivm = function(data, y, d, z,
     task_r1 = mlr3::TaskClassif$new(
       id = paste0("nuis_r1_", d), backend = data_r,
       target = d, positive = "1")
-    ml_r1 = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
-    ml_r1$param_set$values = params$params_r
+    ml_r1 = ml_r$clone()
+    if (!is.null(params_r)) {
+      ml_r1$param_set$values = params_r
+    }
     
     resampling_r1 = mlr3::rsmp("custom")
     # Train on subset with z == 0 (in each fold) only, predict for all test obs

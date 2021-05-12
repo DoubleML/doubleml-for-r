@@ -27,14 +27,16 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IIVM:",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_iivm(learner)
+    learner = get_default_mlmethod_iivm(learner)
     n_rep_boot = 498
 
     set.seed(i_setting)
     iivm_hat = dml_irmiv(data_iivm[[i_setting]],
       y = "y", d = "d", z = "z",
-      n_folds = 5, mlmethod = learner_pars$mlmethod,
-      params = learner_pars$params,
+      n_folds = 5,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
+      ml_r = learner$ml_r$clone(),
       dml_procedure = dml_procedure, score = score)
     theta = iivm_hat$coef
     se = iivm_hat$se
@@ -54,14 +56,11 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       y_col = "y",
       d_cols = "d", x_cols = Xnames, z_col = "z")
 
-    ml_g = lrn("regr.cv_glmnet", s = "lambda.min", family = "gaussian")
-    ml_prob = lrn("classif.cv_glmnet", s = "lambda.min")
-
     double_mliivm_obj = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
-      ml_g = ml_g,
-      ml_m = ml_prob$clone(),
-      ml_r = ml_prob$clone(),
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
+      ml_r = learner$ml_r$clone(),
       dml_procedure = dml_procedure,
       trimming_threshold = trimming_threshold,
       score = score)
