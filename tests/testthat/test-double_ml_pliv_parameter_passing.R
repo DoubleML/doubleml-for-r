@@ -40,7 +40,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     n_rep_boot = 498
 
     set.seed(i_setting)
-    pliv_hat = dml_plriv(data_pliv[[i_setting]],
+    pliv_hat = dml_pliv(data_pliv[[i_setting]],
       y = "y", d = "d", z = "z",
       n_folds = n_folds,
       mlmethod = learner_list,

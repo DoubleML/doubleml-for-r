@@ -1,5 +1,5 @@
 # Double Machine Learning for Partially Linear Instrumental Variable Regression.
-dml_plriv = function(data, y, d, z,
+dml_pliv = function(data, y, d, z,
                      n_folds, mlmethod,
                      params, dml_procedure, score,
                      n_rep = 1, smpls=NULL) {
@@ -20,7 +20,7 @@ dml_plriv = function(data, y, d, z,
                                            mlmethod, params,
                                            this_smpl)
     
-    residuals = compute_plriv_residuals(data, y, d, z, n_folds, this_smpl,
+    residuals = compute_pliv_residuals(data, y, d, z, n_folds, this_smpl,
                                         all_preds[[i_rep]])
     u_hat = residuals$u_hat
     v_hat = residuals$v_hat
@@ -31,7 +31,7 @@ dml_plriv = function(data, y, d, z,
       thetas = vars = rep(NA, n_folds)
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
-        orth_est = orth_plriv_dml(
+        orth_est = orth_pliv_dml(
           u_hat = u_hat[test_index],
           v_hat = v_hat[test_index],
           w_hat = w_hat[test_index],
@@ -41,13 +41,13 @@ dml_plriv = function(data, y, d, z,
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
     }
     if (dml_procedure == "dml2") {
-      orth_est = orth_plriv_dml(
+      orth_est = orth_pliv_dml(
         u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
         score = score)
       all_thetas[i_rep] = orth_est$theta
     }
     
-    all_ses[i_rep] = sqrt(var_plriv(
+    all_ses[i_rep] = sqrt(var_pliv(
       theta = all_thetas[i_rep], u_hat = u_hat, v_hat = v_hat,
       w_hat = w_hat, score = score))
   }
@@ -126,7 +126,7 @@ fit_nuisance_pliv = function(data, y, d, z,
   return(all_preds)
 }
 
-compute_plriv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
+compute_pliv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
   test_ids = smpls$test_ids
 
   m_hat_list = all_preds$m_hat_list
@@ -157,7 +157,7 @@ compute_plriv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
 }
 
 # Orthogonalized Estimation of Coefficient in PLR
-orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
+orth_pliv_dml = function(u_hat, v_hat, w_hat, score) {
   if (score == "partialling out") {
     theta = mean(u_hat * w_hat) / mean(v_hat * w_hat)
   } else {
@@ -168,7 +168,7 @@ orth_plriv_dml = function(u_hat, v_hat, w_hat, score) {
 }
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_plriv = function(theta, u_hat, v_hat, w_hat, score) {
+var_pliv = function(theta, u_hat, v_hat, w_hat, score) {
   if (score == "partialling out") {
     var = mean(1 / length(u_hat) * 1 / (mean(v_hat * w_hat))^2 *
       mean(((u_hat - v_hat * theta) * w_hat)^2))
@@ -179,11 +179,11 @@ var_plriv = function(theta, u_hat, v_hat, w_hat, score) {
 }
 
 # Bootstrap Implementation for Partially Linear Regression Model
-bootstrap_plriv = function(theta, se, data, y, d, z, n_folds, smpls,
+bootstrap_pliv = function(theta, se, data, y, d, z, n_folds, smpls,
                            all_preds, bootstrap, n_rep_boot,
                            n_rep=1) {
   for (i_rep in 1:n_rep) {
-    residuals = compute_plriv_residuals(data, y, d, z, n_folds,
+    residuals = compute_pliv_residuals(data, y, d, z, n_folds,
                                         smpls[[i_rep]], all_preds[[i_rep]])
     u_hat = residuals$u_hat
     v_hat = residuals$v_hat
