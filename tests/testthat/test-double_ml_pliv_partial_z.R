@@ -4,7 +4,7 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-#skip_on_cran()
+skip_on_cran()
 
 test_cases = expand.grid(
   learner = c("regr.lm", "regr.glmnet"),

@@ -7,7 +7,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet", # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
+    learner = "regr.cv_glmnet",
     dml_procedure = "dml2",
     score = "partialling out",
     i_setting = 1:(length(data_plr)),
@@ -16,7 +16,7 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet", # removed 'regr.glmnet' for the moment as it causes issues for matching results between the oop and functional impl due to seeds etc
+    learner = "regr.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
     i_setting = 1:(length(data_plr)),
@@ -26,9 +26,10 @@ if (on_cran) {
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
-patrick::with_parameters_test_that("Unit tests for PLR:",
+patrick::with_parameters_test_that("PLR with external sample provision:",
   .cases = test_cases, {
     learner = get_default_mlmethod_plr(learner)
+    n_rep_boot = 346
 
     set.seed(i_setting)
     Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
@@ -48,6 +49,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef
     se_obj = double_mlplr_obj$se
+    double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mlplr_obj$boot_coef
 
     # External sample provision
     SAMPLES = double_mlplr_obj$smpls
@@ -64,12 +67,11 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     double_mlplr_obj_external$fit()
     theta_obj_external = double_mlplr_obj_external$coef
     se_obj_external = double_mlplr_obj_external$se
+    double_mlplr_obj_external$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj_external = double_mlplr_obj_external$boot_coef
 
-    # at the moment the object result comes without a name
-    # expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(theta_obj, theta_obj_external, tolerance = 1e-8)
-    # expect_equal(se, se_obj, tolerance = 1e-8)
     expect_equal(se_obj, se_obj_external, tolerance = 1e-8)
-    #  expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta_obj), as.vector(boot_theta_obj_external), tolerance = 1e-8)
   }
 )
