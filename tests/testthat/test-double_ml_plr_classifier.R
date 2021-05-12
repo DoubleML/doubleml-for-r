@@ -30,14 +30,14 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     n_folds = 3
 
     if (g_learner == "regr.cv_glmnet") {
-      ml_method = list(mlmethod_g = g_learner, mlmethod_m = m_learner)
-      params = list(params_m = list(), params_g = list())
+      ml_g = mlr3::lrn(g_learner)
+      ml_m = mlr3::lrn(m_learner)
       
       set.seed(i_setting)
       plr_hat = dml_plr(data_irm[[i_setting]],
                         y = "y", d = "d",
-                        n_folds = n_folds, mlmethod = ml_method,
-                        params = params,
+                        n_folds = n_folds,
+                        ml_g = ml_g$clone(), ml_m = ml_m$clone(),
                         dml_procedure = dml_procedure, score = score)
       theta = plr_hat$coef
       se = plr_hat$se
@@ -61,8 +61,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
 
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_ml,
-        ml_g = lrn(g_learner),
-        ml_m = lrn(m_learner),
+        ml_g = ml_g$clone(),
+        ml_m = ml_m$clone(),
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score)

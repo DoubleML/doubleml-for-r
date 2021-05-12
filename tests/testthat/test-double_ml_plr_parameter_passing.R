@@ -47,8 +47,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR",
     plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
                                  y = "y", d = c("d1", "d2"),
                                  n_folds = n_folds, n_rep = n_rep,
-                                 mlmethod = learner_pars_for_DML$mlmethod,
-                                 params = learner_pars_for_DML$params,
+                                 ml_g = mlr3::lrn(learner_pars_for_DML$mlmethod$mlmethod_g),
+                                 ml_m = mlr3::lrn(learner_pars_for_DML$mlmethod$mlmethod_m),
+                                 params_g = learner_pars_for_DML$params$params_g,
+                                 params_m = learner_pars_for_DML$params$params_m,
                                  dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se

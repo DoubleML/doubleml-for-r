@@ -28,10 +28,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_plr(learner)
-    learner_pars_for_DML = learner_pars
-    learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 1)
-    learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
+    learner = get_default_mlmethod_plr(learner)
 
     set.seed(i_setting)
     Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
@@ -40,24 +37,13 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       d_cols = "d", x_cols = Xnames)
 
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g,
-      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
       n_rep = n_rep)
 
-    # set params for nuisance part m
-    double_mlplr_obj$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-
-    # set params for nuisance part g
-    double_mlplr_obj$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
     set.seed(123)
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef
@@ -66,25 +52,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     # External sample provision
     SAMPLES = double_mlplr_obj$smpls
     double_mlplr_obj_external = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g,
-      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
       score = score,
       draw_sample_splitting = FALSE)
 
     double_mlplr_obj_external$set_sample_splitting(SAMPLES)
 
-    # set params for nuisance part m
-    double_mlplr_obj_external$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-
-    # set params for nuisance part g
-    double_mlplr_obj_external$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
     set.seed(123)
     double_mlplr_obj_external$fit()
     theta_obj_external = double_mlplr_obj_external$coef

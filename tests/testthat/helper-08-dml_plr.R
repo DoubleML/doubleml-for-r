@@ -1,8 +1,9 @@
 # Double Machine Learning for Partially Linear Regression.
 dml_plr = function(data, y, d,
-                   n_folds, mlmethod,
-                   params, dml_procedure, score,
-                   n_rep = 1, smpls = NULL) {
+                   n_folds, ml_g, ml_m,
+                   dml_procedure, score,
+                   n_rep = 1, smpls = NULL,
+                   params_g = NULL, params_m = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -19,9 +20,10 @@ dml_plr = function(data, y, d,
     }
     
     res_single_split = fit_plr_single_split(data, y, d,
-                                            n_folds, mlmethod,
-                                            params, dml_procedure, score,
-                                            this_smpl)
+                                            n_folds, ml_g, ml_m,
+                                            dml_procedure, score,
+                                            this_smpl,
+                                            params_g, params_m)
 
     all_preds[[i_rep]] = res_single_split$all_preds
     all_thetas[i_rep] = res_single_split$theta
@@ -52,9 +54,10 @@ dml_plr = function(data, y, d,
 
 
 dml_plr_multitreat = function(data, y, d,
-                              n_folds, mlmethod,
-                              params, dml_procedure, score,
-                              n_rep = 1, smpls = NULL) {
+                              n_folds, ml_g, ml_m,
+                              dml_procedure, score,
+                              n_rep = 1, smpls = NULL,
+                              params_g = NULL, params_m = NULL) {
   
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -69,12 +72,21 @@ dml_plr_multitreat = function(data, y, d,
     all_preds_this_rep = list()
     
     for (i_d in seq(n_d)) {
-      this_params = list(params_m = params$params_m[[i_d]],
-                         params_g = params$params_g[[i_d]])
+      if (!is.null(params_g)) {
+        this_params_g = params_g[[i_d]]
+      } else {
+        this_params_g = NULL
+      }
+      if (!is.null(params_m)) {
+        this_params_m = params_m[[i_d]]
+      } else {
+        this_params_m = NULL
+      }
       res_single_split = fit_plr_single_split(data, y, d[i_d],
-                                              n_folds, mlmethod,
-                                              this_params, dml_procedure, score,
-                                              this_smpl)
+                                              n_folds, ml_g, ml_m,
+                                              dml_procedure, score,
+                                              this_smpl,
+                                              this_params_g, this_params_m)
       
       all_preds_this_rep[[i_d]] = res_single_split$all_preds
       thetas_this_rep[i_d] = res_single_split$theta
@@ -114,15 +126,17 @@ dml_plr_multitreat = function(data, y, d,
 
 
 fit_plr_single_split = function(data, y, d,
-                                n_folds, mlmethod,
-                                params, dml_procedure, score, smpl) {
+                                n_folds, ml_g, ml_m,
+                                dml_procedure, score, smpl,
+                                params_g, params_m) {
   
   train_ids = smpl$train_ids
   test_ids = smpl$test_ids
   
   all_preds = fit_nuisance_plr(data, y, d,
-                               mlmethod, params,
-                               smpl)
+                               ml_g, ml_m,
+                               smpl,
+                               params_g, params_m)
   
   residuals = compute_plr_residuals(data, y, d, n_folds, smpl,
                                     all_preds)
@@ -172,8 +186,9 @@ fit_plr_single_split = function(data, y, d,
 
 
 fit_nuisance_plr = function(data, y, d,
-                            mlmethod, params,
-                            smpls) {
+                            ml_g, ml_m,
+                            smpls,
+                            params_g, params_m) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
   
@@ -185,15 +200,17 @@ fit_nuisance_plr = function(data, y, d,
   resampling_g = mlr3::rsmp("custom")
   resampling_g$instantiate(task_g, train_ids, test_ids)
   
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g
+  if (!is.null(params_g)) {
+    ml_g$param_set$values = params_g
+  }
   
   r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
   g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
   
   # nuisance m
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m
+  if (!is.null(params_m)) {
+    ml_m$param_set$values = params_m
+  }
   m_indx = names(data) != y
   data_m = data[, m_indx, drop = FALSE]
   

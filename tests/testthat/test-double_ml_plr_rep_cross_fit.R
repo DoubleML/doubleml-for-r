@@ -27,7 +27,7 @@ if (on_cran) {
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_plr(learner)
+    learner = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
     set.seed(i_setting)
@@ -35,8 +35,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     plr_hat = dml_plr(data_plr[[i_setting]],
                       y = "y", d = "d",
                       n_folds = n_folds, n_rep = n_rep,
-                      mlmethod = learner_pars$mlmethod,
-                      params = learner_pars$params,
+                      ml_g = learner$ml_g$clone(),
+                      ml_m = learner$ml_m$clone(),
                       dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
@@ -60,24 +60,12 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       d_cols = "d", x_cols = Xnames)
 
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
       n_rep = n_rep)
-
-    # set params for nuisance part m
-    double_mlplr_obj$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-
-    # set params for nuisance part g
-    double_mlplr_obj$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
 
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef

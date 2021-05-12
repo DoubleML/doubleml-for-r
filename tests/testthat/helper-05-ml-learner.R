@@ -66,7 +66,13 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
       params_m = list())
 
   }
-  return(list(mlmethod = mlmethod, params = params))
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m$param_set$values = params$params_m
+
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m))
 }
 
 get_default_mlmethod_pliv = function(learner) {

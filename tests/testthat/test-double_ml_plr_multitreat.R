@@ -25,11 +25,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_plr(learner)
-
-    learner_pars_for_DML = learner_pars
-    learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 3)
-    learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 3)
+    learner = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
     n_folds = 5
@@ -38,8 +34,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
                                  y = "y", d = c("d1", "d2", "d3"),
                                  n_folds = n_folds,
-                                 mlmethod = learner_pars$mlmethod,
-                                 params = learner_pars_for_DML$params,
+                                 ml_g = learner$ml_g$clone(),
+                                 ml_m = learner$ml_m$clone(),
                                  dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
@@ -62,15 +58,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       y_col = "y",
       d_cols = c("d1", "d2", "d3"), x_cols = Xnames)
 
-    if (learner == "regr.lm") {
-      DoubleML_learner = lrn(learner)
-    } else if (learner == "regr.cv_glmnet") {
-      DoubleML_learner = lrn(learner, s = "lambda.min", family = "gaussian")
-    }
-
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = DoubleML_learner$clone(),
-      ml_m = DoubleML_learner$clone(),
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
