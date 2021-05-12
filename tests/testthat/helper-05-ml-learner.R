@@ -146,8 +146,15 @@ get_default_mlmethod_pliv = function(learner) {
         family = "gaussian"))
 
   }
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m$param_set$values = params$params_m
+  ml_r = mlr3::lrn(mlmethod$mlmethod_r)
+  ml_r$param_set$values = params$params_r
 
-  return(list(mlmethod = mlmethod, params = params))
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
 }
 
 get_default_mlmethod_irm = function(learner) {

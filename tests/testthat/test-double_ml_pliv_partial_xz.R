@@ -16,15 +16,17 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_pliv(learner)
+    learner = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
     set.seed(i_setting)
     dim_z = 150
     pliv_hat = dml_pliv_partial_xz(data_pliv_partialXZ[[i_setting]],
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
-      n_folds = 5, mlmethod = learner_pars$mlmethod,
-      params = learner_pars$params,
+      n_folds = 5,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
+      ml_r = learner$ml_r$clone(),
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
@@ -44,25 +46,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
       d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
     
     double_mlpliv_obj = DoubleML:::DoubleMLPLIV.partialXZ(data_ml,
-                                               ml_g = learner_pars$mlmethod$mlmethod_g,
-                                               ml_m = learner_pars$mlmethod$mlmethod_m,
-                                               ml_r = learner_pars$mlmethod$mlmethod_r,
+                                               ml_g = learner$ml_g$clone(),
+                                               ml_m = learner$ml_m$clone(),
+                                               ml_r = learner$ml_r$clone(),
                                                n_folds = 5,
                                                score = score,
                                                dml_procedure = dml_procedure)
-    
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_r",
-      treat_var = "d",
-      params = learner_pars$params$params_r)
 
     double_mlpliv_obj$fit(store_predictions=TRUE)
     theta_obj = double_mlpliv_obj$coef

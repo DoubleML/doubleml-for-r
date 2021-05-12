@@ -1,7 +1,9 @@
 dml_pliv_partial_z = function(data, y, d, z,
-                              n_folds, mlmethod,
-                              params, dml_procedure, score,
-                              n_rep = 1, smpls=NULL) {
+                              n_folds,
+                              ml_r,
+                              dml_procedure, score,
+                              n_rep = 1, smpls=NULL,
+                              params_r = NULL) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -13,8 +15,9 @@ dml_pliv_partial_z = function(data, y, d, z,
     this_smpl = smpls[[i_rep]]
     
     all_preds[[i_rep]] = fit_nuisance_pliv_partial_z(data, y, d, z,
-                                                     mlmethod, params,
-                                                     this_smpl)
+                                                     ml_r,
+                                                     this_smpl,
+                                                     params_r)
     
     residuals = compute_pliv_partial_z_residuals(data, y, d, z, n_folds,
                                                  this_smpl,
@@ -70,8 +73,9 @@ dml_pliv_partial_z = function(data, y, d, z,
 }
 
 fit_nuisance_pliv_partial_z = function(data, y, d, z,
-                                       mlmethod, params,
-                                       smpls) {
+                                       ml_r,
+                                       smpls,
+                                       params_r) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
@@ -79,12 +83,13 @@ fit_nuisance_pliv_partial_z = function(data, y, d, z,
   r_indx = names(data) != y
   data_r = data[, r_indx, drop = FALSE]
   task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
-  ml_r = mlr3::lrn(mlmethod$mlmethod_r)
-  ml_r$param_set$values = params$params_r
+  if (!is.null(params_r)) {
+    ml_r$param_set$values = params_r
+  }
   
   resampling_r = mlr3::rsmp("custom")
   resampling_r$instantiate(task_r, train_ids, test_ids)
-  
+
   r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
   r_hat_list = lapply(r_r$data$predictions(), function(x) x$response)
   

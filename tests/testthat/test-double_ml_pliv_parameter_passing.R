@@ -43,8 +43,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     pliv_hat = dml_pliv(data_pliv[[i_setting]],
       y = "y", d = "d", z = "z",
       n_folds = n_folds,
-      mlmethod = learner_list,
-      params = learner_pars_once$params,
+      ml_g = mlr3::lrn(learner_pars_once$mlmethod$mlmethod_g),
+      ml_m = mlr3::lrn(learner_pars_once$mlmethod$mlmethod_m),
+      ml_r = mlr3::lrn(learner_pars_once$mlmethod$mlmethod_r),
+      params_g = learner_pars_once$params$params_g,
+      params_m = learner_pars_once$params$params_m,
+      params_r = learner_pars_once$params$params_r,
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se

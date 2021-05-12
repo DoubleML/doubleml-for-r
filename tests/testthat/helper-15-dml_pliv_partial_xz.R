@@ -1,7 +1,9 @@
 dml_pliv_partial_xz = function(data, y, d, z,
-                               n_folds, mlmethod,
+                               n_folds,
+                               ml_g, ml_m, ml_r,
                                params, dml_procedure, score,
-                               n_rep = 1, smpls=NULL) {
+                               n_rep = 1, smpls=NULL,
+                               params_g = NULL, params_m = NULL, params_r = NULL) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -13,8 +15,9 @@ dml_pliv_partial_xz = function(data, y, d, z,
     this_smpl = smpls[[i_rep]]
     
     all_preds[[i_rep]] = fit_nuisance_pliv_partial_xz(data, y, d, z,
-                                                      mlmethod, params,
-                                                      this_smpl)
+                                                      ml_g, ml_m, ml_r,
+                                                      this_smpl,
+                                                      params_g, params_m, params_r)
     
     residuals = compute_pliv_partial_xz_residuals(data, y, d, z, n_folds,
                                                   this_smpl,
@@ -70,8 +73,9 @@ dml_pliv_partial_xz = function(data, y, d, z,
 }
 
 fit_nuisance_pliv_partial_xz = function(data, y, d, z,
-                                        mlmethod, params,
-                                        smpls) {
+                                        ml_g, ml_m, ml_r,
+                                        smpls,
+                                        params_g, params_m, params_r) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
   
@@ -83,8 +87,9 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   resampling_g = mlr3::rsmp("custom")
   resampling_g$instantiate(task_g, train_ids, test_ids)
   
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g
+  if (!is.null(params_g)) {
+    ml_g$param_set$values = params_g
+  }
   
   r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
   g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
@@ -93,8 +98,9 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   m_indx = (names(data) != y)
   data_m = data[, m_indx, drop = FALSE]
   task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m
+  if (!is.null(params_m)) {
+    ml_m$param_set$values = params_m
+  }
   ml_m$predict_sets = c("test", "train")
 
   resampling_m = mlr3::rsmp("custom")
@@ -114,11 +120,13 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
     r_indx = names(data) != y & names(data) != d & (names(data) %in% z == FALSE)
     data_r = cbind(data[, r_indx, drop = FALSE], m_hat_train)
     task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", 'm_hat_train'), backend = data_r, target = 'm_hat_train')
-    ml_r = mlr3::lrn(mlmethod$mlmethod_r)
-    ml_r$param_set$values = params$params_r
+    this_ml_r = ml_r$clone()
+    if (!is.null(params_r)) {
+      this_ml_r$param_set$values = params_r
+    }
     resampling_r = mlr3::rsmp("custom")
     resampling_r$instantiate(task_r, list(train_ids[[i]]), list(test_ids[[i]]))
-    r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+    r_r = mlr3::resample(task_r, this_ml_r, resampling_r, store_models = TRUE)
     r_hat_list[[i]] = lapply(r_r$data$predictions(), function(x) x$response)[[1]]
   }
   

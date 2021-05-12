@@ -24,14 +24,16 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV:",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_pliv(learner)
+    learner = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
     set.seed(i_setting)
     pliv_hat = dml_pliv(data_pliv[[i_setting]],
       y = "y", d = "d", z = "z",
-      n_folds = 5, mlmethod = learner_pars$mlmethod,
-      params = learner_pars$params,
+      n_folds = 5,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
+      ml_r = learner$ml_r$clone(),
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
@@ -51,24 +53,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
 
     double_mlpliv_obj = DoubleMLPLIV$new(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
+      ml_g = learner$ml_g$clone(),
+      ml_m = learner$ml_m$clone(),
+      ml_r = learner$ml_r$clone(),
       dml_procedure = dml_procedure,
       score = score)
-
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_r",
-      treat_var = "d",
-      params = learner_pars$params$params_r)
 
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
