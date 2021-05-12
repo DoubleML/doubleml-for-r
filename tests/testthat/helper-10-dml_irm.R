@@ -1,9 +1,10 @@
 # Double Machine Learning for Interactive Regression Model.
 dml_irm = function(data, y, d,
-                   n_folds, mlmethod,
-                   params, dml_procedure, score,
+                   n_folds, ml_g, ml_m,
+                   dml_procedure, score,
                    n_rep = 1, smpls = NULL,
-                   trimming_threshold = 1e-12) {
+                   trimming_threshold = 1e-12,
+                   params_g = NULL, params_m = NULL) {
   
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -18,8 +19,9 @@ dml_irm = function(data, y, d,
     test_ids = this_smpl$test_ids
     
     all_preds[[i_rep]] = fit_nuisance_irm(data, y, d,
-                                          mlmethod, params,
-                                          train_ids, test_ids, score)
+                                          ml_g, ml_m,
+                                          train_ids, test_ids, score,
+                                          params_g, params_m)
     res = extract_irm_residuals(data, y, d, n_folds, this_smpl,
                                 all_preds[[i_rep]], score,
                                 trimming_threshold=trimming_threshold)
@@ -83,8 +85,9 @@ dml_irm = function(data, y, d,
 }
 
 fit_nuisance_irm = function(data, y, d,
-                            mlmethod, params,
-                            train_ids, test_ids, score) {
+                            ml_g, ml_m,
+                            train_ids, test_ids, score,
+                            params_g, params_m) {
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
   m_indx = names(data) != y
@@ -109,9 +112,10 @@ fit_nuisance_irm = function(data, y, d,
   train_ids_1 = lapply(1:n_iters, function(x) {
     resampling_m$train_set(x)[data[resampling_m$train_set(x), d] == 1]
   })
-  
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
-  ml_m$param_set$values = params$params_m
+
+  if (!is.null(params_m)) {
+    ml_m$param_set$values = params_m
+  }
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
   m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
   
@@ -119,8 +123,10 @@ fit_nuisance_irm = function(data, y, d,
   g_indx = names(data) != d
   data_g = data[, g_indx, drop = FALSE]
   task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", d), backend = data_g, target = y)
-  ml_g0 = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g0$param_set$values = params$params_g
+  ml_g0 = ml_g$clone()
+  if (!is.null(params_g)) {
+    ml_g0$param_set$values = params_g
+  }
   resampling_g0 = mlr3::rsmp("custom")
   # Train on subset with d == 0 (in each fold) only, predict for all test obs
   resampling_g0$instantiate(task_g0, train_ids_0, test_ids)
@@ -133,8 +139,10 @@ fit_nuisance_irm = function(data, y, d,
   # nuisance g1: E[Y|D=1, X]
   if (score == "ATE") {
     task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
-    ml_g1 = mlr3::lrn(mlmethod$mlmethod_g)
-    ml_g1$param_set$values = params$params_g
+    ml_g1 = ml_g$clone()
+    if (!is.null(params_g)) {
+      ml_g1$param_set$values = params_g
+    }
     resampling_g1 = mlr3::rsmp("custom")
     resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
     train_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$train_set(x))

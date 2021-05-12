@@ -173,8 +173,13 @@ get_default_mlmethod_irm = function(learner) {
       params_m = list(cp = 0.01, minsplit = 20))
 
   }
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+  ml_m$param_set$values = params$params_m
 
-  return(list(mlmethod = mlmethod, params = params))
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m))
 }
 
 get_default_mlmethod_iivm = function(learner) {
