@@ -180,28 +180,28 @@ get_default_mlmethod_irm = function(learner) {
 get_default_mlmethod_iivm = function(learner) {
   if (learner == "cv_glmnet") {
     mlmethod = list(
-      mlmethod_p = paste0("classif.", learner),
-      mlmethod_mu = paste0("regr.", learner),
-      mlmethod_m = paste0("classif.", learner))
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("regr.", learner),
+      mlmethod_r = paste0("classif.", learner))
     slambda = "lambda.min"
     family = "gaussian"
 
     params = list(
-      params_p = list(s = slambda),
-      params_mu = list(s = slambda, family = family),
-      params_m = list(s = slambda))
+      params_m = list(s = slambda),
+      params_g = list(s = slambda, family = family),
+      params_r = list(s = slambda))
   }
 
   else if (learner == "rpart") {
     mlmethod = list(
-      mlmethod_p = paste0("classif.", learner),
-      mlmethod_mu = paste0("regr.", learner),
-      mlmethod_m = paste0("classif.", learner))
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("regr.", learner),
+      mlmethod_r = paste0("classif.", learner))
 
     params = list(
-      params_p = list(cp = 0.01, minsplit = 20),
-      params_mu = list(cp = 0.01, minsplit = 20),
-      params_m = list(cp = 0.01, minsplit = 20))
+      params_m = list(cp = 0.01, minsplit = 20),
+      params_g = list(cp = 0.01, minsplit = 20),
+      params_r = list(cp = 0.01, minsplit = 20))
 
   }
 

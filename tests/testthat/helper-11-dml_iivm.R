@@ -25,11 +25,11 @@ dml_irmiv = function(data, y, d, z,
     res = extract_iivm_preds(data, y, d, z, n_folds,
                              this_smpl, all_preds[[i_rep]],
                              trimming_threshold=trimming_threshold)
-    p_hat = res$p_hat
-    mu0_hat = res$mu0_hat
-    mu1_hat = res$mu1_hat
-    m0_hat = res$m0_hat
-    m1_hat = res$m1_hat
+    m_hat = res$m_hat
+    g0_hat = res$g0_hat
+    g1_hat = res$g1_hat
+    r0_hat = res$r0_hat
+    r1_hat = res$r1_hat
     D = data[, d]
     Y = data[, y]
     Z = data[, z]
@@ -40,9 +40,9 @@ dml_irmiv = function(data, y, d, z,
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
         orth_est = orth_irmiv_dml(
-          p_hat = p_hat[test_index],
-          mu0_hat = mu0_hat[test_index], mu1_hat = mu1_hat[test_index],
-          m0_hat = m0_hat[test_index], m1_hat = m1_hat[test_index],
+          m_hat = m_hat[test_index],
+          g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
+          r0_hat = r0_hat[test_index], r1_hat = r1_hat[test_index],
           d = D[test_index], y = Y[test_index], z = Z[test_index],
           score = score)
         thetas[i] = orth_est$theta
@@ -51,17 +51,17 @@ dml_irmiv = function(data, y, d, z,
     }
     if (dml_procedure == "dml2") {
       orth_est = orth_irmiv_dml(
-        p_hat = p_hat, mu0_hat = mu0_hat,
-        mu1_hat = mu1_hat,
-        m0_hat = m0_hat, m1_hat = m1_hat,
+        m_hat = m_hat, g0_hat = g0_hat,
+        g1_hat = g1_hat,
+        r0_hat = r0_hat, r1_hat = r1_hat,
         d = D, y = Y, z = Z,
         score = score)
       all_thetas[i_rep] = orth_est$theta
     }
     
     all_ses[i_rep] = sqrt(var_irmiv(
-      theta = all_thetas[i_rep], p_hat = p_hat, mu0_hat = mu0_hat,
-      mu1_hat = mu1_hat, m0_hat = m0_hat, m1_hat = m1_hat,
+      theta = all_thetas[i_rep], m_hat = m_hat, g0_hat = g0_hat,
+      g1_hat = g1_hat, r0_hat = r0_hat, r1_hat = r1_hat,
       d = D, y = Y, z = Z, score = score))
   }
   
@@ -94,74 +94,74 @@ fit_nuisance_iivm = function(data, y, d, z,
 
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
-  p_indx = names(data) != y & names(data) != d
-  data_p = data[, p_indx, drop = FALSE]
+  m_indx = names(data) != y & names(data) != d
+  data_m = data[, m_indx, drop = FALSE]
   
-  # tbd: handle case with classif vs. regr. for task_p
+  # tbd: handle case with classif vs. regr. for task_m
   # if (grepl("regr.", mlmethod$mlmethod_p )) {
-  #  # task_p = mlr3::TaskRegr$new(id = paste0("nuis_p_", z), backend = data_p, target = z)
-  #   task_p = mlr3::TaskRegr$new(id = paste0("nuis_p_", z), backend = data_p, target = z)
-  #   # task_p = mlr3::tsk(id = paste0("nuis_p_", z), backend )
+  #  # task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
+  #   task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", z), backend = data_m, target = z)
+  #   # task_m = mlr3::tsk(id = paste0("nuis_m_", z), backend )
   # }
 
-  # if (grepl("classif.", mlmethod$mlmethod_p )) {
-  data_p[, z] = factor(data_p[, z])
-  task_p = mlr3::TaskClassif$new(
-    id = paste0("nuis_p_", z), backend = data_p,
+  # if (grepl("classif.", mlmethod$mlmethod_m )) {
+  data_m[, z] = factor(data_m[, z])
+  task_m = mlr3::TaskClassif$new(
+    id = paste0("nuis_m_", z), backend = data_m,
     target = z, positive = "1")
   # }
   
-  resampling_p = mlr3::rsmp("custom")
-  resampling_p$instantiate(task_p, train_ids, test_ids)
-  n_iters = resampling_p$iters
+  resampling_m = mlr3::rsmp("custom")
+  resampling_m$instantiate(task_m, train_ids, test_ids)
+  n_iters = resampling_m$iters
 
   # in each fold, select those with z = 0
   train_ids_0 = lapply(1:n_iters, function(x) {
-    resampling_p$train_set(x)[data[resampling_p$train_set(x), z] == 0]
+    resampling_m$train_set(x)[data[resampling_m$train_set(x), z] == 0]
   })
   # in each fold, select those with d = 0
   train_ids_1 = lapply(1:n_iters, function(x) {
-    resampling_p$train_set(x)[data[resampling_p$train_set(x), z] == 1]
+    resampling_m$train_set(x)[data[resampling_m$train_set(x), z] == 1]
   })
 
-  ml_p = mlr3::lrn(mlmethod$mlmethod_p, predict_type = "prob")
-  ml_p$param_set$values = params$params_p
-  r_p = mlr3::resample(task_p, ml_p, resampling_p, store_models = TRUE)
-  p_hat_list = lapply(r_p$data$predictions(), function(x) x$prob[, "1"])
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+  ml_m$param_set$values = params$params_m
+  r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+  m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
 
-  # nuisance mu0: E[Y|Z=0, X]
-  mu_indx = names(data) != d & names(data) != z
-  data_mu = data[, mu_indx, drop = FALSE]
-  task_mu0 = mlr3::TaskRegr$new(id = paste0("nuis_mu0_", z), backend = data_mu, target = y)
-  ml_mu0 = mlr3::lrn(mlmethod$mlmethod_mu)
-  ml_mu0$param_set$values = params$params_mu
-  resampling_mu0 = mlr3::rsmp("custom")
+  # nuisance g0: E[Y|Z=0, X]
+  g_indx = names(data) != d & names(data) != z
+  data_g = data[, g_indx, drop = FALSE]
+  task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", z), backend = data_g, target = y)
+  ml_g0 = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g0$param_set$values = params$params_g
+  resampling_g0 = mlr3::rsmp("custom")
   # Train on subset with z == 0 (in each fold) only, predict for all test obs
-  resampling_mu0$instantiate(task_mu0, train_ids_0, test_ids)
-  train_ids_mu0 = lapply(1:n_iters, function(x) resampling_mu0$train_set(x))
-  test_ids_mu0 = lapply(1:n_iters, function(x) resampling_mu0$test_set(x))
+  resampling_g0$instantiate(task_g0, train_ids_0, test_ids)
+  train_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$train_set(x))
+  test_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$test_set(x))
   
-  r_mu0 = mlr3::resample(task_mu0, ml_mu0, resampling_mu0, store_models = TRUE)
-  mu0_hat_list = lapply(r_mu0$data$predictions(), function(x) x$response)
+  r_g0 = mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
+  g0_hat_list = lapply(r_g0$data$predictions(), function(x) x$response)
   
   # nuisance g1: E[Y|Z=1, X]
-  task_mu1 = mlr3::TaskRegr$new(id = paste0("nuis_mu1_", z), backend = data_mu, target = y)
-  ml_mu1 = mlr3::lrn(mlmethod$mlmethod_mu)
-  ml_mu1$param_set$values = params$params_mu
-  resampling_mu1 = mlr3::rsmp("custom")
+  task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", z), backend = data_g, target = y)
+  ml_g1 = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g1$param_set$values = params$params_g
+  resampling_g1 = mlr3::rsmp("custom")
   # Train on subset with z == 1 (in each fold) only, predict for all test obs
-  resampling_mu1$instantiate(task_mu1, train_ids_1, test_ids)
-  train_ids_mu1 = lapply(1:n_iters, function(x) resampling_mu1$train_set(x))
-  test_ids_mu1 = lapply(1:n_iters, function(x) resampling_mu1$test_set(x))
+  resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
+  train_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$train_set(x))
+  test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
 
-  r_mu1 = mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
-  # mu1_hat_list = lapply(r_mu1$data$prediction, function(x) x$test$response)
-  mu1_hat_list = lapply(r_mu1$data$predictions(), function(x) x$response)
+  r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
+  # g1_hat_list = lapply(r_g1$data$prediction, function(x) x$test$response)
+  g1_hat_list = lapply(r_g1$data$predictions(), function(x) x$response)
 
-  # nuisance m0: E[D|Z=0, X]
-  m_indx = names(data) != y & names(data) != z
-  data_m = data[, m_indx, drop = FALSE]
-  data_m[, d] = factor(data_m[, d])
+  # nuisance r0: E[D|Z=0, X]
+  r_indx = names(data) != y & names(data) != z
+  data_r = data[, r_indx, drop = FALSE]
+  data_r[, d] = factor(data_r[, d])
 
   if (always_takers == FALSE & never_takers == FALSE) {
     message("If there are no always-takers and no never-takers, ATE is estimated")
@@ -169,53 +169,53 @@ fit_nuisance_iivm = function(data, y, d, z,
   
   if (always_takers == FALSE) {
     lengths = lapply(test_ids, length)
-    m0_hat_list = lapply(lengths, function(x) rep(0, x))
+    r0_hat_list = lapply(lengths, function(x) rep(0, x))
   }
   
   if (always_takers == TRUE) {
-    task_m0 = mlr3::TaskClassif$new(
-      id = paste0("nuis_m0_", d), backend = data_m,
+    task_r0 = mlr3::TaskClassif$new(
+      id = paste0("nuis_r0_", d), backend = data_r,
       target = d, positive = "1")
-    ml_m0 = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
-    ml_m0$param_set$values = params$params_m
+    ml_r0 = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
+    ml_r0$param_set$values = params$params_r
     
-    resampling_m0 = mlr3::rsmp("custom")
+    resampling_r0 = mlr3::rsmp("custom")
     # Train on subset with z == 0 (in each fold) only, predict for all test obs
-    resampling_m0$instantiate(task_m0, train_ids_0, test_ids)
-    train_ids_m0 = lapply(1:n_iters, function(x) resampling_m0$train_set(x))
-    test_ids_m0 = lapply(1:n_iters, function(x) resampling_m0$test_set(x))
-    r_m0 = mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
-    m0_hat_list = lapply(r_m0$data$predictions(), function(x) x$prob[, "1"])
+    resampling_r0$instantiate(task_r0, train_ids_0, test_ids)
+    train_ids_r0 = lapply(1:n_iters, function(x) resampling_r0$train_set(x))
+    test_ids_r0 = lapply(1:n_iters, function(x) resampling_r0$test_set(x))
+    r_r0 = mlr3::resample(task_r0, ml_r0, resampling_r0, store_models = TRUE)
+    r0_hat_list = lapply(r_r0$data$predictions(), function(x) x$prob[, "1"])
   }
   
   if (never_takers == FALSE) {
     lengths = lapply(test_ids, length)
-    m1_hat_list = lapply(lengths, function(x) rep(1, x))
+    r1_hat_list = lapply(lengths, function(x) rep(1, x))
   }
   
   if (never_takers == TRUE) {
     # nuisance m1: E[E|Z=1, 0]
-    task_m1 = mlr3::TaskClassif$new(
-      id = paste0("nuis_m1_", d), backend = data_m,
+    task_r1 = mlr3::TaskClassif$new(
+      id = paste0("nuis_r1_", d), backend = data_r,
       target = d, positive = "1")
-    ml_m1 = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
-    ml_m1$param_set$values = params$params_m
+    ml_r1 = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
+    ml_r1$param_set$values = params$params_r
     
-    resampling_m1 = mlr3::rsmp("custom")
+    resampling_r1 = mlr3::rsmp("custom")
     # Train on subset with z == 0 (in each fold) only, predict for all test obs
-    resampling_m1$instantiate(task_m1, train_ids_1, test_ids)
-    train_ids_m1 = lapply(1:n_iters, function(x) resampling_m1$train_set(x))
-    test_ids_m1 = lapply(1:n_iters, function(x) resampling_m1$test_set(x))
-    r_m1 = mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
-    m1_hat_list = lapply(r_m1$data$predictions(), function(x) x$prob[, "1"])
+    resampling_r1$instantiate(task_r1, train_ids_1, test_ids)
+    train_ids_r1 = lapply(1:n_iters, function(x) resampling_r1$train_set(x))
+    test_ids_r1 = lapply(1:n_iters, function(x) resampling_r1$test_set(x))
+    r_r1 = mlr3::resample(task_r1, ml_r1, resampling_r1, store_models = TRUE)
+    r1_hat_list = lapply(r_r1$data$predictions(), function(x) x$prob[, "1"])
   }
 
   all_preds = list(
-    p_hat_list = p_hat_list,
-    mu0_hat_list = mu0_hat_list,
-    mu1_hat_list = mu1_hat_list,
-    m0_hat_list = m0_hat_list,
-    m1_hat_list = m1_hat_list)
+    m_hat_list = m_hat_list,
+    g0_hat_list = g0_hat_list,
+    g1_hat_list = g1_hat_list,
+    r0_hat_list = r0_hat_list,
+    r1_hat_list = r1_hat_list)
 
   return(all_preds)
 }
@@ -225,43 +225,43 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
                               trimming_threshold) {
   test_ids = smpls$test_ids
   
-  p_hat_list = all_preds$p_hat_list
-  mu0_hat_list = all_preds$mu0_hat_list
-  mu1_hat_list = all_preds$mu1_hat_list
-  m0_hat_list = all_preds$m0_hat_list
-  m1_hat_list = all_preds$m1_hat_list
+  m_hat_list = all_preds$m_hat_list
+  g0_hat_list = all_preds$g0_hat_list
+  g1_hat_list = all_preds$g1_hat_list
+  r0_hat_list = all_preds$r0_hat_list
+  r1_hat_list = all_preds$r1_hat_list
   
   n = nrow(data)
   D = data[, d]
   Y = data[, y]
   Z = data[, z]
-  p_hat = mu0_hat = mu1_hat = m0_hat = m1_hat = rep(NA, n)
+  m_hat = g0_hat = g1_hat = r0_hat = r1_hat = rep(NA, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
     
-    p_hat[test_index] = p_hat_list[[i]]
-    mu0_hat[test_index] = mu0_hat_list[[i]]
-    mu1_hat[test_index] = mu1_hat_list[[i]]
-    m0_hat[test_index] = m0_hat_list[[i]]
-    m1_hat[test_index] = m1_hat_list[[i]]
+    m_hat[test_index] = m_hat_list[[i]]
+    g0_hat[test_index] = g0_hat_list[[i]]
+    g1_hat[test_index] = g1_hat_list[[i]]
+    r0_hat[test_index] = r0_hat_list[[i]]
+    r1_hat[test_index] = r1_hat_list[[i]]
   }
   
-  p_hat = trim_vec(p_hat, trimming_threshold)
+  m_hat = trim_vec(m_hat, trimming_threshold)
   
-  res = list(p_hat=p_hat, mu0_hat=mu0_hat, mu1_hat=mu1_hat,
-             m0_hat=m0_hat, m1_hat=m1_hat)
+  res = list(m_hat=m_hat, g0_hat=g0_hat, g1_hat=g1_hat,
+             r0_hat=r0_hat, r1_hat=r1_hat)
   return(res)
 }
 
 
 # Orthogonalized Estimation of Coefficient in irm
-orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
+orth_irmiv_dml = function(m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, score) {
   theta = NA
 
   if (score == "LATE" | score == "partialling out") {
-    theta = 1 / mean(m1_hat - m0_hat + z * (d - m1_hat) / p_hat - ((1 - z) * (d - m0_hat) / (1 - p_hat))) *
-      mean(mu1_hat - mu0_hat + z * (y - mu1_hat) / p_hat - ((1 - z) * (y - mu0_hat) / (1 - p_hat)))
+    theta = 1 / mean(r1_hat - r0_hat + z * (d - r1_hat) / m_hat - ((1 - z) * (d - r0_hat) / (1 - m_hat))) *
+      mean(g1_hat - g0_hat + z * (y - g1_hat) / m_hat - ((1 - z) * (y - g0_hat) / (1 - m_hat)))
   }
   else {
     stop("Inference framework for orthogonal estimation unknown")
@@ -273,12 +273,12 @@ orth_irmiv_dml = function(p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, scor
 
 
 # Variance estimation for DML estimator in the Interactive Instrumental Variable Regression Model
-var_irmiv = function(theta, p_hat, mu0_hat, mu1_hat, m0_hat, m1_hat, d, y, z, score) {
+var_irmiv = function(theta, m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, score) {
   n = length(d)
   if (score == "LATE") {
-    var = 1 / n * 1 / (mean((m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat))))^2 *
-      mean((mu1_hat - mu0_hat + z * (y - mu1_hat) / p_hat - (1 - z) * (y - mu0_hat) / (1 - p_hat) -
-        (m1_hat - m0_hat + z * (d - m1_hat) / p_hat - (1 - z) * (d - m0_hat) / (1 - p_hat)) * theta)^2)
+    var = 1 / n * 1 / (mean((r1_hat - r0_hat + z * (d - r1_hat) / m_hat - (1 - z) * (d - r0_hat) / (1 - m_hat))))^2 *
+      mean((g1_hat - g0_hat + z * (y - g1_hat) / m_hat - (1 - z) * (y - g0_hat) / (1 - m_hat) -
+        (r1_hat - r0_hat + z * (d - r1_hat) / m_hat - (1 - z) * (d - r0_hat) / (1 - m_hat)) * theta)^2)
   } else {
     stop("Inference framework for variance estimation unknown")
   }
@@ -294,22 +294,22 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
     res = extract_iivm_preds(data, y, d, z, n_folds,
                              smpls[[i_rep]], all_preds[[i_rep]],
                              trimming_threshold = trimming_threshold)
-    p_hat = res$p_hat
-    mu0_hat = res$mu0_hat
-    mu1_hat = res$mu1_hat
-    m0_hat = res$m0_hat
-    m1_hat = res$m1_hat
+    m_hat = res$m_hat
+    g0_hat = res$g0_hat
+    g1_hat = res$g1_hat
+    r0_hat = res$r0_hat
+    r1_hat = res$r1_hat
     D = data[, d]
     Y = data[, y]
     Z = data[, z]
     
     if (score == "LATE") {
       
-      psi = mu1_hat - mu0_hat + Z * (Y - mu1_hat) / p_hat - (1 - Z) * (Y - mu0_hat) / (1 - p_hat) -
-        (m1_hat - m0_hat + Z * (D - m1_hat) / p_hat - (1 - Z) * (D - m0_hat) / (1 - p_hat)) * theta
+      psi = g1_hat - g0_hat + Z * (Y - g1_hat) / m_hat - (1 - Z) * (Y - g0_hat) / (1 - m_hat) -
+        (r1_hat - r0_hat + Z * (D - r1_hat) / m_hat - (1 - Z) * (D - r0_hat) / (1 - m_hat)) * theta
       
-      psi_a = -(m1_hat - m0_hat + Z * (D - m1_hat) / p_hat
-                - (1 - Z) * (D - m0_hat) / (1 - p_hat))
+      psi_a = -(r1_hat - r0_hat + Z * (D - r1_hat) / m_hat
+                - (1 - Z) * (D - r0_hat) / (1 - m_hat))
     } else {
       stop("Inference framework for multiplier bootstrap unknown")
     }
