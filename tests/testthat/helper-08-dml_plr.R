@@ -101,10 +101,9 @@ dml_plr_multitreat = function(data, y, d,
   
   theta = se = t = pval = rep(NA, n_d)
   if (length(this_smpl$train_ids) > 1) {
-    n = rep(nrow(data), n_rep)
+    n = nrow(data)
   } else {
-    lapply(all_ses, function(x) x[i_d])
-    n = length(smpls, function(x) x$test_ids[[1]])
+    n = length(smpls[[1]]$test_ids[[1]])
   }
   for (i_d in seq(n_d)) {
     theta_vec = unlist(lapply(all_thetas, function(x) x[i_d]))
