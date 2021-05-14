@@ -41,6 +41,11 @@ dml_pliv = function(data, y, d, z,
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
+      if (length(train_ids) == 1) {
+        u_hat = u_hat[test_index]
+        v_hat = v_hat[test_index]
+        w_hat = w_hat[test_index]
+      }
     }
     if (dml_procedure == "dml2") {
       orth_est = orth_pliv_dml(

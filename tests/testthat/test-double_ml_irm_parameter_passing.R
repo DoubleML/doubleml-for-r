@@ -178,7 +178,6 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fold-wise vs global)",
   .cases = test_cases, {
-    n_rep_boot = 498
     n_folds = 2
     n_rep = 3
 

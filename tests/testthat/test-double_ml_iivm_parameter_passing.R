@@ -72,7 +72,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
       y_col = "y",
       d_cols = "d", x_cols = Xnames, z_col = "z")
 
-    dml_iivm = DoubleMLIIVM$new(data_ml,
+    dml_iivm_obj = DoubleMLIIVM$new(data_ml,
       n_folds = n_folds,
       n_rep = n_rep,
       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -82,34 +82,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
       score = score,
       trimming_threshold = trimming_threshold)
 
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
       params = learner_pars$params$params_m)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
       params = learner_pars$params$params_r)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
       params = learner_pars$params$params_r)
 
-    dml_iivm$fit()
-    theta_obj = dml_iivm$coef
-    se_obj = dml_iivm$se
+    dml_iivm_obj$fit()
+    theta_obj = dml_iivm_obj$coef
+    se_obj = dml_iivm_obj$se
     
     # bootstrap
-    dml_iivm$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    boot_theta_obj = dml_iivm$boot_coef
+    dml_iivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = dml_iivm_obj$boot_coef
     
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
@@ -153,7 +153,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
                                              y_col = "y",
                                              d_cols = "d", x_cols = Xnames, z_col = "z")
     
-    dml_iivm = DoubleMLIIVM$new(data_ml,
+    dml_iivm_obj = DoubleMLIIVM$new(data_ml,
                                 n_folds = n_folds,
                                 ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
                                 ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -163,30 +163,30 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
                                 trimming_threshold = trimming_threshold,
                                 apply_cross_fitting = FALSE)
     
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
       params = learner_pars$params$params_m)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
       params = learner_pars$params$params_r)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
       params = learner_pars$params$params_r)
     
-    dml_iivm$fit()
-    theta_obj = dml_iivm$coef
-    se_obj = dml_iivm$se
+    dml_iivm_obj$fit()
+    theta_obj = dml_iivm_obj$coef
+    se_obj = dml_iivm_obj$se
     
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
@@ -207,7 +207,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
                                              y_col = "y",
                                              d_cols = "d", x_cols = Xnames, z_col = "z")
     
-    dml_iivm = DoubleMLIIVM$new(data_ml,
+    dml_iivm_obj = DoubleMLIIVM$new(data_ml,
                                 n_folds = n_folds,
                                 n_rep = n_rep,
                                 ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -217,30 +217,30 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
                                 score = score,
                                 trimming_threshold = trimming_threshold)
     
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
       params = learner_pars$params$params_m)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
       params = learner_pars$params$params_r)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
       params = learner_pars$params$params_r)
     
-    dml_iivm$fit()
-    theta = dml_iivm$coef
-    se = dml_iivm$se
+    dml_iivm_obj$fit()
+    theta = dml_iivm_obj$coef
+    se = dml_iivm_obj$se
     
     params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
@@ -323,7 +323,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (de
     se_default = dml_iivm_default$se
     
     set.seed(i_setting)
-    dml_iivm = DoubleMLIIVM$new(data_ml,
+    dml_iivm_obj = DoubleMLIIVM$new(data_ml,
                                 n_folds = n_folds,
                                 n_rep = n_rep,
                                 ml_g = lrn('regr.rpart'),
@@ -333,30 +333,30 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (de
                                 score = score,
                                 trimming_threshold = trimming_threshold)
     
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
       params = params_m)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
       params = params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
       params = params_g)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
       params = params_r)
-    dml_iivm$set_ml_nuisance_params(
+    dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
       params = params_r)
     
-    dml_iivm$fit()
-    theta = dml_iivm$coef
-    se = dml_iivm$se
+    dml_iivm_obj$fit()
+    theta = dml_iivm_obj$coef
+    se = dml_iivm_obj$se
     
     expect_equal(theta, theta_default, tolerance = 1e-8)
     expect_equal(se, se_default, tolerance = 1e-8)
