@@ -2,144 +2,363 @@ context("Unit tests for parameter passing of IIVM")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-# settings for parameter provision
-learner = "rpart"
-
-learner_list = list("mlmethod_p" = learner, "mlmethod_mu" = learner, "mlmethod_m" = learner)
-
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = learner,
+    learner = "rpart",
     dml_procedure = "dml2",
     score = "LATE",
     i_setting = 1:(length(data_iivm)),
-    n_rep = c(1),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = learner,
+    learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
     i_setting = 1:(length(data_iivm)),
-    n_rep = c(1, 3),
+    trimming_threshold = 1e-5,
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
-patrick::with_parameters_test_that("Unit tests for IIVM:",
+test_cases_nocf = expand.grid(
+  learner = "rpart",
+  dml_procedure = "dml1",
+  score = "LATE",
+  i_setting = 1:(length(data_iivm)),
+  trimming_threshold = 1e-5,
+  stringsAsFactors = FALSE)
+
+test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases_nocf["test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
+
+patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oop vs fun):",
   .cases = test_cases, {
-    learner_pars = get_default_mlmethod_iivm(learner)
     n_rep_boot = 498
     n_folds = 2
-    #
-    # set.seed(i_setting)
-    # iivm_hat = dml_irmiv(data_iivm[[i_setting]], y = "y", d = "d", z = "z",
-    #                       n_folds = n_folds, mlmethod = learner_pars$mlmethod,
-    #                       params = learner_pars$params,
-    #                       dml_procedure = dml_procedure, score = score,
-    #                       bootstrap = "normal",  S = n_rep,
-    #                       n_rep_boot = n_rep_boot)
-    # theta = coef(iivm_hat)
-    # se = iivm_hat$se
+    n_rep = 3
+    
+    learner_pars = get_default_mlmethod_iivm(learner)
+    
+    set.seed(i_setting)
+    iivm_hat = dml_irmiv(data_iivm[[i_setting]],
+                         y = "y", d = "d", z = "z",
+                         n_folds = n_folds,
+                         n_rep = n_rep,
+                         ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                         ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+                         ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
+                         params_g = learner_pars$params$params_g,
+                         params_m = learner_pars$params$params_m,
+                         params_r = learner_pars$params$params_r,
+                         dml_procedure = dml_procedure, score = score,
+                         trimming_threshold = trimming_threshold)
+    theta = iivm_hat$coef
+    se = iivm_hat$se
+    
+    boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
+                                 data_iivm[[i_setting]],
+                                 y = "y", d = "d", z = "z",
+                                 n_folds = n_folds,
+                                 n_rep = n_rep,
+                                 smpls = iivm_hat$smpls,
+                                 all_preds= iivm_hat$all_preds,
+                                 score = score,
+                                 bootstrap = "normal", n_rep_boot = n_rep_boot,
+                                 trimming_threshold = trimming_threshold)$boot_coef
 
     set.seed(i_setting)
-
     Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
       y_col = "y",
       d_cols = "d", x_cols = Xnames, z_col = "z")
 
-    double_mliivm_obj_once = DoubleMLIIVM$new(data_ml,
-      n_folds = 5,
+    dml_iivm = DoubleMLIIVM$new(data_ml,
+      n_folds = n_folds,
       n_rep = n_rep,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+      ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
       dml_procedure = dml_procedure,
-      score = score)
+      score = score,
+      trimming_threshold = trimming_threshold)
 
-    double_mliivm_obj_once$set_ml_nuisance_params(
+    dml_iivm$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
       params = learner_pars$params$params_m)
-    double_mliivm_obj_once$set_ml_nuisance_params(
+    dml_iivm$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    double_mliivm_obj_once$set_ml_nuisance_params(
+    dml_iivm$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    double_mliivm_obj_once$set_ml_nuisance_params(
+    dml_iivm$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
       params = learner_pars$params$params_r)
-    double_mliivm_obj_once$set_ml_nuisance_params(
+    dml_iivm$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
       params = learner_pars$params$params_r)
 
-    double_mliivm_obj_once$fit()
-    theta_obj_once = double_mliivm_obj_once$coef
-    se_obj_once = double_mliivm_obj_once$se
+    dml_iivm$fit()
+    theta_obj = dml_iivm$coef
+    se_obj = dml_iivm$se
+    
+    # bootstrap
+    dml_iivm$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = dml_iivm$boot_coef
+    
+    expect_equal(theta, theta_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
+    
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  }
+)
 
-    # Exact parameter passing (foldwise)
-    export_params_exact_g = rep(list(rep(list(learner_pars$params$params_mu), 5)), n_rep)
-    export_params_exact_r = rep(list(rep(list(learner_pars$params$params_m), 5)), n_rep)
-    export_params_exact_m = rep(list(rep(list(learner_pars$params$params_p), 5)), n_rep)
+patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no cross-fitting)",
+  .cases = test_cases_nocf, {
+    n_folds = 2
 
+    learner_pars = get_default_mlmethod_iivm(learner)
+    
+    # Passing for non-cross-fitting case
     set.seed(i_setting)
-    double_mliivm_obj_exact = DoubleMLIIVM$new(data_ml,
-      n_folds = 5,
-      n_rep = n_rep,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
-      dml_procedure = dml_procedure,
-      score = score)
-
-    double_mliivm_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_m",
-      params = export_params_exact_m,
-      set_fold_specific = TRUE)
-    double_mliivm_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_r0",
-      params = export_params_exact_r,
-      set_fold_specific = TRUE)
-    double_mliivm_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_r1",
-      params = export_params_exact_r,
-      set_fold_specific = TRUE)
-    double_mliivm_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_g0",
-      params = export_params_exact_g,
-      set_fold_specific = TRUE)
-    double_mliivm_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_g1",
-      params = export_params_exact_g,
-      set_fold_specific = TRUE)
-
-    double_mliivm_obj_exact$fit()
-    theta_obj_exact = double_mliivm_obj_exact$coef
-    se_obj_exact = double_mliivm_obj_exact$se
-
+    my_task = Task$new("help task", "regr", data_iivm[[i_setting]])
+    my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
+    train_ids = list("train_ids" = my_sampling$train_set(1))
+    test_ids = list("test_ids" = my_sampling$test_set(1))
+    smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+    
+    iivm_hat = dml_irmiv(data_iivm[[i_setting]],
+                         y = "y", d = "d", z = "z",
+                         n_folds = 1,
+                         ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                         ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+                         ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
+                         params_g = learner_pars$params$params_g,
+                         params_m = learner_pars$params$params_m,
+                         params_r = learner_pars$params$params_r,
+                         dml_procedure = dml_procedure, score = score,
+                         trimming_threshold = trimming_threshold,
+                         smpls=smpls)
+    theta = iivm_hat$coef
+    se = iivm_hat$se
+    
     set.seed(i_setting)
-    double_mliivm_obj_default = DoubleMLIIVM$new(data_ml,
-      n_folds = 5,
-      n_rep = n_rep,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
-      dml_procedure = dml_procedure,
-      score = score)
-    double_mliivm_obj_default$fit()
-    theta_obj_default = double_mliivm_obj_default$coef
-    se_obj_default = double_mliivm_obj_default$se
+    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
+                                             y_col = "y",
+                                             d_cols = "d", x_cols = Xnames, z_col = "z")
+    
+    dml_iivm = DoubleMLIIVM$new(data_ml,
+                                n_folds = n_folds,
+                                ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                                ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+                                ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
+                                dml_procedure = dml_procedure,
+                                score = score,
+                                trimming_threshold = trimming_threshold,
+                                apply_cross_fitting = FALSE)
+    
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_m",
+      treat_var = "d",
+      params = learner_pars$params$params_m)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_g0",
+      treat_var = "d",
+      params = learner_pars$params$params_g)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_g1",
+      treat_var = "d",
+      params = learner_pars$params$params_g)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_r0",
+      treat_var = "d",
+      params = learner_pars$params$params_r)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_r1",
+      treat_var = "d",
+      params = learner_pars$params$params_r)
+    
+    dml_iivm$fit()
+    theta_obj = dml_iivm$coef
+    se_obj = dml_iivm$se
+    
+    expect_equal(theta, theta_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
+  }
+)
 
-    # at the moment the object result comes without a name
-    # expect_equal(theta, c(d=theta_obj_once), tolerance = 1e-8)
-    expect_equal(theta_obj_default, theta_obj_once, tolerance = 1e-8)
-    expect_equal(theta_obj_exact, theta_obj_once, tolerance = 1e-8)
+patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fold-wise vs global)",
+  .cases = test_cases, {
+    n_rep_boot = 498
+    n_folds = 2
+    n_rep = 3
+    
+    learner_pars = get_default_mlmethod_iivm(learner)
+    
+    set.seed(i_setting)
+    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
+                                             y_col = "y",
+                                             d_cols = "d", x_cols = Xnames, z_col = "z")
+    
+    dml_iivm = DoubleMLIIVM$new(data_ml,
+                                n_folds = n_folds,
+                                n_rep = n_rep,
+                                ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                                ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+                                ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
+                                dml_procedure = dml_procedure,
+                                score = score,
+                                trimming_threshold = trimming_threshold)
+    
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_m",
+      treat_var = "d",
+      params = learner_pars$params$params_m)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_g0",
+      treat_var = "d",
+      params = learner_pars$params$params_g)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_g1",
+      treat_var = "d",
+      params = learner_pars$params$params_g)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_r0",
+      treat_var = "d",
+      params = learner_pars$params$params_r)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_r1",
+      treat_var = "d",
+      params = learner_pars$params$params_r)
+    
+    dml_iivm$fit()
+    theta = dml_iivm$coef
+    se = dml_iivm$se
+    
+    params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
+    params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
+    params_r_fold_wise = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
+    
+    set.seed(i_setting)
+    
+    dml_iivm_fold_wise = DoubleMLIIVM$new(data_ml,
+                                n_folds = n_folds,
+                                n_rep = n_rep,
+                                ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                                ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+                                ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
+                                dml_procedure = dml_procedure,
+                                score = score,
+                                trimming_threshold = trimming_threshold)
+    
+    dml_iivm_fold_wise$set_ml_nuisance_params(
+      learner = "ml_m",
+      treat_var = "d",
+      params = params_m_fold_wise,
+      set_fold_specific = TRUE)
+    dml_iivm_fold_wise$set_ml_nuisance_params(
+      learner = "ml_g0",
+      treat_var = "d",
+      params = params_g_fold_wise,
+      set_fold_specific = TRUE)
+    dml_iivm_fold_wise$set_ml_nuisance_params(
+      learner = "ml_g1",
+      treat_var = "d",
+      params = params_g_fold_wise,
+      set_fold_specific = TRUE)
+    dml_iivm_fold_wise$set_ml_nuisance_params(
+      learner = "ml_r0",
+      treat_var = "d",
+      params = params_r_fold_wise,
+      set_fold_specific = TRUE)
+    dml_iivm_fold_wise$set_ml_nuisance_params(
+      learner = "ml_r1",
+      treat_var = "d",
+      params = params_r_fold_wise,
+      set_fold_specific = TRUE)
+    
+    dml_iivm_fold_wise$fit()
+    theta_fold_wise = dml_iivm_fold_wise$coef
+    se_fold_wise = dml_iivm_fold_wise$se
+    
+    expect_equal(theta, theta_fold_wise, tolerance = 1e-8)
+    expect_equal(se, se_fold_wise, tolerance = 1e-8)
+  }
+)
+
+patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (default vs explicit)",
+  .cases = test_cases, {
+    n_folds = 2
+    n_rep = 3
+    
+    params_g = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_m = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_r = list(cp = 0.01, minsplit = 20) # this are defaults
+    
+    set.seed(i_setting)
+    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
+                                             y_col = "y",
+                                             d_cols = "d", x_cols = Xnames, z_col = "z")
+    
+    dml_iivm_default = DoubleMLIIVM$new(data_ml,
+                                n_folds = n_folds,
+                                n_rep = n_rep,
+                                ml_g = lrn('regr.rpart'),
+                                ml_m = lrn('classif.rpart', predict_type = "prob"),
+                                ml_r = lrn('classif.rpart', predict_type = "prob"),
+                                dml_procedure = dml_procedure,
+                                score = score,
+                                trimming_threshold = trimming_threshold)
+    
+    dml_iivm_default$fit()
+    theta_default = dml_iivm_default$coef
+    se_default = dml_iivm_default$se
+    
+    set.seed(i_setting)
+    dml_iivm = DoubleMLIIVM$new(data_ml,
+                                n_folds = n_folds,
+                                n_rep = n_rep,
+                                ml_g = lrn('regr.rpart'),
+                                ml_m = lrn('classif.rpart', predict_type = "prob"),
+                                ml_r = lrn('classif.rpart', predict_type = "prob"),
+                                dml_procedure = dml_procedure,
+                                score = score,
+                                trimming_threshold = trimming_threshold)
+    
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_m",
+      treat_var = "d",
+      params = params_m)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_g0",
+      treat_var = "d",
+      params = params_g)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_g1",
+      treat_var = "d",
+      params = params_g)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_r0",
+      treat_var = "d",
+      params = params_r)
+    dml_iivm$set_ml_nuisance_params(
+      learner = "ml_r1",
+      treat_var = "d",
+      params = params_r)
+    
+    dml_iivm$fit()
+    theta = dml_iivm$coef
+    se = dml_iivm$se
+    
+    expect_equal(theta, theta_default, tolerance = 1e-8)
+    expect_equal(se, se_default, tolerance = 1e-8)
   }
 )

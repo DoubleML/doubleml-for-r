@@ -51,6 +51,16 @@ dml_irmiv = function(data, y, d, z,
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
+      if (length(train_ids) == 1) {
+        D = D[test_index]
+        Y = Y[test_index]
+        Z = Z[test_index]
+        m_hat = m_hat[test_index]
+        g0_hat = g0_hat[test_index]
+        g1_hat = g1_hat[test_index]
+        r0_hat = r0_hat[test_index]
+        r1_hat = r1_hat[test_index]
+      }
     }
     if (dml_procedure == "dml2") {
       orth_est = orth_irmiv_dml(

@@ -260,7 +260,6 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (default vs explicit)",
   .cases = test_cases, {
-    n_rep_boot = 498
     n_folds = 2
     n_rep = 3
     
