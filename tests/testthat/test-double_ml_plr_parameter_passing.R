@@ -163,8 +163,6 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
   }
 )
 
-
-
 patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fold-wise vs global)",
   .cases = test_cases, {
     n_rep_boot = 498
@@ -233,8 +231,6 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
     expect_equal(se, se_fold_wise, tolerance = 1e-8)
   }
 )
-
-
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (default vs explicit)",
   .cases = test_cases, {
