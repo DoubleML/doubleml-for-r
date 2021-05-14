@@ -251,17 +251,17 @@ bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
     D = data[, d]
     
     if (score == "ATE") {
-      psi = g1_hat - g0_hat + D * u1_hat / m_hat - (1 - D) * u0_hat / (1 - m_hat) - theta
+      psi = g1_hat - g0_hat + D * u1_hat / m_hat - (1 - D) * u0_hat / (1 - m_hat) - theta[i_rep]
       psi_a = rep(-1, length(D))
     }
     else if (score == "ATTE") {
-      psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) - D / p_hat * theta
+      psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) - D / p_hat * theta[i_rep]
       psi_a = -D / p_hat
     }
     
     n = length(psi)
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
-    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+    this_res = functional_bootstrap(theta[i_rep], se[i_rep], psi, psi_a, n_folds,
                                     smpls[[i_rep]],
                                     n_rep_boot, weights)
     if (i_rep==1) {

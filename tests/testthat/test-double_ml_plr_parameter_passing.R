@@ -9,7 +9,6 @@ if (on_cran) {
     dml_procedure = "dml2",
     score = "partialling out",
     i_setting = 1:(length(data_plr)),
-    n_rep = c(1),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -25,7 +24,6 @@ test_cases_nocf = expand.grid(
   dml_procedure = "dml1",
   score = "partialling out",
   i_setting = 1:(length(data_plr)),
-  n_rep = c(1),
   stringsAsFactors = FALSE)
 
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
