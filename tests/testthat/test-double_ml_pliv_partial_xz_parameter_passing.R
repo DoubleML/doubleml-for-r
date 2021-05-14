@@ -27,6 +27,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
 
     # TBD: Functional Test Case
     set.seed(i_setting)
+    df = data_pliv[[i_setting]]$df
     n_folds = 5
     learner_pars_once = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
@@ -50,9 +51,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     params_r = list("d" = learner_pars_once$params$params_r)
 
     set.seed(i_setting)
-    Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z", "z2") == FALSE]
+    Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
 
-    data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
+    data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
       d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
 

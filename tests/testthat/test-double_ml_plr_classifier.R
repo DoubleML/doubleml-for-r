@@ -11,7 +11,7 @@ if (on_cran) {
     m_learner = "classif.cv_glmnet",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_plr)),
+    i_setting = 1:(length(data_irm)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -19,7 +19,7 @@ if (on_cran) {
     m_learner = "classif.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr)),
+    i_setting = 1:(length(data_irm)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       ml_m = mlr3::lrn(m_learner)
       
       set.seed(i_setting)
-      plr_hat = dml_plr(data_irm[[i_setting]],
+      plr_hat = dml_plr(data_irm[[i_setting]]$df,
                         y = "y", d = "d",
                         n_folds = n_folds,
                         ml_g = ml_g$clone(), ml_m = ml_m$clone(),
@@ -43,7 +43,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       se = plr_hat$se
       
       boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
-                                 data_irm[[i_setting]],
+                                 data_irm[[i_setting]]$df,
                                  y = "y", d = "d",
                                  n_folds = n_folds, smpls = plr_hat$smpls,
                                  all_preds= plr_hat$all_preds,
@@ -54,13 +54,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       pval = plr_hat$pval
       
       set.seed(i_setting)
-      Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-      data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
-        y_col = "y",
-        d_cols = "d", x_cols = Xnames)
-
       double_mlplr_obj = DoubleMLPLR$new(
-        data = data_ml,
+        data = data_irm[[i_setting]]$dml_data,
         ml_g = ml_g$clone(),
         ml_m = ml_m$clone(),
         dml_procedure = dml_procedure,
@@ -85,7 +80,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
 
     } else if (g_learner == "classif.cv_glmnet") {
       expect_error(DoubleMLPLR$new(
-        data = data_ml,
+        data = data_irm[[i_setting]]$dml_data,
         ml_g = lrn(g_learner),
         ml_m = lrn(m_learner),
         dml_procedure = dml_procedure,

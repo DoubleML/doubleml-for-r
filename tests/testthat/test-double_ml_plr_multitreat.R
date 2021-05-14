@@ -10,14 +10,14 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_plr)),
+    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr)),
+    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 }
 

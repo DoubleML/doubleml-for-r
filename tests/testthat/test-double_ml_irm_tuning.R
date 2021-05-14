@@ -59,12 +59,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     set.seed(i_setting)
     learner_pars = get_default_mlmethod_irm(learner)
 
-    Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
-
-    double_mlirm_obj_tuned = DoubleMLIRM$new(data_ml,
+    double_mlirm_obj_tuned = DoubleMLIRM$new(
+      data = data_irm[[i_setting]]$dml_data,
       n_folds = n_folds,
       ml_g = learner_pars$mlmethod$mlmethod_g,
       ml_m = learner_pars$mlmethod$mlmethod_m,
@@ -98,7 +94,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     # loaded learner
     loaded_regr_learner = mlr3::lrn("regr.rpart", "cp" = 0.1, "minsplit" = 20)
     loaded_classif_learner = mlr3::lrn("classif.rpart", "cp" = 0.1, "minsplit" = 20)
-    double_mlirm_obj_loaded_tuned = DoubleMLIRM$new(data_ml,
+    double_mlirm_obj_loaded_tuned = DoubleMLIRM$new(
+      data = data_irm[[i_setting]]$dml_data,
       n_folds = n_folds,
       ml_g = loaded_regr_learner,
       ml_m = loaded_classif_learner,

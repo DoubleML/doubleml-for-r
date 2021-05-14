@@ -45,12 +45,8 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
     n_rep_boot = 498
 
     set.seed(i_setting)
-    Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
-
-    double_mlirm_obj = DoubleMLIRM$new(data_ml,
+    double_mlirm_obj = DoubleMLIRM$new(
+      data = data_irm[[i_setting]]$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner_m),
@@ -62,7 +58,8 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
     se_obj = double_mlirm_obj$se
 
     set.seed(i_setting)
-    double_mlirm_obj_score = DoubleMLIRM$new(data_ml,
+    double_mlirm_obj_score = DoubleMLIRM$new(
+      data = data_irm[[i_setting]]$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner_m),

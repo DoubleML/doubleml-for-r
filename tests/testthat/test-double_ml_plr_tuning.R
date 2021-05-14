@@ -20,7 +20,7 @@ if (on_cran) {
     score = "partialling out",
     n_rep = c(1),
     tune_on_folds = c(FALSE, TRUE),
-    i_setting = 1:(length(data_plr)),
+    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -30,7 +30,7 @@ if (on_cran) {
     score = c("IV-type", "partialling out"),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
-    i_setting = 1:(length(data_plr)),
+    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 }
 

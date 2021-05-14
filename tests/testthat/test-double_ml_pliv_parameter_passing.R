@@ -38,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
     learner_pars = get_default_mlmethod_pliv(learner)
     
     set.seed(i_setting)
-    pliv_hat = dml_pliv(data_pliv[[i_setting]],
+    pliv_hat = dml_pliv(data_pliv[[i_setting]]$df,
                         y = "y", d = "d", z = "z",
                         n_folds = n_folds, n_rep = n_rep,
                         ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -52,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
     se = pliv_hat$se
     
     boot_theta = bootstrap_pliv(pliv_hat$thetas, pliv_hat$ses,
-                                data_pliv[[i_setting]],
+                                data_pliv[[i_setting]]$df,
                                 y = "y", d = "d", z = "z",
                                 n_folds = n_folds, n_rep = n_rep,
                                 smpls = pliv_hat$smpls,
@@ -60,13 +60,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
                                 bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
-    Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-
-    data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
-      y_col = "y",
-      d_cols = c("d"), x_cols = Xnames, z_cols = "z")
-
-    dml_pliv_obj = DoubleMLPLIV$new(data_ml,
+    dml_pliv_obj = DoubleMLPLIV$new(
+      data = data_pliv[[i_setting]]$dml_data,
       n_folds = n_folds, n_rep = n_rep,
       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
@@ -108,13 +103,13 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     
     # Passing for non-cross-fitting case
     set.seed(i_setting)
-    my_task = Task$new("help task", "regr", data_pliv[[i_setting]])
+    my_task = Task$new("help task", "regr", data_pliv[[i_setting]]$df)
     my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
     train_ids = list("train_ids" = my_sampling$train_set(1))
     test_ids = list("test_ids" = my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     
-    pliv_hat = dml_pliv(data_pliv[[i_setting]],
+    pliv_hat = dml_pliv(data_pliv[[i_setting]]$df,
                         y = "y", d = "d", z = "z",
                         n_folds = 1,
                         ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -129,13 +124,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     se = pliv_hat$se
     
     set.seed(i_setting)
-    Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    
-    data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
-                                             y_col = "y",
-                                             d_cols = c("d"), x_cols = Xnames, z_cols = "z")
-
-    dml_pliv_nocf = DoubleMLPLIV$new(data_ml,
+    dml_pliv_nocf = DoubleMLPLIV$new(data = data_pliv[[i_setting]]$dml_data,
                                      n_folds = n_folds,
                                      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
                                      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
@@ -171,13 +160,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
     learner_pars = get_default_mlmethod_pliv(learner)
     
     set.seed(i_setting)
-    Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    
-    data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
-                                             y_col = "y",
-                                             d_cols = c("d"), x_cols = Xnames, z_cols = "z")
-    
-    dml_pliv_obj = DoubleMLPLIV$new(data_ml,
+    dml_pliv_obj = DoubleMLPLIV$new(data_pliv[[i_setting]]$dml_data,
                                     n_folds = n_folds, n_rep = n_rep,
                                     ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
                                     ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
@@ -204,7 +187,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
     params_r_fold_wise = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
     
     set.seed(i_setting)
-    dml_pliv_obj_fold_wise = DoubleMLPLIV$new(data_ml,
+    dml_pliv_obj_fold_wise = DoubleMLPLIV$new(data_pliv[[i_setting]]$dml_data,
                                     n_folds = n_folds, n_rep = n_rep,
                                     ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
                                     ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
@@ -244,13 +227,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
     params_r = list(cp = 0.01, minsplit = 20) # this are defaults
     
     set.seed(i_setting)
-    Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    
-    data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
-                                             y_col = "y",
-                                             d_cols = c("d"), x_cols = Xnames, z_cols = "z")
-    
-    dml_pliv_default = DoubleMLPLIV$new(data_ml,
+    dml_pliv_default = DoubleMLPLIV$new(data_pliv[[i_setting]]$dml_data,
                                     n_folds = n_folds, n_rep = n_rep,
                                     ml_g = lrn('regr.rpart'),
                                     ml_m = lrn('regr.rpart'),
@@ -263,7 +240,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
     se_default = dml_pliv_default$se
     
     set.seed(i_setting)
-    dml_pliv_obj = DoubleMLPLIV$new(data_ml,
+    dml_pliv_obj = DoubleMLPLIV$new(data = data_pliv[[i_setting]]$dml_data,
                                     n_folds = n_folds, n_rep = n_rep,
                                     ml_g = lrn('regr.rpart'),
                                     ml_m = lrn('regr.rpart'),

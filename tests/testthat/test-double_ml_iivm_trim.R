@@ -30,7 +30,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     n_rep_boot = 498
 
     set.seed(i_setting)
-    iivm_hat = dml_irmiv(data_iivm[[i_setting]],
+    iivm_hat = dml_irmiv(data_iivm[[i_setting]]$df,
                          y = "y", d = "d", z = "z",
                          n_folds = 5,
                          ml_g = learner$ml_g$clone(),
@@ -42,7 +42,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se = iivm_hat$se
     
     boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
-                                 data_iivm[[i_setting]],
+                                 data_iivm[[i_setting]]$df,
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = iivm_hat$smpls,
                                  all_preds= iivm_hat$all_preds,
@@ -53,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     set.seed(i_setting)
 
     # we rename the z variable to have non default names in the unit tests
-    data = data_iivm[[i_setting]]
+    data = data_iivm[[i_setting]]$df
     names(data)[names(data) == "z"] = "Z_IV"
 
     Xnames = names(data)[names(data) %in% c("y", "d", "Z_IV") == FALSE]

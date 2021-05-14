@@ -51,12 +51,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
     n_folds = 2
 
     set.seed(i_setting)
-    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_col = "z")
-
-    double_mliivm_obj_tuned = DoubleMLIIVM$new(data_ml,
+    double_mliivm_obj_tuned = DoubleMLIIVM$new(
+      data = data_iivm[[i_setting]]$dml_data,
       n_folds = n_folds,
       ml_g = "regr.rpart",
       ml_m = "classif.rpart",

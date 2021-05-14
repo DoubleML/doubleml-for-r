@@ -32,18 +32,19 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     n_rep_boot = 498
     
     set.seed(i_setting)
+    df = data_plr[[i_setting]]$df
     if (n_folds == 2) {
-      my_task = Task$new("help task", "regr", data_plr[[i_setting]])
+      my_task = Task$new("help task", "regr", df)
       my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
       train_ids = list("train_ids" = my_sampling$train_set(1))
       test_ids = list("test_ids" = my_sampling$test_set(1))
       
       smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     } else {
-      smpls = list(list(train_ids = list(seq(nrow(data_plr[[i_setting]]))),
-                        test_ids = list(seq(nrow(data_plr[[i_setting]])))))
+      smpls = list(list(train_ids = list(seq(nrow(df))),
+                        test_ids = list(seq(nrow(df)))))
     }
-    plr_hat = dml_plr(data_plr[[i_setting]],
+    plr_hat = dml_plr(df,
                       y = "y", d = "d",
                       n_folds = 1,
                       ml_g = learner$ml_g$clone(),
@@ -56,13 +57,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     pval = plr_hat$pval
 
     set.seed(i_setting)
-    Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
-
     double_mlplr_obj = DoubleMLPLR$new(
-      data = data_ml,
+      data = data_plr[[i_setting]]$dml_data,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
@@ -80,7 +76,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     if (n_folds == 2) {
       dml_plr_obj_external = DoubleMLPLR$new(
-        data = data_ml,
+        data = data_plr[[i_setting]]$dml_data,
         ml_g = learner$ml_g$clone(),
         ml_m = learner$ml_m$clone(),
         dml_procedure = dml_procedure,
@@ -90,7 +86,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
       set.seed(i_setting)
       # set up a task and cross-validation resampling scheme in mlr3
-      my_task = Task$new("help task", "regr", data_plr[[i_setting]])
+      my_task = Task$new("help task", "regr", df)
       my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
       train_ids = list("train_ids" = my_sampling$train_set(1))
       test_ids = list("test_ids" = my_sampling$test_set(1))

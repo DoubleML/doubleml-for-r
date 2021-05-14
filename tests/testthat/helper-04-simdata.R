@@ -21,40 +21,64 @@ data_plr = vector("list", n_settings)
 set.seed(1282)
 
 for (i_setting in 1:n_settings) {
-  data_plr[[i_setting]] = dgp1_plr(
+  df = dgp1_plr(
     settings[[i_setting]]$theta,
     settings[[i_setting]]$n,
     settings[[i_setting]]$p)
+  Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames)
+  data_plr[[i_setting]] = list(df = df,
+                               dml_data = dml_data)
 }
 
 data_pliv = vector("list", n_settings)
 set.seed(1282)
 
 for (i_setting in 1:n_settings) {
-  data_pliv[[i_setting]] = dgp1_iv(
+   df = dgp1_iv(
     settings[[i_setting]]$theta,
     settings[[i_setting]]$n,
     settings[[i_setting]]$p)
+  Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE] # note that Xnames includes z2
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames, z_cols = "z")
+  data_pliv[[i_setting]] = list(df = df,
+                                dml_data = dml_data)
 }
 
 data_irm = vector("list", n_settings)
 set.seed(1282)
 
 for (i_setting in 1:n_settings) {
-  data_irm[[i_setting]] = dgp1_irm(
+  df = dgp1_irm(
     settings_irm[[i_setting]]$theta,
     settings_irm[[i_setting]]$n,
     settings_irm[[i_setting]]$p)
+  Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames)
+  data_irm[[i_setting]] = list(df = df,
+                               dml_data = dml_data)
 }
 
 data_iivm = vector("list", n_settings)
 set.seed(1282)
 
 for (i_setting in 1:n_settings) {
-  data_iivm[[i_setting]] = dgp1_irmiv(
+  df = dgp1_irmiv(
     settings[[i_setting]]$theta,
     settings[[i_setting]]$n,
     settings[[i_setting]]$p)
+  Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames, z_col = "z")
+  data_iivm[[i_setting]] = list(df = df,
+                                dml_data = dml_data)
 }
 
 data_plr_multi = vector("list", n_settings)
@@ -69,30 +93,52 @@ for (i_setting in 1:n_settings) {
 data_pliv_partialXZ = vector("list", length(settings_pliv_partial))
 set.seed(1282)
 
+dim_z = 150
 for (i_setting in 1:length(settings_pliv_partial)) {
-  data_pliv_partialXZ[[i_setting]] = make_pliv_CHS2015(
+  df = make_pliv_CHS2015(
     settings[[i_setting]]$n,
     alpha = settings[[i_setting]]$theta,
+    dim_z = dim_z,
     return_type = "data.frame")
+  Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
+  data_pliv_partialXZ[[i_setting]] = list(df = df,
+                                          dml_data = dml_data)
 }
 
 data_pliv_partialX = vector("list", length(settings_pliv_partial))
 set.seed(1282)
 
+dim_z = 5
 for (i_setting in 1:length(settings_pliv_partial)) {
-  data_pliv_partialX[[i_setting]] = make_pliv_CHS2015(
+  df = make_pliv_CHS2015(
     settings[[i_setting]]$n,
     alpha = settings[[i_setting]]$theta,
-    dim_z = 5,
+    dim_z = dim_z,
     return_type = "data.frame")
+  Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
+  data_pliv_partialX[[i_setting]] = list(df = df,
+                                         dml_data = dml_data)
 }
 
 data_pliv_partialZ = vector("list", length(settings_pliv_partial))
 set.seed(1282)
 
+dim_z = 150
 for (i_setting in 1:length(settings_pliv_partial)) {
-  data_pliv_partialZ[[i_setting]] = make_data_pliv_partialZ(
+  df = make_data_pliv_partialZ(
     settings[[i_setting]]$n,
     alpha = settings[[i_setting]]$theta,
     dim_x = 5)
+  Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
+  dml_data = double_ml_data_from_data_frame(df,
+                                            y_col = "y",
+                                            d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
+  data_pliv_partialZ[[i_setting]] = list(df = df,
+                                         dml_data = dml_data)
 }

@@ -32,7 +32,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     set.seed(i_setting)
     n_folds = 5
-    plr_hat = dml_plr(data_plr[[i_setting]],
+    plr_hat = dml_plr(data_plr[[i_setting]]$df,
                       y = "y", d = "d",
                       n_folds = n_folds, n_rep = n_rep,
                       ml_g = learner$ml_g$clone(),
@@ -45,7 +45,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     #ci = confint(plr_hat, level = 0.95, joint = FALSE)
     
     boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
-                               data_plr[[i_setting]],
+                               data_plr[[i_setting]]$df,
                                y = "y", d = "d",
                                n_folds = n_folds, n_rep = n_rep,
                                smpls = plr_hat$smpls,
@@ -54,12 +54,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                score = score)$boot_coef
 
     set.seed(i_setting)
-    Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
-
-    double_mlplr_obj = DoubleMLPLR$new(data_ml,
+    double_mlplr_obj = DoubleMLPLR$new(
+      data = data_plr[[i_setting]]$dml_data,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,

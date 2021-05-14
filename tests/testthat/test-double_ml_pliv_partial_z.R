@@ -10,7 +10,7 @@ test_cases = expand.grid(
   learner = c("regr.lm", "regr.glmnet"),
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
-  i_setting = 1:(length(data_pliv)),
+  i_setting = 1:(length(data_pliv_partialZ)),
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
@@ -20,8 +20,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
     n_rep_boot = 498
 
     set.seed(i_setting)
-    dim_z = 5
-    pliv_hat = dml_pliv_partial_z(data_pliv_partialZ[[i_setting]],
+    dim_z = 150
+    pliv_hat = dml_pliv_partial_z(data_pliv_partialZ[[i_setting]]$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5,
       ml_r = learner$ml_r$clone(),
@@ -31,19 +31,14 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
     
     set.seed(i_setting)
     boot_theta = bootstrap_pliv_partial_z(pliv_hat$thetas, pliv_hat$ses,
-                                 data_pliv_partialZ[[i_setting]],
+                                 data_pliv_partialZ[[i_setting]]$df,
                                  y = "y", d = "d", z = paste0("Z", 1:dim_z),
                                  n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
-    Xnames = names(data_pliv_partialZ[[i_setting]])[names(data_pliv_partialZ[[i_setting]]) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_pliv_partialZ[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
-    
-    double_mlpliv_obj = DoubleMLPLIV.partialZ(data_ml,
+    double_mlpliv_obj = DoubleMLPLIV.partialZ(data_pliv_partialZ[[i_setting]]$dml_data,
                                               ml_r = learner$ml_r$clone(),
                                               n_folds = 5,
                                               score = score,

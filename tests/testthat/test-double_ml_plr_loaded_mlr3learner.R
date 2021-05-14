@@ -25,10 +25,6 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     n_folds = 2
     n_rep_boot = 498
     set.seed(i_setting)
-    Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
 
     # load learner by name
     learner_name = "regr.cv_glmnet"
@@ -36,7 +32,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     set.seed(123)
     double_mlplr = DoubleMLPLR$new(
-      data = data_ml,
+      data = data_plr[[i_setting]]$dml_data,
       ml_g = learner_name,
       ml_m = learner_name,
       dml_procedure = dml_procedure,
@@ -67,7 +63,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     set.seed(123)
     loaded_learner = mlr3::lrn("regr.cv_glmnet", "s" = "lambda.min", "family" = "gaussian", "nfolds" = 5)
     double_mlplr_loaded = DoubleMLPLR$new(
-      data = data_ml,
+      data = data_plr[[i_setting]]$dml_data,
       ml_g = loaded_learner,
       ml_m = loaded_learner,
       dml_procedure = dml_procedure,
@@ -86,7 +82,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     set.seed(123)
     semiloaded_learner = mlr3::lrn("regr.cv_glmnet")
     double_mlplr_semiloaded = DoubleMLPLR$new(
-      data = data_ml,
+      data = data_plr[[i_setting]]$dml_data,
       ml_g = semiloaded_learner,
       ml_m = semiloaded_learner,
       dml_procedure = dml_procedure,

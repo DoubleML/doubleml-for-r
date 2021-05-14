@@ -31,7 +31,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     n_rep_boot = 498
 
     set.seed(i_setting)
-    iivm_hat = dml_irmiv(data_iivm[[i_setting]],
+    iivm_hat = dml_irmiv(data_iivm[[i_setting]]$df,
       y = "y", d = "d", z = "z",
       n_folds = 5,
       ml_g = learner$ml_g$clone(),
@@ -42,7 +42,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se = iivm_hat$se
     
     boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
-                                 data_iivm[[i_setting]],
+                                 data_iivm[[i_setting]]$df,
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = iivm_hat$smpls,
                                  all_preds= iivm_hat$all_preds,
@@ -50,13 +50,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(i_setting)
-    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-
-    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_col = "z")
-
-    double_mliivm_obj = DoubleMLIIVM$new(data_ml,
+    double_mliivm_obj = DoubleMLIIVM$new(
+      data = data_iivm[[i_setting]]$dml_data,
       n_folds = 5,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),

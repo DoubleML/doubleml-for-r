@@ -25,10 +25,6 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {
     set.seed(i_setting)
-    Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
 
     # unloaded learners (access by name)
     learner_regr_name = "regr.ranger"
@@ -53,7 +49,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     # loaded_classif_learner = mlr3::lrn("classif.cv_glmnet", "s" = "lambda.min", "nfolds" = 5)
 
     set.seed(2)
-    double_mlirm = DoubleMLIRM$new(data_ml,
+    double_mlirm = DoubleMLIRM$new(
+      data = data_irm[[i_setting]]$dml_data,
       n_folds = 5,
       ml_g = learner_regr_name,
       ml_m = learner_classif_name,
@@ -81,7 +78,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
 
 
     set.seed(2)
-    double_mlirm_loaded = DoubleMLIRM$new(data_ml,
+    double_mlirm_loaded = DoubleMLIRM$new(
+      data = data_irm[[i_setting]]$dml_data,
       n_folds = 5,
       ml_g = loaded_regr_learner,
       ml_m = loaded_classif_learner,
