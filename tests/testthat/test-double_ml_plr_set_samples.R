@@ -10,7 +10,6 @@ if (on_cran) {
     learner = "regr.cv_glmnet",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_plr)),
     n_folds = c(2),
     n_rep = c(1),
     stringsAsFactors = FALSE)
@@ -19,7 +18,6 @@ if (on_cran) {
     learner = "regr.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr)),
     n_folds = c(2, 3),
     n_rep = c(1, 3),
     stringsAsFactors = FALSE)
@@ -31,9 +29,9 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
     learner = get_default_mlmethod_plr(learner)
     n_rep_boot = 346
 
-    set.seed(i_setting)
-    Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
+    set.seed(3141)
+    Xnames = names(data_plr)[names(data_plr) %in% c("y", "d", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr,
       y_col = "y",
       d_cols = "d", x_cols = Xnames)
 

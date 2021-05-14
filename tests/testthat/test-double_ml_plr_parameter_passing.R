@@ -8,14 +8,12 @@ if (on_cran) {
     learner = 'regr.rpart',
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_plr)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = 'regr.rpart',
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr)),
     stringsAsFactors = FALSE)
 }
 
@@ -23,7 +21,6 @@ test_cases_nocf = expand.grid(
   learner = 'regr.rpart',
   dml_procedure = "dml1",
   score = "partialling out",
-  i_setting = 1:(length(data_plr)),
   stringsAsFactors = FALSE)
 
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -41,8 +38,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
     params_g = rep(list(learner_pars$params$params_g), 2)
     params_m = rep(list(learner_pars$params$params_m), 2)
 
-    set.seed(i_setting)
-    plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
+    set.seed(3141)
+    plr_hat = dml_plr_multitreat(data_plr_multi,
                                  y = "y", d = c("d1", "d2"),
                                  n_folds = n_folds, n_rep = n_rep,
                                  ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -54,7 +51,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
     se = plr_hat$se
     
     boot_theta = boot_plr_multitreat(plr_hat$thetas, plr_hat$ses,
-                                     data_plr_multi[[i_setting]],
+                                     data_plr_multi,
                                      y = "y", d = c("d1", "d2"),
                                      n_folds = n_folds, n_rep = n_rep,
                                      smpls = plr_hat$smpls,
@@ -62,12 +59,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
                                      bootstrap = "normal", n_rep_boot = n_rep_boot,
                                      score = score)$boot_coef
 
-    Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr_multi,
       y_col = "y",
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -111,14 +108,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
     params_m = rep(list(learner_pars$params$params_m), 2)
 
     # Passing for non-cross-fitting case
-    set.seed(i_setting)
-    my_task = Task$new("help task", "regr", data_plr_multi[[i_setting]])
+    set.seed(3141)
+    my_task = Task$new("help task", "regr", data_plr_multi)
     my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
     train_ids = list("train_ids" = my_sampling$train_set(1))
     test_ids = list("test_ids" = my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
-    plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
+    plr_hat = dml_plr_multitreat(data_plr_multi,
                       y = "y", d = c("d1", "d2"),
                       n_folds = 1,
                       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -130,12 +127,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
     theta = plr_hat$coef
     se = plr_hat$se
     
-    Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr_multi,
                                              y_col = "y",
                                              d_cols = c("d1", "d2"), x_cols = Xnames)
     
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj_nocf = DoubleMLPLR$new(data_ml,
                                             n_folds = n_folds,
                                             ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -171,12 +168,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
     
     learner_pars = get_default_mlmethod_plr(learner)
     
-    Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr_multi,
                                              y_col = "y",
                                              d_cols = c("d1", "d2"), x_cols = Xnames)
     
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
                                        n_folds = n_folds,
                                        ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -201,7 +198,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
     params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
     
-    set.seed(i_setting)
+    set.seed(3141)
     dml_plr_fold_wise = DoubleMLPLR$new(data_ml,
                                        n_folds = n_folds,
                                        ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -241,12 +238,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
     params_g = list(cp = 0.01, minsplit = 20) # this are defaults
     params_m = list(cp = 0.01, minsplit = 20) # this are defaults
     
-    Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr_multi,
                                              y_col = "y",
                                              d_cols = c("d1", "d2"), x_cols = Xnames)
     
-    set.seed(i_setting)
+    set.seed(3141)
     dml_plr_default = DoubleMLPLR$new(data_ml,
                                       n_folds = n_folds,
                                       ml_g = lrn('regr.rpart'),
@@ -259,7 +256,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
     theta_default = dml_plr_default$coef
     se_default = dml_plr_default$se
     
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
                                        n_folds = n_folds,
                                        ml_g = lrn('regr.rpart'),

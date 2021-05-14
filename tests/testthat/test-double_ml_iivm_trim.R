@@ -8,7 +8,6 @@ if (on_cran) {
     learner = "rpart",
     dml_procedure = "dml2",
     score = "LATE",
-    i_setting = 1:(length(data_iivm)),
     trimming_rule = c("truncate"),
     trimming_threshold = c(0.05),
     stringsAsFactors = FALSE)
@@ -17,7 +16,6 @@ if (on_cran) {
     learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
-    i_setting = 1:(length(data_iivm)),
     trimming_rule = c("truncate"),
     trimming_threshold = c(1e-12, 0.05),
     stringsAsFactors = FALSE)
@@ -29,8 +27,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     learner = get_default_mlmethod_iivm(learner)
     n_rep_boot = 498
 
-    set.seed(i_setting)
-    iivm_hat = dml_irmiv(data_iivm[[i_setting]]$df,
+    set.seed(3141)
+    iivm_hat = dml_irmiv(data_iivm$df,
                          y = "y", d = "d", z = "z",
                          n_folds = 5,
                          ml_g = learner$ml_g$clone(),
@@ -42,7 +40,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se = iivm_hat$se
     
     boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
-                                 data_iivm[[i_setting]]$df,
+                                 data_iivm$df,
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = iivm_hat$smpls,
                                  all_preds= iivm_hat$all_preds,
@@ -50,10 +48,10 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
                                  bootstrap = "normal", n_rep_boot = n_rep_boot,
                                  trimming_threshold = trimming_threshold)$boot_coef
 
-    set.seed(i_setting)
+    set.seed(3141)
 
     # we rename the z variable to have non default names in the unit tests
-    data = data_iivm[[i_setting]]$df
+    data = data_iivm$df
     names(data)[names(data) == "z"] = "Z_IV"
 
     Xnames = names(data)[names(data) %in% c("y", "d", "Z_IV") == FALSE]

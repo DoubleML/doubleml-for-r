@@ -10,7 +10,6 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_plr)),
     apply_cross_fitting = FALSE,
     n_folds = c(1, 2),
     stringsAsFactors = FALSE)
@@ -19,7 +18,6 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr)),
     apply_cross_fitting = FALSE,
     n_folds = c(1, 2),
     stringsAsFactors = FALSE)
@@ -31,8 +29,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     learner = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
     
-    set.seed(i_setting)
-    df = data_plr[[i_setting]]$df
+    set.seed(3141)
+    df = data_plr$df
     if (n_folds == 2) {
       my_task = Task$new("help task", "regr", df)
       my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
@@ -56,9 +54,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t = plr_hat$t
     pval = plr_hat$pval
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
-      data = data_plr[[i_setting]]$dml_data,
+      data = data_plr$dml_data,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
@@ -76,7 +74,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     if (n_folds == 2) {
       dml_plr_obj_external = DoubleMLPLR$new(
-        data = data_plr[[i_setting]]$dml_data,
+        data = data_plr$dml_data,
         ml_g = learner$ml_g$clone(),
         ml_m = learner$ml_m$clone(),
         dml_procedure = dml_procedure,
@@ -84,7 +82,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
         score = score,
         draw_sample_splitting = FALSE, apply_cross_fitting = FALSE)
 
-      set.seed(i_setting)
+      set.seed(3141)
       # set up a task and cross-validation resampling scheme in mlr3
       my_task = Task$new("help task", "regr", df)
       my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)

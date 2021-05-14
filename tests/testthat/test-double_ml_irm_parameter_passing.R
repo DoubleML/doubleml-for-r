@@ -8,7 +8,6 @@ if (on_cran) {
     learner = "rpart",
     dml_procedure = "dml2",
     score = "ATE",
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 1e-5,
     stringsAsFactors = FALSE)
 } else {
@@ -16,7 +15,6 @@ if (on_cran) {
     learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 1e-5,
     stringsAsFactors = FALSE)
 }
@@ -25,7 +23,6 @@ test_cases_nocf = expand.grid(
   learner = "rpart",
   dml_procedure = "dml1",
   score = c("ATE", "ATTE"),
-  i_setting = 1:(length(data_irm)),
   trimming_threshold = 1e-5,
   stringsAsFactors = FALSE)
 
@@ -40,8 +37,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
   
     learner_pars = get_default_mlmethod_irm(learner)
     
-    set.seed(i_setting)
-    irm_hat = dml_irm(data_irm[[i_setting]]$df,
+    set.seed(3141)
+    irm_hat = dml_irm(data_irm$df,
                       y = "y", d = "d",
                       n_folds = n_folds,
                       n_rep = n_rep,
@@ -55,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
     se = irm_hat$se
     
     boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
-                               data_irm[[i_setting]]$df,
+                               data_irm$df,
                                y = "y", d = "d",
                                n_folds = n_folds, n_rep = n_rep,
                                smpls = irm_hat$smpls,
@@ -64,8 +61,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
                                bootstrap = "normal", n_rep_boot = n_rep_boot,
                                trimming_threshold = trimming_threshold)$boot_coef
 
-    set.seed(i_setting)
-    double_mlirm_obj = DoubleMLIRM$new(data = data_irm[[i_setting]]$dml_data,
+    set.seed(3141)
+    double_mlirm_obj = DoubleMLIRM$new(data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
       ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -110,14 +107,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
     learner_pars = get_default_mlmethod_irm(learner)
 
     # Passing for non-cross-fitting case
-    set.seed(i_setting)
-    my_task = Task$new("help task", "regr", data_irm[[i_setting]]$df)
+    set.seed(3141)
+    my_task = Task$new("help task", "regr", data_irm$df)
     my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
     train_ids = list("train_ids" = my_sampling$train_set(1))
     test_ids = list("test_ids" = my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
-    irm_hat = dml_irm(data_irm[[i_setting]]$df,
+    irm_hat = dml_irm(data_irm$df,
                       y = "y", d = "d",
                       n_folds = 1,
                       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -130,8 +127,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
     theta = irm_hat$coef
     se = irm_hat$se
     
-    set.seed(i_setting)
-    dml_irm_nocf = DoubleMLIRM$new(data = data_irm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_irm_nocf = DoubleMLIRM$new(data = data_irm$dml_data,
                                    n_folds = n_folds,
                                    ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
                                    ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -171,8 +168,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
 
     learner_pars = get_default_mlmethod_irm(learner)
 
-    set.seed(i_setting)
-    double_mlirm_obj = DoubleMLIRM$new(data = data_irm[[i_setting]]$dml_data,
+    set.seed(3141)
+    double_mlirm_obj = DoubleMLIRM$new(data = data_irm$dml_data,
                                        n_folds = n_folds,
                                        ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
                                        ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -202,8 +199,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
     params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
     
-    set.seed(i_setting)
-    dml_irm_fold_wise = DoubleMLIRM$new(data = data_irm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_irm_fold_wise = DoubleMLIRM$new(data = data_irm$dml_data,
                                        n_folds = n_folds,
                                        ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
                                        ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -246,8 +243,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (def
     params_g = list(cp = 0.01, minsplit = 20) # this are defaults
     params_m = list(cp = 0.01, minsplit = 20) # this are defaults
     
-    set.seed(i_setting)
-    dml_irm_default = DoubleMLIRM$new(data = data_irm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_irm_default = DoubleMLIRM$new(data = data_irm$dml_data,
                                       n_folds = n_folds,
                                       ml_g = lrn('regr.rpart'),
                                       ml_m = lrn('classif.rpart', predict_type = "prob"),
@@ -259,8 +256,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (def
     theta_default = dml_irm_default$coef
     se_default = dml_irm_default$se
     
-    set.seed(i_setting)
-    double_mlirm_obj = DoubleMLIRM$new(data = data_irm[[i_setting]]$dml_data,
+    set.seed(3141)
+    double_mlirm_obj = DoubleMLIRM$new(data = data_irm$dml_data,
                                        n_folds = n_folds,
                                        ml_g = lrn('regr.rpart'),
                                        ml_m = lrn('classif.rpart', predict_type = "prob"),

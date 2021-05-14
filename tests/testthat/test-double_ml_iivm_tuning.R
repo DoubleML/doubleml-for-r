@@ -25,7 +25,6 @@ if (on_cran) {
     score = "LATE",
     AT = c(TRUE),
     NT = c(TRUE),
-    i_setting = 1:(length(data_iivm)),
     n_rep = c(1),
     tune_on_folds = FALSE,
     stringsAsFactors = FALSE)
@@ -36,7 +35,6 @@ if (on_cran) {
     score = "LATE",
     AT = c(TRUE, FALSE),
     NT = c(TRUE, FALSE),
-    i_setting = 1:(length(data_iivm)),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
     stringsAsFactors = FALSE)
@@ -50,9 +48,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
     n_rep_boot = 498
     n_folds = 2
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mliivm_obj_tuned = DoubleMLIIVM$new(
-      data = data_iivm[[i_setting]]$dml_data,
+      data = data_iivm$dml_data,
       n_folds = n_folds,
       ml_g = "regr.rpart",
       ml_m = "classif.rpart",

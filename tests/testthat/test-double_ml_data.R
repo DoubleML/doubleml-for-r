@@ -1,12 +1,12 @@
 context("Unit tests for DoubleMLData")
 
-test_cases = expand.grid(i_setting = 1:(length(data_iivm)))
+test_cases = expand.grid(dummy = 0)
 
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
   .cases = test_cases, {
-    data = data_iivm[[i_setting]]
+    data = data_iivm$df
 
     # Input: Matrix and vectors
     y = data[, "y"] # input: numeric

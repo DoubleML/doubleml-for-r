@@ -10,7 +10,6 @@ test_cases = expand.grid(
   learner = c("regr.lm", "regr.glmnet"),
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
-  i_setting = 1:(length(data_pliv_partialXZ)),
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
@@ -19,9 +18,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
     learner = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
-    set.seed(i_setting)
+    set.seed(3141)
     dim_z = 150
-    pliv_hat = dml_pliv_partial_xz(data_pliv_partialXZ[[i_setting]]$df,
+    pliv_hat = dml_pliv_partial_xz(data_pliv_partialXZ$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5,
       ml_g = learner$ml_g$clone(),
@@ -31,16 +30,16 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
     theta = pliv_hat$coef
     se = pliv_hat$se
     
-    set.seed(i_setting)
+    set.seed(3141)
     boot_theta = bootstrap_pliv_partial_xz(pliv_hat$thetas, pliv_hat$ses,
-                                 data_pliv_partialXZ[[i_setting]]$df,
+                                 data_pliv_partialXZ$df,
                                  y = "y", d = "d", z = paste0("Z", 1:dim_z),
                                  n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
-    set.seed(i_setting)
-    double_mlpliv_obj = DoubleML:::DoubleMLPLIV.partialXZ(data_pliv_partialXZ[[i_setting]]$dml_data,
+    set.seed(3141)
+    double_mlpliv_obj = DoubleML:::DoubleMLPLIV.partialXZ(data_pliv_partialXZ$dml_data,
                                                ml_g = learner$ml_g$clone(),
                                                ml_m = learner$ml_m$clone(),
                                                ml_r = learner$ml_r$clone(),
@@ -53,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
     se_obj = double_mlpliv_obj$se
 
     # bootstrap
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
     boot_theta_obj = double_mlpliv_obj$boot_coef
 

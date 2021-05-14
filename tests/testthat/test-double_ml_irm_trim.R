@@ -10,7 +10,6 @@ if (on_cran) {
     score = "ATTE",
     trimming_rule = c("truncate"),
     trimming_threshold = c(0.05),
-    i_setting = 1:(length(data_irm)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -19,7 +18,6 @@ if (on_cran) {
     score = c("ATE", "ATTE"),
     trimming_rule = c("truncate"),
     trimming_threshold = c(1e-12, 0.05),
-    i_setting = 1:(length(data_irm)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -29,8 +27,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     learner = get_default_mlmethod_irm(learner)
     n_rep_boot = 498
 
-    set.seed(i_setting)
-    irm_hat = dml_irm(data_irm[[i_setting]]$df,
+    set.seed(3141)
+    irm_hat = dml_irm(data_irm$df,
                       y = "y", d = "d",
                       n_folds = 5, 
                       ml_g = learner$ml_g$clone(), ml_m = learner$ml_m$clone(),
@@ -40,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     se = irm_hat$se
     
     boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
-                               data_irm[[i_setting]]$df,
+                               data_irm$df,
                                y = "y", d = "d",
                                n_folds = 5, smpls = irm_hat$smpls,
                                all_preds= irm_hat$all_preds,
@@ -48,9 +46,9 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
                                bootstrap = "normal", n_rep_boot = n_rep_boot,
                                trimming_threshold = trimming_threshold)$boot_coef
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlirm_obj = DoubleMLIRM$new(
-      data = data_irm[[i_setting]]$dml_data,
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),

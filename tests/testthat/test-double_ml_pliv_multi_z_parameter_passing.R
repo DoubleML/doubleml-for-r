@@ -11,7 +11,6 @@ test_cases = expand.grid(
   learner = c("regr.lm", "regr.glmnet"),
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
-  i_setting = 1:(length(data_pliv)),
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
@@ -23,8 +22,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     n_rep = 2
     # TODO: Comparison case (functional)
 
-    set.seed(i_setting)
-    df = data_pliv[[i_setting]]$df
+    set.seed(3141)
+    df = data_pliv$df
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
@@ -66,8 +65,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     export_params_exact_m = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
     export_params_exact_r = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
 
-    set.seed(i_setting)
-    df = data_pliv[[i_setting]]$df
+    set.seed(3141)
+    df = data_pliv$df
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",

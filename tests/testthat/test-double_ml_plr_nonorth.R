@@ -20,7 +20,6 @@ if (on_cran) {
     score = c(non_orth_score),
     n_folds = c(3),
     n_rep = c(2),
-    i_setting = 1:(length(data_plr)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -29,7 +28,6 @@ if (on_cran) {
     score = c(non_orth_score),
     n_folds = c(2, 3),
     n_rep = c(1, 2),
-    i_setting = 1:(length(data_plr)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -38,9 +36,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
     learner = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
-      data = data_plr[[i_setting]]$dml_data,
+      data = data_plr$dml_data,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,

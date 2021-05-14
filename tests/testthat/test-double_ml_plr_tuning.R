@@ -20,7 +20,6 @@ if (on_cran) {
     score = "partialling out",
     n_rep = c(1),
     tune_on_folds = c(FALSE, TRUE),
-    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -30,7 +29,6 @@ if (on_cran) {
     score = c("IV-type", "partialling out"),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
-    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 }
 
@@ -43,15 +41,15 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     n_rep_boot = 498
     n_folds = 4
 
-    set.seed(i_setting)
-    Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "z") == FALSE]
+    set.seed(3141)
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
     if (m_learner == "regr.rpart") {
-      data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
+      data_ml = double_ml_data_from_data_frame(data_plr_multi,
         y_col = "y",
         d_cols = c("d1", "d2"), x_cols = Xnames)
 
     } else if (m_learner == "classif.rpart") {
-      data_plr_binary = data_plr_multi[[i_setting]]
+      data_plr_binary = data_plr_multi
       data_plr_binary$d1 = as.numeric(data_plr_binary$d1 > 0)
       data_plr_binary$d2 = as.numeric(data_plr_binary$d2 > 0)
       data_ml = double_ml_data_from_data_frame(data_plr_binary,

@@ -20,13 +20,11 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = "regr.glmnet",
     dml_procedure = "dml2",
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -35,9 +33,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
   .cases = test_cases, {
     n_rep_boot = 498
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_obj = DoubleMLPLIV$new(
-      data = data_pliv[[i_setting]]$dml_data,
+      data = data_pliv$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner),
@@ -49,9 +47,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_obj_score = DoubleMLPLIV$new(
-    data = data_pliv[[i_setting]]$dml_data,
+    data = data_pliv$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner),

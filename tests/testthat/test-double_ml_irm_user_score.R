@@ -25,7 +25,6 @@ if (on_cran) {
     learner = "regr.glmnet",
     learner_m = "classif.glmnet",
     dml_procedure = "dml2",
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -34,7 +33,6 @@ if (on_cran) {
     learner = "regr.glmnet",
     learner_m = "classif.glmnet",
     dml_procedure = c("dml1", "dml2"),
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = c(0, 0.01),
     stringsAsFactors = FALSE)
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -44,9 +42,9 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
   .cases = test_cases, {
     n_rep_boot = 498
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlirm_obj = DoubleMLIRM$new(
-      data = data_irm[[i_setting]]$dml_data,
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner_m),
@@ -57,9 +55,9 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
     theta_obj = double_mlirm_obj$coef
     se_obj = double_mlirm_obj$se
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlirm_obj_score = DoubleMLIRM$new(
-      data = data_irm[[i_setting]]$dml_data,
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner_m),

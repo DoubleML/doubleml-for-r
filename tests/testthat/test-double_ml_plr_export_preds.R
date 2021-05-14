@@ -9,7 +9,6 @@ test_cases = expand.grid(
   m_learner = "regr.cv_glmnet",
   dml_procedure = "dml2",
   score = "partialling out",
-  i_setting = 1:(length(data_plr)),
   stringsAsFactors = FALSE)
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
@@ -17,9 +16,9 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
   .cases = test_cases, {
     n_folds = 3
 
-    set.seed(i_setting)
-    df = data_plr[[i_setting]]$df
-    dml_data = data_plr[[i_setting]]$dml_data
+    set.seed(3141)
+    df = data_plr$df
+    dml_data = data_plr$dml_data
 
     double_mlplr_obj = DoubleMLPLR$new(
       data = dml_data,
@@ -28,10 +27,10 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj$fit(store_predictions = TRUE)
 
-    set.seed(i_setting)
+    set.seed(3141)
     indx = (names(df) %in% c(Xnames, "y"))
     data = df[, indx]
     task = mlr3::TaskRegr$new(id = "ml_g", backend = data, target = "y")

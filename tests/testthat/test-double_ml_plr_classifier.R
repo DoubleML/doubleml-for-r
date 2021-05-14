@@ -11,7 +11,6 @@ if (on_cran) {
     m_learner = "classif.cv_glmnet",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_irm)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -19,7 +18,6 @@ if (on_cran) {
     m_learner = "classif.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_irm)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -33,8 +31,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       ml_g = mlr3::lrn(g_learner)
       ml_m = mlr3::lrn(m_learner)
       
-      set.seed(i_setting)
-      plr_hat = dml_plr(data_irm[[i_setting]]$df,
+      set.seed(3141)
+      plr_hat = dml_plr(data_irm$df,
                         y = "y", d = "d",
                         n_folds = n_folds,
                         ml_g = ml_g$clone(), ml_m = ml_m$clone(),
@@ -43,7 +41,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       se = plr_hat$se
       
       boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
-                                 data_irm[[i_setting]]$df,
+                                 data_irm$df,
                                  y = "y", d = "d",
                                  n_folds = n_folds, smpls = plr_hat$smpls,
                                  all_preds= plr_hat$all_preds,
@@ -53,9 +51,9 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       t = plr_hat$t
       pval = plr_hat$pval
       
-      set.seed(i_setting)
+      set.seed(3141)
       double_mlplr_obj = DoubleMLPLR$new(
-        data = data_irm[[i_setting]]$dml_data,
+        data = data_irm$dml_data,
         ml_g = ml_g$clone(),
         ml_m = ml_m$clone(),
         dml_procedure = dml_procedure,
@@ -80,7 +78,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
 
     } else if (g_learner == "classif.cv_glmnet") {
       expect_error(DoubleMLPLR$new(
-        data = data_irm[[i_setting]]$dml_data,
+        data = data_irm$dml_data,
         ml_g = lrn(g_learner),
         ml_m = lrn(m_learner),
         dml_procedure = dml_procedure,

@@ -10,14 +10,12 @@ if (on_cran) {
     learner = "regr.cv_glmnet",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = "partialling out",
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -27,8 +25,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     learner_pars = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
     #
-    # set.seed(i_setting)
-    # pliv_hat = dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
+    # set.seed(3141)
+    # pliv_hat = dml_plriv(data_pliv, y = "y", d = "d", z = 'z',
     #                       n_folds = 5, mlmethod = learner_pars$mlmethod,
     #                       params = learner_pars$params,
     #                       dml_procedure = dml_procedure, score = score,
@@ -37,8 +35,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     # se = pliv_hat$se
     #
 
-    set.seed(i_setting)
-    df = data_pliv[[i_setting]]$df
+    set.seed(3141)
+    df = data_pliv$df
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
@@ -75,7 +73,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     se_obj = double_mlpliv_obj$se
 
     # Partial out X
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_partX = DoubleMLPLIV.partialX(data_ml,
       n_folds = 5,
       ml_g = learner_pars$mlmethod$mlmethod_g,
@@ -106,7 +104,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     se_partX = double_mlpliv_partX$se
 
     # Partial out Z
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_partZ = DoubleMLPLIV.partialZ(data_ml,
       n_folds = 5,
       ml_r = learner_pars$mlmethod$mlmethod_r,
@@ -122,7 +120,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     theta_partZ = double_mlpliv_partZ$coef
     se_partZ = double_mlpliv_partZ$se
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_partXZ = DoubleMLPLIV.partialXZ(data_ml,
       n_folds = 5,
       ml_g = learner_pars$mlmethod$mlmethod_g,

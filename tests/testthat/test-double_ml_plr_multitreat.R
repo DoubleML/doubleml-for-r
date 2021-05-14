@@ -10,14 +10,12 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml2",
     score = "partialling out",
-    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr_multi)),
     stringsAsFactors = FALSE)
 }
 
@@ -30,8 +28,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     n_folds = 5
 
-    set.seed(i_setting)
-    plr_hat = dml_plr_multitreat(data_plr_multi[[i_setting]],
+    set.seed(3141)
+    plr_hat = dml_plr_multitreat(data_plr_multi,
                                  y = "y", d = c("d1", "d2", "d3"),
                                  n_folds = n_folds,
                                  ml_g = learner$ml_g$clone(),
@@ -43,18 +41,18 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     pval = plr_hat$pval
     #ci_ptwise = confint(plr_hat, joint = FALSE, level = 0.95)
 
-    set.seed(i_setting)
+    set.seed(3141)
     boot_theta = boot_plr_multitreat(plr_hat$thetas, plr_hat$ses,
-                                     data_plr_multi[[i_setting]],
+                                     data_plr_multi,
                                      y = "y", d = c("d1", "d2", "d3"),
                                      n_folds = n_folds, smpls = plr_hat$smpls,
                                      all_preds= plr_hat$all_preds,
                                      bootstrap = "normal", n_rep_boot = n_rep_boot,
                                      score = score)$boot_coef
     
-    set.seed(i_setting)
-    Xnames = names(data_plr_multi[[i_setting]])[names(data_plr_multi[[i_setting]]) %in% c("y", "d1", "d2", "d3", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr_multi[[i_setting]],
+    set.seed(3141)
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "d3", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr_multi,
       y_col = "y",
       d_cols = c("d1", "d2", "d3"), x_cols = Xnames)
 
@@ -72,7 +70,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     pval_obj = double_mlplr_obj$pval
 
     # bootstrap
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj$bootstrap(method = "normal", n_rep_boot = n_rep_boot)
     boot_theta_obj = double_mlplr_obj$boot_coef
 

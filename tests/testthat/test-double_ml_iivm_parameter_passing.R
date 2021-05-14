@@ -8,14 +8,12 @@ if (on_cran) {
     learner = "rpart",
     dml_procedure = "dml2",
     score = "LATE",
-    i_setting = 1:(length(data_iivm)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
-    i_setting = 1:(length(data_iivm)),
     trimming_threshold = 1e-5,
     stringsAsFactors = FALSE)
 }
@@ -24,7 +22,6 @@ test_cases_nocf = expand.grid(
   learner = "rpart",
   dml_procedure = "dml1",
   score = "LATE",
-  i_setting = 1:(length(data_iivm)),
   trimming_threshold = 1e-5,
   stringsAsFactors = FALSE)
 
@@ -39,8 +36,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
     
     learner_pars = get_default_mlmethod_iivm(learner)
     
-    set.seed(i_setting)
-    iivm_hat = dml_irmiv(data_iivm[[i_setting]]$df,
+    set.seed(3141)
+    iivm_hat = dml_irmiv(data_iivm$df,
                          y = "y", d = "d", z = "z",
                          n_folds = n_folds,
                          n_rep = n_rep,
@@ -56,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
     se = iivm_hat$se
     
     boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
-                                 data_iivm[[i_setting]]$df,
+                                 data_iivm$df,
                                  y = "y", d = "d", z = "z",
                                  n_folds = n_folds,
                                  n_rep = n_rep,
@@ -66,9 +63,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
                                  bootstrap = "normal", n_rep_boot = n_rep_boot,
                                  trimming_threshold = trimming_threshold)$boot_coef
 
-    set.seed(i_setting)
+    set.seed(3141)
     dml_iivm_obj = DoubleMLIIVM$new(
-      data = data_iivm[[i_setting]]$dml_data,
+      data = data_iivm$dml_data,
       n_folds = n_folds,
       n_rep = n_rep,
       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -121,14 +118,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
     learner_pars = get_default_mlmethod_iivm(learner)
     
     # Passing for non-cross-fitting case
-    set.seed(i_setting)
-    my_task = Task$new("help task", "regr", data_iivm[[i_setting]]$df)
+    set.seed(3141)
+    my_task = Task$new("help task", "regr", data_iivm$df)
     my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
     train_ids = list("train_ids" = my_sampling$train_set(1))
     test_ids = list("test_ids" = my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     
-    iivm_hat = dml_irmiv(data_iivm[[i_setting]]$df,
+    iivm_hat = dml_irmiv(data_iivm$df,
                          y = "y", d = "d", z = "z",
                          n_folds = 1,
                          ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -143,8 +140,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
     theta = iivm_hat$coef
     se = iivm_hat$se
     
-    set.seed(i_setting)
-    dml_iivm_obj = DoubleMLIIVM$new(data = data_iivm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_iivm_obj = DoubleMLIIVM$new(data = data_iivm$dml_data,
                                 n_folds = n_folds,
                                 ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
                                 ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -192,8 +189,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
     
     learner_pars = get_default_mlmethod_iivm(learner)
     
-    set.seed(i_setting)
-    dml_iivm_obj = DoubleMLIIVM$new(data = data_iivm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_iivm_obj = DoubleMLIIVM$new(data = data_iivm$dml_data,
                                 n_folds = n_folds,
                                 n_rep = n_rep,
                                 ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -232,9 +229,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
     params_r_fold_wise = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
     
-    set.seed(i_setting)
+    set.seed(3141)
     
-    dml_iivm_fold_wise = DoubleMLIIVM$new(data = data_iivm[[i_setting]]$dml_data,
+    dml_iivm_fold_wise = DoubleMLIIVM$new(data = data_iivm$dml_data,
                                 n_folds = n_folds,
                                 n_rep = n_rep,
                                 ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -288,8 +285,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (de
     params_m = list(cp = 0.01, minsplit = 20) # this are defaults
     params_r = list(cp = 0.01, minsplit = 20) # this are defaults
     
-    set.seed(i_setting)
-    dml_iivm_default = DoubleMLIIVM$new(data = data_iivm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_iivm_default = DoubleMLIIVM$new(data = data_iivm$dml_data,
                                 n_folds = n_folds,
                                 n_rep = n_rep,
                                 ml_g = lrn('regr.rpart'),
@@ -303,8 +300,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (de
     theta_default = dml_iivm_default$coef
     se_default = dml_iivm_default$se
     
-    set.seed(i_setting)
-    dml_iivm_obj = DoubleMLIIVM$new(data = data_iivm[[i_setting]]$dml_data,
+    set.seed(3141)
+    dml_iivm_obj = DoubleMLIIVM$new(data = data_iivm$dml_data,
                                 n_folds = n_folds,
                                 n_rep = n_rep,
                                 ml_g = lrn('regr.rpart'),

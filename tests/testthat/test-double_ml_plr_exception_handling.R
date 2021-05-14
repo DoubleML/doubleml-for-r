@@ -13,7 +13,6 @@ if (on_cran) {
     n_folds = c(4),
     n_rep = c(1),
     apply_cross_fitting = c(TRUE),
-    i_setting = c(1),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -24,7 +23,6 @@ if (on_cran) {
     n_folds = c(1, 5),
     n_rep = c(1, 2),
     apply_cross_fitting = c(TRUE, FALSE),
-    i_setting = c(1),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -34,7 +32,7 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
     learner_pars = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
-    data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]]$df,
+    data_ml = double_ml_data_from_data_frame(data_plr$df,
       y_col = "y",
       d_cols = c("d", "X1"))
 

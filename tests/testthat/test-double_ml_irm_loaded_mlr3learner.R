@@ -9,14 +9,12 @@ if (on_cran) {
   test_cases = expand.grid(
     dml_procedure = "dml1",
     score = "ATTE",
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
 }
@@ -24,7 +22,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {
-    set.seed(i_setting)
+    set.seed(3141)
 
     # unloaded learners (access by name)
     learner_regr_name = "regr.ranger"
@@ -50,7 +48,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
 
     set.seed(2)
     double_mlirm = DoubleMLIRM$new(
-      data = data_irm[[i_setting]]$dml_data,
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = learner_regr_name,
       ml_m = learner_classif_name,
@@ -79,7 +77,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
 
     set.seed(2)
     double_mlirm_loaded = DoubleMLIRM$new(
-      data = data_irm[[i_setting]]$dml_data,
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = loaded_regr_learner,
       ml_m = loaded_classif_learner,

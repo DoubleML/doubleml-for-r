@@ -13,7 +13,6 @@ test_cases = expand.grid(
   learner = learner,
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
-  i_setting = 1:(length(data_pliv)),
   n_rep = c(1, 3),
   stringsAsFactors = FALSE)
 
@@ -26,15 +25,15 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     n_folds = 2
 
     # TBD: Functional Test Case
-    set.seed(i_setting)
-    df = data_pliv[[i_setting]]$df
+    set.seed(3141)
+    df = data_pliv$df
     n_folds = 5
     learner_pars_once = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
     # TODO: Functional implementation of partialXZ and check
-    # set.seed(i_setting)
-    # pliv_hat = dml_plriv(data_pliv[[i_setting]], y = "y", d = "d", z = 'z',
+    # set.seed(3141)
+    # pliv_hat = dml_plriv(data_pliv, y = "y", d = "d", z = 'z',
     #                       n_folds = n_folds, S = n_rep,
     #                       mlmethod = learner_list,
     #                       params = learner_pars_once$params,
@@ -50,7 +49,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     params_m = list("d" = learner_pars_once$params$params_m)
     params_r = list("d" = learner_pars_once$params$params_r)
 
-    set.seed(i_setting)
+    set.seed(3141)
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
 
     data_ml = double_ml_data_from_data_frame(df,
@@ -80,7 +79,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     export_params_exact_m = rep(list(rep(list(params_m$d), n_folds)), n_rep)
     export_params_exact_r = rep(list(rep(list(params_r$d), n_folds)), n_rep)
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_obj_exact = DoubleMLPLIV.partialXZ(data_ml,
       n_folds = n_folds,
       ml_g = learner_list$mlmethod_g,
@@ -114,7 +113,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
     # pass empty set of parameters (NULL, use default values)
 
     # no parameters specified (use default values)
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_obj_default = DoubleMLPLIV.partialXZ(data_ml,
       n_folds = n_folds,
       ml_g = learner_list$mlmethod_g,

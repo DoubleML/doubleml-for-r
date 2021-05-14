@@ -10,14 +10,12 @@ if (on_cran) {
     learner = "regr.glmnet",
     dml_procedure = "dml1",
     score = "partialling out",
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = "partialling out",
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -27,8 +25,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     learner = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
-    set.seed(i_setting)
-    pliv_hat = dml_pliv(data_pliv[[i_setting]]$df,
+    set.seed(3141)
+    pliv_hat = dml_pliv(data_pliv$df,
       y = "y", d = "d", z = "z",
       n_folds = 5,
       ml_g = learner$ml_g$clone(),
@@ -39,15 +37,15 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     se = pliv_hat$se
     
     boot_theta = bootstrap_pliv(pliv_hat$thetas, pliv_hat$ses,
-                                 data_pliv[[i_setting]]$df,
+                                 data_pliv$df,
                                  y = "y", d = "d", z = "z",
                                  n_folds = 5, smpls = pliv_hat$smpls,
                                  all_preds= pliv_hat$all_preds,
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlpliv_obj = DoubleMLPLIV$new(
-      data = data_pliv[[i_setting]]$dml_data,
+      data = data_pliv$dml_data,
       n_folds = 5,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),

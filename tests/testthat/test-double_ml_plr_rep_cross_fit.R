@@ -10,7 +10,6 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml1",
     score = "partialling out",
-    i_setting = 1:(length(data_plr)),
     n_rep = c(5),
     stringsAsFactors = FALSE)
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -19,7 +18,6 @@ if (on_cran) {
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    i_setting = 1:(length(data_plr)),
     n_rep = c(2, 5),
     stringsAsFactors = FALSE)
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -30,9 +28,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     learner = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
-    set.seed(i_setting)
+    set.seed(3141)
     n_folds = 5
-    plr_hat = dml_plr(data_plr[[i_setting]]$df,
+    plr_hat = dml_plr(data_plr$df,
                       y = "y", d = "d",
                       n_folds = n_folds, n_rep = n_rep,
                       ml_g = learner$ml_g$clone(),
@@ -45,7 +43,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     #ci = confint(plr_hat, level = 0.95, joint = FALSE)
     
     boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
-                               data_plr[[i_setting]]$df,
+                               data_plr$df,
                                y = "y", d = "d",
                                n_folds = n_folds, n_rep = n_rep,
                                smpls = plr_hat$smpls,
@@ -53,9 +51,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
                                bootstrap = "normal", n_rep_boot = n_rep_boot,
                                score = score)$boot_coef
 
-    set.seed(i_setting)
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
-      data = data_plr[[i_setting]]$dml_data,
+      data = data_plr$dml_data,
       ml_g = learner$ml_g$clone(),
       ml_m = learner$ml_m$clone(),
       dml_procedure = dml_procedure,
