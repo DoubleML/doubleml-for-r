@@ -62,7 +62,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     if (n_folds == 2 & n_rep == 1) {
       double_mlplr_nocf = DoubleMLPLR$new(
-        data = data_ml,
+        data = data_plr$dml_data,
         ml_g = learner$ml_g$clone(),
         ml_m = learner$ml_m$clone(),
         dml_procedure = dml_procedure,

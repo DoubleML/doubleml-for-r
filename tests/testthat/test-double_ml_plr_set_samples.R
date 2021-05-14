@@ -30,8 +30,8 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
     n_rep_boot = 346
 
     set.seed(3141)
-    Xnames = names(data_plr)[names(data_plr) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr,
+    Xnames = names(data_plr$df)[names(data_plr$df) %in% c("y", "d", "z") == FALSE]
+    data_ml = double_ml_data_from_data_frame(data_plr$df,
       y_col = "y",
       d_cols = "d", x_cols = Xnames)
 
