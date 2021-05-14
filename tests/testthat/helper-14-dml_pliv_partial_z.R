@@ -145,12 +145,12 @@ bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
     D = data[, d]
     Y = data[, y]
     
-    psi = (Y - D * theta) * r_hat
+    psi = (Y - D * theta[i_rep]) * r_hat
     psi_a = - r_hat * D
 
     n = length(psi)
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
-    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+    this_res = functional_bootstrap(theta[i_rep], se[i_rep], psi, psi_a, n_folds,
                                     smpls[[i_rep]],
                                     n_rep_boot, weights)
     if (i_rep==1) {

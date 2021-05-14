@@ -318,7 +318,7 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
     if (score == "LATE") {
       
       psi = g1_hat - g0_hat + Z * (Y - g1_hat) / m_hat - (1 - Z) * (Y - g0_hat) / (1 - m_hat) -
-        (r1_hat - r0_hat + Z * (D - r1_hat) / m_hat - (1 - Z) * (D - r0_hat) / (1 - m_hat)) * theta
+        (r1_hat - r0_hat + Z * (D - r1_hat) / m_hat - (1 - Z) * (D - r0_hat) / (1 - m_hat)) * theta[i_rep]
       
       psi_a = -(r1_hat - r0_hat + Z * (D - r1_hat) / m_hat
                 - (1 - Z) * (D - r0_hat) / (1 - m_hat))
@@ -328,7 +328,7 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
     
     n = length(psi)
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
-    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+    this_res = functional_bootstrap(theta[i_rep], se[i_rep], psi, psi_a, n_folds,
                                     smpls[[i_rep]],
                                     n_rep_boot, weights)
     if (i_rep==1) {

@@ -195,12 +195,12 @@ bootstrap_pliv = function(theta, se, data, y, d, z, n_folds, smpls,
     v_hat = residuals$v_hat
     w_hat = residuals$w_hat
     
-    psi = (u_hat - v_hat * theta) * w_hat
+    psi = (u_hat - v_hat * theta[i_rep]) * w_hat
     psi_a = - v_hat * w_hat
     
     n = length(psi)
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
-    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+    this_res = functional_bootstrap(theta[i_rep], se[i_rep], psi, psi_a, n_folds,
                                     smpls[[i_rep]],
                                     n_rep_boot, weights)
     if (i_rep==1) {

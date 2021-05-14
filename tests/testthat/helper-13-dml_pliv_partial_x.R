@@ -208,12 +208,12 @@ bootstrap_pliv_partial_x = function(theta, se, data, y, d, z, n_folds, smpls,
     w_hat = residuals$w_hat
     r_hat_tilde = residuals$r_hat_tilde
     
-    psi = (u_hat - w_hat * theta) * r_hat_tilde
+    psi = (u_hat - w_hat * theta[i_rep]) * r_hat_tilde
     psi_a = - r_hat_tilde * w_hat
 
     n = length(psi)
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
-    this_res = functional_bootstrap(theta, se, psi, psi_a, n_folds,
+    this_res = functional_bootstrap(theta[i_rep], se[i_rep], psi, psi_a, n_folds,
                                     smpls[[i_rep]],
                                     n_rep_boot, weights)
     if (i_rep==1) {
