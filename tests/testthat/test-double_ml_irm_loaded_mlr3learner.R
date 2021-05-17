@@ -23,6 +23,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {
     set.seed(3141)
+    n_rep_boot = 212
 
     # unloaded learners (access by name)
     learner_regr_name = "regr.ranger"
@@ -72,6 +73,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm$fit()
     theta = double_mlirm$coef
     se = double_mlirm$se
+    double_mlirm$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta = double_mlirm$boot_coef
 
 
 
@@ -87,14 +90,11 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm_loaded$fit()
     theta_loaded = double_mlirm_loaded$coef
     se_loaded = double_mlirm_loaded$se
-
-    # bootstrap
-    # double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlirm_obj$boot_coef
-    #
-    # at the moment the object result comes without a name
+    double_mlirm_loaded$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_loaded = double_mlirm_loaded$boot_coef
+    
     expect_equal(theta, theta_loaded, tolerance = 1e-8)
     expect_equal(se, se_loaded, tolerance = 1e-8)
-    # expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_loaded), tolerance = 1e-8)
   }
 )
