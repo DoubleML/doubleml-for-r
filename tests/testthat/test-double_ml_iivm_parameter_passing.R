@@ -8,6 +8,7 @@ if (on_cran) {
     learner = "rpart",
     dml_procedure = "dml2",
     score = "LATE",
+    trimming_threshold = 1e-5,
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
