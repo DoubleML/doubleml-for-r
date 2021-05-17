@@ -226,7 +226,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
       ml_r = private$assert_learner(ml_r, "ml_r", Regr = FALSE, Classif = TRUE)
 
-      self$learner = list(
+      private$learner_ = list(
         "ml_g" = ml_g,
         "ml_m" = ml_m,
         "ml_r" = ml_r)
@@ -242,7 +242,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
     initialize_ml_nuisance_params = function() {
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
-      self$params = list(
+      private$params_ = list(
         "ml_g0" = nuisance,
         "ml_g1" = nuisance,
         "ml_m" = nuisance,

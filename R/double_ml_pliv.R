@@ -183,7 +183,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         ml_r = private$assert_learner(ml_r, "ml_r",
           Regr = TRUE,
           Classif = FALSE)
-        self$learner = list("ml_r" = ml_r)
+        private$learner_ = list("ml_r" = ml_r)
       } else {
         ml_g = private$assert_learner(ml_g, "ml_g",
           Regr = TRUE,
@@ -194,7 +194,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         ml_r = private$assert_learner(ml_r, "ml_r",
           Regr = TRUE,
           Classif = FALSE)
-        self$learner = list(
+        private$learner_ = list(
           "ml_g" = ml_g,
           "ml_m" = ml_m,
           "ml_r" = ml_r)
@@ -220,8 +220,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
 
-      self$params = rep(list(nuisance), length(valid_learner))
-      names(self$params) = valid_learner
+      private$params_ = rep(list(nuisance), length(valid_learner))
+      names(private$params_) = valid_learner
       invisible(self)
     },
     ml_nuisance_and_score_elements = function(smpls, ...) {
