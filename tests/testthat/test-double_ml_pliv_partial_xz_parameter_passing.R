@@ -2,147 +2,282 @@ context("Unit tests for parameter passing for PLIV, partial_xz")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-# settings for parameter provision
-learner = "regr.rpart"
-
-learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner, "mlmethod_r" = learner)
-
 skip_on_cran()
 
 test_cases = expand.grid(
-  learner = learner,
+  learner = "regr.rpart",
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
-  n_rep = c(1, 3),
+  stringsAsFactors = FALSE)
+
+test_cases_nocf = expand.grid(
+  learner = "regr.rpart",
+  dml_procedure = "dml1",
+  score = "partialling out",
   stringsAsFactors = FALSE)
 
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
-# skip('Skip tests for tuning')
+test_cases_nocf["test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
 
-patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV",
+patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.partialXZ (oop vs fun):",
   .cases = test_cases, {
     n_rep_boot = 498
     n_folds = 2
-
-    # TBD: Functional Test Case
-    set.seed(3141)
+    n_rep = 3
+    
+    learner_pars = get_default_mlmethod_pliv(learner)
     df = data_pliv$df
-    n_folds = 5
-    learner_pars_once = get_default_mlmethod_pliv(learner)
-    n_rep_boot = 498
-
-    # TODO: Functional implementation of partialXZ and check
-    # set.seed(3141)
-    # pliv_hat = dml_plriv(data_pliv, y = "y", d = "d", z = 'z',
-    #                       n_folds = n_folds, S = n_rep,
-    #                       mlmethod = learner_list,
-    #                       params = learner_pars_once$params,
-    #                       dml_procedure = dml_procedure, score = score,
-    #                       bootstrap = "normal",  n_rep_boot = n_rep_boot)
-    # theta = coef(pliv_hat)
-    # se = pliv_hat$se
-    #
-
-    # exact parameter provision
-    # learner_pars_exact = rep(list(rep(list(learner_pars_once$params), 1)), n_rep)
-    params_g = list("d" = learner_pars_once$params$params_g)
-    params_m = list("d" = learner_pars_once$params$params_m)
-    params_r = list("d" = learner_pars_once$params$params_r)
-
+    
+    set.seed(3141)
+    pliv_hat = dml_pliv_partial_xz(df,
+                        y = "y", d = "d", z = c("z", "z2"),
+                        n_folds = n_folds, n_rep = n_rep,
+                        ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                        ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+                        ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
+                        params_g = learner_pars$params$params_g,
+                        params_m = learner_pars$params$params_m,
+                        params_r = learner_pars$params$params_r,
+                        dml_procedure = dml_procedure, score = score)
+    theta = pliv_hat$coef
+    se = pliv_hat$se
+    
+    boot_theta = bootstrap_pliv_partial_xz(pliv_hat$thetas, pliv_hat$ses,
+                                df,
+                                y = "y", d = "d", z = c("z", "z2"),
+                                n_folds = n_folds, n_rep = n_rep,
+                                smpls = pliv_hat$smpls,
+                                all_preds= pliv_hat$all_preds,
+                                bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+    
     set.seed(3141)
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
+    
+    dml_data = double_ml_data_from_data_frame(df,
+                                              y_col = "y",
+                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+    dml_pliv_obj = DoubleMLPLIV.partialXZ(
+      data = dml_data,
+      n_folds = n_folds, n_rep = n_rep,
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+      ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
+      dml_procedure = dml_procedure,
+      score = score)
+    
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_g",
+                                        params = learner_pars$params$params_g)
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_m",
+                                        params = learner_pars$params$params_m)
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_r",
+                                        params = learner_pars$params$params_r)
+    
+    dml_pliv_obj$fit()
+    
+    theta_obj = dml_pliv_obj$coef
+    se_obj = dml_pliv_obj$se
+    
+    # bootstrap
+    dml_pliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = dml_pliv_obj$boot_coef
+    
+    expect_equal(theta, theta_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
+    
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+  }
+)
 
-    data_ml = double_ml_data_from_data_frame(df,
-      y_col = "y",
-      d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
-
-    double_mlpliv_obj_once = DoubleMLPLIV.partialXZ(data_ml,
+patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.partialXZ (no cross-fitting)",
+  .cases = test_cases_nocf, {
+    n_folds = 2
+    
+    learner_pars = get_default_mlmethod_pliv(learner)
+    df = data_pliv$df
+    
+    # Passing for non-cross-fitting case
+    set.seed(3141)
+    my_task = Task$new("help task", "regr", data_pliv$df)
+    my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
+    train_ids = list("train_ids" = my_sampling$train_set(1))
+    test_ids = list("test_ids" = my_sampling$test_set(1))
+    smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+    
+    pliv_hat = dml_pliv_partial_xz(df,
+                                   y = "y", d = "d", z = c("z", "z2"),
+                                   n_folds = 1,
+                                   ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                                   ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+                                   ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
+                                   params_g = learner_pars$params$params_g,
+                                   params_m = learner_pars$params$params_m,
+                                   params_r = learner_pars$params$params_r,
+                                   dml_procedure = dml_procedure, score = score,
+                                   smpls=smpls)
+    theta = pliv_hat$coef
+    se = pliv_hat$se
+    
+    set.seed(3141)
+    Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
+    
+    dml_data = double_ml_data_from_data_frame(df,
+                                              y_col = "y",
+                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+    dml_pliv_nocf = DoubleMLPLIV.partialXZ(
+      data = dml_data,
       n_folds = n_folds,
-      ml_g = learner_list$mlmethod_g,
-      ml_m = learner_list$mlmethod_m,
-      ml_r = learner_list$mlmethod_r,
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+      ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
       dml_procedure = dml_procedure,
       score = score,
-      n_rep = n_rep)
+      apply_cross_fitting = FALSE)
+    
+    dml_pliv_nocf$set_ml_nuisance_params(treat_var = "d",
+                                         learner = "ml_g",
+                                         params = learner_pars$params$params_g)
+    dml_pliv_nocf$set_ml_nuisance_params(treat_var = "d",
+                                         learner = "ml_m",
+                                         params = learner_pars$params$params_m)
+    dml_pliv_nocf$set_ml_nuisance_params(treat_var = "d",
+                                         learner = "ml_r",
+                                         params = learner_pars$params$params_r)
+    
+    dml_pliv_nocf$fit()
+    theta_obj = dml_pliv_nocf$coef
+    se_obj = dml_pliv_nocf$se
+    
+    expect_equal(theta, theta_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
+  }
+)
 
-    double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_g", params = params_g$d)
-    double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_m", params = params_m$d)
-    double_mlpliv_obj_once$set_ml_nuisance_params(treat_var = "d", learner = "ml_r", params = params_r$d)
-
-    double_mlpliv_obj_once$fit()
-
-    theta_obj_once = double_mlpliv_obj_once$coef
-    se_obj_once = double_mlpliv_obj_once$se
-
-    # Exact passing
-    export_params_exact_g = rep(list(rep(list(params_g$d), n_folds)), n_rep)
-    export_params_exact_m = rep(list(rep(list(params_m$d), n_folds)), n_rep)
-    export_params_exact_r = rep(list(rep(list(params_r$d), n_folds)), n_rep)
+patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.partialXZ (fold-wise vs global)",
+  .cases = test_cases, {
+    n_folds = 2
+    n_rep = 3
+    
+    learner_pars = get_default_mlmethod_pliv(learner)
+    
+    df = data_pliv$df
+    Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
+    dml_data = double_ml_data_from_data_frame(df,
+                                              y_col = "y",
+                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
 
     set.seed(3141)
-    double_mlpliv_obj_exact = DoubleMLPLIV.partialXZ(data_ml,
-      n_folds = n_folds,
-      ml_g = learner_list$mlmethod_g,
-      ml_m = learner_list$mlmethod_m,
-      ml_r = learner_list$mlmethod_r,
-      dml_procedure = dml_procedure,
-      score = score,
-      n_rep = n_rep)
-
-    double_mlpliv_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_g", params = export_params_exact_g,
-      set_fold_specific = TRUE)
-    double_mlpliv_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_m", params = export_params_exact_m,
-      set_fold_specific = TRUE)
-    double_mlpliv_obj_exact$set_ml_nuisance_params(
-      treat_var = "d", learner = "ml_r", params = export_params_exact_r,
-      set_fold_specific = TRUE)
-
-    double_mlpliv_obj_exact$fit()
-
-    theta_obj_exact = double_mlpliv_obj_exact$coef
-    se_obj_exact = double_mlpliv_obj_exact$se
-
-
-    ## TBD: External parameter provision
-
-    # bootstrap
-    # double_mlplr_obj_exact$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj_exact = double_mlplr_obj_exact$boot_coef
-    # pass empty set of parameters (NULL, use default values)
-
-    # no parameters specified (use default values)
+    dml_pliv_obj = DoubleMLPLIV.partialXZ(dml_data,
+                                    n_folds = n_folds, n_rep = n_rep,
+                                    ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                                    ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+                                    ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
+                                    dml_procedure = dml_procedure,
+                                    score = score)
+    
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_g",
+                                        params = learner_pars$params$params_g)
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_m",
+                                        params = learner_pars$params$params_m)
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_r",
+                                        params = learner_pars$params$params_r)
+    
+    dml_pliv_obj$fit()
+    theta = dml_pliv_obj$coef
+    se = dml_pliv_obj$se
+    
+    params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
+    params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
+    params_r_fold_wise = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
+    
     set.seed(3141)
-    double_mlpliv_obj_default = DoubleMLPLIV.partialXZ(data_ml,
-      n_folds = n_folds,
-      ml_g = learner_list$mlmethod_g,
-      ml_m = learner_list$mlmethod_m,
-      ml_r = learner_list$mlmethod_r,
-      dml_procedure = dml_procedure,
-      score = score,
-      n_rep = n_rep)
+    dml_pliv_obj_fold_wise = DoubleMLPLIV.partialXZ(dml_data,
+                                              n_folds = n_folds, n_rep = n_rep,
+                                              ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+                                              ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+                                              ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
+                                              dml_procedure = dml_procedure,
+                                              score = score)
+    
+    dml_pliv_obj_fold_wise$set_ml_nuisance_params(treat_var = "d",
+                                                  learner = "ml_g",
+                                                  params = params_g_fold_wise,
+                                                  set_fold_specific = TRUE)
+    dml_pliv_obj_fold_wise$set_ml_nuisance_params(treat_var = "d",
+                                                  learner = "ml_m",
+                                                  params = params_m_fold_wise,
+                                                  set_fold_specific = TRUE)
+    dml_pliv_obj_fold_wise$set_ml_nuisance_params(treat_var = "d",
+                                                  learner = "ml_r",
+                                                  params = params_r_fold_wise,
+                                                  set_fold_specific = TRUE)
+    
+    dml_pliv_obj_fold_wise$fit()
+    theta_fold_wise = dml_pliv_obj_fold_wise$coef
+    se_fold_wise = dml_pliv_obj_fold_wise$se
+    
+    expect_equal(theta, theta_fold_wise, tolerance = 1e-8)
+    expect_equal(se, se_fold_wise, tolerance = 1e-8)
+  }
+)
 
-    double_mlpliv_obj_default$fit()
-
-    theta_obj_default = double_mlpliv_obj_default$coef
-    se_obj_default = double_mlpliv_obj_default$se
-
-    # bootstrap
-    # double_mlplr_obj_default$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj_default = double_mlplr_obj_default$boot_coef
-
-    # check:
-    # expect_equal(theta, theta_obj_default, tolerance = 1e-8)
-    expect_equal(theta_obj_once, theta_obj_exact, tolerance = 1e-8)
-    expect_equal(theta_obj_once, theta_obj_default, tolerance = 1e-8)
-    # expect_equal(theta_obj_null, theta_obj_default, tolerance = 1e-8)
-    # expect_equal(se_obj_null, se_obj_exact, tolerance = 1e-8)
-    expect_equal(se_obj_once, se_obj_exact, tolerance = 1e-8)
-    expect_equal(se_obj_once, se_obj_default, tolerance = 1e-8)
-
-
-    # expect_equal(boot_theta_obj_once, boot_theta_obj_exact, tolerance = 1e-8)
-    # expect_equal(boot_theta_obj_null, boot_theta_obj_exact, tolerance = 1e-8)
+patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.partialXZ (default vs explicit)",
+  .cases = test_cases, {
+    n_folds = 2
+    n_rep = 3
+    
+    params_g = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_m = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_r = list(cp = 0.01, minsplit = 20) # this are defaults
+    
+    df = data_pliv$df
+    Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
+    dml_data = double_ml_data_from_data_frame(df,
+                                              y_col = "y",
+                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+    
+    set.seed(3141)
+    dml_pliv_default = DoubleMLPLIV.partialXZ(dml_data,
+                                        n_folds = n_folds, n_rep = n_rep,
+                                        ml_g = lrn('regr.rpart'),
+                                        ml_m = lrn('regr.rpart'),
+                                        ml_r = lrn('regr.rpart'),
+                                        dml_procedure = dml_procedure,
+                                        score = score)
+    
+    dml_pliv_default$fit()
+    theta_default = dml_pliv_default$coef
+    se_default = dml_pliv_default$se
+    
+    set.seed(3141)
+    dml_pliv_obj = DoubleMLPLIV.partialXZ(dml_data,
+                                    n_folds = n_folds, n_rep = n_rep,
+                                    ml_g = lrn('regr.rpart'),
+                                    ml_m = lrn('regr.rpart'),
+                                    ml_r = lrn('regr.rpart'),
+                                    dml_procedure = dml_procedure,
+                                    score = score)
+    
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_g",
+                                        params = params_g)
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_m",
+                                        params = params_m)
+    dml_pliv_obj$set_ml_nuisance_params(treat_var = "d",
+                                        learner = "ml_r",
+                                        params = params_r)
+    
+    dml_pliv_obj$fit()
+    theta = dml_pliv_obj$coef
+    se = dml_pliv_obj$se
+    
+    expect_equal(theta, theta_default, tolerance = 1e-8)
+    expect_equal(se, se_default, tolerance = 1e-8)
   }
 )

@@ -39,6 +39,11 @@ dml_pliv_partial_z = function(data, y, d, z,
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
+      if (length(this_smpl$train_ids) == 1) {
+        r_hat = r_hat[test_index]
+        Y = Y[test_index]
+        D = D[test_index]
+      }
     }
     if (dml_procedure == "dml2") {
       orth_est = orth_pliv_partial_z_dml(

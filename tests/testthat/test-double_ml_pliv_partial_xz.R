@@ -29,8 +29,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
-    
-    set.seed(3141)
+
     boot_theta = bootstrap_pliv_partial_xz(pliv_hat$thetas, pliv_hat$ses,
                                  data_pliv_partialXZ$df,
                                  y = "y", d = "d", z = paste0("Z", 1:dim_z),
@@ -52,7 +51,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
     se_obj = double_mlpliv_obj$se
 
     # bootstrap
-    set.seed(3141)
     double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
     boot_theta_obj = double_mlpliv_obj$boot_coef
 
