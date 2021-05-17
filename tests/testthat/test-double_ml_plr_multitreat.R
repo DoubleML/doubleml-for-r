@@ -23,7 +23,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
-    learner = get_default_mlmethod_plr(learner)
+    learner_pars = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
     n_folds = 5
@@ -32,8 +32,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     plr_hat = dml_plr_multitreat(data_plr_multi,
                                  y = "y", d = c("d1", "d2", "d3"),
                                  n_folds = n_folds,
-                                 ml_g = learner$ml_g$clone(),
-                                 ml_m = learner$ml_m$clone(),
+                                 ml_g = learner_pars$ml_g$clone(),
+                                 ml_m = learner_pars$ml_m$clone(),
                                  dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
@@ -57,8 +57,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       d_cols = c("d1", "d2", "d3"), x_cols = Xnames)
 
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner$ml_g$clone(),
-      ml_m = learner$ml_m$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)

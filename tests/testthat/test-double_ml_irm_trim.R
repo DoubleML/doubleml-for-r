@@ -24,14 +24,15 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {
-    learner = get_default_mlmethod_irm(learner)
+    learner_pars = get_default_mlmethod_irm(learner)
     n_rep_boot = 498
 
     set.seed(3141)
     irm_hat = dml_irm(data_irm$df,
                       y = "y", d = "d",
                       n_folds = 5, 
-                      ml_g = learner$ml_g$clone(), ml_m = learner$ml_m$clone(),
+                      ml_g = learner_pars$ml_g$clone(),
+                      ml_m = learner_pars$ml_m$clone(),
                       dml_procedure = dml_procedure, score = score,
                       trimming_threshold = trimming_threshold)
     theta = irm_hat$coef
@@ -50,8 +51,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm_obj = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = 5,
-      ml_g = learner$ml_g$clone(),
-      ml_m = learner$ml_m$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       score = score,
       trimming_rule = trimming_rule,

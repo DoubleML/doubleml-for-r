@@ -25,7 +25,7 @@ if (on_cran) {
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
-    learner = get_default_mlmethod_plr(learner)
+    learner_pars = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
     set.seed(3141)
@@ -33,8 +33,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     plr_hat = dml_plr(data_plr$df,
                       y = "y", d = "d",
                       n_folds = n_folds, n_rep = n_rep,
-                      ml_g = learner$ml_g$clone(),
-                      ml_m = learner$ml_m$clone(),
+                      ml_g = learner_pars$ml_g$clone(),
+                      ml_m = learner_pars$ml_m$clone(),
                       dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
@@ -54,8 +54,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = learner$ml_g$clone(),
-      ml_m = learner$ml_m$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,

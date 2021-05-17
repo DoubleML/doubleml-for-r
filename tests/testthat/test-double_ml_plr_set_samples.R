@@ -26,7 +26,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("PLR with external sample provision:",
   .cases = test_cases, {
-    learner = get_default_mlmethod_plr(learner)
+    learner_pars = get_default_mlmethod_plr(learner)
     n_rep_boot = 346
 
     set.seed(3141)
@@ -36,8 +36,8 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
       d_cols = "d", x_cols = Xnames)
 
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner$ml_g$clone(),
-      ml_m = learner$ml_m$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
@@ -53,8 +53,8 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
     # External sample provision
     SAMPLES = double_mlplr_obj$smpls
     double_mlplr_obj_external = DoubleMLPLR$new(data_ml,
-      ml_g = learner$ml_g$clone(),
-      ml_m = learner$ml_m$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       score = score,
       draw_sample_splitting = FALSE)

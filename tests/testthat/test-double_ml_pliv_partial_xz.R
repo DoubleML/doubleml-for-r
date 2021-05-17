@@ -15,7 +15,7 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
   .cases = test_cases, {
-    learner = get_default_mlmethod_pliv(learner)
+    learner_pars = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
     set.seed(3141)
@@ -23,9 +23,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
     pliv_hat = dml_pliv_partial_xz(data_pliv_partialXZ$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5,
-      ml_g = learner$ml_g$clone(),
-      ml_m = learner$ml_m$clone(),
-      ml_r = learner$ml_r$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
@@ -40,9 +40,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
 
     set.seed(3141)
     double_mlpliv_obj = DoubleML:::DoubleMLPLIV.partialXZ(data_pliv_partialXZ$dml_data,
-                                               ml_g = learner$ml_g$clone(),
-                                               ml_m = learner$ml_m$clone(),
-                                               ml_r = learner$ml_r$clone(),
+                                               ml_g = learner_pars$ml_g$clone(),
+                                               ml_m = learner_pars$ml_m$clone(),
+                                               ml_r = learner_pars$ml_r$clone(),
                                                n_folds = 5,
                                                score = score,
                                                dml_procedure = dml_procedure)
