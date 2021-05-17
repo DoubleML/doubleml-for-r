@@ -55,7 +55,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     
     dml_data = double_ml_data_from_data_frame(df,
                                               y_col = "y",
-                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+                                              d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
     dml_pliv_obj = DoubleMLPLIV.partialXZ(
       data = dml_data,
       n_folds = n_folds, n_rep = n_rep,
@@ -125,7 +125,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     
     dml_data = double_ml_data_from_data_frame(df,
                                               y_col = "y",
-                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+                                              d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
     dml_pliv_nocf = DoubleMLPLIV.partialXZ(
       data = dml_data,
       n_folds = n_folds,
@@ -166,7 +166,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     dml_data = double_ml_data_from_data_frame(df,
                                               y_col = "y",
-                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+                                              d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
 
     set.seed(3141)
     dml_pliv_obj = DoubleMLPLIV.partialXZ(dml_data,
@@ -239,7 +239,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     dml_data = double_ml_data_from_data_frame(df,
                                               y_col = "y",
-                                              d_cols = c("d"), x_cols = Xnames, z_cols = c("z", "z2"))
+                                              d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
     
     set.seed(3141)
     dml_pliv_default = DoubleMLPLIV.partialXZ(dml_data,

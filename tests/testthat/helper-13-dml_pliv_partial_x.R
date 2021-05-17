@@ -132,7 +132,7 @@ fit_nuisance_pliv_partial_x = function(data, y, d, z,
   r_hat_array = rep(NA, n)
   m_hat_array = matrix(NA, nrow = n, ncol = n_z)
   
-  for (i_fold in 1:length(test_ids)) {
+  for (i_fold in seq_len(length(test_ids))) {
     test_index = test_ids[[i_fold]]
     r_hat_array[test_index] = r_hat_list[[i_fold]]
     for (i_z in seq(n_z)) {

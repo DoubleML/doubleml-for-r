@@ -40,8 +40,6 @@ dml_plr = function(data, y, d,
 
   t = theta / se
   pval = 2 * stats::pnorm(-abs(t))
-  
-  ci = c()
 
   names(theta) = names(se) = names(t) = names(pval) =d
   res = list(

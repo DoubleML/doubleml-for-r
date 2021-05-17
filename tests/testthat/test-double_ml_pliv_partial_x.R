@@ -1,7 +1,5 @@
 context("Unit tests for PLIV.partialX")
 
-library("mlr3learners")
-
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 skip_on_cran()

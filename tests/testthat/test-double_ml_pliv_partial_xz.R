@@ -38,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
                                  bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(3141)
-    double_mlpliv_obj = DoubleML:::DoubleMLPLIV.partialXZ(data_pliv_partialXZ$dml_data,
+    double_mlpliv_obj = DoubleMLPLIV.partialXZ(data_pliv_partialXZ$dml_data,
                                                ml_g = learner_pars$ml_g$clone(),
                                                ml_m = learner_pars$ml_m$clone(),
                                                ml_r = learner_pars$ml_r$clone(),
