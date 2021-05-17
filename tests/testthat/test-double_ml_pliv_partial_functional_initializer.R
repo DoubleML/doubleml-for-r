@@ -24,16 +24,6 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
   .cases = test_cases, {
     learner_pars = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
-    #
-    # set.seed(3141)
-    # pliv_hat = dml_plriv(data_pliv, y = "y", d = "d", z = 'z',
-    #                       n_folds = 5, mlmethod = learner_pars$mlmethod,
-    #                       params = learner_pars$params,
-    #                       dml_procedure = dml_procedure, score = score,
-    #                       bootstrap = "normal",  n_rep_boot = n_rep_boot)
-    # theta = coef(pliv_hat)
-    # se = pliv_hat$se
-    #
 
     set.seed(3141)
     df = data_pliv$df
@@ -45,28 +35,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     # Partial out X (default PLIV)
     double_mlpliv_obj = DoubleMLPLIV$new(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
       score = score)
-
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_r",
-      treat_var = "d",
-      params = learner_pars$params$params_r)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_m_z",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-    double_mlpliv_obj$set_ml_nuisance_params(
-      learner = "ml_m_z2",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
 
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
@@ -76,28 +49,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     set.seed(3141)
     double_mlpliv_partX = DoubleMLPLIV.partialX(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
       score = score)
-
-    double_mlpliv_partX$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
-    double_mlpliv_partX$set_ml_nuisance_params(
-      learner = "ml_r",
-      treat_var = "d",
-      params = learner_pars$params$params_r)
-    double_mlpliv_partX$set_ml_nuisance_params(
-      learner = "ml_m_z",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-    double_mlpliv_partX$set_ml_nuisance_params(
-      learner = "ml_m_z2",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
 
     double_mlpliv_partX$fit()
     theta_partX = double_mlpliv_partX$coef
@@ -107,14 +63,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     set.seed(3141)
     double_mlpliv_partZ = DoubleMLPLIV.partialZ(data_ml,
       n_folds = 5,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
+      ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
       score = score)
-
-    double_mlpliv_partZ$set_ml_nuisance_params(
-      learner = "ml_r",
-      treat_var = "d",
-      params = learner_pars$params$params_r)
 
     double_mlpliv_partZ$fit()
     theta_partZ = double_mlpliv_partZ$coef
@@ -123,26 +74,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     set.seed(3141)
     double_mlpliv_partXZ = DoubleMLPLIV.partialXZ(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$mlmethod$mlmethod_g,
-      ml_m = learner_pars$mlmethod$mlmethod_m,
-      ml_r = learner_pars$mlmethod$mlmethod_r,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
       score = score)
 
-    double_mlpliv_partXZ$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
-
-    double_mlpliv_partXZ$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-
-    double_mlpliv_partXZ$set_ml_nuisance_params(
-      learner = "ml_r",
-      treat_var = "d",
-      params = learner_pars$params$params_r)
     double_mlpliv_partXZ$fit()
     theta_partXZ = double_mlpliv_partXZ$coef
     se_partXZ = double_mlpliv_partXZ$se
