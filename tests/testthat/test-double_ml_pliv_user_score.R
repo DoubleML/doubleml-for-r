@@ -47,6 +47,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 
+    double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mlpliv_obj$boot_coef
+
     set.seed(3141)
     double_mlpliv_obj_score = DoubleMLPLIV$new(
     data = data_pliv$dml_data,
@@ -61,13 +64,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj_score = double_mlpliv_obj_score$coef
     se_obj_score = double_mlpliv_obj_score$se
 
-    # bootstrap
-    # double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlpliv_obj$boot_coef
+    double_mlpliv_obj_score$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_score = double_mlpliv_obj_score$boot_coef
 
-    # at the moment the object result comes without a name
     expect_equal(theta_obj, theta_obj_score, tolerance = 1e-8)
     expect_equal(se_obj, se_obj_score, tolerance = 1e-8)
-    # expect_equal(as.vector(pliv_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta_score), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )
