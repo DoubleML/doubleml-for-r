@@ -172,7 +172,7 @@ DoubleML = R6Class("DoubleML",
     #' The partition used for cross-fitting.
     smpls  = function(value) {
       if (missing(value)) return(private$smpls_)
-      else stop("can't set field all_coef")
+      else stop("can't set field smpls")
     },
 
     #' @field t_stat (`numeric()`) \cr
@@ -974,7 +974,7 @@ DoubleML = R6Class("DoubleML",
       if (self$draw_sample_splitting) {
         self$split_samples()
       } else {
-        self$smpls = NULL
+        private$_smpls = NULL
       }
 
       # initialize arrays according to obj_dml_data and the resampling settings
