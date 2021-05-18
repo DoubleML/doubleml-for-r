@@ -21,35 +21,64 @@
 #'   d_cols = "d")
 #' @export
 DoubleMLData = R6Class("DoubleMLData",
-  public = list(
+  active = list(
     #' @field all_variables (`character()`)\cr
     #' All variables available in the dataset.
-    all_variables = NULL,
+    all_variables = function(value) {
+      if (missing(value)) return(names(self$data))
+      else stop("can't set field all_variables")
+    },
 
     #' @field d_cols (`character()`)\cr
     #' The treatment variable(s).
-    d_cols = NULL,
+    d_cols = function(value) {
+      if (missing(value)) return(private$d_cols_)
+      else {
+        reset_value = !is.null(self$data_model)
+        assert_character(value, unique = TRUE)
+        private$d_cols_ = value
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
+    },
 
     #' @field data ([`data.table`][data.table::data.table()])\cr
     #' Data object.
-    data = NULL,
+    data = function(value) {
+      if (missing(value)) return(private$data_)
+      else stop("can't set field data")
+    },
 
     #' @field data_model ([`data.table`][data.table::data.table()])\cr
     #' Internal data object that implements the causal model as specified by
     #' the user via `y_col`, `d_cols`, `x_cols` and `z_cols`.
-    data_model = NULL,
+    data_model = function(value) {
+      if (missing(value)) return(private$data_model_)
+      else stop("can't set field data_model")
+    },
 
     #' @field n_instr (`NULL`, `integer(1)`) \cr
     #' The number of instruments.
-    n_instr = NULL,
+    n_instr = function(value) {
+      if (missing(value)) return(length(self$z_cols))
+      else stop("can't set field n_instr")
+    },
 
     #' @field n_obs (`integer(1)`) \cr
     #' The number of observations.
-    n_obs = NULL,
+    n_obs = function(value) {
+      if (missing(value)) return(dim(self$data)[1])
+      else stop("can't set field n_obs")
+    },
 
     #' @field n_treat (`integer(1)`) \cr
     #' The umber of treatment variables.
-    n_treat = NULL,
+    n_treat = function(value) {
+      if (missing(value)) return(length(self$d_cols))
+      else stop("can't set field n_treat")
+    },
 
     #' @field other_treat_cols (`NULL`, `character()`) \cr
     #' If `use_other_treat_as_covariate` is `TRUE`, `other_treat_cols` are the
@@ -57,32 +86,98 @@ DoubleMLData = R6Class("DoubleMLData",
     #' These variables then are internally added to the covariates `x_cols` during
     #' the fitting stage. If `use_other_treat_as_covariate` is `FALSE`,
     #' `other_treat_cols` is `NULL`.
-    other_treat_cols = NULL,
+    other_treat_cols = function(value) {
+      if (missing(value)) return(private$other_treat_cols_)
+      else stop("can't set field other_treat_cols")
+    },
 
     #' @field treat_col (`character(1)`) \cr
     #' "Active" treatment variable in the multiple-treatment case.
-    treat_col = NULL,
+    treat_col = function(value) {
+      if (missing(value)) return(private$treat_col_)
+      else stop("can't set field treat_col")
+    },
 
     #' @field use_other_treat_as_covariate (`logical(1)`) \cr
     #' Indicates whether in the multiple-treatment case the other treatment
     #' variables should be added as covariates. Default is `TRUE`.
-    use_other_treat_as_covariate = TRUE,
+    use_other_treat_as_covariate = function(value) {
+      if (missing(value)) return(private$use_other_treat_as_covariate_)
+      else {
+        reset_value = !is.null(self$data_model)
+        assert_logical(value, len = 1)
+        private$use_other_treat_as_covariate_ = value
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
+    },
 
     #' @field x_cols (`NULL`, `character()`) \cr
     #' The covariates. If `NULL`, all variables (columns of `data`) which are
     #' neither specified as outcome variable `y_col`, nor as treatment variables
     #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
     #' Default is `NULL`.
-    x_cols = NULL,
+    x_cols = function(value) {
+      if (missing(value)) return(private$x_cols_)
+      else {
+        reset_value = !is.null(self$data_model)
+        if (!is.null(value)) {
+          assert_character(value, unique = TRUE)
+        }
+
+        if (!is.null(value)) {
+          private$x_cols_ = value
+        } else {
+          if (!is.null(self$z_cols)) {
+            y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
+            private$x_cols_ = setdiff(self$all_variables, y_d_z)
+          } else {
+            y_d = union(self$y_col, self$d_cols)
+            private$x_cols_ = setdiff(self$all_variables, y_d)
+          }
+        }
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
+    },
 
     #' @field y_col (`character(1)`) \cr
     #' The outcome variable.
-    y_col = NULL,
+    y_col = function(value) {
+      if (missing(value)) return(private$y_col_)
+      else {
+        reset_value = !is.null(self$data_model)
+        assert_character(value, len = 1)
+        private$y_col_ = value
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
+    },
 
     #' @field z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
-    z_cols = NULL,
+    z_cols = function(value) {
+      if (missing(value)) return(private$z_cols_)
+      else {
+        reset_value = !is.null(self$data_model)
+        if (!is.null(value)) {
+          assert_character(value, unique = TRUE)
+        }
+        private$z_cols_ = value
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
+    }),
 
+  public = list(
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
@@ -122,45 +217,16 @@ DoubleMLData = R6Class("DoubleMLData",
                    "DoubleMLData."))
       }
       assert_class(data, "data.table")
-      if (!is.null(x_cols)) {
-        assert_character(x_cols, unique = TRUE)
-      }
-      assert_character(y_col, len = 1)
-      assert_character(d_cols, unique = TRUE)
-      if (!is.null(z_cols)) {
-        assert_character(z_cols, unique = TRUE)
-      }
-      assert_logical(use_other_treat_as_covariate, len = 1)
 
-      self$data = data
-      self$data_model = NULL
+      private$data_ = data
 
       self$y_col = y_col
       self$d_cols = d_cols
       self$z_cols = z_cols
-
-      if (!is.null(x_cols)) {
-        self$x_cols = x_cols
-      } else {
-        if (!is.null(self$z_cols)) {
-          y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
-          self$x_cols = setdiff(names(data), y_d_z)
-        } else {
-          y_d = union(self$y_col, self$d_cols)
-          self$x_cols = setdiff(names(data), y_d)
-        }
-      }
-
+      self$x_cols = x_cols
       private$check_disjoint_sets()
 
-      self$treat_col = NULL
-      self$other_treat_cols = NULL
       self$use_other_treat_as_covariate = use_other_treat_as_covariate
-
-      self$all_variables = names(self$data)
-      self$n_treat = length(self$d_cols)
-      self$n_instr = length(self$z_cols)
-      self$n_obs = dim(self$data)[1]
 
       # by default, we initialize to the first treatment variable
       self$set_data_model(d_cols[1])
@@ -185,20 +251,20 @@ DoubleMLData = R6Class("DoubleMLData",
           "The specified treatment variable must not be an element of",
           "the covariates 'x_cols'."))
       }
-      self$treat_col = treatment_var
+      private$treat_col_ = treatment_var
 
       if (self$n_treat > 1) {
         if (self$use_other_treat_as_covariate) {
-          self$other_treat_cols = self$d_cols[self$d_cols != treatment_var]
+          private$other_treat_cols_ = self$d_cols[self$d_cols != treatment_var]
         } else {
           message("Control variables do not include other treatment variables")
-          self$other_treat_cols = NULL
+          private$other_treat_cols_ = NULL
         }
       }
       col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
         self$z_cols)
-      self$data_model = self$data[, col_indx, with = FALSE]
+      private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
 
       # successful assigning treatment variable
@@ -209,6 +275,15 @@ DoubleMLData = R6Class("DoubleMLData",
     }
   ),
   private = list(
+    d_cols_ = NULL,
+    data_ = NULL,
+    data_model_ = NULL,
+    other_treat_cols_ = NULL,
+    treat_col_ = NULL,
+    use_other_treat_as_covariate_ = NULL,
+    x_cols_ = NULL,
+    y_col_ = NULL,
+    z_cols_ = NULL,
     check_disjoint_sets = function() {
       y_col = self$y_col
       x_cols = self$x_cols
