@@ -58,9 +58,9 @@
 fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
   instrument = FALSE) {
 
-  check_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
-  check_logical(polynomial_features)
-  check_logical(instrument)
+  assert_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
+  assert_logical(polynomial_features)
+  assert_logical(instrument)
   url = "https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta"
   data = read.dta13(url)
 
@@ -205,7 +205,7 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 fetch_bonus = function(return_type = "DoubleMLData",
   polynomial_features = FALSE) {
 
-  check_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
+  assert_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
   url = "https://raw.githubusercontent.com/VC2015/DMLonGitHub/master/penn_jae.dat"
   raw_data = read.table(url, header = TRUE)
 
@@ -313,7 +313,7 @@ g = function(x) {
 make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
   return_type = "DoubleMLData") {
 
-  check_choice(
+  assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData"))
   cov_mat = toeplitz(0.7^(0:(dim_x - 1)))
@@ -495,7 +495,7 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
   return_type = "DoubleMLData") {
   # see https://assets.aeaweb.org/asset-server/articles-attachments/aer/app/10505/P2015_1022_app.pdf
 
-  check_choice(
+  assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData"))
   if (dim_x < dim_z) {
@@ -610,7 +610,7 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
   # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723
   # (see supplement)
 
-  check_choice(return_type, c("data.table", "matrix", "data.frame", "DoubleMLData"))
+  assert_choice(return_type, c("data.table", "matrix", "data.frame", "DoubleMLData"))
   v = runif(n_obs)
   zeta = rnorm(n_obs)
   cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
@@ -700,7 +700,7 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
   return_type = "DoubleMLData") {
   # inspired by https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3619201&download=yes
 
-  check_choice(
+  assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData"))
   xx = rmvnorm(
