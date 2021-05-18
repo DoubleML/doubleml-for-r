@@ -69,15 +69,23 @@
 #' }
 #' @export
 DoubleMLPLIV = R6Class("DoubleMLPLIV",
-  inherit = DoubleML, public = list(
+  inherit = DoubleML,
+  active = list(
     #' @field partialX (`logical(1)`)  \cr
     #' Indicates whether covariates \eqn{X} should be partialled out.
-    partialX = NULL,
+    partialX = function(value) {
+      if (missing(value)) return(private$partialX_)
+      else stop("can't set field partialX")
+    },
 
     #' @field partialZ (`logical(1)`) \cr
     #' Indicates whether instruments \eqn{Z} should be partialled out.
-    partialZ = NULL,
-
+    partialZ = function(value) {
+      if (missing(value)) return(private$partialZ_)
+      else stop("can't set field partialZ")
+    }),
+  
+  public = list(
     #' @description
     #' Creates a new instance of this R6 class.
     #'
@@ -176,8 +184,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         apply_cross_fitting)
       assert_logical(partialX, len = 1)
       assert_logical(partialZ, len = 1)
-      self$partialX = partialX
-      self$partialZ = partialZ
+      private$partialX_ = partialX
+      private$partialZ_ = partialZ
 
       if (!self$partialX & self$partialZ) {
         ml_r = private$assert_learner(ml_r, "ml_r",
@@ -203,6 +211,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     }
   ),
   private = list(
+    partialX_ = NULL,
+    partialZ_ = NULL,
     n_nuisance = 3,
     i_instr = NULL,
     initialize_ml_nuisance_params = function() {
