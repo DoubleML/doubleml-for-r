@@ -279,21 +279,19 @@ DoubleML = R6Class("DoubleML",
 
           # ml estimation of nuisance models and computation of psi elements
           res = private$ml_nuisance_and_score_elements(private$get__smpls())
-          private$set__psi_a(res$psi_a)
-          private$set__psi_b(res$psi_b)
+          private$psi_a_[, private$i_rep, private$i_treat] = res$psi_a
+          private$psi_b_[, private$i_rep, private$i_treat] = res$psi_b
           if (store_predictions) {
             private$store_predictions(res$preds)
           }
 
           # estimate the causal parameter
-          coef = private$est_causal_pars()
-          private$set__all_coef(coef)
+          private$all_coef_[private$i_treat, private$i_rep] = private$est_causal_pars()
           # compute score (depends on estimated causal parameter)
-          private$compute_score()
+          private$psi_[, private$i_rep, private$i_treat] = private$compute_score()
 
           # compute standard errors for causal parameter
-          se = private$se_causal_pars()
-          private$set__all_se(se)
+          private$all_se_[private$i_treat, private$i_rep] = private$se_causal_pars()
         }
       }
 
@@ -344,10 +342,10 @@ DoubleML = R6Class("DoubleML",
           private$i_treat = i_treat
 
           boot_res = private$compute_bootstrap(weights, n_rep_boot)
-          boot_coef = boot_res$boot_coef
-          boot_t_stat = boot_res$boot_t_stat
-          private$set__boot_coef(boot_coef)
-          private$set__boot_t_stat(boot_t_stat)
+          i_start = (private$i_rep - 1) * private$n_rep_boot + 1
+          i_end = private$i_rep * private$n_rep_boot
+          private$boot_coef_[private$i_treat, i_start:i_end] = boot_res$boot_coef
+          private$boot_t_stat_[private$i_treat, i_start:i_end] = boot_res$boot_t_stat
         }
       }
       invisible(self)
@@ -1172,38 +1170,10 @@ DoubleML = R6Class("DoubleML",
     # self._i_rep, the index of the cross-fitting sample.
     get__smpls = function() self$smpls[[private$i_rep]],
     get__psi_a = function() self$psi_a[, private$i_rep, private$i_treat],
-    set__psi_a = function(value) {
-      private$psi_a_[, private$i_rep, private$i_treat] = value
-    },
     get__psi_b = function() self$psi_b[, private$i_rep, private$i_treat],
-    set__psi_b = function(value) {
-      private$psi_b_[, private$i_rep, private$i_treat] = value
-    },
     get__psi = function() self$psi[, private$i_rep, private$i_treat],
-    set__psi = function(value) {
-      private$psi_[, private$i_rep, private$i_treat] = value
-    },
     get__all_coef = function() self$all_coef[private$i_treat, private$i_rep],
-    set__all_dml1_coef = function(value) {
-      private$all_dml1_coef_[private$i_treat, private$i_rep, ] = value
-    },
-    set__all_coef = function(value) {
-      private$all_coef_[private$i_treat, private$i_rep] = value
-    },
     get__all_se = function() self$all_se[private$i_treat, private$i_rep],
-    set__all_se = function(value) {
-      private$all_se_[private$i_treat, private$i_rep] = value
-    },
-    set__boot_coef = function(value) {
-      ind_start = (private$i_rep - 1) * private$n_rep_boot + 1
-      ind_end = private$i_rep * private$n_rep_boot
-      private$boot_coef_[private$i_treat, ind_start:ind_end] = value
-    },
-    set__boot_t_stat = function(value) {
-      ind_start = (private$i_rep - 1) * private$n_rep_boot + 1
-      ind_end = private$i_rep * private$n_rep_boot
-      private$boot_t_stat_[private$i_treat, ind_start:ind_end] = value
-    },
     est_causal_pars = function() {
       dml_procedure = self$dml_procedure
       n_folds = self$n_folds
@@ -1219,7 +1189,7 @@ DoubleML = R6Class("DoubleML",
           thetas[i_fold] = private$orth_est(inds = test_index)
         }
         coef = mean(thetas, na.rm = TRUE)
-        private$set__all_dml1_coef(thetas)
+        private$all_dml1_coef_[private$i_treat, private$i_rep, ] = thetas
       }
 
       else if (dml_procedure == "dml2") {
@@ -1317,8 +1287,7 @@ DoubleML = R6Class("DoubleML",
     },
     compute_score = function() {
       psi = private$get__psi_a() * private$get__all_coef() + private$get__psi_b()
-      private$set__psi(psi)
-      invisible(self)
+      return(psi)
     }
   )
 )
