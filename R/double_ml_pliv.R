@@ -174,8 +174,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
-      check_logical(partialX, len = 1)
-      check_logical(partialZ, len = 1)
+      assert_logical(partialX, len = 1)
+      assert_logical(partialZ, len = 1)
       self$partialX = partialX
       self$partialZ = partialZ
 

@@ -6,7 +6,8 @@ test_cases = expand.grid(
     "matrix", "DoubleMLData"),
   polynomial_features = c(TRUE, FALSE),
   instrument = c(TRUE, FALSE),
-  i_setting = 1:(length(data_iivm)))
+  i_setting = 1:(length(data_iivm)),
+  stringsAsFactors = FALSE)
 
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
