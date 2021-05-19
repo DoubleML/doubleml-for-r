@@ -77,13 +77,15 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       #expect_equal(ci, ci_obj, tolerance = 1e-8)
 
     } else if (g_learner == "classif.cv_glmnet") {
+      msg = "Invalid learner provided for ml_g: must be of class 'LearnerRegr'"
       expect_error(DoubleMLPLR$new(
         data = data_irm$dml_data,
         ml_g = lrn(g_learner),
         ml_m = lrn(m_learner),
         dml_procedure = dml_procedure,
         n_folds = n_folds,
-        score = score))
+        score = score),
+        regexp = msg)
     }
   }
 )
