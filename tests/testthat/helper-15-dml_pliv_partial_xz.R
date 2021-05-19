@@ -97,7 +97,7 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   }
   
   r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
   
   # nuisance m: E[D|XZ]
   m_indx = (names(data) != y)
@@ -132,7 +132,7 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
     resampling_r = mlr3::rsmp("custom")
     resampling_r$instantiate(task_r, list(train_ids[[i]]), list(test_ids[[i]]))
     r_r = mlr3::resample(task_r, this_ml_r, resampling_r, store_models = TRUE)
-    r_hat_list[[i]] = lapply(r_r$data$predictions(), function(x) x$response)[[1]]
+    r_hat_list[[i]] = lapply(r_r$predictions(), function(x) x$response)[[1]]
   }
   
   all_preds = list(
