@@ -74,7 +74,7 @@ jobs:
         shell: Rscript {0}
 
       - name: mlr3 dev version
-        if: runner.mlr3 == 'dev'
+        if: matrix.config.mlr3 == 'dev'
         run: |
           remotes::install_github("mlr-org/mlr3")
         shell: Rscript {0}
