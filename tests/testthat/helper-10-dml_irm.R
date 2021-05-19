@@ -77,7 +77,7 @@ bootstrap = "normal", nRep = 500, ...) {
   # m_hat_list = lapply(m_hat_list, function(x) x$response)
   # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
   # m_hat_list = lapply(r_m$data$prediction, function(x) x$test$prob[, "1"])
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
+  m_hat_list = lapply(r_m$predictions(), function(x) x$prob[, "1"])
 
   # nuisance g0: E[Y|D=0, X]
   g_indx = names(data) != d
@@ -102,7 +102,7 @@ bootstrap = "normal", nRep = 500, ...) {
   # #g_hat_list = lapply(g_hat_list$test, extract_test_pred)
   # g0_hat_list = lapply(g0_hat_list, function(x) x$response)
   # g0_hat_list = lapply(r_g0$data$prediction, function(x) x$test$response)
-  g0_hat_list = lapply(r_g0$data$predictions(), function(x) x$response)
+  g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
 
   # nuisance g1: E[Y|D=1, X]
   task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
@@ -124,7 +124,7 @@ bootstrap = "normal", nRep = 500, ...) {
   #   g1_hat_list = lapply(g1_hat_list, function(x) x$response)
   # # }
   # g1_hat_list = lapply(r_g1$data$prediction, function(x) x$test$response)
-  g1_hat_list = lapply(r_g1$data$predictions(), function(x) x$response)
+  g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
 
 
   if ((resampling_m$iters != resampling_g0$iters) ||
