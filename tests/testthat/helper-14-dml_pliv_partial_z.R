@@ -96,7 +96,7 @@ fit_nuisance_pliv_partial_z = function(data, y, d, z,
   resampling_r$instantiate(task_r, train_ids, test_ids)
 
   r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-  r_hat_list = lapply(r_r$data$predictions(), function(x) x$response)
+  r_hat_list = lapply(r_r$predictions(), function(x) x$response)
   
   all_preds = list(
     r_hat_list = r_hat_list)

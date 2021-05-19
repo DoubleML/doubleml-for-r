@@ -141,7 +141,7 @@ fit_nuisance_iivm = function(data, y, d, z,
     ml_m$param_set$values = params_m
   }
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
+  m_hat_list = lapply(r_m$predictions(), function(x) x$prob[, "1"])
 
   # nuisance g0: E[Y|Z=0, X]
   g_indx = names(data) != d & names(data) != z
@@ -158,7 +158,7 @@ fit_nuisance_iivm = function(data, y, d, z,
   test_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$test_set(x))
   
   r_g0 = mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
-  g0_hat_list = lapply(r_g0$data$predictions(), function(x) x$response)
+  g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
   
   # nuisance g1: E[Y|Z=1, X]
   task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", z), backend = data_g, target = y)
@@ -174,7 +174,7 @@ fit_nuisance_iivm = function(data, y, d, z,
 
   r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
   # g1_hat_list = lapply(r_g1$data$prediction, function(x) x$test$response)
-  g1_hat_list = lapply(r_g1$data$predictions(), function(x) x$response)
+  g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
 
   # nuisance r0: E[D|Z=0, X]
   r_indx = names(data) != y & names(data) != z
@@ -205,7 +205,7 @@ fit_nuisance_iivm = function(data, y, d, z,
     train_ids_r0 = lapply(1:n_iters, function(x) resampling_r0$train_set(x))
     test_ids_r0 = lapply(1:n_iters, function(x) resampling_r0$test_set(x))
     r_r0 = mlr3::resample(task_r0, ml_r0, resampling_r0, store_models = TRUE)
-    r0_hat_list = lapply(r_r0$data$predictions(), function(x) x$prob[, "1"])
+    r0_hat_list = lapply(r_r0$predictions(), function(x) x$prob[, "1"])
   }
   
   if (never_takers == FALSE) {
@@ -229,7 +229,7 @@ fit_nuisance_iivm = function(data, y, d, z,
     train_ids_r1 = lapply(1:n_iters, function(x) resampling_r1$train_set(x))
     test_ids_r1 = lapply(1:n_iters, function(x) resampling_r1$test_set(x))
     r_r1 = mlr3::resample(task_r1, ml_r1, resampling_r1, store_models = TRUE)
-    r1_hat_list = lapply(r_r1$data$predictions(), function(x) x$prob[, "1"])
+    r1_hat_list = lapply(r_r1$predictions(), function(x) x$prob[, "1"])
   }
 
   all_preds = list(

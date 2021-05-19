@@ -127,8 +127,8 @@ fit_nuisance_irm = function(data, y, d,
     ml_m$param_set$values = params_m
   }
   r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$prob[, "1"])
-  
+  m_hat_list = lapply(r_m$predictions(), function(x) x$prob[, "1"])
+
   # nuisance g0: E[Y|D=0, X]
   g_indx = names(data) != d
   data_g = data[, g_indx, drop = FALSE]
@@ -144,7 +144,7 @@ fit_nuisance_irm = function(data, y, d,
   test_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$test_set(x))
   
   r_g0 = mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
-  g0_hat_list = lapply(r_g0$data$predictions(), function(x) x$response)
+  g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
   
   # nuisance g1: E[Y|D=1, X]
   if (score == "ATE") {
@@ -159,7 +159,7 @@ fit_nuisance_irm = function(data, y, d,
     test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
     
     r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
-    g1_hat_list = lapply(r_g1$data$predictions(), function(x) x$response)
+    g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
   } else {
     g1_hat_list = NULL
   }

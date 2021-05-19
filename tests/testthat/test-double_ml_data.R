@@ -270,22 +270,22 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
 
     D10_1d_setd = D10_1d$clone()$set_data_model("d2")
 
-    msg1 = "At least one variable/column is set as treatment variable (`d_cols`) and as a covariate (`x_cols`). Consider using parameter 'use_other_treat_as_covariate'."
+    msg1 = "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\). Consider using parameter 'use_other_treat_as_covariate'."
     
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
                                                 y_col = y_indx,
                                                 d_cols = c(d_indx, X_cols1[1]),
                                                 z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg1)
     
-    msg2 = "At least one variable/column is set as covariate ('x_cols') and instrumental variable in 'z_cols')."
+    msg2 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
                                                 y_col = y_indx,
                                                 d_cols = d_indx,
                                                 z_cols = c(z_indx, X_cols1[1])), 
-                 regexp = NULL)
+                 regexp = msg2)
     
     msg3 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
     expect_error(double_ml_data_from_data_frame(data,
@@ -295,13 +295,13 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                                 z_cols = z_indx),
                  regexp = msg3)
     
-    msg4 = "At least one variable/column is set as treatment variable ('d_cols') and instrumental variable in 'z_cols')."
+    msg4 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
                                                 y_col = y_indx,
                                                 d_cols = c(z_indx, d_indx),
                                                 z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg4)
     
     msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
     expect_error(double_ml_data_from_data_frame(data,
@@ -341,21 +341,21 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
     expect_identical(D9$data_model, D9_noXcols$data_model)
 
     # Exception handling
-    msg8 = "At least one variable/column is set as treatment variable (`d_cols`) and as a covariate (`x_cols`). Consider using parameter 'use_other_treat_as_covariate'."
+    msg8 = "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\). Consider using parameter 'use_other_treat_as_covariate'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
                                   d_cols = c(d_indx, X_cols1[1]),
                                   z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg8)
     
-    msg9 = "At least one variable/column is set as covariate ('x_cols') and instrumental variable in 'z_cols')."
+    msg9 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
                                   d_cols = d_indx,
                                   z_cols = c(z_indx, X_cols1[1])),
-                 regexp = NULL)
+                 regexp = msg9)
 
     msg10 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
     expect_error(DoubleMLData$new(data,
@@ -365,13 +365,13 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                   z_cols = z_indx), 
                  regexp = msg10)
     
-    msg11 = "At least one variable/column is set as treatment variable ('d_cols') and instrumental variable in 'z_cols')."
+    msg11 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
                                   d_cols = c(z_indx, d_indx),
                                   z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg11)
     
     D11 = DoubleMLData$new(data,
                            x_cols = X_cols1,
@@ -379,8 +379,8 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                            d_cols = d_indx,
                            z_cols = z_indx)
     
-    msg12 = "Assertion on 'treatment_var' failed: Must be a subset of {'d'}, but is {'X1'}."
+    msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}, but is \\{'X1'\\}."
     expect_error(D11$set_data_model(X_cols1[1]),
-                 regexp = NULL)
+                 regexp = msg12)
   }
 )

@@ -202,7 +202,7 @@ fit_nuisance_plr = function(data, y, d,
   }
   
   r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
   
   # nuisance m
   if (!is.null(params_m)) {
@@ -218,7 +218,7 @@ fit_nuisance_plr = function(data, y, d,
     resampling_m$instantiate(task_m, train_ids, test_ids)
     
     r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-    m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
+    m_hat_list = lapply(r_m$predictions(), function(x) x$response)
   } else if (checkmate::test_class(ml_m, "LearnerClassif")) {
     ml_m$predict_type = "prob"
     data_m[[d]] = factor(data_m[[d]])
@@ -229,7 +229,7 @@ fit_nuisance_plr = function(data, y, d,
     resampling_m$instantiate(task_m, train_ids, test_ids)
     
     r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-    m_hat_list = lapply(r_m$data$predictions(), function(x) as.data.table(x)$prob.1)
+    m_hat_list = lapply(r_m$predictions(), function(x) as.data.table(x)$prob.1)
   }
   
   all_preds = list(
