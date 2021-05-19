@@ -75,7 +75,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # #g_hat_list = lapply(g_hat_list$test, extract_test_pred)
   # g_hat_list = lapply(g_hat_list, function(x) x$response)
   # g_hat_list = lapply(r_g$data$prediction, function(x) x$test$response)
-  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
 
   # nuisance m: E[Z|X]
   m_indx = names(data) != y & names(data) != d
@@ -99,7 +99,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # m_hat_list = lapply(m_hat_list, function(x) x$response)
   # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
   # m_hat_list = lapply(r_m$data$prediction, function(x) x$test$response)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
+  m_hat_list = lapply(r_m$predictions(), function(x) x$response)
 
 
   # nuisance r: E[D|X]
@@ -124,7 +124,7 @@ dml_plriv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod,
   # r_hat_list = lapply(r_hat_list, function(x) x$response)
   # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
   # r_hat_list = lapply(r_r$data$prediction, function(x) x$test$response)
-  r_hat_list = lapply(r_r$data$predictions(), function(x) x$response)
+  r_hat_list = lapply(r_r$predictions(), function(x) x$response)
 
 
 
