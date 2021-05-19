@@ -65,7 +65,7 @@ score = "IV-type", se_type = "ls", ...) {
   # # g_hat_list = mlr::getRRPredictionList(r_g)
   # #g_hat_list = lapply(g_hat_list$test, extract_test_pred)
   # g_hat_list = lapply(g_hat_list, function(x) x$response)
-  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
   # nuisance m
   m_indx = names(data) != y
   data_m = data[, m_indx, drop = FALSE]
@@ -88,7 +88,7 @@ score = "IV-type", se_type = "ls", ...) {
   # # m_hat_list = mlr::getRRPredictionList(r_m)
   # m_hat_list = lapply(m_hat_list, function(x) x$response)
   # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
+  m_hat_list = lapply(r_m$predictions(), function(x) x$response)
 
 
   # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
