@@ -99,7 +99,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
   # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
   #
   # p_hat_list = lapply(r_p$data$prediction, function(x) x$test$prob[, "1"])
-  p_hat_list = lapply(r_p$data$predictions(), function(x) x$prob[, "1"])
+  p_hat_list = lapply(r_p$predictions(), function(x) x$prob[, "1"])
 
   # nuisance mu0: E[Y|Z=0, X]
   mu_indx = names(data) != d & names(data) != z
@@ -125,7 +125,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
   # g0_hat_list = lapply(g0_hat_list, function(x) x$response)
   #
   # mu0_hat_list = lapply(r_mu0$data$prediction, function(x) x$test$response)
-  mu0_hat_list = lapply(r_mu0$data$predictions(), function(x) x$response)
+  mu0_hat_list = lapply(r_mu0$predictions(), function(x) x$response)
 
   # nuisance g1: E[Y|Z=1, X]
   task_mu1 = mlr3::TaskRegr$new(id = paste0("nuis_mu1_", z), backend = data_mu, target = y)
@@ -139,7 +139,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
 
   r_mu1 = mlr3::resample(task_mu1, ml_mu1, resampling_mu1, store_models = TRUE)
   # mu1_hat_list = lapply(r_mu1$data$prediction, function(x) x$test$response)
-  mu1_hat_list = lapply(r_mu1$data$predictions(), function(x) x$response)
+  mu1_hat_list = lapply(r_mu1$predictions(), function(x) x$response)
 
 
   # nuisance m0: E[D|Z=0, X]
@@ -171,7 +171,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
     test_ids_m0 = lapply(1:n_iters, function(x) resampling_m0$test_set(x))
     r_m0 = mlr3::resample(task_m0, ml_m0, resampling_m0, store_models = TRUE)
     # m0_hat_list = lapply(r_m0$data$prediction, function(x) x$test$prob[, "1"])
-    m0_hat_list = lapply(r_m0$data$predictions(), function(x) x$prob[, "1"])
+    m0_hat_list = lapply(r_m0$predictions(), function(x) x$prob[, "1"])
   }
 
   if (never_takers == FALSE) {
@@ -194,7 +194,7 @@ dml_irmiv = function(data, y, d, z, k = 2, smpls = NULL, mlmethod, params = list
     test_ids_m1 = lapply(1:n_iters, function(x) resampling_m1$test_set(x))
     r_m1 = mlr3::resample(task_m1, ml_m1, resampling_m1, store_models = TRUE)
     # m1_hat_list = lapply(r_m1$data$prediction, function(x) x$test$prob[, "1"])
-    m1_hat_list = lapply(r_m1$data$predictions(), function(x) x$prob[, "1"])
+    m1_hat_list = lapply(r_m1$predictions(), function(x) x$prob[, "1"])
   }
 
   if ((resampling_p$iters != resampling_mu0$iters) ||
