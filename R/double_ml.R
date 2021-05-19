@@ -446,7 +446,7 @@ DoubleML = R6Class("DoubleML",
     set_sample_splitting = function(smpls) {
 
       assert_list(smpls)
-      self$n_rep = length(smpls)
+      private$n_rep_ = length(smpls)
       n_folds_each_train_smpl = vapply(
         smpls, function(x) length(x$train_ids),
         integer(1L))
@@ -462,7 +462,7 @@ DoubleML = R6Class("DoubleML",
         stop("Different number of folds for repeated cross-fitting.")
       }
 
-      self$n_folds = n_folds_each_train_smpl[1]
+      private$n_folds_ = n_folds_each_train_smpl[1]
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
         message(paste(
@@ -974,7 +974,7 @@ DoubleML = R6Class("DoubleML",
       if (self$draw_sample_splitting) {
         self$split_samples()
       } else {
-        private$_smpls = NULL
+        private$smpls_ = NULL
       }
 
       # initialize arrays according to obj_dml_data and the resampling settings
