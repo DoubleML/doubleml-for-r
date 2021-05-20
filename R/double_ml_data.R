@@ -36,6 +36,7 @@ DoubleMLData = R6Class("DoubleMLData",
       else {
         reset_value = !is.null(self$data_model)
         assert_character(value, unique = TRUE)
+        assert_subset(value, self$all_variables)
         private$d_cols_ = value
         if (reset_value) {
           private$check_disjoint_sets()
@@ -128,6 +129,7 @@ DoubleMLData = R6Class("DoubleMLData",
         }
 
         if (!is.null(value)) {
+          assert_subset(value, self$all_variables)
           private$x_cols_ = value
         } else {
           if (!is.null(self$z_cols)) {
@@ -152,6 +154,7 @@ DoubleMLData = R6Class("DoubleMLData",
       else {
         reset_value = !is.null(self$data_model)
         assert_character(value, len = 1)
+        assert_subset(value, self$all_variables)
         private$y_col_ = value
         if (reset_value) {
           private$check_disjoint_sets()
@@ -169,6 +172,7 @@ DoubleMLData = R6Class("DoubleMLData",
         if (!is.null(value)) {
           assert_character(value, unique = TRUE)
         }
+        assert_subset(value, self$all_variables)
         private$z_cols_ = value
         if (reset_value) {
           private$check_disjoint_sets()
