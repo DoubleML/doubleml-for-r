@@ -173,14 +173,14 @@ extract_prediction = function(obj_resampling, learner_class, n_obs,
         1:n_iters,
         function(x) as.data.table(obj_resampling$predictions("train")[[x]]))
       for (i_iter in 1:n_iters) {
-        preds_vec = vector("numeric", length = n_obs)
+        preds_vec = as.numeric(rep(NA, n_obs))
         f_hat = f_hat_list[[i_iter]]
         preds_vec[f_hat[[ind_name]]] = f_hat[[resp_name]]
         preds[[i_iter]] = preds_vec
       }
     } else {
       n_obj_rsmp = length(obj_resampling)
-      preds = vector("list", n_obj_rsmp)
+      preds = as.numeric(rep(NA, n_obs))
       for (i_obj_rsmp in 1:n_obj_rsmp) {
         preds_vec = vector("numeric", length = n_obs)
         f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction("train"))
@@ -189,7 +189,7 @@ extract_prediction = function(obj_resampling, learner_class, n_obs,
       }
     }
   } else {
-    preds = vector("numeric", length = n_obs)
+    preds = as.numeric(rep(NA, n_obs))
     if (testR6(obj_resampling, classes = "ResampleResult")) obj_resampling = list(obj_resampling)
     n_obj_rsmp = length(obj_resampling)
     for (i_obj_rsmp in 1:n_obj_rsmp) {
