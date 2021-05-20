@@ -35,3 +35,42 @@ test_that("x_cols setter", {
   expect_equal(dml_data$x_cols, orig_x_cols)
   }
 )
+
+test_that("d_cols setter", {
+  set.seed(3141)
+  dml_data = make_plr_CCDDHNR2018(n_obs=101, return_type = "data.frame")
+  df = dml_data[,1:10]
+  names(df) = c(paste0("X", 1:7), c('y', 'd1', 'd2'))
+  dml_data = double_ml_data_from_data_frame(df, y_col = 'y',
+                                            d_cols = c('d1', 'd2'),
+                                            x_cols = paste0("X", 1:7))
+  expect_equal(dml_data$n_obs, 101)
+  
+  # check that after changing d_cols, the d array gets updated
+  data_comp = as.data.frame(dml_data$data_model)[, c(paste0("X", 1:7), c('y', 'd2', 'd1'))]
+  dml_data$d_cols = c('d2', 'd1')
+  expect_equal(as.data.frame(dml_data$data_model), data_comp)
+  
+  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+               " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\},",
+               " but is \\{'d1','d13'\\}.") 
+  expect_error(dml_data$d_cols <- c('d1', 'd13'),
+               regexp = msg)
+  
+  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+               " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\},",
+               " but is \\{'d13'\\}.") 
+  expect_error(dml_data$d_cols <- 'd13',
+               regexp = msg)
+  
+  msg = "Assertion on 'value' failed: Must be of type 'character', not 'double'."
+  expect_error(dml_data$d_cols <- 5,
+               regexp = msg)
+  
+  # check single treatment variable
+  dml_data$d_cols = 'd2'
+  expect_equal(dml_data$d_cols, c('d2'))
+  expect_equal(dml_data$n_treat, 1)
+  
+  }
+)
