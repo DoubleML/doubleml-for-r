@@ -411,8 +411,9 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
       x_cols = setdiff(names(df), y_d)
     }
   }
-  col_indx = c(x_cols, y_col, d_cols, z_cols)
-  data = data.table(df)[, col_indx, with = FALSE]
+  #col_indx = c(x_cols, y_col, d_cols, z_cols)
+  #data = data.table(df)[, col_indx, with = FALSE]
+  data = data.table(df)
   if (data_class == "DoubleMLData") {
     data = DoubleMLData$new(data,
       x_cols = x_cols, y_col = y_col, d_cols = d_cols,
