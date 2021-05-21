@@ -221,6 +221,7 @@ DoubleMLData = R6Class("DoubleMLData",
                    "DoubleMLData."))
       }
       assert_class(data, "data.table")
+      assert_character(names(data), unique = TRUE)
 
       private$data_ = data
 
