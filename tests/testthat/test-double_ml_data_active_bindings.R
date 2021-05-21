@@ -298,3 +298,36 @@ test_that("Test duplicates", {
   
   }
 )
+
+test_that("Not setable fields", {
+  set.seed(3141)
+  dml_data = make_plr_CCDDHNR2018(n_obs=101)
+  
+  msg = "can't set field all_variables"
+  expect_error(dml_data$all_variables <- 'abc',
+               regexp = msg)
+  msg = "can't set field data"
+  expect_error(dml_data$data <- 'abc',
+               regexp = msg)
+  msg = "can't set field data_model"
+  expect_error(dml_data$data_model <- 'abc',
+               regexp = msg)
+  
+  msg = "can't set field n_instr"
+  expect_error(dml_data$n_instr <- 5,
+               regexp = msg)
+  msg = "can't set field n_obs"
+  expect_error(dml_data$n_obs <- 5,
+               regexp = msg)
+  msg = "can't set field n_treat"
+  expect_error(dml_data$n_treat <- 5,
+               regexp = msg)
+  
+  msg = "can't set field other_treat_cols"
+  expect_error(dml_data$other_treat_cols <- 'abc',
+               regexp = msg)
+  msg = "can't set field treat_col"
+  expect_error(dml_data$treat_col <- 'abc',
+               regexp = msg)
+  }
+)
