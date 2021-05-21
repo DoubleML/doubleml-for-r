@@ -390,7 +390,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         fold_specific_params = private$fold_specific_params)
       m_hat = m_hat_list$preds
       data_aux_list = lapply(m_hat_list$train_preds, function(x) {
-        data.table(self$data$data_model, "m_hat_on_train" = x)
+        setnafill(data.table(self$data$data_model, "m_hat_on_train" = x),
+               fill = -9999.99) # mlr3 does not allow NA's (values are not used)
       })
 
       m_hat_tilde = dml_cv_predict(self$learner$ml_r,
