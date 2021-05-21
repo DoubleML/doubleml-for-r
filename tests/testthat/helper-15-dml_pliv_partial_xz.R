@@ -123,7 +123,8 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
     train_index = train_ids[[i]]
     m_hat_train[train_index] = m_hat_list_train[[i]]
     r_indx = names(data) != y & names(data) != d & (names(data) %in% z == FALSE)
-    data_r = cbind(data[, r_indx, drop = FALSE], m_hat_train)
+    data_r = setnafill(cbind(data[, r_indx, drop = FALSE], m_hat_train), 
+                       fill = -1111.11) # mlr3 does not allow NA's (values are not used)
     task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", 'm_hat_train'), backend = data_r, target = 'm_hat_train')
     this_ml_r = ml_r$clone()
     if (!is.null(params_r)) {
