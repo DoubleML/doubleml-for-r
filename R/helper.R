@@ -180,7 +180,7 @@ extract_prediction = function(obj_resampling, learner_class, n_obs,
       }
     } else {
       n_obj_rsmp = length(obj_resampling)
-      preds = as.numeric(rep(NA, n_obs))
+      preds = vector("list", n_obj_rsmp)
       for (i_obj_rsmp in 1:n_obj_rsmp) {
         preds_vec = vector("numeric", length = n_obs)
         f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction("train"))
