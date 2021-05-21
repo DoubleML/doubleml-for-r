@@ -93,13 +93,13 @@ test_that("z_cols setter", {
   expect_equal(dml_data$n_instr, 2)
   
   msg = paste0("Assertion on 'value' failed: Must be a subset of",
-               " \\{'X1','X2','X3','X4','y','d1','d2','z1','z2','z3'\\},",
+               " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\},",
                " but is \\{'z1','a13'\\}.") 
   expect_error(dml_data$z_cols <- c('z1', 'a13'),
                regexp = msg)
   
   msg = paste0("Assertion on 'value' failed: Must be a subset of",
-               " \\{'X1','X2','X3','X4','y','d1','d2','z1','z2','z3'\\},",
+               " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\},",
                " but is \\{'a13'\\}.") 
   expect_error(dml_data$z_cols <- 'a13',
                regexp = msg)
