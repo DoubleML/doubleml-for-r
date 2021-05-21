@@ -182,11 +182,11 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
     expect_error(double_ml_data_from_data_frame(data),
       regexp = "Column indices y_col and d_cols not specified.")
 
-    expect_equal(D1$data, D4$data)
-    expect_equal(D2$data, D5$data)
-    expect_equal(D2_1X$data, D5_1X$data)
-    expect_equal(D2$data, D6$data)
-    expect_equal(D3$data, D7$data)
+    expect_equal(D1$data_model, D4$data_model)
+    expect_equal(D2$data_model, D5$data_model)
+    expect_equal(D2_1X$data_model, D5_1X$data_model)
+    expect_equal(D2$data_model, D6$data_model)
+    expect_equal(D3$data_model, D7$data_model)
     expect_identical(D3_1d$data_model, D7_1d$data_model)
     expect_identical(D3_setd_multd$data_model, D7_setd_multd$data_model)
     expect_identical(D3_setd$data_model, D7_setd$data_model)
