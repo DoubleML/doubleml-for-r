@@ -348,8 +348,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_b = psi_b)
       } else if (is.function(self$score)) {
         if (self$data$n_instr > 1) {
-          stop("Callable score not implemented for DoubleMLPLIV with
-               partialX=TRUE and partialZ=FALSE with several instruments")
+          stop(paste("Callable score not implemented for DoubleMLPLIV with",
+                     "partialX=TRUE and partialZ=FALSE with several instruments."))
         }
         psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
       }
@@ -415,8 +415,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop("Callable score not implemented for DoubleMLPLIV
-             with partialX=TRUE and partialZ=TRUE.")
+        stop(paste("Callable score not implemented for DoubleMLPLIV",
+                   "with partialX=TRUE and partialZ=TRUE."))
         # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
       }
       res$preds = list(
@@ -454,8 +454,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop("Callable score not implemented for DoubleMLPLIV
-             with partialX=FALSE and partialZ=TRUE.")
+        stop(paste("Callable score not implemented for DoubleMLPLIV",
+                   "with partialX=FALSE and partialZ=TRUE."))
         # res = self$score(y, z, d, r_hat)
       }
       res$preds = list("ml_r" = r_hat)

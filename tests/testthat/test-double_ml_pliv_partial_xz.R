@@ -60,3 +60,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
     expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )
+
+test_that("Unit tests for PLIV.partialXZ invalid score", {
+  msg = paste("Callable score not implemented for DoubleMLPLIV with",
+              "partialX=TRUE and partialZ=TRUE.")
+  double_mlplr_obj <- DoubleMLPLIV.partialXZ(
+    data_pliv_partialXZ$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('regr.rpart'),
+    ml_r = mlr3::lrn('regr.rpart'),
+    score = function(x) return(mean(x)))
+  expect_error(double_mlplr_obj$fit(),
+               regexp = msg)
+}
+)
+
