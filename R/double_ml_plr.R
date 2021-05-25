@@ -270,8 +270,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         stop(paste(
           "Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "),
           "has been set as instrumental variable(s).\n",
-          "To fit a partially linear IV regression model use
-          DoubleMLPLIV instead of DoubleMLPLR."))
+          "To fit a partially linear IV regression model use",
+          "DoubleMLPLIV instead of DoubleMLPLR."))
       }
       return()
     }

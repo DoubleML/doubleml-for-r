@@ -379,3 +379,17 @@ test_that("Unit tests for DoubleMLData", {
                  regexp = msg12)
   }
 )
+
+test_that("Unit tests for invalid data", {
+  msg = paste("Incompatible data.\\n",
+              "z has been set as instrumental variable\\(s\\).\\n",
+              "To fit a partially linear IV regression model use",
+              "DoubleMLPLIV instead of DoubleMLPLR.")
+  expect_error(double_mlplr_obj <- DoubleMLPLR$new(
+    data = data_pliv$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('regr.rpart')),
+    regexp = msg)
+    
+  }
+)
