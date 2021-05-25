@@ -473,14 +473,19 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
           "needs to be specified as treatment variable."))
       }
       one_instr = (obj_dml_data$n_instr == 1)
-      binary_instr = test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]],
-        lower = 0, upper = 1)
-      if (!(one_instr & binary_instr)) {
-        stop(paste(
-          "Incompatible data.\n",
-          "To fit an IIVM model with DoubleML",
-          "exactly one binary variable with values 0 and 1",
-          "needs to be specified as instrumental variable."))
+      err_msg = paste(
+        "Incompatible data.\n",
+        "To fit an IIVM model with DoubleML",
+        "exactly one binary variable with values 0 and 1",
+        "needs to be specified as instrumental variable.")
+      if (one_instr) {
+        binary_instr = test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]],
+                                       lower = 0, upper = 1)
+        if (!(one_instr & binary_instr)) {
+          stop(err_msg)
+        }
+      } else {
+        stop(err_msg)
       }
       return()
     }
