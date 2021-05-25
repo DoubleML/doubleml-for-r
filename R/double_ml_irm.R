@@ -360,8 +360,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         stop(paste(
           "Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "),
           "has been set as instrumental variable(s).\n",
-          "To fit an interactive IV regression model use DoubleMLIIVM
-          instead of DoubleMLIRM."))
+          "To fit an interactive IV regression model use DoubleMLIIVM",
+          "instead of DoubleMLIRM."))
       }
       one_treat = (obj_dml_data$n_treat == 1)
       binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],

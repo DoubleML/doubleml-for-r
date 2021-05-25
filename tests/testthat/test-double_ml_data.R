@@ -393,3 +393,29 @@ test_that("Unit tests for invalid data", {
     
   }
 )
+
+test_that("Unit tests for invalid data", {
+  msg = paste("Incompatible data.\\n",
+              "z has been set as instrumental variable\\(s\\).\\n",
+              "To fit an interactive IV regression model use",
+              "DoubleMLIIVM instead of DoubleMLIRM.")
+  expect_error(double_mlplr_obj <- DoubleMLIRM$new(
+    data = data_iivm$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+
+  df = data_irm$df
+  df['d'] = df['d']*5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IRM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(double_mlplr_obj <- DoubleMLIRM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+}
+)
