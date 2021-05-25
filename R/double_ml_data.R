@@ -251,11 +251,6 @@ DoubleMLData = R6Class("DoubleMLData",
       assert_character(treatment_var, max.len = 1)
       assert_subset(treatment_var, self$d_cols)
 
-      if (treatment_var %in% self$x_cols) {
-        stop(paste(
-          "The specified treatment variable must not be an element of",
-          "the covariates 'x_cols'."))
-      }
       private$treat_col_ = treatment_var
 
       if (self$n_treat > 1) {
