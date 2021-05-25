@@ -182,6 +182,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
+      
+      private$check_data(self$data)
+      private$check_score(self$score)
       assert_logical(partialX, len = 1)
       assert_logical(partialZ, len = 1)
       private$partialX_ = partialX
@@ -355,8 +358,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_b = psi_b)
       } else if (is.function(self$score)) {
         if (self$data$n_instr > 1) {
-          stop("Callable score not implemented for DoubleMLPLIV with
-               partialX=TRUE and partialZ=FALSE with several instruments")
+          stop(paste("Callable score not implemented for DoubleMLPLIV with",
+                     "partialX=TRUE and partialZ=FALSE with several instruments."))
         }
         psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
       }
@@ -422,8 +425,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop("Callable score not implemented for DoubleMLPLIV
-             with partialX=TRUE and partialZ=TRUE.")
+        stop(paste("Callable score not implemented for DoubleMLPLIV",
+                   "with partialX=TRUE and partialZ=TRUE."))
         # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
       }
       res$preds = list(
@@ -461,8 +464,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop("Callable score not implemented for DoubleMLPLIV
-             with partialX=FALSE and partialZ=TRUE.")
+        stop(paste("Callable score not implemented for DoubleMLPLIV",
+                   "with partialX=FALSE and partialZ=TRUE."))
         # res = self$score(y, z, d, r_hat)
       }
       res$preds = list("ml_r" = r_hat)
@@ -678,9 +681,16 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         valid_score = c("partialling out")
         assertChoice(score, valid_score)
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
+      if (obj_dml_data$n_instr == 0) {
+        stop(paste(
+          "Incompatible data.\n",
+          "At least one variable must be set as instrumental variable.\n",
+          "To fit a partially linear regression model without instrumental",
+          "variable(s) use DoubleMLPLR instead of DoubleMLPLIV."))
+      }
       return()
     }
   )

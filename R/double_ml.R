@@ -808,12 +808,12 @@ DoubleML = R6Class("DoubleML",
     #' a `matrix()` with adjusted p_values.
     p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
       if (all(is.na(self$coef))) {
-        stop("apply fit() before p_adust().")
+        stop("apply fit() before p_adjust().")
       }
 
       if (tolower(method) %in% c("rw", "romano-wolf")) {
         if (is.null(self$boot_t_stat) | all(is.na(self$coef))) {
-          stop("apply fit() & bootstrap() before p_adust().")
+          stop("apply fit() & bootstrap() before p_adjust().")
         }
         k = self$data$n_treat
         pinit = p_val_corrected = vector(mode = "numeric", length = k)
@@ -924,7 +924,6 @@ DoubleML = R6Class("DoubleML",
       # check and pick up obj_dml_data
 
       assert_class(data, "DoubleMLData")
-      private$check_data(data)
       private$data_ = data
 
       # initialize learners and parameters which are set model specific
@@ -948,7 +947,7 @@ DoubleML = R6Class("DoubleML",
       # check and set dml_procedure and score
       assert_choice(dml_procedure, c("dml1", "dml2"))
       private$dml_procedure_ = dml_procedure
-      private$score_ = private$check_score(score)
+      private$score_ = score
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
         message(paste(

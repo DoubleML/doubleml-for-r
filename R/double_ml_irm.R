@@ -177,6 +177,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         draw_sample_splitting,
         apply_cross_fitting)
 
+      private$check_data(self$data)
+      private$check_score(self$score)
       private$learner_class = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
@@ -359,29 +361,32 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         check_class(score, "function"))
       if (is.character(score)) {
         valid_score = c("ATE", "ATTE")
-        if (!(score %in% valid_score)) {
-          assertChoice(score, valid_score)
-        }
+        assertChoice(score, valid_score)
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
       if (!is.null(obj_dml_data$z_cols)) {
         stop(paste(
           "Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "),
           "has been set as instrumental variable(s).\n",
-          "To fit an interactive IV regression model use DoubleMLIIVM
-          instead of DoubleMLIRM."))
+          "To fit an interactive IV regression model use DoubleMLIIVM",
+          "instead of DoubleMLIRM."))
       }
       one_treat = (obj_dml_data$n_treat == 1)
-      binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
-        lower = 0, upper = 1)
-      if (!(one_treat & binary_treat)) {
-        stop(paste(
-          "Incompatible data.\n",
-          "To fit an IRM model with DoubleML",
-          "exactly one binary variable with values 0 and 1",
-          "needs to be specified as treatment variable."))
+      err_msg = paste(
+        "Incompatible data.\n",
+        "To fit an IRM model with DoubleML",
+        "exactly one binary variable with values 0 and 1",
+        "needs to be specified as treatment variable.")
+      if (one_treat) {
+        binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
+                                       lower = 0, upper = 1)
+        if (!(one_treat & binary_treat)) {
+          stop(err_msg)
+        }
+      } else {
+        stop(err_msg)
       }
       return()
     }
