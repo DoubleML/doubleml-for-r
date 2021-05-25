@@ -76,6 +76,9 @@ test_that("Not setable fields", {
   msg = "can't set field t_stat"
   expect_error(dml_plr$t_stat <- 5,
                regexp = msg)
+  msg = "can't set field tuning_res"
+  expect_error(dml_plr$tuning_res <- list(a=5),
+               regexp = msg)
   
   dml_data = make_pliv_CHS2015(n_obs = 101)
   ml_g = lrn("regr.ranger")

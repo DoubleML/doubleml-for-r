@@ -180,16 +180,16 @@ DoubleML = R6Class("DoubleML",
     t_stat  = function(value) {
       if (missing(value)) return(private$t_stat_)
       else stop("can't set field t_stat")
-    }),
+    },
 
-    public = list(
     #' @field tuning_res (named `list()`) \cr
     #' Results from hyperparameter tuning.
     tuning_res  = function(value) {
       if (missing(value)) return(private$tuning_res_)
       else stop("can't set field tuning_res")
-    },
+    }),
 
+    public = list(
     #' @description
     #' DoubleML is an abstract class that can't be initialized.
     initialize = function() {
