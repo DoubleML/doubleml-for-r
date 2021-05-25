@@ -1177,33 +1177,10 @@ DoubleML = R6Class("DoubleML",
       }
 
       if (self$apply_cross_fitting) {
-        if (dml_procedure == "dml1") {
-          boot_coefs = boot_t_stat = matrix(NA,
-            nrow = n_rep_boot,
-            ncol = self$n_folds)
-          ii = 0
-          for (i_fold in 1:self$n_folds) {
-            test_index = test_ids[[i_fold]]
-            n_obs_in_fold = length(test_index)
-
-            J = mean(private$get__psi_a()[test_index])
-            boot_coefs[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*%
-              private$get__psi()[test_index] / (n_obs_in_fold * J)
-            boot_t_stat[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*%
-              private$get__psi()[test_index] /
-              (n_obs_in_fold * private$get__all_se() * J)
-            ii = ii + n_obs_in_fold
-          }
-          boot_coef = rowMeans(boot_coefs)
-          boot_t_stat = rowMeans(boot_t_stat)
-        }
-        else if (dml_procedure == "dml2") {
           J = mean(private$get__psi_a())
           boot_coef = weights %*% private$get__psi() / (n_obs * J)
           boot_t_stat = weights %*% private$get__psi() /
             (n_obs * private$get__all_se() * J)
-        }
-
       } else {
         J = mean(private$get__psi_a()[test_index])
         boot_coef = weights %*% private$get__psi()[test_index] /
