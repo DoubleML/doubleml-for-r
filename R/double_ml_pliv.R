@@ -674,6 +674,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       return()
     },
     check_data = function(obj_dml_data) {
+      if (obj_dml_data$n_instr == 0) {
+        stop(paste(
+          "Incompatible data.\n",
+          "At least one variable must be set as instrumental variable.\n",
+          "To fit a partially linear regression model without instrumental",
+          "variable(s) use DoubleMLPLR instead of DoubleMLPLIV."))
+      }
       return()
     }
   )
