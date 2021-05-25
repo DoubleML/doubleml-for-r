@@ -829,7 +829,6 @@ DoubleML = R6Class("DoubleML",
       # check and pick up obj_dml_data
 
       assert_class(data, "DoubleMLData")
-      private$check_data(data)
       self$data = data
 
       # initialize learners and parameters which are set model specific
@@ -853,7 +852,7 @@ DoubleML = R6Class("DoubleML",
       # check and set dml_procedure and score
       assert_choice(dml_procedure, c("dml1", "dml2"))
       self$dml_procedure = dml_procedure
-      self$score = private$check_score(score)
+      self$score = score
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
         message(paste(
