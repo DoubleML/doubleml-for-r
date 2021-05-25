@@ -174,6 +174,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
+      
+      private$check_data(self$data)
+      private$check_score(self$score)
       assert_logical(partialX, len = 1)
       assert_logical(partialZ, len = 1)
       self$partialX = partialX
@@ -668,7 +671,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         valid_score = c("partialling out")
         assertChoice(score, valid_score)
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
       return()

@@ -169,6 +169,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         draw_sample_splitting,
         apply_cross_fitting)
 
+      private$check_data(self$data)
+      private$check_score(self$score)
       private$learner_class = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
@@ -353,7 +355,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           assertChoice(score, valid_score)
         }
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
       if (!is.null(obj_dml_data$z_cols)) {

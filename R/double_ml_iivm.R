@@ -218,6 +218,9 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
+      
+      private$check_data(self$data)
+      private$check_score(self$score)
       private$learner_class = list(
         "ml_g" = NULL,
         "ml_m" = NULL,
@@ -456,7 +459,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         valid_score = c("LATE")
         assertChoice(score, valid_score)
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
       one_treat = (obj_dml_data$n_treat == 1)
