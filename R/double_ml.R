@@ -737,12 +737,12 @@ DoubleML = R6Class("DoubleML",
     #' a `matrix()` with adjusted p_values.
     p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
       if (all(is.na(self$coef))) {
-        stop("apply fit() before p_adust().")
+        stop("apply fit() before p_adjust().")
       }
 
       if (tolower(method) %in% c("rw", "romano-wolf")) {
         if (is.null(self$boot_t_stat) | all(is.na(self$coef))) {
-          stop("apply fit() & bootstrap() before p_adust().")
+          stop("apply fit() & bootstrap() before p_adjust().")
         }
         k = self$data$n_treat
         pinit = p_val_corrected = vector(mode = "numeric", length = k)
