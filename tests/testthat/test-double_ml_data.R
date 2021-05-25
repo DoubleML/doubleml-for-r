@@ -381,30 +381,52 @@ test_that("Unit tests for DoubleMLData", {
 )
 
 test_that("Unit tests for invalid data", {
+  # PLR with IV
   msg = paste("Incompatible data.\\n",
               "z has been set as instrumental variable\\(s\\).\\n",
               "To fit a partially linear IV regression model use",
               "DoubleMLPLIV instead of DoubleMLPLR.")
-  expect_error(double_mlplr_obj <- DoubleMLPLR$new(
+  expect_error(DoubleMLPLR$new(
     data = data_pliv$dml_data,
     ml_g = mlr3::lrn('regr.rpart'),
     ml_m = mlr3::lrn('regr.rpart')),
     regexp = msg)
-    
-  }
-)
 
-test_that("Unit tests for invalid data", {
+  # PLIV without IV
+  msg = paste("Incompatible data.\\n",
+              "At least one variable must be set as instrumental variable.\\n",
+              "To fit a partially linear regression model without instrumental",
+              "variable\\(s\\) use DoubleMLPLR instead of DoubleMLPLIV.")
+  expect_error(DoubleMLPLIV$new(
+    data = data_plr$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('regr.rpart'),
+    ml_r = mlr3::lrn('regr.rpart')),
+    regexp = msg)
+
+  # IRM with IV
   msg = paste("Incompatible data.\\n",
               "z has been set as instrumental variable\\(s\\).\\n",
               "To fit an interactive IV regression model use",
               "DoubleMLIIVM instead of DoubleMLIRM.")
-  expect_error(double_mlplr_obj <- DoubleMLIRM$new(
+  expect_error(DoubleMLIRM$new(
     data = data_iivm$dml_data,
     ml_g = mlr3::lrn('regr.rpart'),
     ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
     regexp = msg)
+  
+  # IIVM without IV
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as instrumental variable.")
+  expect_error(double_mlplr_obj <- DoubleMLIIVM$new(
+    data = data_irm$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
 
+  # non-binary D for IRM
   df = data_irm$df
   df['d'] = df['d']*5
   dml_data = double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
@@ -412,7 +434,83 @@ test_that("Unit tests for invalid data", {
               "To fit an IRM model with DoubleML",
               "exactly one binary variable with values 0 and 1",
               "needs to be specified as treatment variable.")
-  expect_error(double_mlplr_obj <- DoubleMLIRM$new(
+  expect_error(DoubleMLIRM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # non-binary D for IIVM
+  df = data_iivm$df
+  df['d'] = df['d']*5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = "d",
+                                            z_cols = "z")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # non-binary Z for IIVM
+  df = data_iivm$df
+  df['z'] = df['z']*5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = "d",
+                                            z_cols = "z")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as instrumental variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+
+  # multiple D for IRM
+  df = data_irm$df
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = c("d", "X1"))
+  msg = paste("Incompatible data.\\n",
+              "To fit an IRM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIRM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+
+  # multiple D for IIVM
+  df = data_iivm$df
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = c("d", "X1"),
+                                            z_cols = "z")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # multiple Z for IIVM
+  df = data_iivm$df
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = "d",
+                                            z_cols = c("z", "X1"))
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as instrumental variable.")
+  expect_error(DoubleMLIIVM$new(
     data = dml_data,
     ml_g = mlr3::lrn('regr.rpart'),
     ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
