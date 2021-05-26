@@ -239,6 +239,25 @@ DoubleMLData = R6Class("DoubleMLData",
 
       invisible(self)
     },
+    
+    #' @description
+    #' Print DoubleMLData objects.
+    print = function() {
+      header = "================= DoubleMLData Object ==================\n"
+      data_info = paste0(
+        "Outcome variable: ", self$y_col, "\n",
+        "Treatment variable(s): ", paste0(self$d_cols, collapse = ", "),
+        "\n",
+        "Covariates: ", paste0(self$x_cols, collapse = ", "), "\n",
+        "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
+        "No. Observations: ", self$n_obs, "\n")
+      cat(header, "\n",
+          "\n------------------ Data summary      ------------------\n",
+          data_info,
+          sep = "")
+      
+      invisible(self)
+    },
 
     #' @description
     #' Setter function for `data_model`. The function implements the causal model
