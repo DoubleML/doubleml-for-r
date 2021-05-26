@@ -332,3 +332,46 @@ tune_instance = function(tuner, tuning_instance) {
     params = tuning_instance$result$params)
   return(tuning_results)
 }
+
+check_is_partition = function(ind, n_obs) {
+  ind = unlist(ind)
+  if (length(ind) != n_obs) {
+    return(FALSE)
+  } else {
+    hit = rep(0, n_obs)
+    hit[ind] = 1
+    if (sum(hit) < n_obs) {
+      return(FALSE)
+    } else {
+      return(TRUE)
+    }
+  }
+}
+
+check_smpl_split = function(smpl, n_obs, check_intersect=FALSE) {
+  assert_list(smpl, names = "named")
+  assert_set_equal(names(smpl), c('train_ids', 'test_ids'))
+  assert_list(smpl$train_ids, names = "unnamed")
+  assert_list(smpl$test_ids, names = "unnamed")
+  if (length(smpl$train_ids) != length(smpl$test_ids)) {
+    stop("Number of folds for train and test samples do not match.")
+  }
+  lapply(smpl$train_ids, function(x)
+    assert_vector(x, any.missing = FALSE, all.missing = FALSE,
+                  unique = TRUE, max.len = n_obs))
+  lapply(smpl$train_ids, function(x)
+    assert_subset(x, seq(n_obs)))
+  lapply(smpl$test_ids, function(x)
+    assert_vector(x, any.missing = FALSE, all.missing = FALSE,
+                  unique = TRUE, max.len = n_obs))
+  lapply(smpl$test_ids, function(x)
+    assert_subset(x, seq(n_obs)))
+  if (check_intersect) {
+    for (i_fold in seq(length(length(smpl$train_ids))))
+    {
+      check_disjunct(smpl$train_ids[[i_fold]], smpl$test_ids[[i_fold]])
+    }
+  }
+  return(TRUE)
+}
+

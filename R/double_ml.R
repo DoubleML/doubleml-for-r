@@ -445,33 +445,88 @@ DoubleML = R6Class("DoubleML",
     #' @return self
     set_sample_splitting = function(smpls) {
 
-      assert_list(smpls)
-      private$n_rep_ = length(smpls)
-      n_folds_each_train_smpl = vapply(
-        smpls, function(x) length(x$train_ids),
-        integer(1L))
-      n_folds_each_test_smpl = vapply(
-        smpls, function(x) length(x$test_ids),
-        integer(1L))
-
-      if (!all(n_folds_each_train_smpl == n_folds_each_test_smpl)) {
-        stop("Number of folds for train and test samples do not match.")
+      if (test_list(smpls, names = "unnamed")) {
+        lapply(smpls, function(x) check_smpl_split(x, self$data$n_obs))
+        
+        n_folds_each_train_smpl = vapply(
+          smpls, function(x) length(x$train_ids),
+          integer(1L))
+        n_folds_each_test_smpl = vapply(
+          smpls, function(x) length(x$test_ids),
+          integer(1L))
+        
+        if (!all(n_folds_each_train_smpl == n_folds_each_train_smpl[1])) {
+          stop("Different number of folds for repeated cross-fitting.")
+        }
+        
+        smpls_are_partitions = sapply(
+          smpls,
+          function(x) check_is_partition(x$test_ids, self$data$n_obs))
+        
+        if (all(smpls_are_partitions)) {
+          if (length(smpls) == 1 &
+              n_folds_each_train_smpl[1] == 1 &
+              check_is_partition(smpls[[1]]$train_ids, self$data$n_obs)) {
+            private$n_rep_ = 1
+            private$n_folds_ = 1
+            private$apply_cross_fitting_ = FALSE
+            private$smpls_ = smpls
+          } else {
+            private$n_rep_ = length(smpls)
+            private$n_folds_ = n_folds_each_train_smpl[1]
+            private$apply_cross_fitting_ = TRUE
+            lapply(smpls,
+                   function(x) check_smpl_split(x, self$data$n_obs,
+                                                check_intersect = TRUE))
+            private$smpls_ = smpls
+          }
+        } else {
+          if (n_folds_each_train_smpl[1] != 1) {
+            stop(paste("Invalid partition provided.",
+                       "Tuples (train_ids, test_ids) for more than one fold",
+                       "provided that don't form a partition."))
+          }
+          if (length(smpls) != 1) {
+            stop(paste("Repeated sample splitting without cross-fitting not",
+                       "implemented."))
+          }
+          private$n_rep_ = length(smpls)
+          private$n_folds_ = 2
+          private$apply_cross_fitting_ = FALSE
+          lapply(smpls,
+                 function(x) check_smpl_split(x, self$data$n_obs,
+                                              check_intersect = TRUE))
+          private$smpls_ = smpls
+        }
+      } else {
+        check_smpl_split(smpls, self$data$n_obs)
+        private$n_rep_ = 1
+        n_folds = length(smpls$train_ids)
+        if (check_is_partition(smpls$test_ids, self$data$n_obs)) {
+          if (n_folds == 1 & check_is_partition(smpls$train_ids, self$data$n_obs)) {
+            private$n_folds_ = 1
+            private$apply_cross_fitting_ = FALSE
+            private$smpls_ = list(smpls)
+          } else {
+            private$n_folds_ = n_folds
+            private$apply_cross_fitting_ = TRUE
+            check_smpl_split(smpls, self$data$n_obs,
+                             check_intersect = TRUE)
+            private$smpls_ = list(smpls)
+          }
+        } else {
+          if (n_folds != 1) {
+            stop(paste("Invalid partition provided.",
+                       "Tuples (train_ids, test_ids) for more than one fold",
+                       "provided that don't form a partition."))
+          }
+          private$n_folds_ = 2
+          private$apply_cross_fitting_ = FALSE
+          check_smpl_split(smpls, self$data$n_obs,
+                           check_intersect = TRUE)
+          private$smpls_ = list(smpls)
+        }
       }
-
-      if (!all(n_folds_each_train_smpl == n_folds_each_train_smpl[1])) {
-        stop("Different number of folds for repeated cross-fitting.")
-      }
-
-      private$n_folds_ = n_folds_each_train_smpl[1]
-
-      if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message(paste(
-          "apply_cross_fitting is set to FALSE.",
-          "Cross-fitting is not supported for n_folds = 1."))
-        self$apply_cross_fitting = FALSE
-      }
-
-      private$smpls_ = smpls
 
       private$initialize_arrays()
 
