@@ -34,10 +34,11 @@ DoubleMLData = R6Class("DoubleMLData",
     d_cols = function(value) {
       if (missing(value)) return(private$d_cols_)
       else {
+        d_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
-        assert_character(value, unique = TRUE)
-        assert_subset(value, self$all_variables)
-        private$d_cols_ = value
+        assert_character(d_cols, unique = TRUE)
+        assert_subset(d_cols, self$all_variables)
+        private$d_cols_ = d_cols
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -105,9 +106,10 @@ DoubleMLData = R6Class("DoubleMLData",
     use_other_treat_as_covariate = function(value) {
       if (missing(value)) return(private$use_other_treat_as_covariate_)
       else {
+        use_other_treat_as_covariate = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
-        assert_logical(value, len = 1)
-        private$use_other_treat_as_covariate_ = value
+        assert_logical(use_other_treat_as_covariate, len = 1)
+        private$use_other_treat_as_covariate_ = use_other_treat_as_covariate
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -123,14 +125,15 @@ DoubleMLData = R6Class("DoubleMLData",
     x_cols = function(value) {
       if (missing(value)) return(private$x_cols_)
       else {
+        x_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
-        if (!is.null(value)) {
-          assert_character(value, unique = TRUE)
+        if (!is.null(x_cols)) {
+          assert_character(x_cols, unique = TRUE)
         }
 
-        if (!is.null(value)) {
-          assert_subset(value, self$all_variables)
-          private$x_cols_ = value
+        if (!is.null(x_cols)) {
+          assert_subset(x_cols, self$all_variables)
+          private$x_cols_ = x_cols
         } else {
           if (!is.null(self$z_cols)) {
             y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
@@ -152,10 +155,11 @@ DoubleMLData = R6Class("DoubleMLData",
     y_col = function(value) {
       if (missing(value)) return(private$y_col_)
       else {
+        y_col = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
-        assert_character(value, len = 1)
-        assert_subset(value, self$all_variables)
-        private$y_col_ = value
+        assert_character(y_col, len = 1)
+        assert_subset(y_col, self$all_variables)
+        private$y_col_ = y_col
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -168,12 +172,13 @@ DoubleMLData = R6Class("DoubleMLData",
     z_cols = function(value) {
       if (missing(value)) return(private$z_cols_)
       else {
+        z_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
-        if (!is.null(value)) {
-          assert_character(value, unique = TRUE)
+        if (!is.null(z_cols)) {
+          assert_character(z_cols, unique = TRUE)
         }
-        assert_subset(value, self$all_variables)
-        private$z_cols_ = value
+        assert_subset(z_cols, self$all_variables)
+        private$z_cols_ = z_cols
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])

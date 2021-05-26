@@ -175,7 +175,7 @@ test_that("Unit tests for DoubleMLData", {
     D7_setd = D7_1d$clone()$set_data_model("d2")
 
     expect_error(double_ml_data_from_data_frame(data),
-      regexp = "Assertion on 'value' failed: Must be of type 'character', not 'NULL'.")
+      regexp = "Assertion on 'y_col' failed: Must be of type 'character', not 'NULL'.")
 
     expect_equal(D1$data_model, D4$data_model)
     expect_equal(D2$data_model, D5$data_model)
@@ -303,7 +303,7 @@ test_that("Unit tests for DoubleMLData", {
                                                 z_cols = c(z_indx, y_indx)), 
                  regexp = msg6)
     
-    msg7 = "Assertion on 'value' failed: Contains duplicated values, position 21."
+    msg7 = "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = rep(X_cols1, 2),
                                                 y_col = y_indx,

@@ -16,13 +16,13 @@ test_that("x_cols setter", {
   dml_data$x_cols = c('X1', 'X11', 'X13')
   expect_equal(as.data.frame(dml_data$data_model), data_comp)
   
-  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+  msg = paste0("Assertion on 'x_cols' failed: Must be a subset of",
                " \\{'X1','X2','X3','X4','X5','X6','X7','X8','X9','X10','X11','X12','X13','X14','X15','X16','X17','X18','X19','X20','y','d'\\},",
                " but is \\{'X1','X11','A13'\\}.") 
   expect_error(dml_data$x_cols <- c('X1', 'X11', 'A13'),
                regexp = msg)
   
-  msg = "Assertion on 'value' failed: Must be of type 'character', not 'double'."
+  msg = "Assertion on 'x_cols' failed: Must be of type 'character', not 'double'."
   expect_error(dml_data$x_cols <- 5,
                regexp = msg)
   
@@ -51,19 +51,19 @@ test_that("d_cols setter", {
   dml_data$d_cols = c('d2', 'd1')
   expect_equal(as.data.frame(dml_data$data_model), data_comp)
   
-  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+  msg = paste0("Assertion on 'd_cols' failed: Must be a subset of",
                " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\},",
                " but is \\{'d1','d13'\\}.") 
   expect_error(dml_data$d_cols <- c('d1', 'd13'),
                regexp = msg)
   
-  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+  msg = paste0("Assertion on 'd_cols' failed: Must be a subset of",
                " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\},",
                " but is \\{'d13'\\}.") 
   expect_error(dml_data$d_cols <- 'd13',
                regexp = msg)
   
-  msg = "Assertion on 'value' failed: Must be of type 'character', not 'double'."
+  msg = "Assertion on 'd_cols' failed: Must be of type 'character', not 'double'."
   expect_error(dml_data$d_cols <- 5,
                regexp = msg)
   
@@ -92,19 +92,19 @@ test_that("z_cols setter", {
   expect_equal(dml_data$z_cols, c('z1', 'z2'))
   expect_equal(dml_data$n_instr, 2)
   
-  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+  msg = paste0("Assertion on 'z_cols' failed: Must be a subset of",
                " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\},",
                " but is \\{'z1','a13'\\}.") 
   expect_error(dml_data$z_cols <- c('z1', 'a13'),
                regexp = msg)
   
-  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+  msg = paste0("Assertion on 'z_cols' failed: Must be a subset of",
                " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\},",
                " but is \\{'a13'\\}.") 
   expect_error(dml_data$z_cols <- 'a13',
                regexp = msg)
   
-  msg = "Assertion on 'value' failed: Must be of type 'character', not 'double'."
+  msg = "Assertion on 'z_cols' failed: Must be of type 'character', not 'double'."
   expect_error(dml_data$z_cols <- 5,
                regexp = msg)
   
@@ -141,13 +141,13 @@ test_that("y_col setter", {
   expect_equal(dml_data$y_col, 'y123')
   expect_equal(as.data.frame(dml_data$data_model), data_comp)
   
-  msg = paste0("Assertion on 'value' failed: Must be a subset of",
+  msg = paste0("Assertion on 'y_col' failed: Must be a subset of",
                " \\{'X1','X2','X3','X4','X5','X6','X7','y','y123','d'\\},",
                " but is \\{'d13'\\}.") 
   expect_error(dml_data$y_col <- 'd13',
                regexp = msg)
   
-  msg = "Assertion on 'value' failed: Must be of type 'character', not 'double'."
+  msg = "Assertion on 'y_col' failed: Must be of type 'character', not 'double'."
   expect_error(dml_data$y_col <- 5,
                regexp = msg)
   }
@@ -183,7 +183,7 @@ test_that("Tests for use_other_treat_as_covariate", {
   expect_equal(dml_data$treat_col, 'd2')
   expect_equal(dml_data$other_treat_cols, NULL)
   
-  msg = "Assertion on 'value' failed: Must be of type 'logical', not 'double'."
+  msg = "Assertion on 'use_other_treat_as_covariate' failed: Must be of type 'logical', not 'double'."
   expect_error(dml_data$use_other_treat_as_covariate <- 5,
                regexp = msg)
   
@@ -257,7 +257,7 @@ test_that("Test duplicates", {
   dml_data = DoubleMLData$new(dt, y_col = 'y',
                               d_cols = 'd')
   
-  msg = "Assertion on 'value' failed: Contains duplicated values, position 2."
+  msg = "Assertion on 'd_cols' failed: Contains duplicated values, position 2."
   expect_error(DoubleMLData$new(dt,
                                 y_col='y',
                                 d_cols=c('d', 'd', 'X1'),
@@ -266,7 +266,7 @@ test_that("Test duplicates", {
   expect_error(dml_data$d_cols <- c('d', 'd', 'X1'),
                regexp = msg)
   
-  msg = "Assertion on 'value' failed: Contains duplicated values, position 3."
+  msg = "Assertion on 'x_cols' failed: Contains duplicated values, position 3."
   expect_error(DoubleMLData$new(dt,
                                 y_col='y',
                                 d_cols='d',
@@ -275,7 +275,7 @@ test_that("Test duplicates", {
   expect_error(dml_data$x_cols <- c('X3', 'X2', 'X3'),
                regexp = msg)
   
-  msg = "Assertion on 'value' failed: Contains duplicated values, position 3."
+  msg = "Assertion on 'z_cols' failed: Contains duplicated values, position 3."
   expect_error(DoubleMLData$new(dt,
                                 y_col='y',
                                 d_cols='d',
