@@ -185,7 +185,7 @@ DoubleMLData = R6Class("DoubleMLData",
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
-    #' @param data ([`data.table`][data.table::data.table()])\cr
+    #' @param data ([`data.table`][data.table::data.table()], `data.frame()`)\cr
     #' Data object.
     #'
     #' @param y_col (`character(1)`) \cr
@@ -213,12 +213,8 @@ DoubleMLData = R6Class("DoubleMLData",
       z_cols = NULL,
       use_other_treat_as_covariate = TRUE) {
 
-      # TBD: Input data.frame
-
       if (all(class(data) == "data.frame")) {
-        stop(paste("'data' is a data.frame, use",
-                   "'double_ml_data_from_data_frame' call to instantiate",
-                   "DoubleMLData."))
+        data = data.table(data)
       }
       assert_class(data, "data.table")
       assert_character(names(data), unique = TRUE)
@@ -356,11 +352,6 @@ DoubleMLData = R6Class("DoubleMLData",
 #' @param z_cols (`NULL`, `character()`) \cr
 #' The instrumental variables. Default is `NULL`.
 #'
-#' @param data_class (`character(1)`) \cr
-#' Class of returned object. By default, an object of class `DoubleMLData` is
-#' returned. Setting `data_class = "data.table"` returns an object of class
-#' `data.table`.
-#'
 #' @param use_other_treat_as_covariate (`logical(1)`) \cr
 #' Indicates whether in the multiple-treatment case the other treatment
 #' variables should be added as covariates. Default is `TRUE`.
@@ -378,43 +369,11 @@ DoubleMLData = R6Class("DoubleMLData",
 #' @export
 double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   d_cols = NULL, z_cols = NULL,
-  data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE) {
-
-  if (is.null(y_col) | is.null(d_cols)) {
-    stop("Column indices y_col and d_cols not specified.")
-  }
-  assert_choice(data_class, c("DoubleMLData", "data.table"))
-
-  if (!is.null(x_cols)) {
-    assert_character(x_cols, unique = TRUE)
-  }
-  assert_character(y_col, len = 1)
-  assert_character(d_cols, unique = TRUE)
-
-  if (!is.null(z_cols)) {
-    assert_character(z_cols, unique = TRUE)
-  }
-  if (!is.null(x_cols)) {
-    x_cols = x_cols
-  } else {
-    if (!is.null(z_cols)) {
-      y_d_z = unique(c(y_col, d_cols, z_cols))
-      x_cols = setdiff(names(df), y_d_z)
-    } else {
-      y_d = union(y_col, d_cols)
-      x_cols = setdiff(names(df), y_d)
-    }
-  }
-  #col_indx = c(x_cols, y_col, d_cols, z_cols)
-  #data = data.table(df)[, col_indx, with = FALSE]
-  data = data.table(df)
-  if (data_class == "DoubleMLData") {
-    data = DoubleMLData$new(data,
-      x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-      z_cols = z_cols,
-      use_other_treat_as_covariate = use_other_treat_as_covariate)
-  }
+  data = DoubleMLData$new(df,
+                          x_cols = x_cols, y_col = y_col, d_cols = d_cols,
+                          z_cols = z_cols,
+                          use_other_treat_as_covariate = use_other_treat_as_covariate)
   return(data)
 }
 
@@ -441,7 +400,6 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #' Class of returned object. By default, an object of class `DoubleMLData` is
 #' returned. Setting `data_class = "data.table"` returns an object of class
 #' `data.table`.
-#'
 #'
 #' @param use_other_treat_as_covariate (`logical(1)`) \cr
 #' Indicates whether in the multiple-treatment case the other treatment
