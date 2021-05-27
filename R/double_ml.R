@@ -360,13 +360,6 @@ DoubleML = R6Class("DoubleML",
     split_samples = function() {
       dummy_task = Task$new("dummy_resampling", "regr", self$data$data)
 
-      if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message(paste(
-          "apply_cross_fitting is set to FALSE.",
-          "Cross-fitting is not supported for n_folds = 1."))
-        self$apply_cross_fitting = FALSE
-      }
-
       if (self$apply_cross_fitting) {
 
         dummy_resampling_scheme = rsmp("repeated_cv",
@@ -387,20 +380,7 @@ DoubleML = R6Class("DoubleML",
             (i_repeat * self$n_folds)])
         })
       } else {
-        if (self$n_folds > 2) {
-          stop(paste(
-            "Estimation without cross-fitting not supported for",
-            "n_folds > 2."))
-        }
-
         if (self$n_folds == 2) {
-
-          if (self$n_rep != 1) {
-            stop(paste(
-              "Repeated sample splitting without cross-fitting not",
-              "implemented."))
-          }
-
           dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
           train_ids = list(dummy_resampling_scheme$train_set(1))
           test_ids = list(dummy_resampling_scheme$test_set(1))
