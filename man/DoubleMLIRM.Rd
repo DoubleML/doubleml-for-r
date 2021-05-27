@@ -87,8 +87,8 @@ Other DoubleML:
 \section{Super class}{
 \code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLIRM}
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{trimming_rule}}{(\code{character(1)}) \cr
 A \code{character(1)} specifying the trimming approach.}

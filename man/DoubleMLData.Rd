@@ -24,8 +24,8 @@ obj_dml_data = DoubleMLData$new(df,
   y_col = "y",
   d_cols = "d")
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{all_variables}}{(\code{character()})\cr
 All variables available in the dataset.}
@@ -81,6 +81,7 @@ The instrumental variables. Default is \code{NULL}.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{DoubleMLData$new()}}
+\item \href{#method-print}{\code{DoubleMLData$print()}}
 \item \href{#method-set_data_model}{\code{DoubleMLData$set_data_model()}}
 \item \href{#method-clone}{\code{DoubleMLData$clone()}}
 }
@@ -104,7 +105,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{data}}{(\code{\link[data.table:data.table]{data.table}})\cr
+\item{\code{data}}{(\code{\link[data.table:data.table]{data.table}}, \code{data.frame()})\cr
 Data object.}
 
 \item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
@@ -128,6 +129,16 @@ variables should be added as covariates. Default is \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-print"></a>}}
+\if{latex}{\out{\hypertarget{method-print}{}}}
+\subsection{Method \code{print()}}{
+Print DoubleMLData objects.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$print()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-set_data_model"></a>}}
