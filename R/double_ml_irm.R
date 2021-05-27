@@ -172,7 +172,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       private$learner_class = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
-      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
+      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
 
       self$learner = list(
