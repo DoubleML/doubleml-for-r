@@ -33,7 +33,6 @@ if (on_cran) {
     dml_procedure = "dml2",
     score = "ATE",
     tune_on_folds = FALSE,
-    i_setting = 1:(length(data_irm)),
     n_rep = c(1),
     stringsAsFactors = FALSE)
 } else {
@@ -42,7 +41,6 @@ if (on_cran) {
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
     tune_on_folds = c(FALSE, TRUE),
-    i_setting = 1:(length(data_irm)),
     n_rep = c(1, 3),
     stringsAsFactors = FALSE)
 }
@@ -56,15 +54,11 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     n_folds = 2
 
     # TODO: Functional Test Case
-    set.seed(i_setting)
+    set.seed(3141)
     learner_pars = get_default_mlmethod_irm(learner)
 
-    Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
-
-    double_mlirm_obj_tuned = DoubleMLIRM$new(data_ml,
+    double_mlirm_obj_tuned = DoubleMLIRM$new(
+      data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = learner_pars$mlmethod$mlmethod_g,
       ml_m = learner_pars$mlmethod$mlmethod_m,
@@ -98,7 +92,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     # loaded learner
     loaded_regr_learner = mlr3::lrn("regr.rpart", "cp" = 0.1, "minsplit" = 20)
     loaded_classif_learner = mlr3::lrn("classif.rpart", "cp" = 0.1, "minsplit" = 20)
-    double_mlirm_obj_loaded_tuned = DoubleMLIRM$new(data_ml,
+    double_mlirm_obj_loaded_tuned = DoubleMLIRM$new(
+      data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = loaded_regr_learner,
       ml_m = loaded_classif_learner,

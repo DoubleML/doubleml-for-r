@@ -20,7 +20,6 @@ if (on_cran) {
     score = c(non_orth_score),
     n_folds = c(3),
     n_rep = c(2),
-    i_setting = 1:(length(data_plr)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
@@ -29,7 +28,6 @@ if (on_cran) {
     score = c(non_orth_score),
     n_folds = c(2, 3),
     n_rep = c(1, 2),
-    i_setting = 1:(length(data_plr)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -37,36 +35,15 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
     learner_pars = get_default_mlmethod_plr(learner)
-    learner_pars_for_DML = learner_pars
-    learner_pars_for_DML$params$params_g = rep(list(learner_pars_for_DML$params$params_g), 1)
-    learner_pars_for_DML$params$params_m = rep(list(learner_pars_for_DML$params$params_m), 1)
     n_rep_boot = 498
-    set.seed(i_setting)
-    params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
-    Xnames = names(data_plr[[i_setting]])[names(data_plr[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_plr[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
-
+    set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
-      data = data_ml,
-      ml_g = learner_pars_for_DML$mlmethod$mlmethod_g,
-      ml_m = learner_pars_for_DML$mlmethod$mlmethod_m,
+      data = data_plr$dml_data,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
-
-    # set params for nuisance part m
-    double_mlplr_obj$set_ml_nuisance_params(
-      learner = "ml_m",
-      treat_var = "d",
-      params = learner_pars$params$params_m)
-
-    # set params for nuisance part g
-    double_mlplr_obj$set_ml_nuisance_params(
-      learner = "ml_g",
-      treat_var = "d",
-      params = learner_pars$params$params_g)
 
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef
@@ -85,25 +62,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     if (n_folds == 2 & n_rep == 1) {
       double_mlplr_nocf = DoubleMLPLR$new(
-        data = data_ml,
-        ml_g = learner_pars_for_DML$mlmethod$mlmethod_g,
-        ml_m = learner_pars_for_DML$mlmethod$mlmethod_m,
+        data = data_plr$dml_data,
+        ml_g = learner_pars$ml_g$clone(),
+        ml_m = learner_pars$ml_m$clone(),
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score,
         apply_cross_fitting = FALSE)
 
-      # set params for nuisance part m
-      double_mlplr_nocf$set_ml_nuisance_params(
-        learner = "ml_m",
-        treat_var = "d",
-        params = learner_pars$params$params_m)
-
-      # set params for nuisance part g
-      double_mlplr_nocf$set_ml_nuisance_params(
-        learner = "ml_g",
-        treat_var = "d",
-        params = learner_pars$params$params_g)
       double_mlplr_nocf$fit()
       theta_nocf = double_mlplr_nocf$coef
       se_nocf = double_mlplr_nocf$se

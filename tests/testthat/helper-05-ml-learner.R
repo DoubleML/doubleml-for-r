@@ -66,7 +66,13 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
       params_m = list())
 
   }
-  return(list(mlmethod = mlmethod, params = params))
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m$param_set$values = params$params_m
+
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m))
 }
 
 get_default_mlmethod_pliv = function(learner) {
@@ -140,8 +146,15 @@ get_default_mlmethod_pliv = function(learner) {
         family = "gaussian"))
 
   }
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+  ml_m$param_set$values = params$params_m
+  ml_r = mlr3::lrn(mlmethod$mlmethod_r)
+  ml_r$param_set$values = params$params_r
 
-  return(list(mlmethod = mlmethod, params = params))
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
 }
 
 get_default_mlmethod_irm = function(learner) {
@@ -167,37 +180,49 @@ get_default_mlmethod_irm = function(learner) {
       params_m = list(cp = 0.01, minsplit = 20))
 
   }
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+  ml_m$param_set$values = params$params_m
 
-  return(list(mlmethod = mlmethod, params = params))
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m))
 }
 
 get_default_mlmethod_iivm = function(learner) {
   if (learner == "cv_glmnet") {
     mlmethod = list(
-      mlmethod_p = paste0("classif.", learner),
-      mlmethod_mu = paste0("regr.", learner),
-      mlmethod_m = paste0("classif.", learner))
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("regr.", learner),
+      mlmethod_r = paste0("classif.", learner))
     slambda = "lambda.min"
     family = "gaussian"
 
     params = list(
-      params_p = list(s = slambda),
-      params_mu = list(s = slambda, family = family),
-      params_m = list(s = slambda))
+      params_m = list(s = slambda),
+      params_g = list(s = slambda, family = family),
+      params_r = list(s = slambda))
   }
 
   else if (learner == "rpart") {
     mlmethod = list(
-      mlmethod_p = paste0("classif.", learner),
-      mlmethod_mu = paste0("regr.", learner),
-      mlmethod_m = paste0("classif.", learner))
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("regr.", learner),
+      mlmethod_r = paste0("classif.", learner))
 
     params = list(
-      params_p = list(cp = 0.01, minsplit = 20),
-      params_mu = list(cp = 0.01, minsplit = 20),
-      params_m = list(cp = 0.01, minsplit = 20))
+      params_m = list(cp = 0.01, minsplit = 20),
+      params_g = list(cp = 0.01, minsplit = 20),
+      params_r = list(cp = 0.01, minsplit = 20))
 
   }
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+  ml_m$param_set$values = params$params_m
+  ml_r = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
+  ml_r$param_set$values = params$params_r
 
-  return(list(mlmethod = mlmethod, params = params))
+  return(list(mlmethod = mlmethod, params = params,
+              ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
 }

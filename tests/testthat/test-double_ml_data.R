@@ -1,12 +1,7 @@
 context("Unit tests for DoubleMLData")
 
-test_cases = expand.grid(i_setting = 1:(length(data_iivm)))
-
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
-
-patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
-  .cases = test_cases, {
-    data = data_iivm[[i_setting]]
+test_that("Unit tests for DoubleMLData", {
+    data = data_iivm$df
 
     # Input: Matrix and vectors
     y = data[, "y"] # input: numeric
@@ -270,22 +265,22 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
 
     D10_1d_setd = D10_1d$clone()$set_data_model("d2")
 
-    msg1 = "At least one variable/column is set as treatment variable (`d_cols`) and as a covariate (`x_cols`). Consider using parameter 'use_other_treat_as_covariate'."
+    msg1 = "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\). Consider using parameter 'use_other_treat_as_covariate'."
     
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
                                                 y_col = y_indx,
                                                 d_cols = c(d_indx, X_cols1[1]),
                                                 z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg1)
     
-    msg2 = "At least one variable/column is set as covariate ('x_cols') and instrumental variable in 'z_cols')."
+    msg2 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
                                                 y_col = y_indx,
                                                 d_cols = d_indx,
                                                 z_cols = c(z_indx, X_cols1[1])), 
-                 regexp = NULL)
+                 regexp = msg2)
     
     msg3 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
     expect_error(double_ml_data_from_data_frame(data,
@@ -295,13 +290,13 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                                 z_cols = z_indx),
                  regexp = msg3)
     
-    msg4 = "At least one variable/column is set as treatment variable ('d_cols') and instrumental variable in 'z_cols')."
+    msg4 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
                                                 y_col = y_indx,
                                                 d_cols = c(z_indx, d_indx),
                                                 z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg4)
     
     msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
     expect_error(double_ml_data_from_data_frame(data,
@@ -341,21 +336,21 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
     expect_identical(D9$data_model, D9_noXcols$data_model)
 
     # Exception handling
-    msg8 = "At least one variable/column is set as treatment variable (`d_cols`) and as a covariate (`x_cols`). Consider using parameter 'use_other_treat_as_covariate'."
+    msg8 = "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\). Consider using parameter 'use_other_treat_as_covariate'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
                                   d_cols = c(d_indx, X_cols1[1]),
                                   z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg8)
     
-    msg9 = "At least one variable/column is set as covariate ('x_cols') and instrumental variable in 'z_cols')."
+    msg9 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
                                   d_cols = d_indx,
                                   z_cols = c(z_indx, X_cols1[1])),
-                 regexp = NULL)
+                 regexp = msg9)
 
     msg10 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
     expect_error(DoubleMLData$new(data,
@@ -365,13 +360,13 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                                   z_cols = z_indx), 
                  regexp = msg10)
     
-    msg11 = "At least one variable/column is set as treatment variable ('d_cols') and instrumental variable in 'z_cols')."
+    msg11 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
                                   d_cols = c(z_indx, d_indx),
                                   z_cols = z_indx), 
-                 regexp = NULL)
+                 regexp = msg11)
     
     D11 = DoubleMLData$new(data,
                            x_cols = X_cols1,
@@ -379,8 +374,146 @@ patrick::with_parameters_test_that("Unit tests for DoubleMLData:",
                            d_cols = d_indx,
                            z_cols = z_indx)
     
-    msg12 = "Assertion on 'treatment_var' failed: Must be a subset of {'d'}, but is {'X1'}."
+    msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}, but is \\{'X1'\\}."
     expect_error(D11$set_data_model(X_cols1[1]),
-                 regexp = NULL)
+                 regexp = msg12)
   }
+)
+
+test_that("Unit tests for invalid data", {
+  # PLR with IV
+  msg = paste("Incompatible data.\\n",
+              "z has been set as instrumental variable\\(s\\).\\n",
+              "To fit a partially linear IV regression model use",
+              "DoubleMLPLIV instead of DoubleMLPLR.")
+  expect_error(DoubleMLPLR$new(
+    data = data_pliv$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('regr.rpart')),
+    regexp = msg)
+
+  # PLIV without IV
+  msg = paste("Incompatible data.\\n",
+              "At least one variable must be set as instrumental variable.\\n",
+              "To fit a partially linear regression model without instrumental",
+              "variable\\(s\\) use DoubleMLPLR instead of DoubleMLPLIV.")
+  expect_error(DoubleMLPLIV$new(
+    data = data_plr$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('regr.rpart'),
+    ml_r = mlr3::lrn('regr.rpart')),
+    regexp = msg)
+
+  # IRM with IV
+  msg = paste("Incompatible data.\\n",
+              "z has been set as instrumental variable\\(s\\).\\n",
+              "To fit an interactive IV regression model use",
+              "DoubleMLIIVM instead of DoubleMLIRM.")
+  expect_error(DoubleMLIRM$new(
+    data = data_iivm$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # IIVM without IV
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as instrumental variable.")
+  expect_error(double_mlplr_obj <- DoubleMLIIVM$new(
+    data = data_irm$dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+
+  # non-binary D for IRM
+  df = data_irm$df
+  df['d'] = df['d']*5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IRM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIRM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # non-binary D for IIVM
+  df = data_iivm$df
+  df['d'] = df['d']*5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = "d",
+                                            z_cols = "z")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # non-binary Z for IIVM
+  df = data_iivm$df
+  df['z'] = df['z']*5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = "d",
+                                            z_cols = "z")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as instrumental variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+
+  # multiple D for IRM
+  df = data_irm$df
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = c("d", "X1"))
+  msg = paste("Incompatible data.\\n",
+              "To fit an IRM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIRM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+
+  # multiple D for IIVM
+  df = data_iivm$df
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = c("d", "X1"),
+                                            z_cols = "z")
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as treatment variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+  
+  # multiple Z for IIVM
+  df = data_iivm$df
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y",
+                                            d_cols = "d",
+                                            z_cols = c("z", "X1"))
+  msg = paste("Incompatible data.\\n",
+              "To fit an IIVM model with DoubleML",
+              "exactly one binary variable with values 0 and 1",
+              "needs to be specified as instrumental variable.")
+  expect_error(DoubleMLIIVM$new(
+    data = dml_data,
+    ml_g = mlr3::lrn('regr.rpart'),
+    ml_m = mlr3::lrn('classif.rpart', predict_type = "prob")),
+    regexp = msg)
+}
 )

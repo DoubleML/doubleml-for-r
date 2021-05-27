@@ -245,12 +245,12 @@ DoubleMLData = R6Class("DoubleMLData",
         if (any(z_cols %in% d_cols)) {
           stop(paste(
             "At least one variable/column is set as treatment",
-            "variable ('d_cols') and instrumental variable in 'z_cols')."))
+            "variable ('d_cols') and instrumental variable in 'z_cols'."))
         }
         if (any(z_cols %in% x_cols)) {
           stop(paste(
             "At least one variable/column is set as covariate ('x_cols')",
-            "and instrumental variable in 'z_cols')."))
+            "and instrumental variable in 'z_cols'."))
         }
       }
     }

@@ -20,13 +20,11 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = "regr.glmnet",
     dml_procedure = "dml2",
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
-    i_setting = 1:(length(data_pliv)),
     stringsAsFactors = FALSE)
 }
 test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -35,13 +33,9 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
   .cases = test_cases, {
     n_rep_boot = 498
 
-    set.seed(i_setting)
-    Xnames = names(data_pliv[[i_setting]])[names(data_pliv[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_pliv[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_cols = "z")
-
-    double_mlpliv_obj = DoubleMLPLIV$new(data_ml,
+    set.seed(3141)
+    double_mlpliv_obj = DoubleMLPLIV$new(
+      data = data_pliv$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner),
@@ -53,8 +47,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 
-    set.seed(i_setting)
-    double_mlpliv_obj_score = DoubleMLPLIV$new(data_ml,
+    double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mlpliv_obj$boot_coef
+
+    set.seed(3141)
+    double_mlpliv_obj_score = DoubleMLPLIV$new(
+    data = data_pliv$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner),
@@ -66,13 +64,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj_score = double_mlpliv_obj_score$coef
     se_obj_score = double_mlpliv_obj_score$se
 
-    # bootstrap
-    # double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlpliv_obj$boot_coef
+    double_mlpliv_obj_score$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_score = double_mlpliv_obj_score$boot_coef
 
-    # at the moment the object result comes without a name
     expect_equal(theta_obj, theta_obj_score, tolerance = 1e-8)
     expect_equal(se_obj, se_obj_score, tolerance = 1e-8)
-    # expect_equal(as.vector(pliv_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta_score), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )

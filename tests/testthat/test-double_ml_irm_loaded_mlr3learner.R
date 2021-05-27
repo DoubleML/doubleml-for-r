@@ -9,14 +9,12 @@ if (on_cran) {
   test_cases = expand.grid(
     dml_procedure = "dml1",
     score = "ATTE",
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
-    i_setting = 1:(length(data_irm)),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
 }
@@ -24,11 +22,8 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {
-    set.seed(i_setting)
-    Xnames = names(data_irm[[i_setting]])[names(data_irm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_irm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames)
+    set.seed(3141)
+    n_rep_boot = 212
 
     # unloaded learners (access by name)
     learner_regr_name = "regr.ranger"
@@ -53,7 +48,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     # loaded_classif_learner = mlr3::lrn("classif.cv_glmnet", "s" = "lambda.min", "nfolds" = 5)
 
     set.seed(2)
-    double_mlirm = DoubleMLIRM$new(data_ml,
+    double_mlirm = DoubleMLIRM$new(
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = learner_regr_name,
       ml_m = learner_classif_name,
@@ -77,11 +73,14 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm$fit()
     theta = double_mlirm$coef
     se = double_mlirm$se
+    double_mlirm$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta = double_mlirm$boot_coef
 
 
 
     set.seed(2)
-    double_mlirm_loaded = DoubleMLIRM$new(data_ml,
+    double_mlirm_loaded = DoubleMLIRM$new(
+      data = data_irm$dml_data,
       n_folds = 5,
       ml_g = loaded_regr_learner,
       ml_m = loaded_classif_learner,
@@ -91,14 +90,11 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm_loaded$fit()
     theta_loaded = double_mlirm_loaded$coef
     se_loaded = double_mlirm_loaded$se
-
-    # bootstrap
-    # double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mlirm_obj$boot_coef
-    #
-    # at the moment the object result comes without a name
+    double_mlirm_loaded$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_loaded = double_mlirm_loaded$boot_coef
+    
     expect_equal(theta, theta_loaded, tolerance = 1e-8)
     expect_equal(se, se_loaded, tolerance = 1e-8)
-    # expect_equal(as.vector(irm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_loaded), tolerance = 1e-8)
   }
 )
