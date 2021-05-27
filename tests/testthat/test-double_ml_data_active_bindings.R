@@ -28,7 +28,7 @@ test_that("x_cols setter", {
   
   # check single covariate
   dml_data$x_cols = 'X13'
-  expect_equal(dml_data$x_cols, c('X13'))
+  expect_equal(dml_data$x_cols, 'X13')
   
   # check setting None brings us back to orig_x_cols
   dml_data$x_cols = NULL
@@ -69,7 +69,7 @@ test_that("d_cols setter", {
   
   # check single treatment variable
   dml_data$d_cols = 'd2'
-  expect_equal(dml_data$d_cols, c('d2'))
+  expect_equal(dml_data$d_cols, 'd2')
   expect_equal(dml_data$n_treat, 1)
   }
 )
@@ -110,7 +110,7 @@ test_that("z_cols setter", {
   
   # check single instrument
   dml_data$z_cols = 'z2'
-  expect_equal(dml_data$z_cols, c('z2'))
+  expect_equal(dml_data$z_cols, 'z2')
   expect_equal(dml_data$n_instr, 1)
   
   # check NULL
@@ -166,11 +166,11 @@ test_that("Tests for use_other_treat_as_covariate", {
   
   dml_data$set_data_model('d1')
   expect_equal(dml_data$treat_col, 'd1')
-  expect_equal(dml_data$other_treat_cols, c('d2'))
+  expect_equal(dml_data$other_treat_cols, 'd2')
   
   dml_data$set_data_model('d2')
   expect_equal(dml_data$treat_col, 'd2')
-  expect_equal(dml_data$other_treat_cols, c('d1'))
+  expect_equal(dml_data$other_treat_cols, 'd1')
   
   dml_data$use_other_treat_as_covariate = FALSE
   expect_equal(dml_data$other_treat_cols, NULL)

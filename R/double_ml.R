@@ -464,9 +464,10 @@ DoubleML = R6Class("DoubleML",
           stop("Different number of folds for repeated cross-fitting.")
         }
         
-        smpls_are_partitions = sapply(
+        smpls_are_partitions = vapply(
           smpls,
-          function(x) check_is_partition(x$test_ids, self$data$n_obs))
+          function(x) check_is_partition(x$test_ids, self$data$n_obs),
+          FUN.VALUE=TRUE)
         
         if (all(smpls_are_partitions)) {
           if (length(smpls) == 1 &
