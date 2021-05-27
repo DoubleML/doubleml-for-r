@@ -179,3 +179,74 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (dra
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
   }
 )
+
+test_that("Unit tests for the method set_sample_splitting of class DoubleML (invalid sets)", {
+  smpls = list(list(train_ids = list(c(1, 2.2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'train_ids' failed: Must be a subset of",
+              "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
+              "but is \\{'1','2.2','3','4','5'\\}.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  
+  smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4.5, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'train_ids' failed: Must be a subset of",
+              "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
+              "but is \\{'2','4.5','6','8','10'\\}.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  
+  smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 4, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'smpl\\$train_ids\\[\\[i_fold\\]\\]' failed:",
+              "Must be disjunct from set \\{'2','4','6','8','10'\\},",
+              "but has \\{'4'\\}.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  
+  smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, 7, 8, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'test_ids' failed:",
+              "Contains duplicated values, position 4.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  
+  smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'train_ids' failed:",
+              "Contains duplicated values, position 2.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  
+  smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5, 20), c(6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'train_ids' failed: Must be a subset of",
+              "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
+              "but is \\{'1','2','3','4','5','20'\\}.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  
+  smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                    test_ids = list(c(6, -7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+               list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                    test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+  msg = paste("Assertion on 'test_ids' failed: Must be a subset of",
+              "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
+              "but is \\{'6','-7','8','9','10'\\}.")
+  expect_error(dml_plr$set_sample_splitting(smpls),
+               regexp = msg)
+  }
+)
