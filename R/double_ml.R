@@ -402,8 +402,8 @@ DoubleML = R6Class("DoubleML",
           }
 
           dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
-          train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
-          test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
+          train_ids = list(dummy_resampling_scheme$train_set(1))
+          test_ids = list(dummy_resampling_scheme$test_set(1))
 
           smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
