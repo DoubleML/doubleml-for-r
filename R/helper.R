@@ -356,20 +356,20 @@ check_smpl_split = function(smpl, n_obs, check_intersect=FALSE) {
   if (length(smpl$train_ids) != length(smpl$test_ids)) {
     stop("Number of folds for train and test samples do not match.")
   }
-  lapply(smpl$train_ids, function(x)
-    assert_vector(x, any.missing = FALSE, all.missing = FALSE,
+  lapply(smpl$train_ids, function(train_ids)
+    assert_vector(train_ids, any.missing = FALSE, all.missing = FALSE,
                   unique = TRUE, max.len = n_obs))
-  lapply(smpl$train_ids, function(x)
-    assert_subset(x, seq(n_obs)))
-  lapply(smpl$test_ids, function(x)
-    assert_vector(x, any.missing = FALSE, all.missing = FALSE,
+  lapply(smpl$train_ids, function(train_ids)
+    assert_subset(train_ids, seq(n_obs)))
+  lapply(smpl$test_ids, function(test_ids)
+    assert_vector(test_ids, any.missing = FALSE, all.missing = FALSE,
                   unique = TRUE, max.len = n_obs))
-  lapply(smpl$test_ids, function(x)
-    assert_subset(x, seq(n_obs)))
+  lapply(smpl$test_ids, function(test_ids)
+    assert_subset(test_ids, seq(n_obs)))
   if (check_intersect) {
     for (i_fold in seq(length(length(smpl$train_ids))))
     {
-      check_disjunct(smpl$train_ids[[i_fold]], smpl$test_ids[[i_fold]])
+      assert_disjunct(smpl$train_ids[[i_fold]], smpl$test_ids[[i_fold]])
     }
   }
   return(TRUE)
