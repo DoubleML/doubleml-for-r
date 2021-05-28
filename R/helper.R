@@ -229,6 +229,8 @@ initiate_task = function(id, data, target, select_cols, learner_class) {
     task = TaskRegr$new(id = id, backend = data, target = target)
   } else if (learner_class == "LearnerClassif") {
     data[[target]] = factor(data[[target]])
+    assert_set_equal(levels(data[[target]]),
+                     c("0", "1"))
     task = TaskClassif$new(
       id = id, backend = data, target = target,
       positive = "1")
