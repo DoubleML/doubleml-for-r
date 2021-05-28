@@ -100,8 +100,8 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
   double_mlplr_obj = DoubleMLPLR$new(data = dml_data,
                                      ml_g = mlr3::lrn('regr.rpart'),
                                      ml_m = mlr3::lrn('classif.rpart'))
-  msg = paste("Assertion on 'rhs' failed: Must be element of set \\{'0','2'\\},",
-              "but is '1'.")
+  msg = paste("Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
+              "Must be equal to set \\{'0','1'\\}, but is \\{'0','2'\\}.")
   expect_error(double_mlplr_obj$fit(),
                regexp = msg)
   
@@ -112,7 +112,7 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
   double_mlplr_obj = DoubleMLPLR$new(data = dml_data,
                                      ml_g = mlr3::lrn('regr.rpart'),
                                      ml_m = mlr3::lrn('classif.rpart'))
-  msg = paste("Assertion on 'c\\(task\\$positive, task\\$negative\\)' failed:",
+  msg = paste("Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
               "Must be equal to set \\{'0','1'\\}, but is \\{'1','1.5'\\}.")
   expect_error(double_mlplr_obj$fit(),
                regexp = msg)
