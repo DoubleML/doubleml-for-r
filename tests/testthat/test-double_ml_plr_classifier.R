@@ -89,3 +89,33 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     }
   }
 )
+
+test_that("Unit tests for exception handling of PLR with classifier for ml_m:", {
+  # Only binary outcome with values 0 and 1 is allowed when ml_m is a classifier
+  
+  # Test with 0 and 2
+  df = data_irm$df
+  df['d'] = df['d']*2
+  dml_data = double_ml_data_from_data_frame(df, y_col = 'y', d_cols = 'd')
+  double_mlplr_obj = DoubleMLPLR$new(data = dml_data,
+                                     ml_g = mlr3::lrn('regr.rpart'),
+                                     ml_m = mlr3::lrn('classif.rpart'))
+  msg = paste("Assertion on 'rhs' failed: Must be element of set \\{'0','2'\\},",
+              "but is '1'.")
+  expect_error(double_mlplr_obj$fit(),
+               regexp = msg)
+  
+  # Test with 0.5 and 1
+  df = data_irm$df
+  df['d'] = (df['d']+2)/2
+  dml_data = double_ml_data_from_data_frame(df, y_col = 'y', d_cols = 'd')
+  double_mlplr_obj = DoubleMLPLR$new(data = dml_data,
+                                     ml_g = mlr3::lrn('regr.rpart'),
+                                     ml_m = mlr3::lrn('classif.rpart'))
+  msg = paste("Assertion on 'c\\(task\\$positive, task\\$negative\\)' failed:",
+              "Must be equal to set \\{'0','1'\\}, but is \\{'1','1.5'\\}.")
+  expect_error(double_mlplr_obj$fit(),
+               regexp = msg)
+
+  }
+)

@@ -232,6 +232,8 @@ initiate_task = function(id, data, target, select_cols, learner_class) {
     task = TaskClassif$new(
       id = id, backend = data, target = target,
       positive = "1")
+    assert_set_equal(c(task$positive, task$negative),
+                     c("0", "1"))
   }
   return(task)
 }
