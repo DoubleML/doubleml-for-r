@@ -26,7 +26,6 @@ if (on_cran) {
     learner = "regr.glmnet",
     learner_m = "classif.glmnet",
     dml_procedure = "dml2",
-    i_setting = 1:(length(data_iivm)),
     trimming_threshold = c(0),
     stringsAsFactors = FALSE)
 } else {
@@ -34,7 +33,6 @@ if (on_cran) {
     learner = "regr.glmnet",
     learner_m = "classif.glmnet",
     dml_procedure = c("dml1", "dml2"),
-    i_setting = 1:(length(data_iivm)),
     trimming_threshold = c(0),
     stringsAsFactors = FALSE)
 }
@@ -44,15 +42,9 @@ test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
   .cases = test_cases, {
     n_rep_boot = 498
-    set.seed(i_setting)
-    # params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
-    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in%
-      c("y", "d", "z") == FALSE]
-    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_col = "z")
-
-    double_mliivm_obj = DoubleMLIIVM$new(data_ml,
+    set.seed(3141)
+    double_mliivm_obj = DoubleMLIIVM$new(
+      data = data_iivm$dml_data,
       n_folds = 5,
       ml_m = lrn(learner_m),
       ml_g = lrn(learner),
@@ -64,8 +56,9 @@ patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
     theta_obj = double_mliivm_obj$coef
     se_obj = double_mliivm_obj$se
 
-    set.seed(i_setting)
-    double_mliivm_obj_score = DoubleMLIIVM$new(data_ml,
+    set.seed(3141)
+    double_mliivm_obj_score = DoubleMLIIVM$new(
+      data = data_iivm$dml_data,
       n_folds = 5,
       ml_m = lrn(learner_m),
       ml_g = lrn(learner),

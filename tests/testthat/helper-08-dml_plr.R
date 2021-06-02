@@ -1,285 +1,273 @@
-#' Double Machine Learning for Partially Linear Regression.
-#'
-#' @param data Data frame.
-#' @param y Name of outcome variable. The variable must be included in \code{data}.
-#' @param d Name of treatment variables for which inference should be performed.
-#' @inheritParams DML
-#' @param resampling Resampling scheme for cross-fitting of class \code{\link[mlr3]{ResamplingCV}}.
-#' @param dml_procedure Double machine learning algorithm to be used, either \code{"dml1"} or \code{"dml2"} (default).
-#' @param mlmethod List with classification or regression methods according to naming convention of the \code{mlr} package. Set \code{mlmethod_g} for classification or regression method according to naming convention of the \code{mlr} package for regression of y on X (nuisance part g). Set \code{mlmethod_m} for  classification or regression method for regression of d on X (nuisance part m).
-#' @param params Hyperparameters to be passed to classification or regression method. Set hyperparameters \code{params_g} for predictions of nuisance part g and \code{params_m} for nuisance m.
-#' @param score Inference model for final estimation, default \code{"IV-type"} (...)
-#' @param se_type Method to estimate standard errors. Default \code{"ls"} to estimate usual standard error from least squares regression of residuals. Alternatively, specify \code{"IV-type"} or \code{"partialling out"} to obtain standard errors that correspond to the specified \code{score}. The options chosen for \code{score} and \code{se_type} are required to match.
-#' @param bootstrap Choice for implementation of multiplier bootstrap, can be set to \code{"normal"} (by default), \code{"none"}, \code{"Bayes"}, \code{"wild"}.
-#' @param nRep Number of repetitions for multiplier bootstrap, by default \code{nRep=500}.
-#' @param ... further options passed to underlying functions.
-#' @return Result object with estimated coefficient and standard errors.
-#' @export
-
-dml_plr = function(data, y, d, k = 2, smpls = NULL, mlmethod, params = list(
-  params_m = list(),
-  params_g = list()),
-dml_procedure = "dml2",
-score = "IV-type", se_type = "ls", ...) {
+# Double Machine Learning for Partially Linear Regression.
+dml_plr = function(data, y, d,
+                   n_folds, ml_g, ml_m,
+                   dml_procedure, score,
+                   n_rep = 1, smpls = NULL,
+                   params_g = NULL, params_m = NULL) {
 
   if (is.null(smpls)) {
-    smpls = sample_splitting(k, data)
+    smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
+
+  all_thetas = all_ses = rep(NA, n_rep)
+  all_preds = list()
+
+  for (i_rep in 1:n_rep) {
+    this_smpl = smpls[[i_rep]]
+    stopifnot(length(this_smpl$train_ids) == length(this_smpl$test_ids))
+    if (length(this_smpl$train_ids) == 1) {
+      dml_procedure = 'dml1'
+    }
+    
+    res_single_split = fit_plr_single_split(data, y, d,
+                                            n_folds, ml_g, ml_m,
+                                            dml_procedure, score,
+                                            this_smpl,
+                                            params_g, params_m)
+
+    all_preds[[i_rep]] = res_single_split$all_preds
+    all_thetas[i_rep] = res_single_split$theta
+    all_ses[i_rep] = res_single_split$se
+  }
+
+  theta = stats::median(all_thetas)
+  if (length(this_smpl$train_ids) > 1) {
+    n = nrow(data)
+  } else {
+    n = length(this_smpl$test_ids[[1]])
+  }
+  se = se_repeated(all_ses*sqrt(n), all_thetas, theta)/sqrt(n)
+
+  t = theta / se
+  pval = 2 * stats::pnorm(-abs(t))
+
+  names(theta) = names(se) = names(t) = names(pval) =d
+  res = list(
+    coef = theta, se = se, t = t, pval = pval,
+    thetas = all_thetas, ses = all_ses,
+    all_preds = all_preds, smpls=smpls)
+
+  return(res)
+}
+
+
+dml_plr_multitreat = function(data, y, d,
+                              n_folds, ml_g, ml_m,
+                              dml_procedure, score,
+                              n_rep = 1, smpls = NULL,
+                              params_g = NULL, params_m = NULL) {
+  
+  if (is.null(smpls)) {
+    smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
+  }
+  
+  all_preds = all_thetas = all_ses = list()
+  n_d = length(d)
+  
+  for (i_rep in 1:n_rep) {
+    this_smpl = smpls[[i_rep]]
+    thetas_this_rep = ses_this_rep = rep(NA, n_d)
+    all_preds_this_rep = list()
+    
+    for (i_d in seq(n_d)) {
+      if (!is.null(params_g)) {
+        this_params_g = params_g[[i_d]]
+      } else {
+        this_params_g = NULL
+      }
+      if (!is.null(params_m)) {
+        this_params_m = params_m[[i_d]]
+      } else {
+        this_params_m = NULL
+      }
+      res_single_split = fit_plr_single_split(data, y, d[i_d],
+                                              n_folds, ml_g, ml_m,
+                                              dml_procedure, score,
+                                              this_smpl,
+                                              this_params_g, this_params_m)
+      
+      all_preds_this_rep[[i_d]] = res_single_split$all_preds
+      thetas_this_rep[i_d] = res_single_split$theta
+      ses_this_rep[i_d] = res_single_split$se
+    }
+    
+    all_preds[[i_rep]] = all_preds_this_rep
+    all_thetas[[i_rep]] = thetas_this_rep
+    all_ses[[i_rep]] = ses_this_rep
+    
+  }
+  
+  theta = se = t = pval = rep(NA, n_d)
+  if (length(this_smpl$train_ids) > 1) {
+    n = nrow(data)
+  } else {
+    n = length(smpls[[1]]$test_ids[[1]])
+  }
+  for (i_d in seq(n_d)) {
+    theta_vec = unlist(lapply(all_thetas, function(x) x[i_d]))
+    se_vec = unlist(lapply(all_ses, function(x) x[i_d]))
+    theta[i_d] = stats::median(theta_vec)
+    se[i_d] = se_repeated(se_vec*sqrt(n), theta_vec, theta[i_d])/sqrt(n)
+    t[i_d] = theta[i_d] / se[i_d]
+    pval[i_d] = 2 * stats::pnorm(-abs(t[i_d]))
+  }
+  
+  names(theta) = names(se) = names(t) = names(pval) = d
+  res = list(
+    coef = theta, se = se, t = t, pval = pval,
+    thetas = all_thetas, ses = all_ses,
+    all_preds = all_preds, smpls=smpls)
+  
+  return(res)
+}
+
+
+fit_plr_single_split = function(data, y, d,
+                                n_folds, ml_g, ml_m,
+                                dml_procedure, score, smpl,
+                                params_g, params_m) {
+  
+  train_ids = smpl$train_ids
+  test_ids = smpl$test_ids
+  
+  all_preds = fit_nuisance_plr(data, y, d,
+                               ml_g, ml_m,
+                               smpl,
+                               params_g, params_m)
+  
+  residuals = compute_plr_residuals(data, y, d, n_folds, smpl,
+                                    all_preds)
+  u_hat = residuals$u_hat
+  v_hat = residuals$v_hat
+  D = data[, d]
+  Y = data[, y]
+  v_hatd =  v_hat * D
+  
+  # DML 1
+  if (dml_procedure == "dml1") {
+    thetas = rep(NA, n_folds)
+    for (i in 1:n_folds) {
+      test_index = test_ids[[i]]
+      
+      orth_est = orth_plr_dml(
+        u_hat = u_hat[test_index], v_hat = v_hat[test_index],
+        v_hatd = v_hatd[test_index],
+        score = score)
+      thetas[i] = orth_est$theta
+    }
+    theta = mean(thetas, na.rm = TRUE)
+    if (length(train_ids) == 1) {
+      D = D[test_index]
+      u_hat = u_hat[test_index]
+      v_hat = v_hat[test_index]
+      v_hatd = v_hatd[test_index]
+    }
+  }
+  
+  if (dml_procedure == "dml2") {
+    orth_est = orth_plr_dml(u_hat = u_hat, v_hat = v_hat,
+                            v_hatd = v_hatd, score = score)
+    theta = orth_est$theta
+  }
+  
+  se = sqrt(var_plr(
+    theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
+    v_hatd = v_hatd, score = score))
+  
+  res = list(
+    theta = theta, se = se,
+    all_preds = all_preds)
+  
+  return(res)
+}
+
+
+fit_nuisance_plr = function(data, y, d,
+                            ml_g, ml_m,
+                            smpls,
+                            params_g, params_m) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
-
-  checkmate::checkDataFrame(data)
-
-  # tbd: ml_method handling: default mlmethod_g = mlmethod_m
-  # tbd: parameter passing
-  n = nrow(data)
-  theta = se = te = pval = boot_se = NA
-
-  if (se_type != "ls") {
-    se_type = score
-  }
-
-  if (se_type == "ls" & dml_procedure == "dml1") {
-    se_type = score
-  }
-
+  
   # nuisance g
   g_indx = names(data) != d
   data_g = data[, g_indx, drop = FALSE]
   task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
-
+  
   resampling_g = mlr3::rsmp("custom")
   resampling_g$instantiate(task_g, train_ids, test_ids)
-  n_iters = resampling_g$iters
-
-  # tbd: handling learners from mlr3 base and mlr3learners package
-  # ml_g = mlr3::mlr_learners$get(mlmethod$mlmethod_g)
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g # tbd: check if parameter passing really works
-
-  # ml_g =  mlr:makeLearner(mlmethod$mlmethod_g, id = "nuis_g", par.vals = params$params_g)
+  
+  if (!is.null(params_g)) {
+    ml_g$param_set$values = params_g
+  }
+  
   r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-
-  # r_g = mlr::resample(learner = ml_g, task = task_g, resampling = rin)
-  # g_hat_list = r_g$data$prediction
-  # # g_hat_list = mlr::getRRPredictionList(r_g)
-  # #g_hat_list = lapply(g_hat_list$test, extract_test_pred)
-  # g_hat_list = lapply(g_hat_list, function(x) x$response)
-  g_hat_list = lapply(r_g$data$predictions(), function(x) x$response)
+  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
+  
   # nuisance m
+  if (!is.null(params_m)) {
+    ml_m$param_set$values = params_m
+  }
   m_indx = names(data) != y
   data_m = data[, m_indx, drop = FALSE]
-  task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m # tbd: check if parameter passing really works
-
-  # ml_m = mlr::makeLearner(mlmethod$mlmethod_m, id = "nuis_m", par.vals = params$params_m)
-  resampling_m = mlr3::rsmp("custom")
-  resampling_m$instantiate(task_m, train_ids, test_ids)
-
-  train_ids_m = lapply(1:n_iters, function(x) resampling_m$train_set(x))
-  test_ids_m = lapply(1:n_iters, function(x) resampling_m$test_set(x))
-
-
-  r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
-
-  # r_m = mlr::resample(learner = ml_m, task = task_m, resampling = rin)
-  # m_hat_list = r_m$data$prediction # alternatively, r_m$prediction (not listed)
-  # # m_hat_list = mlr::getRRPredictionList(r_m)
-  # m_hat_list = lapply(m_hat_list, function(x) x$response)
-  # # m_hat_list =lapply(m_hat_list$test,  extract_test_pred)
-  m_hat_list = lapply(r_m$data$predictions(), function(x) x$response)
-
-
-  # if ((rin$desc$iters != r_g$pred$instance$desc$iters) ||
-  #     (rin$desc$iters != r_m$pred$instance$desc$iters) ||
-  #     !identical(rin$train.inds, r_g$pred$instance$train.inds) ||
-  #     !identical(rin$train.inds, r_m$pred$instance$train.inds)) {
-  #   stop('Resampling instances not equal')
-  # }
-  if ((resampling_g$iters != resampling_m$iters) ||
-    (resampling_g$iters != n_iters) ||
-    (resampling_m$iters != n_iters) ||
-    (!identical(train_ids, train_ids_m)) ||
-    (!identical(test_ids, test_ids_m))) {
-    stop("Resampling instances not equal")
+  
+  if (checkmate::test_class(ml_m, "LearnerRegr")) {
+    task_m = mlr3::TaskRegr$new(id = paste0("nuis_m_", d), backend = data_m, target = d)
+    
+    resampling_m = mlr3::rsmp("custom")
+    resampling_m$instantiate(task_m, train_ids, test_ids)
+    
+    r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    m_hat_list = lapply(r_m$predictions(), function(x) x$response)
+  } else if (checkmate::test_class(ml_m, "LearnerClassif")) {
+    ml_m$predict_type = "prob"
+    data_m[[d]] = factor(data_m[[d]])
+    task_m = mlr3::TaskClassif$new(id = paste0("nuis_m_", d), backend = data_m,
+                                   target = d, positive = "1")
+    
+    resampling_m = mlr3::rsmp("custom")
+    resampling_m$instantiate(task_m, train_ids, test_ids)
+    
+    r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
+    m_hat_list = lapply(r_m$predictions(), function(x) as.data.table(x)$prob.1)
   }
-
-  # tbd: handling case: (is.null(rownames(data)))
-  if (any(vapply(train_ids, function(x) is.character(x), logical(1L)))) {
-    train_ids = lapply(train_ids, function(x) as.integer(x))
-  }
-
-  if (any(vapply(test_ids, function(x) is.character(x), logical(1L)))) {
-    test_ids = lapply(test_ids, function(x) as.integer(x))
-  }
-
-  # test_index_list = rin$test.inds
-  #  n_k = vapply(test_index_list, length, double(1))
-  n_k = vapply(test_ids, length, double(1L))
-
-  D = data[, d]
-  Y = data[, y]
-
-  # DML 1
-  if (dml_procedure == "dml1") {
-    thetas = vars = rep(NA, n_iters)
-    se_i = NA
-
-    v_hat = u_hat = v_hatd = d_k = matrix(NA, nrow = max(n_k), ncol = n_iters)
-    v_hat_se = u_hat_se = v_hatd_se = matrix(NA, nrow = max(n), ncol = 1)
-
-    for (i in 1:n_iters) {
-      # test_index = test_index_list[[i]]
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      d_k[, i] = D[test_index]
-      v_hat[, i] = v_hat_se[test_index, ] = D[test_index] - m_hat
-      u_hat[, i] = u_hat_se[test_index, ] = Y[test_index] - g_hat
-      v_hatd[, i] = v_hatd_se[test_index, ] = v_hat[, i] * D[test_index]
-
-      orth_est = orth_plr_dml(
-        u_hat = u_hat[, i], v_hat = v_hat[, i],
-        v_hatd = v_hatd[, i],
-        score = score) # , se_type)
-      thetas[i] = orth_est$theta
-    }
-
-    theta = mean(thetas, na.rm = TRUE)
-    se = sqrt(var_plr(
-      theta = theta, d = D, u_hat = u_hat_se, v_hat = v_hat_se,
-      v_hatd = v_hatd_se, score = score, se_type = se_type,
-      dml_procedure = dml_procedure))
-
-    t = theta / se
-    pval = 2 * stats::pnorm(-abs(t))
-
-  }
-
-  if (dml_procedure == "dml2") {
-
-    v_hat = u_hat = v_hatd = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:n_iters) {
-
-      # test_index = test_index_list[[i]]
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      v_hat[test_index, 1] = D[test_index] - m_hat
-      u_hat[test_index, 1] = Y[test_index] - g_hat
-      v_hatd[test_index, 1] = v_hat[test_index] * D[test_index]
-
-    }
-
-    orth_est = orth_plr_dml(u_hat = u_hat, v_hat = v_hat, v_hatd = v_hatd, score = score)
-
-    theta = orth_est$theta
-    se = sqrt(var_plr(
-      theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score, se_type = se_type,
-      dml_procedure = dml_procedure))
-
-    t = theta / se
-    pval = 2 * stats::pnorm(-abs(t))
-  }
-
+  
   all_preds = list(
     m_hat_list = m_hat_list,
-    g_hat_list = g_hat_list,
-    smpls = smpls)
-
-  names(theta) = names(se) = d
-  res = list(
-    coefficients = theta, se = se, t = t, pval = pval,
-    all_preds = all_preds)
-
-  class(res) = "DML"
-  return(res)
+    g_hat_list = g_hat_list)
+  
+  return(all_preds)
 }
 
-#' @export
-dml_plr_boot = function(data, y, d, theta, se, all_preds, dml_procedure = "dml2",
-  score = "IV-type", se_type = "ls",
-  weights = weights, nRep = 500) {
-
-  m_hat_list = all_preds$m_hat_list
-  g_hat_list = all_preds$g_hat_list
-
-  smpls = all_preds$smpls
-  train_ids = smpls$train_ids
+compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   test_ids = smpls$test_ids
-
-  n_iters = length(test_ids)
-  n_k = vapply(test_ids, length, double(1L))
-
+  
+  g_hat_list = all_preds$g_hat_list
+  m_hat_list = all_preds$m_hat_list
+  
   n = nrow(data)
   D = data[, d]
   Y = data[, y]
-
-  # DML 1
-  if (dml_procedure == "dml1") {
-    v_hat = u_hat = v_hatd = d_k = matrix(NA, nrow = max(n_k), ncol = n_iters)
-
-    for (i in 1:n_iters) {
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      d_k[, i] = D[test_index]
-      v_hat[, i] = D[test_index] - m_hat
-      u_hat[, i] = Y[test_index] - g_hat
-      v_hatd[, i] = v_hat[, i] * D[test_index]
-    }
-
-    boot = bootstrap_plr(
-      theta = theta, d = d_k, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score, se = se,
-      weights = weights, nRep = nRep)
-    boot_theta = boot$boot_theta
+  
+  v_hat = u_hat = w_hat = rep(NA, n)
+  
+  for (i in 1:n_folds) {
+    test_index = test_ids[[i]]
+    
+    g_hat = g_hat_list[[i]]
+    m_hat = m_hat_list[[i]]
+    
+    u_hat[test_index] = Y[test_index] - g_hat
+    v_hat[test_index] = D[test_index] - m_hat
   }
-
-  if (dml_procedure == "dml2") {
-
-    v_hat = u_hat = v_hatd = matrix(NA, nrow = n, ncol = 1)
-
-    for (i in 1:n_iters) {
-      test_index = test_ids[[i]]
-
-      m_hat = m_hat_list[[i]]
-      g_hat = g_hat_list[[i]]
-
-      v_hat[test_index, 1] = D[test_index] - m_hat
-      u_hat[test_index, 1] = Y[test_index] - g_hat
-      v_hatd[test_index, 1] = v_hat[test_index] * D[test_index]
-
-    }
-
-    boot = bootstrap_plr(
-      theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score, se = se,
-      weights = weights, nRep = nRep)
-    boot_theta = boot$boot_theta
-  }
-
-  return(boot_theta)
+  residuals = list(u_hat=u_hat, v_hat=v_hat)
+  
+  return(residuals)
 }
 
 
-#' Orthogonalized Estimation of Coefficient in PLR
-#'
-#' Function to estimate the structural parameter in a partially linear regression model (PLR).
-#'
-#' @inheritParams var_plr
-#' @return List with estimate (\code{theta}).
-#' @export
-orth_plr_dml = function(u_hat, v_hat, v_hatd, score) { # , se_type) {
+# Orthogonalized Estimation of Coefficient in PLR
+orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
   theta = NA
 
   if (score == "partialling out") {
@@ -301,83 +289,96 @@ orth_plr_dml = function(u_hat, v_hat, v_hatd, score) { # , se_type) {
 }
 
 
-#' Variance estimation for DML estimator in the partially linear regression model
-#'
-#' Variance estimation for the structural parameter estimator in a partially linear regression model (PLR) with double machine learning.
-#' @inheritParams dml_plr
-#' @param theta final dml estimator for the partially linear model.
-#' @param d treatment variable.
-#' @param v_hat Residuals from \eqn{d-m(x)}.
-#' @param u_hat Residuals from \eqn{y-g(x)}.
-#' @param v_hatd Product of \code{v_hat} with \code{d}.
-#' @return Variance estimator (\code{var}).
-var_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se_type, dml_procedure) {
-
-  var = NA
-
-  if (se_type == score) {
-
-    if (score == "partialling out") {
-
-      var = mean(1 / length(u_hat) * 1 / (colMeans(v_hat^2, na.rm = TRUE))^2 *
-        colMeans(((u_hat - v_hat * theta) * v_hat)^2, na.rm = TRUE))
-    }
-
-    else if (score == "IV-type") {
-      var = mean(1 / length(u_hat) * (1 / colMeans(v_hatd, na.rm = TRUE))^2 *
-        colMeans(((u_hat - d * theta) * v_hat)^2, na.rm = TRUE))
-    }
-
+# Variance estimation for DML estimator in the partially linear regression model
+var_plr = function(theta, d, u_hat, v_hat, v_hatd, score) {
+  n = length(d)
+  if (score == "partialling out") {
+    var = 1 / n * 1 / (mean(v_hat^2))^2 *
+      mean(((u_hat - v_hat * theta) * v_hat)^2)
   }
-
-  # Q: only for "dml2"?
-  if (se_type == "ls" & score == "partialling out" & dml_procedure == "dml2") {
-    res_fit = stats::lm(u_hat ~ 0 + v_hat)
-    var = sandwich::vcovHC(res_fit)
+  else if (score == "IV-type") {
+    var = 1 / n * 1 / mean(v_hatd)^2 *
+      mean(((u_hat - d * theta) * v_hat)^2)
   }
-
-
   return(c(var))
 }
 
 
+# Bootstrap Implementation for Partially Linear Regression Model
+bootstrap_plr = function(thetas, ses, data, y, d,
+                         n_folds, smpls, all_preds,
+                         bootstrap, n_rep_boot, score,
+                         n_rep=1) {
+  for (i_rep in 1:n_rep) {
+    n = nrow(data)
+    weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
+    this_res = boot_plr_single_split(thetas[i_rep], ses[i_rep],
+                                     data, y, d, n_folds, smpls[[i_rep]],
+                                     all_preds[[i_rep]],
+                                     weights, n_rep_boot, score)
+    if (i_rep==1) {
+      boot_res = this_res
+    } else {
+      boot_res$boot_coef = cbind(boot_res$boot_coef, this_res$boot_coef)
+      boot_res$boot_t_stat = cbind(boot_res$boot_t_stat, this_res$boot_t_stat)
+    }
+  }
+  return(boot_res)
+}
 
-#' Bootstrap Implementation for Partially Linear Regression Model
-#'
-#' Multiplier bootstrap to construct simultaneous confidence bands for multiple target coefficients in a partially linear regression model (PLR) with double machine learning.
-#'
-#' @inheritParams var_plr
-#' @inheritParams dml_plr
-#' @inheritParams DML
-#' @param se Estimated standard error from DML procedure.
-#' @return List with bootstrapped standard errors (\code{boot_se}) and bootstrapped coefficients.
-bootstrap_plr = function(theta, d, u_hat, v_hat, v_hatd, score, se, weights, nRep) {
 
-  boot_var = NA
+boot_plr_multitreat = function(thetas, ses, data, y, d,
+                               n_folds, smpls, all_preds,
+                               bootstrap, n_rep_boot, score,
+                               n_rep=1) {
+  n_d = length(d)
+  for (i_rep in 1:n_rep) {
+    n = nrow(data)
+    weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
+    boot_theta = boot_t_stat = matrix(NA, nrow = n_d, ncol = n_rep_boot)
+    for (i_d in seq(n_d)) {
+      this_res = boot_plr_single_split(thetas[[i_rep]][i_d], ses[[i_rep]][i_d],
+                                       data, y, d[i_d], n_folds, smpls[[i_rep]],
+                                       all_preds[[i_rep]][[i_d]],
+                                       weights, n_rep_boot, score)
+      boot_theta[i_d, ] = this_res$boot_coef
+      boot_t_stat[i_d, ] = this_res$boot_t_stat
+    }
+    this_res = list(boot_coef=boot_theta,
+                    boot_t_stat=boot_t_stat)
+    if (i_rep==1) {
+      boot_res = this_res
+    } else {
+      boot_res$boot_coef = cbind(boot_res$boot_coef, this_res$boot_coef)
+      boot_res$boot_t_stat = cbind(boot_res$boot_t_stat, this_res$boot_t_stat)
+    }
+  }
+  return(boot_res)
+}
 
+
+boot_plr_single_split = function(theta, se, data, y, d,
+                         n_folds, smpl, all_preds,
+                         weights, n_rep_boot, score) {
+  residuals = compute_plr_residuals(data, y, d, n_folds,
+                                    smpl, all_preds)
+  u_hat = residuals$u_hat
+  v_hat = residuals$v_hat
+  D = data[, d]
+  v_hatd =  v_hat * D
+  
   if (score == "partialling out") {
-
-    score = (u_hat - v_hat * theta) * v_hat
-    J = -colMeans(v_hat * v_hat, na.rm = TRUE)
-
+    psi = (u_hat - v_hat * theta) * v_hat
+    psi_a = -v_hat * v_hat
   }
-
   else if (score == "IV-type") {
-    score = (u_hat - d * theta) * v_hat
-    J = -colMeans(v_hatd, na.rm = TRUE)
+    psi = (u_hat - D * theta) * v_hat
+    psi_a = -v_hatd
   }
-
-  n = length(d)
-  pertub = matrix(NA, nrow = 1, ncol = nRep)
-
-  if (!is.vector(score)) {
-    J = matrix(rep(J, each = nrow(score)), nrow = nrow(score))
-  }
-  for (i in seq(nRep)) {
-    pertub[1, i] = mean(colMeans(weights[i, ] * 1 / se * 1 / J * score, na.rm = TRUE))
-
-  }
-
-  res = list(boot_theta = pertub)
-  return(c(res))
+  
+  res = functional_bootstrap(theta, se,
+                             psi, psi_a, n_folds,
+                             smpl,
+                             n_rep_boot, weights)
+  return(res)
 }

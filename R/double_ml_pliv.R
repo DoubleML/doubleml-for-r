@@ -174,8 +174,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
-      check_logical(partialX, len = 1)
-      check_logical(partialZ, len = 1)
+      
+      private$check_data(self$data)
+      private$check_score(self$score)
+      assert_logical(partialX, len = 1)
+      assert_logical(partialZ, len = 1)
       self$partialX = partialX
       self$partialZ = partialZ
 
@@ -345,8 +348,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_b = psi_b)
       } else if (is.function(self$score)) {
         if (self$data$n_instr > 1) {
-          stop("Callable score not implemented for DoubleMLPLIV with
-               partialX=TRUE and partialZ=FALSE with several instruments")
+          stop(paste("Callable score not implemented for DoubleMLPLIV with",
+                     "partialX=TRUE and partialZ=FALSE with several instruments."))
         }
         psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
       }
@@ -380,7 +383,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         fold_specific_params = private$fold_specific_params)
       m_hat = m_hat_list$preds
       data_aux_list = lapply(m_hat_list$train_preds, function(x) {
-        data.table(self$data$data_model, "m_hat_on_train" = x)
+        setnafill(data.table(self$data$data_model, "m_hat_on_train" = x),
+               fill = -9999.99) # mlr3 does not allow NA's (values are not used)
       })
 
       m_hat_tilde = dml_cv_predict(self$learner$ml_r,
@@ -411,8 +415,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop("Callable score not implemented for DoubleMLPLIV
-             with partialX=TRUE and partialZ=TRUE.")
+        stop(paste("Callable score not implemented for DoubleMLPLIV",
+                   "with partialX=TRUE and partialZ=TRUE."))
         # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
       }
       res$preds = list(
@@ -450,8 +454,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop("Callable score not implemented for DoubleMLPLIV
-             with partialX=FALSE and partialZ=TRUE.")
+        stop(paste("Callable score not implemented for DoubleMLPLIV",
+                   "with partialX=FALSE and partialZ=TRUE."))
         # res = self$score(y, z, d, r_hat)
       }
       res$preds = list("ml_r" = r_hat)
@@ -667,9 +671,16 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         valid_score = c("partialling out")
         assertChoice(score, valid_score)
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
+      if (obj_dml_data$n_instr == 0) {
+        stop(paste(
+          "Incompatible data.\n",
+          "At least one variable must be set as instrumental variable.\n",
+          "To fit a partially linear regression model without instrumental",
+          "variable(s) use DoubleMLPLR instead of DoubleMLPLIV."))
+      }
       return()
     }
   )

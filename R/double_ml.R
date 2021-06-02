@@ -737,12 +737,12 @@ DoubleML = R6Class("DoubleML",
     #' a `matrix()` with adjusted p_values.
     p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
       if (all(is.na(self$coef))) {
-        stop("apply fit() before p_adust().")
+        stop("apply fit() before p_adjust().")
       }
 
       if (tolower(method) %in% c("rw", "romano-wolf")) {
         if (is.null(self$boot_t_stat) | all(is.na(self$coef))) {
-          stop("apply fit() & bootstrap() before p_adust().")
+          stop("apply fit() & bootstrap() before p_adjust().")
         }
         k = self$data$n_treat
         pinit = p_val_corrected = vector(mode = "numeric", length = k)
@@ -829,7 +829,6 @@ DoubleML = R6Class("DoubleML",
       # check and pick up obj_dml_data
 
       assert_class(data, "DoubleMLData")
-      private$check_data(data)
       self$data = data
 
       # initialize learners and parameters which are set model specific
@@ -853,7 +852,7 @@ DoubleML = R6Class("DoubleML",
       # check and set dml_procedure and score
       assert_choice(dml_procedure, c("dml1", "dml2"))
       self$dml_procedure = dml_procedure
-      self$score = private$check_score(score)
+      self$score = score
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
         message(paste(
@@ -1149,9 +1148,17 @@ DoubleML = R6Class("DoubleML",
       self$coef = apply(
         self$all_coef, 1,
         function(x) median(x, na.rm = TRUE))
+      if (self$apply_cross_fitting) {
+        n_obs = self$data$n_obs
+      } else {
+        smpls = private$get__smpls()
+        test_ids = smpls$test_ids
+        test_index = test_ids[[1]]
+        n_obs = length(test_index)
+      }
       self$se = sqrt(apply(
-        self$all_se^2 + (self$all_coef - self$coef)^2, 1,
-        function(x) median(x, na.rm = TRUE)))
+        n_obs * self$all_se^2 + (self$all_coef - self$coef)^2, 1,
+        function(x) median(x, na.rm = TRUE))/n_obs)
 
       invisible(self)
     },
@@ -1169,33 +1176,10 @@ DoubleML = R6Class("DoubleML",
       }
 
       if (self$apply_cross_fitting) {
-        if (dml_procedure == "dml1") {
-          boot_coefs = boot_t_stat = matrix(NA,
-            nrow = n_rep_boot,
-            ncol = self$n_folds)
-          ii = 0
-          for (i_fold in 1:self$n_folds) {
-            test_index = test_ids[[i_fold]]
-            n_obs_in_fold = length(test_index)
-
-            J = mean(private$get__psi_a()[test_index])
-            boot_coefs[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*%
-              private$get__psi()[test_index] / (n_obs_in_fold * J)
-            boot_t_stat[, i_fold] = weights[, (ii + 1):(ii + n_obs_in_fold)] %*%
-              private$get__psi()[test_index] /
-              (n_obs_in_fold * private$get__all_se() * J)
-            ii = ii + n_obs_in_fold
-          }
-          boot_coef = rowMeans(boot_coefs)
-          boot_t_stat = rowMeans(boot_t_stat)
-        }
-        else if (dml_procedure == "dml2") {
           J = mean(private$get__psi_a())
           boot_coef = weights %*% private$get__psi() / (n_obs * J)
           boot_t_stat = weights %*% private$get__psi() /
             (n_obs * private$get__all_se() * J)
-        }
-
       } else {
         J = mean(private$get__psi_a()[test_index])
         boot_coef = weights %*% private$get__psi()[test_index] /

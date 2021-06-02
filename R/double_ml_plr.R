@@ -145,6 +145,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         draw_sample_splitting,
         apply_cross_fitting)
 
+      private$check_data(self$data)
+      private$check_score(self$score)
       private$learner_class = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
@@ -261,15 +263,15 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         valid_score = c("IV-type", "partialling out")
         assertChoice(score, valid_score)
       }
-      return(score)
+      return()
     },
     check_data = function(obj_dml_data) {
       if (!is.null(obj_dml_data$z_cols)) {
         stop(paste(
           "Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "),
           "has been set as instrumental variable(s).\n",
-          "To fit a partially linear IV regression model use
-          DoubleMLPLIV instead of DoubleMLPLR."))
+          "To fit a partially linear IV regression model use",
+          "DoubleMLPLIV instead of DoubleMLPLR."))
       }
       return()
     }

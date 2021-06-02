@@ -10,7 +10,6 @@ if (on_cran) {
     learner = "cv_glmnet",
     dml_procedure = "dml2",
     score = "LATE",
-    i_setting = 1:(length(data_iivm)),
     trimming_threshold = c(0),
     stringsAsFactors = FALSE)
 } else {
@@ -18,7 +17,6 @@ if (on_cran) {
     learner = "cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
-    i_setting = 1:(length(data_iivm)),
     trimming_threshold = c(0),
     stringsAsFactors = FALSE)
 }
@@ -30,35 +28,32 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     learner_pars = get_default_mlmethod_iivm(learner)
     n_rep_boot = 498
 
-    set.seed(i_setting)
-    iivm_hat = dml_irmiv(data_iivm[[i_setting]],
+    set.seed(3141)
+    iivm_hat = dml_irmiv(data_iivm$df,
       y = "y", d = "d", z = "z",
-      k = 5, mlmethod = learner_pars$mlmethod,
-      params = learner_pars$params,
-      dml_procedure = dml_procedure, score = score,
-      se_type = score,
-      bootstrap = "normal", nRep = n_rep_boot)
-    theta = coef(iivm_hat)
-    se = iivm_hat$se
-
-
-    set.seed(i_setting)
-    # params_OOP = rep(list(rep(list(learner_pars$params), 1)), 1)
-
-    Xnames = names(data_iivm[[i_setting]])[names(data_iivm[[i_setting]]) %in% c("y", "d", "z") == FALSE]
-
-    data_ml = double_ml_data_from_data_frame(data_iivm[[i_setting]],
-      y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_col = "z")
-
-    ml_g = lrn("regr.cv_glmnet", s = "lambda.min", family = "gaussian")
-    ml_prob = lrn("classif.cv_glmnet", s = "lambda.min")
-
-    double_mliivm_obj = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
-      ml_m = ml_prob$clone(),
-      ml_g = ml_g,
-      ml_r = ml_prob$clone(),
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
+      dml_procedure = dml_procedure, score = score)
+    theta = iivm_hat$coef
+    se = iivm_hat$se
+    
+    boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
+                                 data_iivm$df,
+                                 y = "y", d = "d", z = "z",
+                                 n_folds = 5, smpls = iivm_hat$smpls,
+                                 all_preds= iivm_hat$all_preds,
+                                 score = score,
+                                 bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+
+    set.seed(3141)
+    double_mliivm_obj = DoubleMLIIVM$new(
+      data = data_iivm$dml_data,
+      n_folds = 5,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
       trimming_threshold = trimming_threshold,
       score = score)
@@ -67,12 +62,12 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se_obj = double_mliivm_obj$se
 
     # bootstrap
-    # double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj = double_mliivm_obj$boot_coef
-    #
+    double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    boot_theta_obj = double_mliivm_obj$boot_coef
+
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
-    # expect_equal(as.vector(iivm_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )
