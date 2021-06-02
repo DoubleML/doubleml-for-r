@@ -14,7 +14,7 @@ toc:
 
 navbar:
   structure:
-    left:  [home, userguide, reference]
+    left:  [home, userguide, getstarted, reference, articles]
     right: [github]
   components:
     home: ~
@@ -22,6 +22,17 @@ navbar:
       text: User Guide
       icon: fa fa-file-alt
       href: https://docs.doubleml.org/
+    reference:
+      text: Reference
+      href: reference/index.html
+    getstarted:
+      text: Get started
+      href: articles/getstarted.html
+    articles:
+      text: Articles
+      menu:
+        - text: Install DoubleML
+          href: articles/install.html
     news:
       text: Release Notes
       href: https://docs.doubleml.org/stable/release/release.html
@@ -52,4 +63,3 @@ reference:
       - make_irm_data
       - make_iivm_data
       - make_plr_turrell2018
-
