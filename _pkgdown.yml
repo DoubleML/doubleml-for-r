@@ -14,7 +14,7 @@ toc:
 
 navbar:
   structure:
-    left:  [home, userguide, install, reference]
+    left:  [home, userguide, reference]
     right: [github]
   components:
     home: ~
