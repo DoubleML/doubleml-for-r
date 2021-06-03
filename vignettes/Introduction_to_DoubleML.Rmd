@@ -10,7 +10,7 @@ vignette: >
 
 # Introduction 
 
-The `R` package `DoubleML` implements the double/debiased machine learning framework of Chernozhukov et al. (2018). It provides functionalities to estimate parameters in causal models based on machine learning methods. The double machine learning framework consist of three key ingredients: 
+The R package `DoubleML` implements the double/debiased machine learning framework of Chernozhukov et al. (2018). It provides functionalities to estimate parameters in causal models based on machine learning methods. The double machine learning framework consist of three key ingredients: 
 
 * Neyman orthogonality, 
 * High-quality machine learning estimation and
