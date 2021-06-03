@@ -1,0 +1,1290 @@
+---
+title: "DoubleML - An Object-Oriented Implementation of Double Machine Learning in R"
+date: "`r Sys.Date()`"
+abstract: The R package `DoubleML` implements the double/debiased machine learning framework of Chernozhukov et al. (2018). It provides functionalities to estimate parameters in causal models based on machine learning methods. The double machine learning framework consist of three key ingredients\text{:} Neyman orthogonality, high-quality machine learning estimation and sample splitting. Estimation of nuisance components can be performed by various state-of-the-art machine learning methods that are available in the `mlr3` ecosystem. `DoubleML` makes it possible to perform inference in a variety of causal models, including partially linear and interactive regression models and their extensions to instrumental variable estimation. The object-oriented implementation of `DoubleML` enables a high flexibility for the model specification and makes it easily extendable. This paper serves as an introduction to the double machine learning framework and the R package `DoubleML`. In reproducible code examples with simulated and real data sets, we demonstrate how `DoubleML` users can perform valid inference based on machine learning methods. 
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{DoubleML - An Object-Oriented Implementation of Double Machine Learning in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: bibliography.bib
+---
+
+<!-- Uncomment meta-info from previous template (ASA) -->
+<!-- - name: Philipp Bach -->
+<!--   affiliation: University of Hamburg, Hamburg Business School -->
+
+<!-- - name: Malte S. Kurz -->
+<!--   affiliation: University of Hamburg, Hamburg Business School -->
+
+<!-- - name: Victor Chernozhukov -->
+<!--   affiliation: MIT -->
+
+<!-- - name: Martin Spindler -->
+<!--   affiliation: University of Hamburg, Hamburg Business School -->
+
+\newtheorem{theorem}{Theorem}
+<!-- \newtheorem{Remark}{Remark} -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
+
+def.chunk.hook  <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  x <- def.chunk.hook(x, options)
+  ifelse(options$size != "normalsize", paste0("\n \\", options$size,"\n\n", x, "\n\n \\normalsize"), x)
+})
+
+knitr::opts_chunk$set(size = "small")
+
+knitr::opts_chunk$set(background="NA")
+
+```
+
+
+
+\section{Introduction} \label{intro}
+
+Structural equation models provide a quintessential framework for conducting causal inference in statistics, econometrics, machine learning (ML), and other data sciences. The package `DoubleML` for R [@R] implements partially linear and interactive structural equation and treatment effect models with high-dimensional confounding variables as considered in @dml2018. Estimation and tuning of the machine learning models is based on the powerful functionalities provided by the `mlr3` package and the `mlr3` ecosystem [@mlr3]. A key element of double machine learning (DML) models are score functions identifying the estimates for the target parameter. These functions play an essential role for valid inference with machine learning methods because they have to satisfy a property called Neyman orthogonality. With the score functions as key elements, `DoubleML` implements double machine learning in a very general way using object orientation based on the `R6` package [@R6]. 
+Currently, `DoubleML` implements the double / debiased machine learning framework as established in @dml2018 for 
+
+* partially linear regression models (PLR), 
+* partially linear instrumental variable regression models (PLIV),
+* interactive regression models (IRM), and
+* interactive instrumental variable regression models (IIVM).
+
+The object-oriented implementation of `DoubleML` is very flexible. The model classes `DoubleMLPLR`, `DoubleMLPLIV`, `DoubleMLIRM` and `DoubleIIVM` implement the estimation of the nuisance functions via machine learning methods and the computation of the Neyman-orthogonal score function. All other functionalities are implemented in the abstract base class `DoubleML`, including estimation of causal parameters, standard errors, $t$-tests, confidence intervals, as well as valid simultaneous inference through adjustments of $p$-values and estimation of joint confidence regions based on a multiplier bootstrap procedure. In combination with the estimation and tuning functionalities of `mlr3` and its ecosystem, this object-oriented implementation enables a high flexibility for the model specification in terms of 
+
+* the machine learning methods for estimation of the nuisance functions,
+* the resampling schemes,
+* the double machine learning algorithm, and
+* the Neyman-orthogonal score functions.
+
+It further can be readily extended regarding 
+
+* new model classes that come with Neyman-orthogonal score functions being linear in the target parameter,
+* alternative score functions via callables, and
+* customized resampling schemes. 
+
+Several other packages for estimation of causal effects based on machine learning methods exist for R. Probably the most popular packages are the `grf` package [@grf], which implements generalized random forests [@grfpaper], the package `hdm` [@hdm] for inference based on the lasso estimator and the `hdi` package [@hdi] for inference in high-dimensional models. Previous implementations of the double machine learning (DML) framework of @dml2018 have been provided by `postDoubleR` package [@postDoubleR], the package `dmlmt` [@knaus2018] with a focus on lasso estimation, and `causalDML`  [@knaus2020] for estimation of treatment effects under unconfoundedness. A variety of causal estimation methods, including treatment effect estimators that are based on double machine learning and causal mediation analysis, is implemented in `causalweight` [@causalweight]. The R package `AIPW` [@AIPW] implements estimation of average treatment effects by augmented inverse probability weighting based on machine learning algorithms.
+
+In python, `EconML` [@econml] offers an implementation of the double machine learning framework for heterogeneous effects. We would like to mention that the R package `DoubleML` was developed together with a Python twin [@DoubleMLpython] that is based on `scikit-learn` [@pedregosa2011]. The python package is also available via [GitHub](https://github.com/DoubleML/doubleml-for-py), the [Python Package Index (PyPI)](https://pypi.org/project/DoubleML/0.1.2/), and [conda-forge](https://anaconda.org/conda-forge/doubleml).\footnote{Resources for Python package: GitHub \url{https://github.com/DoubleML/doubleml-for-py}, PyPI: \url{https://pypi.org/project/DoubleML/}, conda-forge: \url{https://anaconda.org/conda-forge/doubleml}.} Moreover, @doubleml_serverless provides a serverless implementation of the python module `DoubleML`. 
+
+
+The rest of the paper is structured as follows: In Section \ref{getstarted}, we briefly demonstrate how to install the `DoubleML` package and give a short motivating example to illustrate the major idea behind the double machine learning approach. Section \ref{causalmodels} introduces the main causal model classes implemented in `DoubleML`. Section \ref{basicidea}  shortly summarizes the main ideas behind the double machine learning approach and reviews the key ingredients required for valid inference based on machine learning methods.  Section \ref{dmlinference} presents the main steps and algorithms of the double machine learning procedure for inference on one or multiple target parameters. Section \ref{implementationdetails} provides more detailed insights on the implemented classes and methods of `DoubleML`. Section \ref{illustration} contains real-data and simulation examples for estimation of causal parameters using the `DoubleML` package. Additionally, this section provides a brief simulation study that illustrates the validity of the implemented methods in finite samples. Section \ref{conclusion} concludes the paper. The code output that has been suppressed in the main text and further information regarding the simulations are presented in the Appendix. To make the code examples fully reproducible, the entire code is available online. 
+
+\section{Getting Started} \label{getstarted}
+
+\subsection{Installation}
+
+The latest CRAN release of `DoubleML` can be installed using the command 
+```{r, eval = FALSE}
+install.packages("DoubleML")
+```
+
+Alternatively, the development version can be downloaded and installed from the GitHub^[GitHub repository for R package: https://github.com/DoubleML/doubleml-for-r.] repository using the command (previous installation of the `remotes` package is required)
+```{r, eval = FALSE}
+remotes::install_github("DoubleML/doubleml-for-r")
+```
+
+Among others, `DoubleML` depends on the R package `R6` for object oriented implementation, `data.table` [@datatable] for the underlying data structure, as well as the packages `mlr3` [@mlr3], `mlr3learners` [@mlr3learners] and `mlr3tuning` [@mlr3tuning] for estimation of machine learning methods, model tuning and parameter handling. Moreover, the underlying packages of the machine learning methods that are called in `mlr3` or `mlr3learners` must be installed, for example the packages `glmnet` for lasso estimation [@glmnet] or `ranger` [@ranger] for random forests.
+
+Load the package after completed installation. 
+```{r, message = FALSE, warning = FALSE}
+library(DoubleML)
+```
+
+
+\subsection{A Motivating Example: Basics of Double Machine Learning} \label{anexample}
+
+
+In the following, we provide a brief summary of and motivation to double machine learning methods and show how the corresponding methods provided by the `DoubleML` package can be applied. The data generating process (DGP) is based on the introductory example in @dml2018. We consider a partially linear model: Our major interest is to estimate the causal parameter $\theta$ in the following regression equation
+\begin{align*}
+\begin{aligned}
+y_i = \theta d_i + g_0(x_i) + \zeta_i, & &\zeta_i \sim \mathcal{N}(0,1),
+\end{aligned}
+\end{align*}
+with covariates $x_i \sim \mathcal{N}(0, \Sigma)$, where  $\Sigma$ is a matrix with entries $\Sigma_{kj} = 0.7^{|j-k|}$. In the following, the regression relationship between the treatment variable $d_i$ and the covariates $x_i$ will play an important role
+\begin{align*}
+\begin{aligned}
+d_i = m_0(x_i) + v_i, & &v_i \sim \mathcal{N}(0,1).\\
+\end{aligned}
+\end{align*}
+The nuisance functions $m_0$ and $g_0$ are given by
+\begin{align*}
+m_0(x_i) &=  x_{i,1} + \frac{1}{4} \frac{\exp(x_{i,3})}{1+\exp(x_{i,3})}, \\
+g_0(x_i) &= \frac{\exp(x_{i,1})}{1+\exp(x_{i,1})} + \frac{1}{4} x_{i,3}.
+\end{align*}
+We construct a setting with $n=500$ observations and $p=20$ explanatory variables to demonstrate the use of the estimators provided in `DoubleML`. Moreover, we set the true value of the parameter $\theta$ to $\theta=0.5$. The corresponding data generating process is implemented in the function `make_plr_CCDHNR2018()`. We start by generating a realization of a data set as a `data.table` object, which is subsequently used to create an instance of the data-backend of class `DoubleMLData`. 
+
+```{r, eval = TRUE}
+library(DoubleML)
+alpha = 0.5
+n_obs = 500
+n_vars = 20
+set.seed(1234)
+data_plr = make_plr_CCDDHNR2018(alpha = alpha, n_obs = n_obs, dim_x = n_vars,
+                                return_type = "data.table")
+
+```
+The data-backend implements the causal model: We specify that we perform inference on the  effect of the treatment variable $d_i$ on the dependent variable $y_i$.
+```{r, eval = TRUE}
+obj_dml_data = DoubleMLData$new(data_plr, y_col = "y", d_cols = "d")
+```
+In the next step, we choose the machine learning method as an object of class `Learner` from `mlr3`, `mlr3learners` [@mlr3learners] or `mlr3extralearners` [@mlr3extralearners]. As we will point out later, we have to estimate two nuisance parts in order to perform valid inference in the partially linear regression model. Hence, we have to specify two learners. Moreover, we split the sample into two folds used for cross-fitting.  
+```{r, eval = TRUE}
+# Load mlr3 and mlr3learners package and suppress output during estimation
+library(mlr3)
+library(mlr3learners)
+lgr::get_logger("mlr3")$set_threshold("warn") 
+
+# Initialize a random forests learner with specified parameters
+ml_g = lrn("regr.ranger", num.trees = 100, mtry = n_vars, min.node.size = 2, 
+           max.depth = 5)
+ml_m = lrn("regr.ranger", num.trees = 100, mtry = n_vars, min.node.size = 2, 
+           max.depth = 5)
+
+doubleml_plr = DoubleMLPLR$new(obj_dml_data,
+                               ml_g, ml_m,
+                               n_folds = 2,
+                               score = "IV-type")
+```
+To estimate the causal effect of variable $d_i$ on $y_i$, we call the `fit()` method. 
+```{r, eval = TRUE, message = FALSE}
+doubleml_plr$fit()
+doubleml_plr$summary()
+```
+The output shows that the estimated coefficient is close to the true parameter $\theta=0.5$. Moreover, we are able to reject the null hypotheses $H_0: \theta=0$ at all common significance levels. 
+
+
+<!-- TODO: Introduce/refer to examples... -->
+
+\section{Key Causal Models} \label{causalmodels}
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.7\textwidth]{figures/dag_plr2.PNG}
+\caption{Causal diagram for PLR and IRM.}
+\label{dag1}
+\end{center}
+\footnotesize 
+A causal diagram underlying Equation (\ref{plr1})-(\ref{plr2}) and (\ref{irm1})-(\ref{irm2}) under conditional exogeneity. Note that the causal link between $D$ and $Y$ is one-directional. Identification of the causal effect is confounded by $X$, and identification is achieved via $V$, which captures variation in $D$ that is independent of $X$. Methods to estimate the causal effect of $D$ must therefore approximately remove the effect of high-dimensional $X$ on $Y$ and $D$.
+\end{figure}
+
+
+`DoubleML` provides estimation of causal effects in four different models: Partially linear regression models (PLR), partially linear instrumental variable regression models (PLIV), interactive regression models (IRM) and interactive instrumental variable regression models (IIVM). We will shortly introduce these models. 
+
+
+\subsection{Partially Linear Regression Model (PLR)} \label{plrmodel}
+
+Partially linear regression models (PLR), which encompass the standard linear regression model, play an important role in data analysis [@robinson1988]. Partially linear regression models take the form
+\begin{align}
+Y = D \theta_0 + g_0(X) + \zeta, \quad &\mathbb{E}(\zeta | D,X) = 0, \label{plr1}\\
+D = m_0(X) + V, \quad &\mathbb{E}(V | X) = 0,   \label{plr2}
+\end{align}
+where $Y$ is the outcome variable and $D$ is the policy variable of interest. The high-dimensional vector $X=(X_1,…,X_p)$ consists of other confounding covariates, and $\zeta$ and $V$ are stochastic errors. Equation (\ref{plr1}) is the equation of interest, and $\theta_0$ is the main regression coefficient that we would like to infer. If $D$ is conditionally exogenous (randomly assigned conditional on X), $\theta_0$ has the interpretation of a structural or causal parameter. The causal diagram supporting such interpretation is shown in Figure \ref{dag1}. The second equation keeps track of confounding, namely the dependence of $D$ on covariates/controls. The characteristics $X$ affect the policy variable $D$ via the function $m_0(X)$ and the outcome variable via the function $g_0(X)$. The partially linear model generalizes both linear regression models, where functions $g_0$ and $m_0$ are linear with respect to a dictionary of basis functions with respect to $X$, and approximately linear models.
+
+\subsection{Partially Linear Instrumental Variable Regression Model (PLIV)} \label{plivmodel}
+
+We next consider the partially linear instrumental variable regression model:
+\begin{align}
+Y - D \theta_0 =  g_0(X) + \zeta, \quad &\mathbb{E}(\zeta | Z, X) = 0, \label{pliv1} \\
+Z = m_0(X) + V,  \quad & \mathbb{E}(V | X) = 0. \label{pliv2}
+\end{align}
+Note that this model is not a regression model unless $Z=D$. Model (\ref{pliv1})-(\ref{pliv2}) is a canonical model in causal inference, going back to @wright1928, with the modern difference being that $g_0$ and $m_0$ are nonlinear, potentially complicated functions of high-dimensional $X$. The idea of this model is that there is a structural or causal relation between $Y$ and $D$, captured by $\theta_0$, and $g_0(X) + \zeta$ is the stochastic error, partly explained by covariates $X$. $V$ and $\zeta$ are stochastic errors that are not explained by $X$. Since $Y$ and $D$ are jointly determined, we need an external factor, commonly referred to as an instrument, $Z$, to create exogenous variation in $D$. Note that $Z$ should affect $D$. The $X$ here serve again as confounding factors, so we can think of variation in $Z$ as being exogenous only conditional on $X$.
+
+A simple contextual example is from biostatistics [@permutt1989], where $Y$ is a health outcome and $D$ is an indicator of smoking. Thus, $\theta_0$ captures the effect of smoking on health. Health outcome $Y$ and smoking behavior $D$ are treated as being jointly determined. $X$ represents patient characteristics, and $Z$ could be a doctor’s advice not to smoke (or another behavioral treatment) that may affect the outcome $Y$ only through shifting the behavior $D$, conditional on characteristics $X$.
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics[width=0.55\textwidth]{figures/dag_pliv2.PNG}
+\caption{Causal diagram for PLIV and IIVM.}
+\label{dag2}
+\end{center}
+\footnotesize
+A causal diagram underlying Equation (\ref{pliv1})-(\ref{pliv2}) and (\ref{iivm1})-(\ref{iivm2}) under conditional exogeneity of $Z$. Note that the causal link between $D$ and $Y$ is bi-directional, so an instrument $Z$ is needed for identification. Identification is achieved via $V$ that captures variation in $Z$ that is independent of $X$. Equations (\ref{pliv1}) and (\ref{pliv2}) do not model the dependence between $D$ and $X$ and $Z$, though a necessary condition for identification is that $Z$ and $D$ are related after conditioning on $X$. Methods to estimate the causal effect of $D$ must approximately remove the effect of high-dimensional $X$ on $Y$, $D$, and $Z$. Removing the confounding effect of $X$ is done implicitly by the proposed procedure.
+\end{figure}
+
+\subsection{Interactive Regression Model (IRM)} \label{irmmodel}
+
+We consider estimation of average treatment effects when treatment effects are fully heterogeneous and the treatment variable is binary, $D\in \{0, 1\}$. We consider vectors $(Y, D, X)$ such that
+\begin{align}
+Y = g_0(D, X) + U, \quad & \mathbb{E}(U | X, D) = 0,  \label{irm1}\\
+D = m_0(X) + V, \quad &\mathbb{E}(V | X) = 0. \label{irm2}
+\end{align}
+Since $D$ is not additively separable, this model is more general than the partially linear model for the case of binary $D$. A common target parameter of interest in this model is the average treatment effect (ATE),\footnote{Without unconfoundedness/conditional exogeneity, these quantities measure association, and could be referred to as average predictive effects (APE) and average predictive effect for the exposed (APEX). Inferential results for these objects would follow immediately from Theorem \ref{theorem1}.}
+\begin{align*}
+\theta_0 = \mathbb{E}[g_0(1, X) - g_0(0,X)].
+\end{align*}
+Another common target parameter is the average treatment effect for the treated (ATTE),
+\begin{align*}
+\theta_0 = \mathbb{E}[g_0(1, X) - g_0(0,X) | D=1].
+\end{align*}
+In business applications, the ATTE is often the main interest, as it captures the treatment effect for those who have been affected by the treatment. A difference of the ATTE from the ATE might arise if the characteristics of the treated individuals differ from those of the general population. 
+
+The confounding factors $X$ affect the policy variable via the propensity score $m_0(X)$ and the outcome variable via the function $g_0(X)$. Both of these functions are unknown and potentially complex, and we can employ ML methods to learn them. 
+
+
+
+\subsection{Interactive Instrumental Variable Model (IIVM)} \label{iivmmodel}
+
+We consider estimation of local average treatment effects (LATE) with a binary treatment variable $D\in\{0,1\}$, and a binary instrument, $Z\in\{0,1\}$. As before, $Y$ denotes the outcome variable, and $X$ is the vector of covariates. Here the structural equation model is:
+\begin{align}
+Y = \ell_0(D, X) + \zeta,  \quad & \mathbb{E}(\zeta | Z, X) = 0, \label{iivm1}\\
+Z = m_0(X) + V, \quad &\mathbb{E}(V | X) = 0.\label{iivm2}
+\end{align}
+Consider the functions $g_0$, $r_0$, and $m_0$, where $g_0$ maps the support of $(Z,X)$ to $\mathbb{R}$ and $r_0$ and $m_0$ map the support of $(Z,X)$ and $X$ to $(\epsilon, 1-\epsilon)$ for some $\epsilon \in (0, 1/2)$, such that 
+\begin{align}
+Y = g_0(Z, X) + \nu, \quad &\mathbb{E}(\nu | Z, X) = 0,\\
+D = r_0(Z, X) + U,  \quad & \mathbb{E}(U | Z, X) = 0,\\
+Z = m_0(X) + V, \quad & \mathbb{E}(V | X) = 0.
+\end{align}
+We are interested in estimating 
+\begin{align*} 
+\theta_0 &= \frac{\mathbb{E}[g_0(1, X)] - \mathbb{E}[g_0(0,X)]}{\mathbb{E}[r_0(1, X)] - \mathbb{E}[r_0(0,X)]}.
+\end{align*}
+Under the well-known assumptions of @LATE, $\theta_0$ is the LATE -- the average treatment effect for compliers, in other words, those observations that would have $D=1$ if $Z$ were $1$ and would have $D=0$ if $Z$ were $0$.
+
+\section{Basic Idea and Key Ingredients of Double Machine Learning} \label{basicidea}
+
+\subsection{Basic Idea behind Double Machine Learning for the PLR Model} \label{basicideaplr}
+
+\begin{figure}[t]
+\begin{center}
+\includegraphics{figures/nonorth_doubleml_n500_p20_resc.pdf}
+\caption{Performance of non-orthogonal and orthogonal estimators in simulated data example.}
+\label{failure1}
+\end{center}
+\footnotesize
+\textbf{Left panel:} Histogram of the studentized naive estimator $\hat{\theta}^{naive}_0$. $\hat{\theta}^{naive}_0$ is based on estimation of $g_0$ and $m_0$ with random forests and a non-orthogonal score function. Data sets are simulated according to the data generating process in Section \ref{anexample}. Data generation and estimation are repeated 1000 times. \textbf{Right panel:} Histogram of the studentized DML estimator $\tilde{\theta}_0$. $\tilde{\theta}_0$ is based on estimation of $g_0$ and $m_0$ with random forests and an orthogonal score function provided in Equation (\ref{scorepartiallingout}). Note that the simulated data sets and parameters of the random forest learners are identical to those underlying the left panel. 
+\end{figure}
+
+Here we provide an intuitive discussion of how double machine learning works in the first model, the partially linear regression model. Naive application of machine learning methods directly to equations (\ref{plr1})-(\ref{plr2}) may have a very high bias. Indeed, it can be shown that small biases in estimation of $g_0$, which are unavoidable in high-dimensional estimation, create a bias in the naive estimate of the main effect, $\hat{\theta_0}^{naive}$, which is sufficiently large to cause failure of conventional inference. The left panel in Figure \ref{failure1} illustrates this phenomenon. The histogram presents the empirical distribution of the studentized estimator, $\hat{\theta}^{naive}_0$, as obtained in $1000$ independent repetitions of the data generating process presented in Section \ref{anexample}. The functions $g_0$ and $m_0$ in the PLR model are estimated with random forest learners and corresponding predictions are then plugged into a non-orthogonal score function. The regularization performed by the random forest learner leads to a bias in estimation of $g_0$ and $m_0$.  Due to non-orthogonality of the score, this translates into a considerable bias of the main estimator $\hat{\theta_0}^{naive}$: The distribution of the studentized estimator $\hat{\theta}^{naive}_0$ is shifted to the left of the origin and differs substantially from a normal distribution that would be obtained if the regularization bias was negligible as shown by the red curve. 
+
+The PLR model above can be rewritten in the following residualized form: 
+\begin{align}
+W = V \theta_0 + \zeta,\quad & \mathbb{E}(\zeta | D, X) = 0, \label{p_out1} \\
+W = (Y - \ell_0(X)), \quad & \ell_0(X) = \mathbb{E}[Y|X], \label{p_out2} \\
+V = (D- m_0(X)), \quad & m_0(X) = \mathbb{E}[D|X]. \label{p_our3}
+\end{align}
+The variables $W$ and $V$ represent original variables after taking out or *partialling out* the effect of $X$. Note that $\theta_0$ is identified from this equation if $V$ has a non-zero variance. 
+
+
+\begin{framed}
+Given identification, double machine learning for a PLR proceeds as follows 
+\begin{enumerate}
+\item[(1)] Estimate $\ell_0$ and $m_0$ by $\hat{\ell}_0$ and $\hat{m}_0$, which amounts to solving the two problems of predicting $Y$ and $D$ using $X$, using any generic ML method, giving us estimated residuals
+\begin{align*}
+\hat{W} = Y - \hat{\ell}_0(X),
+\end{align*}
+and 
+\begin{align*}
+\hat{V} = D - \hat{m}_0(X).
+\end{align*}
+The residuals should be of a cross-validated form, as explained below in Algorithm 1 or 2, to avoid biases from overfitting. 
+\item[(2)] Estimate $\theta_0$ by regressing the residual $\hat{W}$ on $\hat{V}$. Use the conventional inference for this regression estimator, ignoring the estimation error in the residuals. 
+\end{enumerate}
+The reason we work with this residualized form is that it eliminates the bias arising from solving the prediction problems in stage (1). The estimates $\hat{\ell}_0$ and $\hat{m}_0$ carry a regularization bias due to having to solve prediction problems well in high-dimensions. However, the nature of the estimating equation for $\theta_0$ are such that these biases are eliminated to the first order, as explained below. This results in a high-quality low-bias estimator $\tilde{\theta}_0$ of $\theta_0$, as illustrated in the right panel of Figure \ref{failure1}. The estimator is adaptive in the sense that the first stage estimation errors do not affect the second stage errors.
+\end{framed}
+
+
+
+
+\subsection{Key Ingredients of the Double Machine Learning Inference Approach} \label{keyingredients}
+
+Our goal is to construct high-quality point and interval estimators for $\theta_0$ when $X$ is high-dimensional and we employ machine learning methods to estimate the nuisance functions such as $g_0$ and $m_0$. Example ML methods include lasso, random forests, boosted trees, deep neural networks, and ensembles or aggregated versions of these methods. 
+
+We shall use a method-of-moments estimator for $\theta_0$ based upon the empirical analog of the moment condition
+\begin{align}
+\mathbb{E}[\psi(W; \theta_0, \eta_0)] = 0, \label{score}
+\end{align}
+where we call $\psi$ the score function, $W = (Y,D,X,Z)$, $\theta_0$ is the parameter of interest, and $\eta$ denotes nuisance functions with population value $\eta_0$. 
+\begin{framed}
+\underline{The first key input} of the inference procedure is using a score function $\psi(W; \theta; \eta)$ that satisfies (\ref{score}), with $\theta_0$ being the unique solution, and that obeys the Neyman orthogonality condition 
+\begin{align}
+ \partial_{\eta} \mathbb{E}[\psi(W; \theta_0, \eta)|_{\eta=\eta_0}=0.   \label{neyman}
+\end{align}
+\end{framed}
+Neyman orthogonality (\ref{neyman}) ensures that the moment condition (\ref{score}) used to identify and estimate $\theta_0$ is insensitive to small pertubations of the nuisance function $\eta$ around $\eta_0$. The derivative $\partial_{\eta}$ denotes the pathwise (Gateaux) derivative operator. 
+
+
+Using a Neyman-orthogonal score eliminates the first order biases arising from the replacement of $\eta_0$ with a ML estimator $\hat{\eta}_0$. Eliminating this bias is important because estimators $\hat{\eta}_0$ must be heavily regularized in high dimensional settings to be good estimators of $\eta_0$, and so these estimators will be biased in general. The Neyman orthogonality property is responsible for the adaptivity of these estimators – namely, their approximate distribution will not depend on the fact that the estimate $\hat{\eta}_0$ contains error, if the latter is mild.
+
+The right panel of Figure \ref{failure1} presents the empirical distribution of the studentized DML estimator $\tilde{\theta}_0$ that is based on an orthogonal score. Note that estimation is performed on the identical simulated data sets and with the same machine learning method as for the naive learner, which is displayed in the left panel. The histogram of the studentized estimator $\tilde{\theta}_0$ illustrates the favorable performance of the double machine learning estimator, which is based on an orthogonal score: The DML estimator is robust to the bias that is generated by regularization. The estimator is approximately unbiased, is concentrated around $0$ and the distribution is well-approximated by the normal distribution. 
+
+* **PLR score:** In the PLR model, we can employ two alternative score functions. We will shortly indicate the option for initialization of a model object in `DoubleML` to clarify how each score can be implemented. Using the option `score = "partialling out"` leads to estimation of the score function 
+\begin{align}  \label{scorepartiallingout}
+\begin{aligned}
+&\psi(W;\theta, \eta) := \left(Y - \ell(X) - \theta(D-m(X))\right) \left(D - m(X)\right),  \\
+& \eta = (\ell,m), \quad  \eta_0 = (\ell_0, m_0),
+\end{aligned}
+\end{align}
+where $W=(Y,D,X)$ and $\ell$ and $m$ are $P$-square-integrable functions mapping the support of $X$ to $\mathbb{R}$, whose true values are given by 
+\begin{align*}
+\ell_0(X) = \mathbb{E}[Y|X], \quad  m_0(X) = \mathbb{E}[D|X].
+\end{align*}
+Alternatively, it is possible to use the following score function for the PLR via the option `score = "IV-type"`
+\begin{align}
+\begin{aligned}
+& \psi(W;\theta, \eta) := \left(Y-D\theta - g(X)\right) \left(D-m(X)\right), 
+& \eta = (g, m), \quad  \eta_0 = (g_0, m_0),
+\end{aligned}
+\end{align}
+with $g$ and $m$ being $P$-square-integrable functions mapping the support of $X$ to $\mathbb{R}$ with values given by
+\begin{align*}
+g_0 = \mathbb{E}[Y|X], \quad m_0(X) = \mathbb{E}[D|X].
+\end{align*}
+The scores above are Neyman-orthogonal by elementary calculations. Now, it is possible to see the connections to the residualized system of equations presented in Section \ref{basicideaplr}. 
+
+* **PLIV score:** In the PLIV model, we employ the score function (`score = "partialling out"`)
+\begin{align}
+\begin{aligned}
+&\psi(W;\theta, \eta) := \left(Y - \ell(x) - \theta(D-r(X))\right) \left(Z - m(X) \right), \\
+& \eta = (\ell, m, r), \quad \eta_0 = (\ell_0, m_0, r_0),
+\end{aligned}
+\end{align}
+where $W=(Y,D,X,Z)$ and $\ell$, $m$, and $r$ are $P$-square integrable functions mapping the support of $X$ to $\mathbb{R}$, whose true values are given by 
+\begin{align*}
+\ell_0(X) = \mathbb{E}[Y|X], \quad r_0(X) = \mathbb{E}[D|X], \quad m_0(X) = \mathbb{E}[Z|X].
+\end{align*}
+
+* **IRM score:** For estimation of the ATE parameter of the IRM model, we employ the score (`score = "ATE"`)
+\begin{align}
+\begin{aligned}
+  & \psi(W;\theta, \eta) := \left(g(1,X) - g(0,X) \right) + \frac{D(Y-g(1,X))}{m(X)} - \frac{(1-D)(Y-g(0,X))}{1-m(X)} - \theta, \\
+  & \eta = (g,m), \quad \eta_0 = (g_0, m_0),
+\end{aligned}
+\end{align}
+where $W=(Y,D,X)$ and $g$ and $m$ map the support of $(D,X)$ to $\mathbb{R}$ and the support of $X$ to $(\epsilon, 1-\epsilon)$, respectively, for some $\epsilon \in (0, 1/2)$, whose true values are given by
+\begin{align*}
+g_0(D,X)=\mathbb{E}[Y|D,X], \quad m_0(x)=\mathbb{P}[D=1|X].
+\end{align*}
+This orthogonal score is based on the influence function for the mean for missing data from @robins1995. For estimation of the ATTE parameter in the IRM, we use the score (`score = "ATTE"`)
+\begin{align}
+\begin{aligned}
+&\psi(W;\theta, \eta) := \frac{D(Y-g(0,X))}{p} - \frac{m(X)(1-D)(Y-g(0,X))}{p(1-m(x))} - \frac{D}{p}\theta,\\
+& \eta = (g, m, p), \quad \eta_0 = (g_0, m_0, p_0),
+\end{aligned}
+\end{align}
+where $p_0=\mathbb{P}(D=1)$. Note that this score does not require estimating $g_0(1,X)$. 
+
+* **IIVM score:** To estimate the LATE paramter in the IIVM, we will use the score (`score = "LATE"`)
+\begin{align}
+\begin{aligned}
+\psi := & g(1,X) - g(0,X) + \frac{Z(Y-g(1,X))}{m(X)} - \frac{(1-Z)(Y-g(0,X))}{1-m(X)} \\
+& - \left( r(1,x) - r(0,X) + \frac{Z(D-r(1,x)}{m(X)} - \frac{(1-Z)(D-r(0,X)}{1-m(X)} \right) \times \theta,\\
+& \eta = (g, m, r), \quad \eta_0 = (g_0, m_0, r_0),
+\end{aligned}
+\end{align}
+where $W=(Y,D,X,Z)$ and the nuisance parameter $\eta=(g, m, r)$ consists of $P$-square integrable functions $g$, $m$, and $r$, with $g$ mapping the support of $(Z,X)$ to $\mathbb{R}$ and $m$ and $r$, respectively, mapping the support of $(Z,X)$ and $X$ to $(\epsilon, 1-\epsilon)$ for some $\epsilon \in (0,1/2)$.
+
+\begin{framed}
+\underline{The second key input} is the use of high-quality machine learning estimators for the nuisance parameters.
+\end{framed}
+
+
+For instance, in the PLR model, we need to have access to consistent estimators of $g_0$ and $m_0$ with respect to the $L^2(P)$ norm $\lVert \cdot \lVert_{P,2}$, such that 
+\begin{align}
+\lVert \hat{m}_0 - m_0 \lVert_{P,2} + \lVert \hat{\ell}_0 - \ell_0 \lVert_{P,2} \le o(N^{-1/4}).
+\end{align}
+In the PLIV model, the sufficient condition is 
+\begin{align}
+\lVert \hat{r}_0 - r_0 \lVert_{P,2} + \lVert \hat{m}_0 - m_0 \lVert_{P,2} + \lVert \hat{\ell}_0 - \ell_0 \lVert_{P,2} \le o(N^{-1/4}).
+\end{align}
+These conditions are plausible for many ML methods.  Different structured assumptions on $\eta_0$ lead to the use of different machine-learning tools for estimating $\eta_0$ as listed in @dml2018 [pp. 22-23]: 
+
+1. The assumption of approximate or exact sparsity for $\eta_0$ with respect to some dictionary calls for the use of sparsity-based machine learning methods, for example the lasso estimator, post-lasso, $l_2$-boosting, or forward selection, among others. 
+1. The assumption of density of $\eta_0$ with respect to some dictionary calls for density-based estimators such as the ridge. Mixed structures based on sparsity and density suggest the use of elastic net or lava. 
+1. If $\eta_0$ can be well approximated by tree-based methods, regression trees and random forests are suitable. 
+1. If $\eta_0$ can be well approximated by sparse, shallow or deep neural networks, $l_1$-penalized neural networks, shallow neural networks or deep neural networks are attractive. 
+
+For most of these ML methods, performance guarantees are available that make it possible to satisfy the theoretical requirements. Moreover, if  $\eta_0$ can be well approximated by at least one model mentioned in the list above, ensemble or aggregated methods can be used. Ensemble and aggregation methods ensure that the performance guarantee is approximately no worse than the performance of the best method.
+
+<!-- 1. approximate sparsity for $\eta_0$ with respect to some dictionary calls for the use of forward selection, lasso, post-lasso, $l_2$-boosting, or some other sparsity-based technique,  -->
+<!-- 1. well-approximability of $\eta_0$ by trees calls for the use of regression trees and random forests,  -->
+<!-- 1. well-approximability of $\eta_0$ by sparse neural and deep neural networks calls for the use of $l_1$-penalized neural and deep neural networks,  -->
+<!-- 1. well-approximability of $\eta_0$ by at least one model mentioned in 1.-3. above calls for the use of an ensemble/aggregated method over the estimation methods mentioned in 1.-3.  -->
+
+<!-- For most of these ML methods, performance guarantees are available that make it possible to satisfy the theoretical requirements.  -->
+<!-- There are performance guarantees for most of these ML methods that make it possible to satisfy the conditions stated below. Ensemble and aggregation methods ensure that the performance guarantee is approximately no worse than the performance of the best method. -->
+
+\begin{framed}
+\underline{The third key input} is to use a form of sample splitting at the stage of producing the estimator of the main parameter $\theta_0$, which allows us to avoid biases arising from overfitting.
+\end{framed}
+
+\begin{figure}[!tb]
+\begin{center}
+\includegraphics{figures/nosplit_doubleml_n500_p20_resc.pdf}
+\caption{Performance of orthogonal estimators based on full sample and sample splitting in simulated data example.}
+\label{failure2}
+\end{center}
+\footnotesize
+\textbf{Left panel:} Histogram of the studentized estimator $\hat{\theta}^{nosplit}_0$. $\hat{\theta}^{nosplit}_0$ is based on estimation of $g_0$ and $m_0$ with random forests and a procedure without sample-splitting: The entire data set is used for learning the nuisance terms and estimation of the orthogonal score. Data sets are simulated according to the data generating process in Section \ref{anexample}. Data generation and estimation are repeated 1000 times. \textbf{Right panel:} Histogram of the studentized DML estimator $\tilde{\theta}_0$. $\tilde{\theta}_0$ is based on estimation of $g_0$ and $m_0$ with random forests and the cross-fitting described in Algorithm 2. Note that the simulated data sets and parameters of the random forest learners are identical to those underlying the left panel.
+\end{figure}
+
+Biases arising from overfitting could result from using highly complex fitting methods such as boosting, random forests, ensemble, and hybrid machine learning methods. We specifically use cross-fitted forms of the empirical moments, as detailed below in Algorithms 1 and 2, in estimation of $\theta_0$. If we do not perform sample splitting and the ML estimates overfit, we may end up with very large biases. This is illustrated in Figure \ref{failure2}. The left panel shows the histogram of a studentized estimator $\hat{\theta}^{nosplit}_0$ with $\hat{\theta}^{nosplit}_0$ being obtained from solving the orthogonal score of Equation (\ref{scorepartiallingout}) without sample splitting. All observations are used to learn functions $g_0$ and $m_0$ in the PLR model and to solve the score $\frac{1}{N}\sum_i^{N} \psi(W_i; \hat\theta^{nosplit}_0, \hat{\eta}_0)$. Consequently, this overfitting bias leads to a considerable shift of the empirical distribution to the left. The double machine learning estimator underlying the histogram in the right panel is obtained with cross-fitting according to Algorithm 2. The sample-splitting procedure makes it possible to completely eliminate the bias induced by overfitting. 
+
+
+\section{The Double Machine Learning Inference Method} \label{dmlinference}
+
+\subsection{Double Machine Learning for Estimation of a Causal Parameter}
+
+We assume that we have a sample $(W_i)^N_{i_1}$, modeled as i.i.d. copies of $W=(Y,D,Z,X)$, whose law is determined by the probability measure $P$. We assume that $N$ is divisible by $K$ in order to simplify the notation. Let $\mathbb{E}_N$ denote the empirical expectation
+\begin{align*}
+\mathbb{E}_N[g(W)] := \frac{1}{N} \sum_{i=1}^{N}g(W_i).
+\end{align*}
+
+\begin{framed}
+\textbf{Algorithm 1: DML1.} (Generic double machine learning with cross-fitting)
+\begin{enumerate}
+\item[(1)] \textbf{Inputs:} Choose a model (PLR, PLIV, IRM, IIVM), provide data $(W_i)^N_{i=1}$, a Neyman-orthogonal score function $\psi(W;\theta, \eta)$, which depends on the model being estimated, and specify machine learning methods for $\eta$. 
+
+\item[(2)] \textbf{Train ML predictors on folds:} Take a $K$-fold random partition $(I_k)_{k=1}^{K}$ of observation indices $[N]=\{1, \ldots, N\}$ such that the size of each fold $I_k$ is $n=N/K$. For each $k\in[K]=\{1, \ldots, K\}$, construct a high-quality machine learning estimator 
+\begin{align*}
+\hat{\eta}_{0,k} = \hat{\eta}_{0,k}\big((W_i)_{i\not\in I_k}\big)
+\end{align*}
+of $\eta_0$, where $x \mapsto \hat{\eta}_{0,k}(x)$ depends only on the subset of data $(W_i)_{i\not\in I_k}$.
+
+\item[(3)] For each $k\in[K]$, construct the estimator $\check{\theta}_{0,k}$ as the solution to the equation 
+\begin{align}
+\frac{1}{n} \sum_{i \in I_k} \psi(W_i; \check{\theta}_{0,k}, \hat{\eta}_{0,k}) = 0. \label{dml1}
+\end{align}
+The estimate of the causal parameter is obtained via aggregation
+\begin{align*}
+\tilde{\theta}_0 = \frac{1}{K} \sum_{k=1}^{K} \check{\theta}_{0,k}.
+\end{align*}
+
+\item[(4)] \textbf{Output:} The estimate of the causal parameter $\tilde{\theta}_0$ as well as the values of the evaluated score function are returned. 
+\end{enumerate}
+\end{framed}
+
+
+\begin{framed}
+\textbf{Algorithm 2: DML2.} (Generic double machine learning with cross-fitting)
+\begin{enumerate}
+\item[(1)] \textbf{Inputs:} Choose a model (PLR, PLIV, IRM, IIVM), provide data $(W_i)^N_{i=1}$, a Neyman-orthogonal score function $\psi(W;\theta, \eta)$, which depends on the model being estimated, and specify machine learning methods for $\eta$. 
+
+\item[(2)] \textbf{Train ML predictors on folds:} Take a $K$-fold random partition $(I_k)_{k=1}^{K}$ of observation indices $[N]=\{1, \ldots, N\}$ such that the size of each fold $I_k$ is $n=N/K$. For each $k\in[K]=\{1, \ldots, K\}$, construct a high-quality machine learning estimator 
+\begin{align*}
+\hat{\eta}_{0,k} = \hat{\eta}_{0,k}\big((W_i)_{i\not\in I_k}\big)
+\end{align*}
+of $\eta_0$, where $x \mapsto \hat{\eta}_{0,k}(x)$ depends only on the subset of data $(W_i)_{i\not\in I_k}$.
+
+\item[(3)] Construct the estimator for the causal parameter $\tilde{\theta}_{0}$ as the solution to the equation 
+\begin{align}
+\frac{1}{N} \sum_{k=1}^{K} \sum_{i \in I_k} \psi(W_i; \tilde{\theta}_0, \hat{\eta}_{0,k}) = 0.
+\end{align}
+
+\item[(4)] \textbf{Output:} The estimate of the causal parameter $\tilde{\theta}_0$ as well as the values of the evaluated score function are returned. 
+\end{enumerate}
+\end{framed}
+
+
+> **Remark 1** (*Linear scores*)
+The score for the models PLR, PLIV, IRM and IIVM are linear in $\theta$, having the form
+\begin{align*}
+\psi(W;\theta, \eta) = \psi_a(W; \eta) \theta + \psi_b(W; \eta),
+\end{align*}
+hence the estimator $\tilde{\theta}_{0,k}$ for DML2 ($\check{\theta}_{0,k}$ for DML1) takes the form 
+\begin{align} 
+\tilde{\theta}_0 = - \left(\mathbb{E}_N[\psi_a(W; \eta)]\right)^{-1}\mathbb{E}_N[\psi_b(W; \eta)].\label{linearscore}
+\end{align}
+
+The linear score function representations of the PLR, PLIV, IRM and IIVM are
+
+
+* **PLR** with `score = "partialling out"`
+\begin{align}\begin{aligned}\psi_a(W; \eta) &=  - (D - m(X)) (D - m(X)),\\\psi_b(W; \eta) &= (Y - \ell(X)) (D - m(X)).\end{aligned}\end{align}
+**PLR** with `score = "IV-type"`
+\begin{align}\begin{aligned}\psi_a(W; \eta) &=  - D (D - m(X)),\\\psi_b(W; \eta) &= (Y - g(X)) (D - m(X)).\end{aligned}\end{align}
+
+* **PLIV** with `score = "partialling out"`
+\begin{align}\begin{aligned}\psi_a(W; \eta) &=  - (D - r(X)) (Z - m(X)),\\\psi_b(W; \eta) &= (Y - \ell(X)) (Z - m(X)).\end{aligned}\end{align}
+
+* **IRM** with `score = "ATE"`
+\begin{align}\begin{aligned}\psi_a(W; \eta) &=  - 1,\\
+\psi_b(W; \eta) &= g(1,X) - g(0,X) + \frac{D (Y - g(1,X))}{m(X)} - \frac{(1 - D)(Y - g(0,X))}{1 - m(x)}.\end{aligned}\end{align}
+**IRM** with `score = "ATTE"`
+\begin{align}\begin{aligned}\psi_a(W; \theta, \eta)&= -\frac{D}{p} \\
+\psi_b(W; \theta, \eta) &= \frac{D (Y - g(0,X))}{p} - \frac{m(X) (1 - D) (Y - g(0,X))}{p(1 - m(x))} \\ \end{aligned}\end{align}
+
+* **IIVM** with `score = "LATE"`
+\begin{align}\begin{aligned}\psi_a(W; \eta) &=  - \bigg(r(1,X) - r(0,X) + \frac{Z (D - r(1,X))}{m(X)} - \frac{(1 - Z)(D - r(0,X))}{1 - m(x)} \bigg),\\\psi_b(W; \eta) &= g(1,X) - g(0,X) + \frac{Z (Y - g(1,X))}{m(X)} - \frac{(1 - Z)(Y - g(0,X))}{1 - m(x)}.\end{aligned}\end{align}
+
+> **Remark 2** (*Sample Splitting*)
+In Step (2) of the Algorithm DML1 and DML2, the estimator $\hat{\eta}_{0,k}$ can generally be an ensemble or aggregation of several estimators as long as we only use the data $(W_i)_{i\not\in I_k}$ outside the $k$-th fold to construct the estimators.
+
+> **Remark 3** (*Recommendation*)
+We have found that $K=4$ or $K=5$ to work better than $K=2$ in a variety of empirical examples and in simulations. The default for the option `n_folds` that implements the value of $K$ is `n_folds=5`. Moreover, we generally recommend to repeat the estimation procedure mutliple times and use the estimates and standard errors as aggregated over multiple repetitions as described in @dml2018 [pp. 30-31]. This aggregation will be automatically executed if the number of repetitions `n_rep` is set to a value larger than 1. 
+
+
+The properties of the estimator are as follows. 
+
+\begin{theorem} \label{theorem1}
+There exist regularity conditions, such that the estimator $\tilde{\theta}_0$ concentrates in a $1/\sqrt{N}$-neighborhood of $\theta_0$ and the sampling error $\sqrt{N}(\tilde{\theta}_0 - \theta_0)$ is approximately normal
+\begin{align*}
+\sqrt{N}(\tilde{\theta}_0 - \theta_0) \leadsto N(0, \sigma^2),
+\end{align*}
+with mean zero and variance given by 
+\begin{align*}
+\begin{aligned}\sigma^2 &= J_0^{-2} \mathbb{E}(\psi^2(W; \theta_0, \eta_0)),\\J_0 &= \mathbb{E}(\psi_a(W; \eta_0)).\end{aligned}
+\end{align*}
+
+\end{theorem}
+
+\begin{framed}
+\textbf{Algorithm 3: Variance Estimation and Confidence Intervals.}
+\begin{enumerate}
+\item[(1)] \textbf{Inputs:} Use the inputs and outputs from Algorithm 1 (DML1) or Algorithm 2 (DML2). 
+
+\item[(2)] \textbf{Variance and confidence intervals:} Estimate the asymptotic variance of $\tilde{\theta}_0$ by 
+\begin{align*}
+\begin{aligned}\hat{\sigma}^2 &= \hat{J}_0^{-2} \frac{1}{N} \sum_{k=1}^{K} \sum_{i \in I_k} \big[\psi(W_i; \tilde{\theta}_0, \hat{\eta}_{0,k})\big]^2,\\\hat{J}_0 &= \frac{1}{N} \sum_{k=1}^{K} \sum_{i \in I_k} \psi_a(W_i; \hat{\eta}_{0,k})\end{aligned}
+\end{align*}
+and form an approximate $(1-\alpha)$ confidence interval as 
+\begin{align*}
+[\tilde{\theta}_0 \pm \Phi^{-1}(1 - \alpha/2) \hat{\sigma} / \sqrt{N}].
+\end{align*}
+\item[(3)] \textbf{Output:} Output variance estimator and the confidence interval. 
+\end{enumerate}
+\end{framed}
+
+\begin{theorem}
+Under the same regularity condition, this interval contains $\theta_0$ for approximately $(1-\alpha)\times 100$ percent of data realizations
+\begin{align*}
+\mathbb{P}\left(\theta_0 \in \left[ \tilde{\theta}_0  \pm \Phi^{-1} (1-\alpha/2) \hat{\sigma}/\sqrt{N} \right] \right) \rightarrow (1-\alpha).
+\end{align*}
+\end{theorem}
+
+> **Remark 4** (*Brief literature overview on double machine learning*)
+The presented double machine learning method was developed in @dml2018. The idea of using property (16) to construct estimators and inference procedures that are robust to small mistakes in nuisance parameters can be traced back to @neyman and has been used explicitly or implicitly in the literature on debiased sparsity-based inference [@belloni2011; @belloni2014pivotal; @javanmard2014hypothesis; @van2014asymptotically; @zhang2014; @chernozhukov2015valid] as well as (implicitly) in the classical semi-parametric learning theory with low-dimensional $X$ [@bickel1993efficient; @newey1994asymptotic; @van2000asymptotic; @van2011targeted]. These references also explain that if we use scores $\psi$ that are not Neyman-orthogonal in high dimensional settings, then the resulting estimators of $\theta_0$ are not $1/\sqrt{N}$ consistent and are generally heavily biased.
+
+
+> **Remark 5** (*Literature on sample splitting*). 
+Sample splitting has been used in the traditional semiparametric estimation literature to establish good properties of semiparametric estimators under weak conditions [@schick1986; @van2000asymptotic]. In sparse learning problems with high-dimensional $X$, sample splitting was employed in @belloni2012sparse. There and here, the use of sample splitting results in weak conditions on the estimators of nuisance parameters, translating into weak assumptions on sparsity in the case of sparsity-based learning.
+
+> **Remark 6** (*Debiased machine learning*). The presented approach builds upon and generalizes the approach of @belloni2011, @zhang2014, @javanmard2014hypothesis, @javanmard2014hypothesis, @javanmard2018debiasing, @restud, @bck2014, @buhlmann2015high, which considered estimation of the special case (\ref{plr1})-(\ref{plr2}) using lasso without cross-fitting. This generalization, by relying upon cross-fitting, opens up the use of a much broader collection of machine learning methods and, in the case the lasso is used to estimate the nuisance functions, allows relaxation of sparsity conditions. All of these approaches can be seen as “debiasing” the estimation of the main parameter by constructing, implicitly or explicitly, score functions that satisfy the exact or approximate Neyman orthogonality.
+
+
+\subsection{Methods for Simultaneous Inference} \label{simultaneousinf}
+
+In addition to estimation of target causal parameters, standard errors, and confidence intervals, the package `DoubleML` provides methods to perform valid simultaneous inference based on a multiplier bootstrap procedure introduced in @cck2013 and @cck2014 and suggested in high-dimensional linear regression models in @bck2014. Accordingly, it is possible to (i) construct simultaneous confidence bands for a potentially large number of causal parameters and (ii) adjust $p$-values in a test of multiple hypotheses based on the inferential procedure introduced above. 
+
+We consider a causal PLR with $p_1$ causal parameters of interest $\theta_{0,1}, \ldots, \theta_{0,p_1}$ associated with the treatment variables $D_1, \ldots, D_{p_1}$. The parameter of interest $\theta_{0,j}$ with $j=1, \ldots, p_1$ solves a corresponding moment condition 
+\begin{align} \label{multiplecoefs}
+\mathbb{E}\left[\psi_j(W;\theta_{0,j}, \eta_{0,j}) \right]=0,
+\end{align}
+as for example considered in @zestim. To perform inference in a setting with multiple target coefficients $\theta_{0,j}$, the double machine learning procedure implemented in `DoubleML` iterates over the target variables of interest. During estimation of the coefficient $\theta_{0,j}$, i.e., estimating the effect of treatment $D_j$ on $Y$, the remaining treatment variables enter the nuisance terms by default. 
+
+\begin{framed}
+\textbf{Algorithm 4: Multiplier bootstrap.}
+\begin{enumerate}
+\item[(1)] \textbf{Inputs:} Use the inputs and outputs from Algorithm 1 (DML1) or Algorithm 2 (DML2) and  Algorithm 3 (Variance estimation) resulting in estimates $\tilde{\theta}_{0,1}, \ldots, \tilde{\theta}_{0,p_1}$, and standard errors $\hat{\sigma}_1, \ldots \hat{\sigma}_{p_1}$.
+
+\item[(2)] \textbf{Multiplier bootstrap:} Generate random weights $\xi_{i}^b$ for each bootstrap repetition $b=1, \ldots, B$ according to a normal (Gaussian) bootstrap, wild bootstrap or exponential bootstrap. Based on the estimated standard errors given by $\hat{\sigma}_j$ and $\hat{J}_{0,j} = \mathbb{E}_N(\psi_{a,j}(W; \eta_{0,j}))$, we obtain bootstrapped versions of the coefficients $\tilde\theta^{*,b}_j$ and bootstrapped $t$-statistics $t^{*,b}_j$ for $j=1, \ldots, p_1$
+\begin{align*}
+\begin{aligned}
+\theta^{*,b}_{j} &= \frac{1}{\sqrt{N} \hat{J}_{0,j}}\sum_{k=1}^{K} \sum_{i \in I_k} \xi_{i}^b \cdot \psi_j(W_i; \tilde{\theta}_{0,j}, \hat{\eta}_{0,j;k}),\\
+t^{*,b}_{j} &= \frac{1}{\sqrt{N} \hat{J}_{0,j} \hat{\sigma}_{j}} \sum_{k=1}^{K} \sum_{i \in I_k} \xi_{i}^b  \cdot \psi_j(W_i; \tilde{\theta}_{0,j}, \hat{\eta}_{0,j;k}).\end{aligned}
+\end{align*}
+
+\item[(3)] \textbf{Output: } Output bootstrapped coefficients and test statistics. 
+\end{enumerate}
+\end{framed}
+
+> **Remark 7** (*Computational efficiency*)
+The multiplier bootstrap procedure of @cck2013 and @cck2014 is computatioanally efficient because it does not require resampling and reestimation of the causal parameters. Instead, it is sufficient to introduce a random pertubation of the score $\psi$ and solve for $\theta_0$, accordingly. 
+
+To construct simultaneous $(1-\alpha)$-confidence bands, the multiplier bootstrap presented in Algorithm 4 can be used to obtain a constant $c_{1-\alpha}$ that will guarantee asymptotic $(1-\alpha$) coverage 
+\begin{align} \label{confband}
+\left[\tilde\theta_{0,j} \pm c_{1-\alpha} \cdot \hat\sigma_j/\sqrt{N} \right].
+\end{align}
+The constant $c_{1-\alpha}$ is obtained in two steps. 
+
+1. Calculate the maximum of the absolute values of the bootstrapped $t$-statistics, $t^{*,b}_j$ in every repetition $b$ with $b=1,\ldots,B$. 
+1. Use the $(1-\alpha)$-quantile of the $B$ maxima statistics from Step 1 as $c_{1-\alpha}$ and construct simultaneous confidence bands according to Equation (\ref{confband}). 
+
+Moreover, it is possible to derive an adjustment method for $p$-values obtained from a test of multiple hypotheses, including classical adjustments such as the Bonferroni correction as well as the Romano-Wolf stepdown procedure [@rw2005; @rw22005]. The latter is implemented according to the algorithm for adjustment of $p$-values as provided in @rw2016 and adapted to high-dimensional linear regression based on the lasso in @bach2018valid.     
+
+
+\section{Implementation Details} \label{implementationdetails}
+
+In this section, we briefly provide information on the implementation details such as the class structure, the data-backend and the use of machine learning methods. Section \ref{illustration} provides a demonstration of `DoubleML` in  real-data and simulation examples. More information on the implementation can be found in the DoubleML User Guide, that is available online^[https://docs.doubleml.org/stable/index.html]. All class methods are documented in the documentation of the corresponding class, which can be browsed online^[https://docs.doubleml.org/r/stable/] or, for example, by using the commands `help(DoubleML)`, `help(DoubleMLPLR)`, or `help(DoubleMLData)` in R.
+
+\subsection{Class Structure} \label{classstructure}
+
+The implementation of `DoubleML` for R is based on object orientation as enabled by the the `R6` package [@R6]. For an introduction to object orientation in R and the `R6` package, we refer to the vignettes of the `R6` package that are available online^[https://r6.r-lib.org/articles/], Chapter 2.1 of @mlr3book, and the chapters on object orientation in @advr. The structure of the classes are presented in Figure \ref{masterplan}. The abstract class `DoubleML` provides all methods for estimation and inference, for example the methods `fit()`, `bootstrap()`, `confint()`. All key components associated with estimation and inference are implemented in `DoubleML`, for example the sample splitting, the implementation of Algorithm 1 (DML1) and Algorithm 2 (DML2), the estimation of the causal parameters, and the computation of the scores $\psi(W;\theta, \eta)$. Only the model-specific properties and methods are allocated at the classes `DoubleMLPLR` (implementing the PLR), `DoubleMLPLIV` (PLIV), `DoubleMLIRM` (IRM), and `DoubleMLIIVM` (IIVM). For example, each of the models has one or several Neyman-orthogonal score functions that are implemented for the specific child classes. 
+
+\begin{figure}[t]
+\centering
+\includegraphics{figures/tikz/oop_R.pdf}
+\caption{Class structure of the DoubleML package for R.}
+\label{masterplan}
+\end{figure}
+
+<!-- ![OOP structure of the DoubleML package](figures/oop.pdf) -->
+
+\subsection{Data-Backend and Causal Model} \label{backend}
+
+The `DoubleMLData` class serves as the data-backend and implements the causal model of interest. The user is required to specify the roles of the variables in a data set at hand. Depending on the causal model considered, it is necessary to declare the dependent variable, the treatment variable(s), confounding variables(s), and, in the case of instrumental variable regression, one or multiple instruments. The data-backend can be initialized from a `data.table` [@datatable]. `DoubleML` provides  wrappers to initialize from `data.frame` and `matrix` objects, as well.
+
+
+\subsection{Learners, Parameters and Tuning}
+
+Generally, all learners provided by the packages `mlr3`, `mlr3learners` and `mlr3extralearners` can be used for estimation of the nuisance functions of the structural models presented above. An interactive list of supported learners is available at the `mlr3extralearners` website.\footnote{\url{https://mlr3extralearners.mlr-org.com/articles/learners/list_learners.html}.} 
+The `mlr3extralearners` package makes it possible to add new learners, as well. The performance of the double machine learning estimator $\tilde\theta_0$ will depend on the predictive quality of the used estimation method. Machine learning methods usually have several (hyper-)parameter that need to be adapted to a specific application. Tuning of  model parameters can be either performed externally or internally. The latter is implemented in the method `tune()` and is further illustrated in an example in Section \ref{internaltuning}. Both cases build on the functionalities provided by the package `mlr3tuning`. 
+
+
+\subsection{Modifications and Extensions}
+
+The flexible architecture of the `DoubleML` package allows users to modify the estimation procedure in many regards. Among others, users can provide customized sample splitting rules after initialization of the causal model via the method `set_sample_splitting()`. An example and the detailed requirements are provided in Section \ref{samplesplitting}. Moreover, it is possible to adjust the Neyman-orthogonal score function by externally providing a customized function via the `score` option during initialization of the causal model object. A short example is presented in Section \ref{scorefunction}. 
+
+
+\section{Estimation of Causal Parameters with \texttt{DoubleML}: Real-Data and Simulated Examples.} \label{illustration}
+
+In this section, we will first demonstrate the use of `DoubleML` in a real-data example, which is based on data from the Pennsylvania Reemployment Bonus experiment [@bilias2000]. This empirical example has been used in @dml2018, as well. The goal in the empirical example is to estimate the causal parameter in a partially linear and an interactive regression model. We further provide a short example is given on how to perform simultaneous inference with `DoubleML`. Finally, we present results from a short simulation study as a brief assessment of the finite-sample performance of the implemented estimators. 
+
+\subsection{Initialization of the Data-Backend}
+
+We begin our real-data example by downloading the Pennsylvania Reemployment Bonus data set. To do so, we use the call (a connection to the internet is required). 
+```{r, eval = TRUE, results = 'hide'}
+library(DoubleML)
+# Load data as data.table
+dt_bonus = fetch_bonus(return_type = "data.table")
+
+# output suppressed for the sake of brevity
+dt_bonus 
+```
+The data-backend `DoubleMLData` can be initialized from a `data.table` object by specifying the dependent variable $Y$ via a character in `y_col`, the treatment variable(s) $D$ in `d_cols`, and the confounders $X$ via `x_cols`. Moreover, in IV models, an instrument can be specified via `z_cols`. In the next step, we assign the roles to the variables in the data set: `y_col = 'inuidur1'` serves as outcome variable $Y$, the column `d_cols = 'tg'` serves as treatment variable $D$ and the columns `x_cols` specify the confounders.
+```{r, eval = TRUE}
+obj_dml_data_bonus = DoubleMLData$new(dt_bonus,
+                                      y_col = "inuidur1",
+                                      d_cols = "tg",
+                                      x_cols = c("female", "black", "othrace",
+                                                 "dep1", "dep2", "q2", "q3",
+                                                 "q4", "q5", "q6", "agelt35",
+                                                 "agegt54", "durable", "lusd",
+                                                 "husd"))
+
+# Print data backend: Lists main attributes and methods of a DoubleMLData object
+obj_dml_data_bonus
+```
+
+
+```{r}
+# Print data set (output suppressed)
+obj_dml_data_bonus$data
+```
+
+
+> **Remark 8** (*Interface for `data.frame` and `matrix`*)
+To initialize an instance of the class `DoubleMLData` from a `data.frame` or a collection of `matrix` objects, `DoubleML` provides the convenient wrappers `double_ml_data_from_data_frame()` and `double_ml_data_from_matrix()`. Examples can be found in the user guide and in the corresponding documentation.  
+
+
+\subsection{Initialization of the Causal Model} \label{initialization}
+
+To initialize a PLR model, we have to provide a learner for each nuisance part in the model in Equation (\ref{plr1})-(\ref{plr2}). In R, this is done by providing learners to the arguments `ml_m` for nuisance part $m$ and `ml_g` for nuisance part $g$. We can pass a learner as instantiated in `mlr3` and `mlr3learners`, for example a random forest as provided by the R package `ranger` [@ranger]. Previous installation of `ranger` is required. Moreover, we can specify the score (allowed choices for PLR are `"partialling out"` or `"IV-type"`) and the algorithm via the option `dml_procedure` (allowed choices `"dml1"` and `"dml2"`) . Optionally, it is possible to change the number of folds used for sample splitting through `n_folds` and the number of repetitions via `n_rep`, if the sample splitting and estimation procedure should be repeated. 
+```{r, eval = TRUE}
+set.seed(31415) # required for reproducability of sample split
+learner_g = lrn("regr.ranger", num.trees = 500,
+                min.node.size = 2, max.depth = 5)
+learner_m = lrn("regr.ranger", num.trees = 500,
+                min.node.size = 2, max.depth = 5)
+doubleml_bonus = DoubleMLPLR$new(obj_dml_data_bonus, 
+                                 ml_m = learner_m, 
+                                 ml_g = learner_g, 
+                                 score = "partialling out",
+                                 dml_procedure = "dml1",
+                                 n_folds = 5, 
+                                 n_rep = 1)
+doubleml_bonus
+```
+
+
+
+\subsection{Estimation of the Causal Parameter in a PLR Model} \label{estimplr}
+
+To perform estimation, call the `fit()` method. The output can be summarized using the method `summary()`. 
+```{r, eval = TRUE, message = FALSE}
+doubleml_bonus$fit()
+doubleml_bonus$summary()
+```
+Hence, we can reject the null hypothesis that $\theta_{0, tg}=0$ at the 5% significance level. The estimated coefficient and standard errors can be accessed via the attributes `coef` and `se` of the object `doubleml_bonus`. 
+```{r, eval = TRUE}
+doubleml_bonus$coef
+doubleml_bonus$se
+```
+
+After completed estimation, we can access the resulting score $\psi(W_i; \tilde{\theta}_0, \hat{\eta}_0)$ or the components $\psi_a(W_i;  \hat{\eta}_0)$ and $\psi_b(W_i; \hat{\eta}_0)$. The estimated score for the first 5 observations can be obtained via.
+```{r, eval = TRUE}
+# Array with dim = c(n_obs, n_rep, n_treat)
+# n_obs: number of observations in the data
+# n_rep: number of repetitions (sample splitting)
+# n_treat: number of treatment variables
+doubleml_bonus$psi[1:5, 1, 1] 
+```
+Similarly, the components of the score $\psi_a(W_i; \hat{\eta}_0)$ and $\psi_b(W_i; \hat{\eta}_0)$ are available as fields.
+```{r, eval = TRUE}
+doubleml_bonus$psi_a[1:5, 1, 1] 
+doubleml_bonus$psi_b[1:5, 1, 1] 
+```
+To construct a $(1-\alpha)$ confidence interval, we use the `confint()` method. 
+```{r, eval = TRUE}
+doubleml_bonus$confint(level = 0.95)
+```
+
+
+\subsection{Estimation of the Causal Parameter in an IRM Model} \label{estimirm}
+
+The treatment variable $D$ in the Pennsylvania Reemployment Bonus example is binary. Accordingly, it is possible to estimate an IRM model. Since the IRM requires estimation of the propensity score $\mathbb{P}(D|X)$, we have to specify a classifier for the nuisance part $m_0$.
+
+```{r, eval = TRUE, results = 'hide'}
+# Classifier for propensity score
+learner_classif_m = lrn("classif.ranger", num.trees = 500,
+                        min.node.size = 2, max.depth = 5)
+
+doubleml_irm_bonus = DoubleMLIRM$new(obj_dml_data_bonus, 
+                                     ml_m = learner_classif_m, 
+                                     ml_g = learner_g, 
+                                     score = "ATE",
+                                     dml_procedure = "dml1",
+                                     n_folds = 5, 
+                                     n_rep = 1)
+# output suppressed
+doubleml_irm_bonus
+```
+
+
+
+
+To perform estimation, call the `fit()` method. The output can be summarized using the method `summary()`. 
+```{r, eval = TRUE, message = FALSE}
+doubleml_irm_bonus$fit()
+doubleml_irm_bonus$summary()
+```
+The estimated coefficient is very similar to the estimate of the PLR model and our conclusions remain unchanged. 
+
+\subsection{Simultaneous Inference in a Simulated Data Example} \label{siminf_example}
+
+We consider a simulated example of a PLR model to illustrate the use of methods for simultaneous inference. First, we will generate a sparse linear model with only three variables having a non-zero effect on the dependent variable.
+```{r, eval = TRUE}
+set.seed(3141)
+n_obs = 500
+n_vars = 100
+theta = rep(3, 3)
+
+# generate matrix-like objects and use the corresponding wrapper
+X = matrix(stats::rnorm(n_obs * n_vars), nrow = n_obs, ncol = n_vars)
+y = X[, 1:3, drop = FALSE] %*% theta  + stats::rnorm(n_obs)
+df = data.frame(y, X)
+```
+We use the wrapper `double_ml_data_from_data_frame()` to specify a data-backend that assigns the first 10 columns of $X$ as treatment variables and declares the remaining columns as confounders.
+```{r, eval = TRUE, results = 'hide'}
+doubleml_data = double_ml_data_from_data_frame(df,
+                                               y_col = "y",
+                                               d_cols = c("X1", "X2", "X3", 
+                                                          "X4", "X5", "X6", 
+                                                          "X7", "X8", "X9",
+                                                          "X10"))
+# suppress output
+doubleml_data
+```
+A sparse setting suggests the use of the lasso learner. Here, we use the lasso estimator with cross-validated choice of the penalty parameter $\lambda$ as provided in the `glmnet` package for R [@glmnet]. 
+```{r, eval = TRUE, message = FALSE}
+# output messages during fitting are suppressed
+ml_g = lrn("regr.cv_glmnet", s = "lambda.min")
+ml_m  = lrn("regr.cv_glmnet", s = "lambda.min")
+doubleml_plr = DoubleMLPLR$new(doubleml_data, ml_g, ml_m)
+
+doubleml_plr$fit()
+doubleml_plr$summary()
+```
+The multiplier bootstrap procedure can be executed using the `bootstrap()` method where the option `method` specifies the choice of the random pertubations and `n_rep_boot` the number of bootstrap repetitions.
+```{r, eval = TRUE}
+doubleml_plr$bootstrap(method = "normal", n_rep_boot = 1000)
+```
+The resulting bootstrapped coefficients and $t$-statistics are available via the fields `boot_coef` and `boot_t_stat`. To construct a simultaneous confidence interval, we set the option `joint = TRUE` when calling the `confint()` method. 
+```{r, eval = TRUE}
+doubleml_plr$confint(joint = TRUE)
+```
+
+The correction of the $p$-values of a joint hypotheses test on the considered causal parameters is implemented in the method `p_adjust()`. By default, the adjustment procedure specified in the option `method` is the Romano-Wolf stepdown procedure.
+```{r, eval = TRUE}
+doubleml_plr$p_adjust(method = "romano-wolf")
+```
+Alternatively, the correction methods provided in the `stats` function `p.adjust` can be applied, for example the Bonferroni, Bonferroni-Holm, or Benjamini-Hochberg correction. For example a Bonferroni correction could be performed by specifying `method = "bonferroni"`.
+```{r, eval = TRUE}
+doubleml_plr$p_adjust(method = "bonferroni")
+```
+
+
+
+\subsection{Learners, Parameters and Tuning} \label{learners}
+
+The performance of the final double machine learning estimator depends on the predictive performance of the underlying ML method. First, we briefly show how externally tuned parameters can be passed to the learners in  `DoubleML`. Second, it is demonstrated how the parameter tuning can be done internally by `DoubleML`. 
+
+\subsubsection{External Tuning and Parameter Passing} \label{externaltuning}
+
+Section 3 of the mlr3book [@mlr3book] provides a step-by-step introduction to the powerful tuning functionalities of the `mlr3tuning` package. Accordingly, it is possible to manually reconstruct the `mlr3` regression and classification problems, which are internally handled in  `DoubleML`, and to perform parameter tuning accordingly. One advantage of this procedure is that it allows users to fully exploit the powerful benchmarking and tuning tools of `mlr3`  and `mlr3tuning`. 
+
+Consider the sparse regression example from above. We will briefly consider a setting where we explicitly set the parameter $\lambda$ for a `glmnet` estimator rather than using the interal cross-validated choice with `cv_glmnet`. 
+
+Suppose for simplicity, some external tuning procedure resulted in an optimal value of $\lambda=0.1$ for nuisance part $m$ and $\lambda=0.09$ for nuisance part $g$ for the first treatment variable and $\lambda=0.095$ and $\lambda=0.085$ for the second variable, respectively. After initialization of the model object, we can set the parameter values using the method `set_ml_nuisance_params()`. 
+```{r, eval = TRUE, message = FALSE}
+# output messages during fitting are suppressed
+ml_g = lrn("regr.glmnet")
+ml_m  = lrn("regr.glmnet")
+doubleml_plr = DoubleMLPLR$new(doubleml_data, ml_g, ml_m)
+```
+To set the values, we have to specify the treatment variable and the nuisance part. If no values are set, the default values are used.
+```{r, eval = TRUE}
+# Note that variable names are overwritten by wrapper for matrix interface
+doubleml_plr$set_ml_nuisance_params("ml_m", "X1",
+                                    param = list("lambda" = 0.1))
+doubleml_plr$set_ml_nuisance_params("ml_g", "X1",
+                                    param = list("lambda" = 0.09))
+doubleml_plr$set_ml_nuisance_params("ml_m", "X2",
+                                    param = list("lambda" = 0.095))
+doubleml_plr$set_ml_nuisance_params("ml_g", "X2",
+                                    param = list("lambda" = 0.085))
+```
+All externally specified parameters can be retrieved from the field `params`. 
+```{r}
+# output omitted for the sake of brevity
+str(doubleml_plr$params)
+```
+
+```{r, include = FALSE, eval = TRUE}
+# output omitted for the sake of brevity, available in the Appendix
+params_external_tuning = doubleml_plr$params
+```
+
+```{r, eval = TRUE, message = FALSE}
+doubleml_plr$fit()
+doubleml_plr$summary()
+```
+
+\subsubsection{Internal Tuning and Parameter Passing} \label{internaltuning}
+
+An alternative to external tuning and parameter provisioning is to perform the tuning internally. The advantage of this approach is that users do not have to specify the underlying prediction problems manually. Instead, `DoubleML` uses the underlying data-backend to ensure that the machine learning methods are tuned for the specific model under consideration and, hence, to possibly avoid mistakes. We initialize our structural model object with the learner. At this stage, we do not specify any parameters.  
+```{r, eval = TRUE}
+# load required packages for tuning
+library(paradox)
+library(mlr3tuning)
+# set logger to omit messages during tuning and fitting
+lgr::get_logger("mlr3")$set_threshold("warn")
+lgr::get_logger("bbotk")$set_threshold("warn")
+
+set.seed(1234)
+ml_g = lrn("regr.glmnet")
+ml_m = lrn("regr.glmnet")
+doubleml_plr = DoubleMLPLR$new(doubleml_data, ml_g, ml_m)
+
+```
+
+To perform parameter tuning, we provide a grid of values used for evaluation for each of the nuisance parts. To set up a grid of values, we specify a named list with names corresponding to the learner names of the nuisance part (see method `learner_names()`). The elements in the list are objects of the class `ParamSet` of the `paradox` package [@paradox]. 
+```{r, eval = TRUE}
+par_grids = list(
+  "ml_g" = ParamSet$new(list(
+    ParamDbl$new("lambda", lower = 0.05, upper = 0.1))),
+  "ml_m" =  ParamSet$new(list(
+    ParamDbl$new("lambda", lower = 0.05, upper = 0.1))))
+```
+The hyperparameter tuning is performed according to options passed through a named list `tune_settings`. The entries in the list specify options during parameter tuning with `mlr3tuning`:
+
+
+* `terminator` is a `bbotk::Terminator` object passed to `mlr3tuning` that manages the budget to solve the tuning problem.
+
+* `algorithm` is an object of class `mlr3tuning::Tuner` and specifies the tuning algorithm. Alternatively, algorithm can be a `character()` that is used as an argument in the wrapper `mlr3tuning` call `tnr(algorithm)`. The `Tuner` class in `mlr3tuning` supports grid search, random search, generalized simulated annealing and non-linear optimization.
+
+* `rsmp_tune` is an object of class `resampling` object that specifies the resampling method for evaluation, for example `rsmp("cv", folds = 5)` implements 5-fold cross-validation. `rsmp("holdout", ratio = 0.8)` implements an evaluation based on a hold-out sample that contains 20 percent of the observations. By default, 5-fold cross-validation is performed.
+
+* `measure` is a named list containing the measures used for tuning of the nuisance components. The names of the entries must match the learner names (see method `learner_names()`). The entries in the list must either be objects of class `Measure` or keys passed to `msr()`. If `measure` is not provided by the user, the mean squared error is used for regression models and the classification error for binary outcomes, by default.
+
+
+In the next code chunk, the value of the parameter $\lambda$ is tuned via grid search in the range 0.05 to 0.1 at a resolution of 11.^[The resulting grid has 11 equally spaced values ranging from a minimum value of 0.05 to a maximum value of 0.1. Type `generate_design_grid(par_grids$ml_g, resolution = 11)` to access the grid for nuisance part `ml_g`.] To evaluate the predictive performance in both nuisance parts, the cross-validated mean squared error is used.
+```{r, eval = TRUE}
+# Provide tune settings
+tune_settings = list(terminator = trm("evals", n_evals = 100),
+                     algorithm = tnr("grid_search", resolution = 11),
+                     rsmp_tune = rsmp("cv", folds = 5),
+                     measure = list("ml_g" = msr("regr.mse"),
+                                    "ml_m" = msr("regr.mse")))
+```
+With these parameters we can run the tuning by calling the `tune` method for `DoubleML` objects. 
+```{r, eval = TRUE,  results = 'hide', message = FALSE}
+# execution might take around 50 seconds
+# Tune
+doubleml_plr$tune(param_set = par_grids, tune_settings = tune_settings)
+
+# output omitted for the sake of brevity, available in the Appendix
+
+# acces tuning results for target variable "X1"
+doubleml_plr$tuning_res$X1
+
+# tuned parameters
+str(doubleml_plr$params)
+```
+
+```{r, include = FALSE, eval = TRUE}
+params_internal_tuning = doubleml_plr$params
+```
+
+```{r, eval = TRUE, message = FALSE}
+# estimate model and summary
+doubleml_plr$fit()
+doubleml_plr$summary()
+```
+
+By default, the parameter tuning is performed on the whole sample, for example in the case of $K_{tune}$-fold cross-validation, the entire sample is split into $K_{tune}$ folds for evaluation of the cross-validated error. Alternatively, each of the $K$ folds used in the cross-fitting procedure could be split up into $K_{tune}$ subfolds that are then used for evaluation of the candidate models. As a result, the choice of the tuned parameters will be fold-specific. To perform fold-specific tuning, users can set the option `tune_on_folds = TRUE` when calling the method `tune()`. 
+
+\subsection{Specifications and Modifications of Double Machine Learning}
+
+The flexible architecture of the `DoubleML` package allows users to modify the estimation procedure in many regards. We will shortly present two examples on how users can adjust the double machine learning framework to their needs in terms of the sample splitting procedure and the score function.
+
+\subsubsection{Sample Splitting} \label{samplesplitting}
+
+By default, `DoubleML` performs cross-fitting as presented in Algorithms 1 and 2. Alternatively, all implemented models allow a partition to be provided externally via the method `set_sample_splitting()`. Note that by setting `draw_sample_splitting = FALSE` one can prevent that a partition is drawn during initialization of the model object. The following calls are equivalent. In the first sample code, we use the standard interface and draw the sample-splitting with $K=4$ folds during initialization of the `DoubleMLPLR` object.
+
+```{r, message = FALSE, eval = TRUE}
+# First generate some data, ml learners and a data-backend
+learner = lrn("regr.ranger", num.trees = 100, mtry = 20,
+              min.node.size = 2, max.depth = 5)
+ml_g = learner
+ml_m = learner
+data = make_plr_CCDDHNR2018(alpha = 0.5, n_obs = 100,
+                            return_type = "data.table")
+doubleml_data = DoubleMLData$new(data,
+                                 y_col = "y",
+                                 d_cols = "d")
+```
+
+
+```{r, eval = TRUE, message = FALSE}
+set.seed(314)
+doubleml_plr_internal = DoubleMLPLR$new(doubleml_data, ml_g, ml_m, n_folds = 4)
+doubleml_plr_internal$fit()
+doubleml_plr_internal$summary()
+```
+
+In the second sample code, we manually specify a sampling scheme using the `mlr3::Resampling` class. Alternatively, users can provide a nested list that has the following structure: 
+
+* The length of the outer list  must match with the desired number of repetitions of the sample-splitting, i.e., `n_rep`. 
+* The inner list is a named list of length 2 specifying the `test_ids` and `train_ids`. The named entries `test_ids` and `train_ids` are lists of the same length. 
+    + `train_ids` is a list of length `n_folds` that specifies the indices of the observations used for model fitting in each fold. 
+    + `test_ids` is a list of length `n_folds` that specifies the indices of the observations used for calculation of the score in each fold.
+```{r, eval = TRUE, message = FALSE}
+doubleml_plr_external = DoubleMLPLR$new(doubleml_data, ml_g, ml_m,
+                                        draw_sample_splitting = FALSE)
+
+set.seed(314)
+# set up a task and cross-validation resampling scheme in mlr3
+my_task = Task$new("help task", "regr", data)
+my_sampling = rsmp("cv", folds = 4)$instantiate(my_task)
+
+train_ids = lapply(1:4, function(x) my_sampling$train_set(x))
+test_ids = lapply(1:4, function(x) my_sampling$test_set(x))
+smpls = list(list(train_ids = train_ids, test_ids = test_ids))
+
+# Structure of the specified sampling scheme 
+str(smpls)
+
+# Fit model
+doubleml_plr_external$set_sample_splitting(smpls)
+doubleml_plr_external$fit()
+doubleml_plr_external$summary()
+```
+
+Setting the option `apply_cross_fitting = FALSE` at the instantiation of the causal model allows double machine learning being performed without cross-fitting. It results in randomly splitting the sample into two parts. The first half of the data is used for the estimation of the nuisance models with the machine learning methods and the second half for estimating the causal parameter, i.e., solution of the score. Note that cross-fitting performs well empirically and is recommended to remove bias induced by overfitting. Moreover, cross-fitting allows to exploit full efficiency: Every fold is used once for training the ML methods and once for estimation of the score [@dml2018, pp. 6]. A short example on the efficiency gains associated with cross-fitting is provided in Section \ref{role_crossfit}.
+
+\subsubsection{Score Function} \label{scorefunction}
+
+Users may want to adjust the score function $\psi(W;\theta_0, \eta_0)$, for example, to adjust the DML estimators in terms of a re-weighting. An alternative to the choices provided in  `DoubleML` is to pass a function via the argument `score` during initialization of the model object. The following examples are equivalent. In the first example, we use the score option `"partialling out"` for the PLR model whereas in the second case, we explicitly provide a function that implements the same score. The arguments used in the function refer to the internal objects that implement the theoretical quantities in Equation (\ref{scorepartiallingout}).
+
+```{r, eval = TRUE, message = FALSE}
+# use score "partialling out"
+set.seed(314)
+doubleml_plr_partout = DoubleMLPLR$new(doubleml_data, ml_g, ml_m,
+                                       score = "partialling out")
+doubleml_plr_partout$fit()
+doubleml_plr_partout$summary()
+```
+
+We define the function that implements the same score and specify the argument `score` accordingly. The function must return a named list with entries `psi_a` and `psi_b` to pass values for computation of the score. 
+```{r, eval = TRUE}
+# Here: 
+# y: dependent variable
+# d: treatment variable
+# g_hat: predicted values from regression of Y on X's
+# m_hat: predicted values from regression of D on X's
+# smpls: sample split under consideration, can be ignored in this example
+score_manual = function(y, d, g_hat, m_hat, smpls) {
+  resid_y = y - g_hat
+  resid_d = d - m_hat
+  
+  psi_a = -1 * resid_d * resid_d
+  psi_b = resid_d * resid_y
+  psis = list(psi_a = psi_a, psi_b = psi_b)
+  return(psis)
+}
+```
+
+```{r, eval = TRUE, message = FALSE}
+set.seed(314)
+doubleml_plr_manual = DoubleMLPLR$new(doubleml_data, ml_g, ml_m,
+                                      score = score_manual)
+doubleml_plr_manual$fit()
+doubleml_plr_manual$summary()
+```
+
+
+\subsection{A Short Simulation Study} \label{simstudy}
+
+To illustrate the validity of the implemented double machine learning estimators, we perform a brief simulation study. 
+
+\begin{figure}[t]
+\begin{center}
+%TODO
+\includegraphics{figures/nocrossfit_doubleml_n500_p20.pdf}
+\caption{Illustration of efficiency gains due to the use of cross-fitting. }
+\label{crossfit}
+\end{center}
+\footnotesize
+\textbf{Left panel:} Histogram of the centered dml estimator without cross-fitting, $\tilde{\theta}^{nocf}_0-\theta_0$.  $\hat{\theta}^{nocf}_0$ is the double machine learning estimator obtained from a sample split into two folds. One fold is used for estimation of the nuisance parameters and the second fold is used for evaluation of the score function and estimation. The empirical distribution can be well-approximated by a normal distribution as indicated by the red curve. \textbf{Right panel:} Histogram of the centered dml estimator with cross-fitting, $\tilde{\theta}_0-\theta_0$. The estimator is obtained from a split into two folds and application of Algorithm 2 (DML2). In both cases, the estimators are based on estimation of $g_0$ and $m_0$ with random forests and an orthogonal score function provided in Equation (\ref{scorepartiallingout}). Moreover, exactly the same data sets and exactly the same partitions are used for sample splitting. The empirical distribution of the estimator that is based on cross-fitting exhibits a more pronounced concentration around zero, which reflects the smaller standard errors. 
+\end{figure}
+
+
+\subsubsection{The Role of Cross-Fitting} \label{role_crossfit}
+
+As mentioned in Section \ref{samplesplitting} the use of the cross-fitting Algorithms 1 (DML1) and 2 (DML2) makes it possible to use sample splitting and exploit full efficiency at the same time. To illustrate the superior performance due to cross-fitting, we compare the double machine learning estimator with and without a cross-fitting procedure in the simulation setting that was presented in \ref{basicideaplr}. Figure \ref{crossfit} illustrates that efficiency gains can be achieved if the role of the random partitions is swapped in the estimation procedure. Using cross-fitting makes it possible to obtain smaller standard errors for the DML estimator: The empirical distribution of the double machine learning estimator that is based on the cross-fitting Algorithm 2 (DML2) exhibits a more pronounced concentration around zero. 
+
+\subsubsection{Inference on a Structural Parameter in Key Causal Models}
+
+
+We provide simulation results for double machine learning estimators in the presented key causal models in Figure \ref{sim_results}. In a replication of the simulation example in Section \ref{basicideaplr}, we show that the confidence intervals for the DML estimator in the partially linear regression model achieves an empirical coverage close to the specified level of $1-\alpha=0.95$. The estimator is, again, based on a random forest learner. The corresponding results are presented in the top-left panel of Figure \ref{sim_results}. 
+
+In a simulated example of a PLIV model, the DML confidence interval that is based on a lasso learner (`regr.cv_glmnet` of `mlr3`) achieves a coverage of 94.4%. The underlying data generating process is based on a setting considered in @CHSAERpp with one instrumental variable. Moreover for simulations of the IRM model, we make use of a DGP of @belloni2017program. The DGP for the IIVM is inspired by a simulation run in @latest. We present the formal DGPs in the Appendix. To perform estimation of the nuisance parts in the interactive models, we employ the regression and classification predictors `regr.cv_glmnet` and `classif.cv_glmnet` as provided by the `mlr3` package. In all cases, we employ the cross-validated `lambda.min` choice of the penalty parameter with five folds, in other words, that $\lambda$ value that minimizes the cross-validated mean squared error. Figure \ref{sim_results} shows that the empirical distribution of the centered estimators as obtained in finite sample settings is relatively well-approximated by a normal distribution. In all models the empirical coverage that is achieved by the constructed confidence bands is close to the nominal level.
+
+\begin{figure}[t]
+\begin{center}
+  \includegraphics{figures/simulations_doubleml_key_models.pdf}
+  \caption{Histogram of double machine learning estimators in key causal models.}
+  \label{sim_results}
+\end{center}
+\footnotesize
+The figure shows the histograms of the realizations of the DML estimators in the PLR (top left), PLIV (top right), IRM (bottom left), and IIVM (bottom right) as obtained in $R=500$ independent repetitions. Additional information on the data generating processes and implemented estimators are presented in the main text and the Appendix. 
+\end{figure}
+
+
+
+\subsubsection{Simultaneous Inference} \label{simulationsiminf}
+
+To verify the finite-sample performance of the implemented methods for simultaneous inference, we perform a small simulation study in a regression setup which is similar as the one used in @bach2018valid. We would like to perform valid simultaneous inference on the coefficients $\theta$ in the regression model
+\begin{align} \label{regsim}
+y_i = \beta_0 + d_i'\theta + \varepsilon_i , \quad \quad i = 1,\ldots, n,
+\end{align}
+with $n=1000$ and $p_1=42$ regressors. The errors $\varepsilon_i$ are normally distributed with $\varepsilon_i \sim N(0,\sigma^2)$ and variance $\sigma^2=3$. The regressors $d_i$ are generated by a joint normal distribution $d_i \sim N(\mu, \Sigma)$ with $\mu = \mathbf{0}$ and $\Sigma_{j,k} = 0.5^{|j-k|}$. The model is sparse in that only the first $s=12$ regressors have a non-zero effect on outcome $y_i$. The $p_1$ coefficients $\theta_1, \ldots, \theta_{p_1}$ are generated as
+\begin{align*}
+\theta_j= \min\left\{\frac{\theta^{\max}}{j^{a}}, \theta^{\min} \right\},
+\end{align*}
+for $j=1, \ldots, s$ with $\theta^{\max}=9$, $\theta^{min}=0.75$, and $a=0.99$. All other coefficients have values exactly equal to $0$. 
+Estimation of the nuisance components has been performed by using the lasso as provided by `regr.cv_glmnet` in `mlr3`. 
+
+We report the empirical coverage as achieved by a joint $(1-\alpha)$-confidence interval for all $p_1=42$ coefficients and the realized family-wise error rate of the implemented $p$-value adjustments in $R=500$ repetitions in Table \ref{siminf_simul}. The finite sample performance of the Romano-Wolf stepdown procedure that is based on the multiplier bootstrap as well as the classical Bonferroni and Bonferroni-Holm correction are evaluated. Table \ref{siminf_simul} shows that all methods achieve an empirical FWER close to the specified level of $\alpha = 0.1$. In all cases, the double machine learning estimators reject all 12 false null hypotheses in every repetition. 
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{l c c c c}
+\\ \hline  \hline \\[-1.8ex]
+ & CI & RW & Bonf & Holm  \\[0.9ex] \hline \\[-1.8ex]
+FWER & 0.09 & 0.11 & 0.09 & 0.10 \\ 
+Cor. Rejections & 12.00 & 12.00 & 12.00 & 12.00 \\ \hline 
+   \hline
+\end{tabular}
+\caption{Family-wise error rate and average number of correct rejections in a simulation example.} \label{siminf_simul}
+\end{center}
+\end{table}
+
+
+
+\section{Conclusion} \label{conclusion}
+
+In this paper, we provide an overview on the key ingredients and the major structure of the double/debiased machine learning framework as established in @dml2018 together with an overview on a collection of structural models. Moreover, we introduce the R package `DoubleML` that serves as an implementation of the double machine learning approach. A brief simulation study provides insights on the finite sample performance of the double machine learning estimator in the key causal models. 
+
+The structure of `DoubleML` is intended to be flexible with regard to the implemented structural models, the resampling scheme, the machine learning methods and the underlying algorithm, as well as the Neyman-orthogonal scores considered. By providing the R package `DoubleML` together with its Python twin [@DoubleMLpython], we hope to make double machine learning more accessible to users in practice. Finally, we would like to encourage users to add new structural models, scores and functionalities to the package. 
+
+
+________ 
+
+
+\section*{Acknowledgements}
+This work was funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – Project Number 431701914.
+
+\newpage 
+
+\section{Appendix}
+
+\subsection{Computation and Infrastructure} 
+
+The simulation study has been run on a x86_64-w64-mingw32/x64 (64-bit) (Windows 10 x64 (build 19041))  system  using  R version 3.6.3 (2020-02-29). The following packages have been used for estimation: 
+
+* `DoubleML`, version 0.1.2,
+* `data.table`, version 1.13.2,
+* `mlr3`, version 0.8.0, 
+* `mlr3tuning`, version 0.6.0,
+* `mlr3learners`, version 0.4.2,
+* `glmnet`, version 3.0.2,
+* `ranger`, version 0.12.1,
+* `paradox`, version 0.7.0 
+* `foreach`, version 1.5.1.
+
+\subsection{Suppressed Code Output}  \label{code}
+
+
+\textbf{Pennsylvania Reemployment Data, Section \ref{illustration}}
+
+```{r, eval = TRUE}
+library(DoubleML)
+# Load data as data.table
+dt_bonus = fetch_bonus(return_type = "data.table")
+dt_bonus
+```
+
+
+```{r, eval = TRUE, results = "hide"}
+obj_dml_data_bonus = DoubleMLData$new(dt_bonus,
+                                      y_col = "inuidur1",
+                                      d_cols = "tg",
+                                      x_cols = c("female", "black", "othrace",
+                                                 "dep1", "dep2", "q2", "q3",
+                                                 "q4", "q5", "q6", "agelt35",
+                                                 "agegt54", "durable", "lusd",
+                                                 "husd"))
+# Print data backend: Lists main attributes and methods of a DoubleMLData object
+obj_dml_data_bonus
+```
+
+
+```{r, eval = TRUE}
+# Print data set (output suppressed)
+obj_dml_data_bonus$data
+```
+
+
+```{r, eval = TRUE}
+learner_classif_m = lrn("classif.ranger", num.trees = 500,
+                        min.node.size = 2, max.depth = 5)
+
+doubleml_irm_bonus = DoubleMLIRM$new(obj_dml_data_bonus, 
+                                     ml_m = learner_classif_m, 
+                                     ml_g = learner_g, 
+                                     score = "ATE",
+                                     dml_procedure = "dml1",
+                                     n_folds = 5, 
+                                     n_rep = 1)
+# output suppressed
+doubleml_irm_bonus
+```
+
+\textbf{Data-backend with multiple treatment variables, Section \ref{siminf_example}}
+
+
+```{r, eval = TRUE}
+doubleml_data = double_ml_data_from_data_frame(df,
+                                               y_col = "y",
+                                               d_cols = c("X1", "X2", "X3", 
+                                                          "X4", "X5", "X6", 
+                                                          "X7", "X8", "X9",
+                                                          "X10"))
+
+# suppress output
+doubleml_data
+```
+
+
+\textbf{List of externally provided parameters, Section \ref{externaltuning}}
+
+```{r, include = TRUE, eval = FALSE, echo = TRUE}
+# Output: parameters after external tuning
+
+# tuned parameters
+str(doubleml_plr$params)
+```
+
+```{r, include = TRUE, eval = TRUE, echo = FALSE}
+str(params_external_tuning)
+```
+
+\textbf{List of internally tuned parameters, Section \ref{internaltuning}}
+
+```{r, include = TRUE, eval = FALSE, echo = TRUE}
+# Output: parameters after internal tuning
+
+# acces tuning results for target variable "X1"
+doubleml_plr$tuning_res$X1
+```
+
+```{r, include = TRUE, eval = TRUE, echo = FALSE}
+# acces tuning results for target variable "X1"
+doubleml_plr$tuning_res$X1
+```
+
+```{r, eval = FALSE}
+# tuned parameters
+str(doubleml_plr$params)
+```
+
+```{r, include = TRUE, eval = TRUE, echo = FALSE}
+str(params_internal_tuning)
+```
+
+\newpage 
+
+\subsection{Additional Data Generating Processes, Simulation Study}
+\textbf{Data generating process for PLIV simulation}
+
+The DGP is based on @CHSAERpp and defined as
+\begin{align}\begin{aligned}z_i &= \Pi x_i + \zeta_i,\\d_i &= x_i' \gamma + z_i' \delta + u_i,\\y_i &= \alpha d_i + x_i' \beta + \varepsilon_i,\end{aligned}\end{align}
+with
+\begin{align*}
+\left(\begin{matrix} \varepsilon_i \\ u_i \\ \zeta_i \\ x_i \end{matrix} \right) \sim \mathcal{N}\left(0, \left(\begin{matrix} 1 & 0.6 & 0 & 0 \\ 0.6 & 1 & 0 & 0 \\ 0 & 0 & 0.25 I_{p_n^z} & 0 \\ 0 & 0 & 0 & \Sigma \end{matrix} \right) \right)
+\end{align*}
+where $\Sigma$ is a $p^x_n \times p^x_n$ matrix with entries $\Sigma_{kj} = 0.5^{|k-j|}$ and $I_{p_n^z}$ is an identity matrix with dimension $p_n^z \times p_n^z$. $\beta=\gamma$ is a $p^x_n$-vector with entries $\beta=\frac{1}{j^2}$ and $\Pi = (I_{p_n^z}, 0_{p_n^z \times (p_n^x - p_n^z)})$. In the simulation example, we have one instrument, i.e., $p^z_n=1$ and $p^x_n=20$ regressors $x_i$. In the simulation study, data sets with
+$n = 500$ observations are generated in $R = 500$ independent repetitions.
+
+
+\textbf{Data generating process for IRM simulation}
+
+The DGP is based on a simulation study in @belloni2017program and defined as
+\begin{align}
+\begin{aligned}
+d_i &= 1\left\{ \frac{\exp(c_d x_i' \beta)}{1+\exp(c_d x_i' \beta)} > v_i \right\}, & &v_i \sim \mathcal{U}(0,1),\\
+y_i &= \theta d_i + c_y x_i' \beta d_i + \zeta_i, & &\zeta_i \sim \mathcal{N}(0,1),
+\end{aligned}
+\end{align}
+with covariates $x_i \sim \mathcal{N}(0, \Sigma)$ where $\Sigma$ is a matrix with entries $\Sigma_{kj} = 0.5^{|k-j|}$. $\beta$ is a $p_x$-dimensional vector with entries $\beta_j= \frac{1}{j^2}$ and the constants $c_y$ and $c_d$ are determined as
+\begin{align*}
+c_y = \sqrt{\frac{R_y^2}{(1-R_y^2) \beta' \Sigma \beta}}, \qquad c_d = \sqrt{\frac{(\pi^2 /3) R_d^2}{(1-R_d^2) \beta' \Sigma \beta}}.
+\end{align*}
+We set the values of $R_y=0.8$ and $R_d=0.8$ and consider a setting with $n=1000$ and $p=20$. Data
+generation and estimation have been performed in $R = 500$ independent replications.
+
+\textbf{Data generating process for IIVM simulation}
+
+The DGP is defined as
+\begin{align}
+\begin{aligned}d_i &= 1\left\lbrace \alpha_x Z + v_i > 0 \right\rbrace,\\y_i &= \theta d_i + x_i' \beta + u_i,
+\end{aligned}
+\end{align}
+with $Z\sim \text{Bernoulli}(0.5)$ and
+\begin{align*}
+\left(\begin{matrix} u_i \\ v_i \end{matrix} \right) \sim \mathcal{N}\left(0, \left(\begin{matrix} 1 & 0.3 \\ 0.3 & 1 \end{matrix} \right) \right).
+\end{align*}
+The covariates are drawn from a multivariate normal distribution with $x_i\sim \mathcal{N}(0, \Sigma)$ with entries of the matrix $\Sigma$ being $\Sigma_{kj} = 0.5^{|j-k|}$ and $\beta$ being a $p_x$-dimensional vector with $\beta_j=\frac{1}{\beta^2}$. The data generating process is inspired by a process used in a simulation in @latest. In the simulation study, data sets with $n = 1000$ observations and $p_x = 20$ confounding variables $x_i$ have been generated in $R = 500$ independent repetitions.
+
+
+
+\newpage
+
+
+# References
