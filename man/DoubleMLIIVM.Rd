@@ -103,8 +103,8 @@ Other DoubleML:
 \section{Super class}{
 \code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLIIVM}
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{subgroups}}{(named \code{list(2)}) \cr
 Named \code{list(2)} with options to adapt to cases with and without the

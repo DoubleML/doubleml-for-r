@@ -9,6 +9,36 @@
 \description{
 Abstract base class that can't be initialized.
 }
+\examples{
+
+## ------------------------------------------------
+## Method `DoubleML$set_sample_splitting`
+## ------------------------------------------------
+
+library(DoubleML)
+library(mlr3)
+set.seed(2)
+obj_dml_data = make_plr_CCDDHNR2018(n_obs=10)
+dml_plr_obj = DoubleMLPLR$new(obj_dml_data,
+                              lrn("regr.rpart"), lrn("regr.rpart"))
+
+# simple sample splitting with two folds and without cross-fitting
+smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5)),
+                  test_ids = list(c(6, 7, 8, 9, 10))))
+dml_plr_obj$set_sample_splitting(smpls)
+
+# sample splitting with two folds and cross-fitting but no repeated cross-fitting
+smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                  test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))))
+dml_plr_obj$set_sample_splitting(smpls)
+
+# sample splitting with two folds and repeated cross-fitting with n_rep = 2
+smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                  test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+             list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                  test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+dml_plr_obj$set_sample_splitting(smpls)
+}
 \seealso{
 Other DoubleML: 
 \code{\link{DoubleMLIIVM}},
@@ -17,8 +47,8 @@ Other DoubleML:
 \code{\link{DoubleMLPLR}}
 }
 \concept{DoubleML}
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{all_coef}}{(\code{matrix()}) \cr
 Estimates of the causal parameter(s) for the \code{n_rep} different sample
@@ -236,6 +266,36 @@ The entries in \code{train_ids} and \code{test_ids} must be partitions per fold
 \subsection{Returns}{
 self
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{library(DoubleML)
+library(mlr3)
+set.seed(2)
+obj_dml_data = make_plr_CCDDHNR2018(n_obs=10)
+dml_plr_obj = DoubleMLPLR$new(obj_dml_data,
+                              lrn("regr.rpart"), lrn("regr.rpart"))
+
+# simple sample splitting with two folds and without cross-fitting
+smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5)),
+                  test_ids = list(c(6, 7, 8, 9, 10))))
+dml_plr_obj$set_sample_splitting(smpls)
+
+# sample splitting with two folds and cross-fitting but no repeated cross-fitting
+smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                  test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))))
+dml_plr_obj$set_sample_splitting(smpls)
+
+# sample splitting with two folds and repeated cross-fitting with n_rep = 2
+smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+                  test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+             list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+                  test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+dml_plr_obj$set_sample_splitting(smpls)
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-tune"></a>}}

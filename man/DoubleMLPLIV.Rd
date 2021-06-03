@@ -79,8 +79,8 @@ Other DoubleML:
 \section{Super class}{
 \code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLPLIV}
 }
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{partialX}}{(\code{logical(1)})  \cr
 Indicates whether covariates \eqn{X} should be partialled out.}
