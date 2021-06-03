@@ -33,6 +33,8 @@ navbar:
       menu:
         - text: Install DoubleML
           href: articles/install.html
+        - text: Introduction to Double Machine Learning
+          href: articles/Introduction_to_DoubleML.html
     news:
       text: Release Notes
       href: https://docs.doubleml.org/stable/release/release.html
