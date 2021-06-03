@@ -6,3 +6,5 @@
 ^README.Rmd
 ^\.github$
 ^codecov\.yml$
+^doc$
+^Meta$
