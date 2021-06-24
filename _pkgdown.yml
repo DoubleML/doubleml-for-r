@@ -63,6 +63,6 @@ reference:
       - make_plr_CCDDHNR2018
       - make_pliv_CHS2015
       - make_irm_data
+      - make_irm_binary_data
       - make_iivm_data
       - make_plr_turrell2018
-      - make_irm_binary_data
