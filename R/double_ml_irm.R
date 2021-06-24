@@ -77,15 +77,23 @@
 #'
 #' @export
 DoubleMLIRM = R6Class("DoubleMLIRM",
-  inherit = DoubleML, public = list(
+  inherit = DoubleML, 
+  active = list(
     #' @field trimming_rule (`character(1)`) \cr
     #' A `character(1)` specifying the trimming approach.
-    trimming_rule = NULL,
+    trimming_rule = function(value) {
+      if (missing(value)) return(private$trimming_rule_)
+      else stop("can't set field trimming_rule")
+    },
 
     #' @field trimming_threshold (`numeric(1)`) \cr
     #' The threshold used for timming.
-    trimming_threshold = NULL,
+    trimming_threshold = function(value) {
+      if (missing(value)) return(private$trimming_threshold_)
+      else stop("can't set field trimming_threshold")
+    }),
 
+  public = list(
     #' @description
     #' Creates a new instance of this R6 class.
     #'
@@ -177,21 +185,23 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
 
-      self$learner = list(
+      private$learner_ = list(
         "ml_g" = ml_g,
         "ml_m" = ml_m)
       private$initialize_ml_nuisance_params()
 
-      self$trimming_rule = trimming_rule
-      self$trimming_threshold = trimming_threshold
+      private$trimming_rule_ = trimming_rule
+      private$trimming_threshold_ = trimming_threshold
     }
   ),
   private = list(
+    trimming_rule_ = NULL,
+    trimming_threshold_ = NULL,
     n_nuisance = 2,
     initialize_ml_nuisance_params = function() {
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
-      self$params = list(
+      private$params_ = list(
         "ml_g0" = nuisance,
         "ml_g1" = nuisance,
         "ml_m" = nuisance)

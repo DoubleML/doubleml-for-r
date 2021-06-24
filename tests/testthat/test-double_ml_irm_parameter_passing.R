@@ -110,8 +110,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
     set.seed(3141)
     my_task = Task$new("help task", "regr", data_irm$df)
     my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
-    train_ids = list("train_ids" = my_sampling$train_set(1))
-    test_ids = list("test_ids" = my_sampling$test_set(1))
+    train_ids = list(my_sampling$train_set(1))
+    test_ids = list(my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
     irm_hat = dml_irm(data_irm$df,

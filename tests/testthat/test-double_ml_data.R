@@ -175,13 +175,13 @@ test_that("Unit tests for DoubleMLData", {
     D7_setd = D7_1d$clone()$set_data_model("d2")
 
     expect_error(double_ml_data_from_data_frame(data),
-      regexp = "Column indices y_col and d_cols not specified.")
+      regexp = "Assertion on 'y_col' failed: Must be of type 'character', not 'NULL'.")
 
-    expect_equal(D1$data, D4$data)
-    expect_equal(D2$data, D5$data)
-    expect_equal(D2_1X$data, D5_1X$data)
-    expect_equal(D2$data, D6$data)
-    expect_equal(D3$data, D7$data)
+    expect_equal(D1$data_model, D4$data_model)
+    expect_equal(D2$data_model, D5$data_model)
+    expect_equal(D2_1X$data_model, D5_1X$data_model)
+    expect_equal(D2$data_model, D6$data_model)
+    expect_equal(D3$data_model, D7$data_model)
     expect_identical(D3_1d$data_model, D7_1d$data_model)
     expect_identical(D3_setd_multd$data_model, D7_setd_multd$data_model)
     expect_identical(D3_setd$data_model, D7_setd$data_model)
@@ -196,17 +196,6 @@ test_that("Unit tests for DoubleMLData", {
     expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
 
     # Instantiate DoubleMLData
-    
-    # Failure, from data.frame
-    msg_df = "'data' is a data.frame, use 'double_ml_data_from_data_frame' call to instantiate DoubleMLData."
-    expect_error(
-      DoubleMLData$new(data,
-                       x_cols = X_cols1,
-                       y_col = y_indx,
-                       d_cols = d_indx,
-                       z_cols = z_indx),
-      regexp = msg_df)
-    
     data = data.table::data.table(data)
     data2 = data.table::data.table(data2)
     D8 = DoubleMLData$new(data,

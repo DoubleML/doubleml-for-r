@@ -1,0 +1,34 @@
+---
+title: "DoubleML - An Object-Oriented Implementation of Double Machine Learning in R"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{DoubleML - An Object-Oriented Implementation of Double Machine Learning in R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction 
+
+The R package `DoubleML` implements the double/debiased machine learning framework of Chernozhukov et al. (2018). It provides functionalities to estimate parameters in causal models based on machine learning methods. The double machine learning framework consist of three key ingredients: 
+
+* Neyman orthogonality, 
+* High-quality machine learning estimation and
+* Sample splitting.
+
+Estimation of nuisance components can be performed by various state-of-the-art machine learning methods that are available in the `mlr3` ecosystem (Lang et al., 2019). `DoubleML` makes it possible to perform inference in a variety of causal models, including partially linear and interactive regression models and their extensions to instrumental variable estimation. The object-oriented implementation of `DoubleML` enables a high flexibility for the model specification and makes it easily extendable. This paper serves as an introduction to the double machine learning framework and the R package `DoubleML`. In reproducible code examples with simulated and real data sets, we demonstrate how `DoubleML` users can perform valid inference based on machine learning methods. 
+
+# Long Package Vignette
+
+[A long version of this package vignette is available as a preprint via arxiv:2103.09603](https://arxiv.org/abs/2103.09603)
+
+
+
+# References: 
+
+Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2021), DoubleML - An Object-Oriented Implementation of Double Machine Learning in R, arXiv:[2103.09603](https://arxiv.org/abs/2103.09603).
+
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J. (2018), Double/debiased machine learning for treatment and structural parameters. The Econometrics Journal, 21: C1-C68, URL: <https://doi.org/10.1111/ectj.12097>.
+
+Lang, M., Binder, M., Richter, J., Schratz, P., Pfisterer, F., Coors, S., Au, Q., Casalicchio, G., Kotthoff, L. and Bischl, B. (2019), mlr3: A modern object-oriented machine learing framework in R. Journal of Open Source Software, <https://doi.org/10.21105/joss.01903>, URL:  https://mlr3.mlr-org.com/.
+

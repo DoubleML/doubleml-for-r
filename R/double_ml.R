@@ -8,115 +8,188 @@
 #'
 #' @family DoubleML
 DoubleML = R6Class("DoubleML",
-  public = list(
+    active = list(
     #' @field all_coef (`matrix()`) \cr
     #' Estimates of the causal parameter(s) for the `n_rep` different sample
     #' splits after calling `fit()`.
-    all_coef = NULL,
+    all_coef = function(value) {
+      if (missing(value)) return(private$all_coef_)
+      else stop("can't set field all_coef")
+    },
 
     #' @field all_dml1_coef (`array()`) \cr
     #' Estimates of the causal parameter(s) for the `n_rep` different sample
     #' splits after calling `fit()` with `dml_procedure = "dml1"`.
-    all_dml1_coef = NULL,
+    all_dml1_coef = function(value) {
+      if (missing(value)) return(private$all_dml1_coef_)
+      else stop("can't set field all_dml1_coef")
+    },
 
     #' @field all_se (`matrix()`) \cr
     #' Standard errors of the causal parameter(s) for the `n_rep` different
     #' sample splits after calling `fit()`.
-    all_se = NULL,
+    all_se = function(value) {
+      if (missing(value)) return(private$all_se_)
+      else stop("can't set field all_se")
+    },
 
     #' @field apply_cross_fitting (`logical(1)`) \cr
     #' Indicates whether cross-fitting should be applied. Default is `TRUE`.
-    apply_cross_fitting = NULL,
+    apply_cross_fitting = function(value) {
+      if (missing(value)) return(private$apply_cross_fitting_)
+      else stop("can't set field apply_cross_fitting")
+    },
 
     #' @field boot_coef (`matrix()`) \cr
     #' Bootstrapped coefficients for the causal parameter(s) after calling
     #' `fit()` and `bootstrap()`.
-    boot_coef = NULL,
+    boot_coef = function(value) {
+      if (missing(value)) return(private$boot_coef_)
+      else stop("can't set field boot_coef")
+    },
 
     #' @field boot_t_stat (`matrix()`) \cr
     #' Bootstrapped t-statistics for the causal parameter(s) after calling
     #' `fit()` and `bootstrap()`.
-    boot_t_stat = NULL,
+    boot_t_stat = function(value) {
+      if (missing(value)) return(private$boot_t_stat_)
+      else stop("can't set field boot_t_stat")
+    },
 
     #' @field coef (`numeric()`) \cr
     #' Estimates for the causal parameter(s) after calling `fit()`.
-    coef = NULL,
+    coef = function(value) {
+      if (missing(value)) return(private$coef_)
+      else stop("can't set field coef")
+    },
 
     #' @field data ([`data.table`][data.table::data.table()])\cr
     #' Data object.
-    data = NULL,
+    data = function(value) {
+      if (missing(value)) return(private$data_)
+      else stop("can't set field data")
+    },
 
     #' @field dml_procedure (`character(1)`) \cr
     #' A `character()` (`"dml1"` or `"dml2"`) specifying the double machine
     #' learning algorithm. Default is `"dml2"`.
-    dml_procedure = NULL,
+    dml_procedure = function(value) {
+      if (missing(value)) return(private$dml_procedure_)
+      else stop("can't set field dml_procedure")
+    },
 
     #' @field draw_sample_splitting (`logical(1)`) \cr
     #' Indicates whether the sample splitting should be drawn during
     #' initialization of the object. Default is `TRUE`.
-    draw_sample_splitting = NULL,
+    draw_sample_splitting = function(value) {
+      if (missing(value)) return(private$draw_sample_splitting_)
+      else stop("can't set field draw_sample_splitting")
+    },
 
     #' @field learner (named `list()`) \cr
     #' The machine learners for the nuisance functions.
-    learner = NULL,
+    learner = function(value) {
+      if (missing(value)) return(private$learner_)
+      else stop("can't set field learner")
+    },
 
     #' @field n_folds (`integer(1)`) \cr
     #' Number of folds. Default is `5`.
-    n_folds = NULL,
+    n_folds = function(value) {
+      if (missing(value)) return(private$n_folds_)
+      else stop("can't set field n_folds")
+    },
 
     #' @field n_rep (`integer(1)`) \cr
     #' Number of repetitions for the sample splitting. Default is `1`.
-    n_rep = NULL,
+    n_rep = function(value) {
+      if (missing(value)) return(private$n_rep_)
+      else stop("can't set field n_rep")
+    },
 
     #' @field params (named `list()`) \cr
     #' The hyperparameters of the learners.
-    params = NULL,
+    params = function(value) {
+      if (missing(value)) return(private$params_)
+      else stop("can't set field params")
+    },
 
     #' @field psi (`array()`) \cr
     #' Value of the score function
     #' \eqn{\psi(W;\theta, \eta)=\psi_a(W;\eta) \theta + \psi_b (W; \eta)}
     #' after calling `fit()`.
-    psi = NULL,
+    psi  = function(value) {
+      if (missing(value)) return(private$psi_)
+      else stop("can't set field psi")
+    },
 
     #' @field psi_a (`array()`) \cr
     #' Value of the score function component \eqn{\psi_a(W;\eta)} after
     #' calling `fit()`.
-    psi_a = NULL,
+    psi_a  = function(value) {
+      if (missing(value)) return(private$psi_a_)
+      else stop("can't set field psi_a")
+    },
 
     #' @field psi_b (`array()`) \cr
     #' Value of the score function component \eqn{\psi_b(W;\eta)} after
     #' calling `fit()`.
-    psi_b = NULL,
+    psi_b  = function(value) {
+      if (missing(value)) return(private$psi_b_)
+      else stop("can't set field psi_b")
+    },
 
     #' @field predictions (`array()`) \cr
     #' Predictions of the nuisance models after calling
     #' `fit(store_predictions=TRUE)`.
-    predictions = NULL,
+    predictions  = function(value) {
+      if (missing(value)) return(private$predictions_)
+      else stop("can't set field predictions")
+    },
 
     #' @field pval (`numeric()`) \cr
     #' p-values for the causal parameter(s) after calling `fit()`.
-    pval = NULL,
+    pval  = function(value) {
+      if (missing(value)) return(private$pval_)
+      else stop("can't set field pval")
+    },
 
     #' @field score (`character(1)`, `function()`) \cr
     #' A `character(1)` or `function()` specifying the score function.
-    score = NULL,
+    score  = function(value) {
+      if (missing(value)) return(private$score_)
+      else stop("can't set field score")
+    },
 
     #' @field se (`numeric()`) \cr
     #' Standard errors for the causal parameter(s) after calling `fit()`.
-    se = NULL,
+    se  = function(value) {
+      if (missing(value)) return(private$se_)
+      else stop("can't set field se")
+    },
 
     #' @field smpls (`list()`) \cr
     #' The partition used for cross-fitting.
-    smpls = NULL,
+    smpls  = function(value) {
+      if (missing(value)) return(private$smpls_)
+      else stop("can't set field smpls")
+    },
 
     #' @field t_stat (`numeric()`) \cr
     #' t-statistics for the causal parameter(s) after calling `fit()`.
-    t_stat = NULL,
+    t_stat  = function(value) {
+      if (missing(value)) return(private$t_stat_)
+      else stop("can't set field t_stat")
+    },
 
     #' @field tuning_res (named `list()`) \cr
     #' Results from hyperparameter tuning.
-    tuning_res = NULL,
+    tuning_res  = function(value) {
+      if (missing(value)) return(private$tuning_res_)
+      else stop("can't set field tuning_res")
+    }),
 
+    public = list(
     #' @description
     #' DoubleML is an abstract class that can't be initialized.
     initialize = function() {
@@ -163,20 +236,20 @@ DoubleML = R6Class("DoubleML",
         "No. folds: ", self$n_folds, "\n",
         "No. repeated sample splits: ", self$n_rep, "\n",
         "Apply cross-fitting: ", self$apply_cross_fitting, "\n")
-      res = cat(header, "\n",
-        "\n------------------ Data summary      ------------------\n",
-        data_info,
-        "\n------------------ Score & algorithm ------------------\n",
-        score_info,
-        "\n------------------ Machine learner   ------------------\n",
-        learner_info,
-        "\n------------------ Resampling        ------------------\n",
-        resampling_info,
-        "\n------------------ Fit summary       ------------------\n ",
-        sep = "")
+      cat(header, "\n",
+          "\n------------------ Data summary      ------------------\n",
+          data_info,
+          "\n------------------ Score & algorithm ------------------\n",
+          score_info,
+          "\n------------------ Machine learner   ------------------\n",
+          learner_info,
+          "\n------------------ Resampling        ------------------\n",
+          resampling_info,
+          "\n------------------ Fit summary       ------------------\n ",
+          sep = "")
       self$summary()
-
-      return(res)
+      
+      invisible(self)
     },
 
     #' @description
@@ -206,30 +279,28 @@ DoubleML = R6Class("DoubleML",
 
           # ml estimation of nuisance models and computation of psi elements
           res = private$ml_nuisance_and_score_elements(private$get__smpls())
-          private$set__psi_a(res$psi_a)
-          private$set__psi_b(res$psi_b)
+          private$psi_a_[, private$i_rep, private$i_treat] = res$psi_a
+          private$psi_b_[, private$i_rep, private$i_treat] = res$psi_b
           if (store_predictions) {
             private$store_predictions(res$preds)
           }
 
           # estimate the causal parameter
-          coef = private$est_causal_pars()
-          private$set__all_coef(coef)
+          private$all_coef_[private$i_treat, private$i_rep] = private$est_causal_pars()
           # compute score (depends on estimated causal parameter)
-          private$compute_score()
+          private$psi_[, private$i_rep, private$i_treat] = private$compute_score()
 
           # compute standard errors for causal parameter
-          se = private$se_causal_pars()
-          private$set__all_se(se)
+          private$all_se_[private$i_treat, private$i_rep] = private$se_causal_pars()
         }
       }
 
       private$agg_cross_fit()
 
-      self$t_stat = self$coef / self$se
-      self$pval = 2 * pnorm(-abs(self$t_stat))
-      names(self$coef) = names(self$se) = names(self$t_stat) =
-        names(self$pval) = self$data$d_cols
+      private$t_stat_ = self$coef / self$se
+      private$pval_ = 2 * pnorm(-abs(self$t_stat))
+      names(private$coef_) = names(private$se_) = names(private$t_stat_) =
+        names(private$pval_) = self$data$d_cols
 
       invisible(self)
     },
@@ -271,10 +342,10 @@ DoubleML = R6Class("DoubleML",
           private$i_treat = i_treat
 
           boot_res = private$compute_bootstrap(weights, n_rep_boot)
-          boot_coef = boot_res$boot_coef
-          boot_t_stat = boot_res$boot_t_stat
-          private$set__boot_coef(boot_coef)
-          private$set__boot_t_stat(boot_t_stat)
+          i_start = (private$i_rep - 1) * private$n_rep_boot + 1
+          i_end = private$i_rep * private$n_rep_boot
+          private$boot_coef_[private$i_treat, i_start:i_end] = boot_res$boot_coef
+          private$boot_t_stat_[private$i_treat, i_start:i_end] = boot_res$boot_t_stat
         }
       }
       invisible(self)
@@ -288,13 +359,6 @@ DoubleML = R6Class("DoubleML",
     #' @return self
     split_samples = function() {
       dummy_task = Task$new("dummy_resampling", "regr", self$data$data)
-
-      if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message(paste(
-          "apply_cross_fitting is set to FALSE.",
-          "Cross-fitting is not supported for n_folds = 1."))
-        self$apply_cross_fitting = FALSE
-      }
 
       if (self$apply_cross_fitting) {
 
@@ -316,23 +380,10 @@ DoubleML = R6Class("DoubleML",
             (i_repeat * self$n_folds)])
         })
       } else {
-        if (self$n_folds > 2) {
-          stop(paste(
-            "Estimation without cross-fitting not supported for",
-            "n_folds > 2."))
-        }
-
         if (self$n_folds == 2) {
-
-          if (self$n_rep != 1) {
-            stop(paste(
-              "Repeated sample splitting without cross-fitting not",
-              "implemented."))
-          }
-
           dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
-          train_ids = list("train_ids" = dummy_resampling_scheme$train_set(1))
-          test_ids = list("test_ids" = dummy_resampling_scheme$test_set(1))
+          train_ids = list(dummy_resampling_scheme$train_set(1))
+          test_ids = list(dummy_resampling_scheme$test_set(1))
 
           smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
@@ -355,7 +406,7 @@ DoubleML = R6Class("DoubleML",
           })
         }
       }
-      self$smpls = smpls
+      private$smpls_ = smpls
       invisible(self)
     },
     #' @description
@@ -372,35 +423,116 @@ DoubleML = R6Class("DoubleML",
     #' (length of `train_ids` and `test_ids` is set as `n_folds`).
     #'
     #' @return self
+    #' 
+    #' @examples
+    #' library(DoubleML)
+    #' library(mlr3)
+    #' set.seed(2)
+    #' obj_dml_data = make_plr_CCDDHNR2018(n_obs=10)
+    #' dml_plr_obj = DoubleMLPLR$new(obj_dml_data,
+    #'                               lrn("regr.rpart"), lrn("regr.rpart"))
+    #' 
+    #' # simple sample splitting with two folds and without cross-fitting
+    #' smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5)),
+    #'                   test_ids = list(c(6, 7, 8, 9, 10))))
+    #' dml_plr_obj$set_sample_splitting(smpls)
+    #' 
+    #' # sample splitting with two folds and cross-fitting but no repeated cross-fitting
+    #' smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+    #'                   test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))))
+    #' dml_plr_obj$set_sample_splitting(smpls)
+    #' 
+    #' # sample splitting with two folds and repeated cross-fitting with n_rep = 2
+    #' smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
+    #'                   test_ids = list(c(6, 7, 8, 9, 10), c(1, 2, 3, 4, 5))),
+    #'              list(train_ids = list(c(1, 3, 5, 7, 9), c(2, 4, 6, 8, 10)),
+    #'                   test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
+    #' dml_plr_obj$set_sample_splitting(smpls)
     set_sample_splitting = function(smpls) {
 
-      assert_list(smpls)
-      self$n_rep = length(smpls)
-      n_folds_each_train_smpl = vapply(
-        smpls, function(x) length(x$train_ids),
-        integer(1L))
-      n_folds_each_test_smpl = vapply(
-        smpls, function(x) length(x$test_ids),
-        integer(1L))
-
-      if (!all(n_folds_each_train_smpl == n_folds_each_test_smpl)) {
-        stop("Number of folds for train and test samples do not match.")
+      if (test_list(smpls, names = "unnamed")) {
+        lapply(smpls, function(x) check_smpl_split(x, self$data$n_obs))
+        
+        n_folds_each_train_smpl = vapply(
+          smpls, function(x) length(x$train_ids),
+          integer(1L))
+        n_folds_each_test_smpl = vapply(
+          smpls, function(x) length(x$test_ids),
+          integer(1L))
+        
+        if (!all(n_folds_each_train_smpl == n_folds_each_train_smpl[1])) {
+          stop("Different number of folds for repeated cross-fitting.")
+        }
+        
+        smpls_are_partitions = vapply(
+          smpls,
+          function(x) check_is_partition(x$test_ids, self$data$n_obs),
+          FUN.VALUE=TRUE)
+        
+        if (all(smpls_are_partitions)) {
+          if (length(smpls) == 1 &
+              n_folds_each_train_smpl[1] == 1 &
+              check_is_partition(smpls[[1]]$train_ids, self$data$n_obs)) {
+            private$n_rep_ = 1
+            private$n_folds_ = 1
+            private$apply_cross_fitting_ = FALSE
+            private$smpls_ = smpls
+          } else {
+            private$n_rep_ = length(smpls)
+            private$n_folds_ = n_folds_each_train_smpl[1]
+            private$apply_cross_fitting_ = TRUE
+            lapply(smpls,
+                   function(x) check_smpl_split(x, self$data$n_obs,
+                                                check_intersect = TRUE))
+            private$smpls_ = smpls
+          }
+        } else {
+          if (n_folds_each_train_smpl[1] != 1) {
+            stop(paste("Invalid partition provided.",
+                       "Tuples (train_ids, test_ids) for more than one fold",
+                       "provided that don't form a partition."))
+          }
+          if (length(smpls) != 1) {
+            stop(paste("Repeated sample splitting without cross-fitting not",
+                       "implemented."))
+          }
+          private$n_rep_ = length(smpls)
+          private$n_folds_ = 2
+          private$apply_cross_fitting_ = FALSE
+          lapply(smpls,
+                 function(x) check_smpl_split(x, self$data$n_obs,
+                                              check_intersect = TRUE))
+          private$smpls_ = smpls
+        }
+      } else {
+        check_smpl_split(smpls, self$data$n_obs)
+        private$n_rep_ = 1
+        n_folds = length(smpls$train_ids)
+        if (check_is_partition(smpls$test_ids, self$data$n_obs)) {
+          if (n_folds == 1 & check_is_partition(smpls$train_ids, self$data$n_obs)) {
+            private$n_folds_ = 1
+            private$apply_cross_fitting_ = FALSE
+            private$smpls_ = list(smpls)
+          } else {
+            private$n_folds_ = n_folds
+            private$apply_cross_fitting_ = TRUE
+            check_smpl_split(smpls, self$data$n_obs,
+                             check_intersect = TRUE)
+            private$smpls_ = list(smpls)
+          }
+        } else {
+          if (n_folds != 1) {
+            stop(paste("Invalid partition provided.",
+                       "Tuples (train_ids, test_ids) for more than one fold",
+                       "provided that don't form a partition."))
+          }
+          private$n_folds_ = 2
+          private$apply_cross_fitting_ = FALSE
+          check_smpl_split(smpls, self$data$n_obs,
+                           check_intersect = TRUE)
+          private$smpls_ = list(smpls)
+        }
       }
-
-      if (!all(n_folds_each_train_smpl == n_folds_each_train_smpl[1])) {
-        stop("Different number of folds for repeated cross-fitting.")
-      }
-
-      self$n_folds = n_folds_each_train_smpl[1]
-
-      if (self$n_folds == 1 & self$apply_cross_fitting) {
-        message(paste(
-          "apply_cross_fitting is set to FALSE.",
-          "Cross-fitting is not supported for n_folds = 1."))
-        self$apply_cross_fitting = FALSE
-      }
-
-      self$smpls = smpls
 
       private$initialize_arrays()
 
@@ -490,12 +622,12 @@ DoubleML = R6Class("DoubleML",
 
       if (tune_on_folds) {
         params_rep = vector("list", self$n_rep)
-        self$tuning_res = rep(list(params_rep), self$data$n_treat)
-        names(self$tuning_res) = self$data$d_cols
+        private$tuning_res_ = rep(list(params_rep), self$data$n_treat)
+        names(private$tuning_res_) = self$data$d_cols
         private$fold_specific_params = TRUE
       } else {
-        self$tuning_res = vector("list", self$data$n_treat)
-        names(self$tuning_res) = self$data$d_cols
+        private$tuning_res_ = vector("list", self$data$n_treat)
+        names(private$tuning_res_) = self$data$d_cols
       }
 
       for (i_treat in 1:self$data$n_treat) {
@@ -511,7 +643,7 @@ DoubleML = R6Class("DoubleML",
             param_tuning = private$ml_nuisance_tuning(
               private$get__smpls(),
               param_set, tune_settings, tune_on_folds)
-            self$tuning_res[[i_treat]][[i_rep]] = param_tuning
+            private$tuning_res_[[i_treat]][[i_rep]] = param_tuning
 
             for (nuisance_model in names(param_tuning)) {
               if (!is.null(param_tuning[[nuisance_model]][[1]])) {
@@ -530,7 +662,7 @@ DoubleML = R6Class("DoubleML",
           param_tuning = private$ml_nuisance_tuning(
             private$get__smpls(),
             param_set, tune_settings, tune_on_folds)
-          self$tuning_res[[i_treat]] = param_tuning
+          private$tuning_res_[[i_treat]] = param_tuning
 
           for (nuisance_model in self$params_names()) {
             if (!is.null(param_tuning[[nuisance_model]][[1]])) {
@@ -705,9 +837,9 @@ DoubleML = R6Class("DoubleML",
 
       if (!set_fold_specific) {
         if (private$fold_specific_params) {
-          self$params[[learner]][[treat_var]][[private$i_rep]] = params
+          private$params_[[learner]][[treat_var]][[private$i_rep]] = params
         } else {
-          self$params[[learner]][[treat_var]] = params
+          private$params_[[learner]][[treat_var]] = params
         }
       } else {
         if (length(params) != self$n_rep) {
@@ -718,7 +850,7 @@ DoubleML = R6Class("DoubleML",
         }
 
         private$fold_specific_params = set_fold_specific
-        self$params[[learner]][[treat_var]] = params
+        private$params_[[learner]][[treat_var]] = params
       }
     },
     #' @description
@@ -813,6 +945,30 @@ DoubleML = R6Class("DoubleML",
     }
   ),
   private = list(
+    all_coef_ = NULL,
+    all_dml1_coef_ = NULL,
+    all_se_ = NULL,
+    apply_cross_fitting_ = NULL,
+    boot_coef_ = NULL,
+    boot_t_stat_ = NULL,
+    coef_ = NULL,
+    data_ = NULL,
+    dml_procedure_ = NULL,
+    draw_sample_splitting_ = NULL,
+    learner_ = NULL,
+    n_folds_ = NULL,
+    n_rep_ = NULL,
+    params_ = NULL,
+    psi_ = NULL,
+    psi_a_ = NULL,
+    psi_b_ = NULL,
+    predictions_ = NULL,
+    pval_ = NULL,
+    score_ = NULL,
+    se_ = NULL,
+    smpls_ = NULL,
+    t_stat_ = NULL,
+    tuning_res_ = NULL,
     n_rep_boot = NULL,
     i_rep = NA,
     i_treat = NA,
@@ -829,11 +985,11 @@ DoubleML = R6Class("DoubleML",
       # check and pick up obj_dml_data
 
       assert_class(data, "DoubleMLData")
-      self$data = data
+      private$data_ = data
 
       # initialize learners and parameters which are set model specific
-      self$learner = NULL
-      self$params = NULL
+      private$learner_ = NULL
+      private$params_ = NULL
       # Set fold_specific_params = FALSE at instantiation
       private$fold_specific_params = FALSE
 
@@ -844,21 +1000,21 @@ DoubleML = R6Class("DoubleML",
       assert_logical(draw_sample_splitting, len = 1)
 
       # set resampling specifications
-      self$n_folds = n_folds
-      self$n_rep = n_rep
-      self$apply_cross_fitting = apply_cross_fitting
-      self$draw_sample_splitting = draw_sample_splitting
+      private$n_folds_ = n_folds
+      private$n_rep_ = n_rep
+      private$apply_cross_fitting_ = apply_cross_fitting
+      private$draw_sample_splitting_ = draw_sample_splitting
 
       # check and set dml_procedure and score
       assert_choice(dml_procedure, c("dml1", "dml2"))
-      self$dml_procedure = dml_procedure
-      self$score = score
+      private$dml_procedure_ = dml_procedure
+      private$score_ = score
 
       if (self$n_folds == 1 & self$apply_cross_fitting) {
         message(paste(
           "apply_cross_fitting is set to FALSE.",
           "Cross-fitting is not supported for n_folds = 1."))
-        self$apply_cross_fitting = FALSE
+        private$apply_cross_fitting_ = FALSE
       }
 
       if (!self$apply_cross_fitting) {
@@ -870,7 +1026,7 @@ DoubleML = R6Class("DoubleML",
         if (self$dml_procedure == "dml2") {
           # redirect to dml1 which works out-of-the-box; dml_procedure is of no
           # relevance without cross-fitting
-          self$dml_procedure = "dml1"
+          private$dml_procedure_ = "dml1"
         }
       }
 
@@ -878,7 +1034,7 @@ DoubleML = R6Class("DoubleML",
       if (self$draw_sample_splitting) {
         self$split_samples()
       } else {
-        self$smpls = NULL
+        private$smpls_ = NULL
       }
 
       # initialize arrays according to obj_dml_data and the resampling settings
@@ -1012,29 +1168,29 @@ DoubleML = R6Class("DoubleML",
     },
     initialize_arrays = function() {
 
-      self$psi = array(NA, dim = c(
+      private$psi_ = array(NA, dim = c(
         self$data$n_obs, self$n_rep,
         self$data$n_treat))
-      self$psi_a = array(NA, dim = c(
+      private$psi_a_ = array(NA, dim = c(
         self$data$n_obs, self$n_rep,
         self$data$n_treat))
-      self$psi_b = array(NA, dim = c(
+      private$psi_b_ = array(NA, dim = c(
         self$data$n_obs, self$n_rep,
         self$data$n_treat))
 
-      self$coef = array(NA, dim = c(self$data$n_treat))
-      self$se = array(NA, dim = c(self$data$n_treat))
+      private$coef_ = array(NA, dim = c(self$data$n_treat))
+      private$se_ = array(NA, dim = c(self$data$n_treat))
 
-      self$all_coef = array(NA, dim = c(self$data$n_treat, self$n_rep))
-      self$all_se = array(NA, dim = c(self$data$n_treat, self$n_rep))
+      private$all_coef_ = array(NA, dim = c(self$data$n_treat, self$n_rep))
+      private$all_se_ = array(NA, dim = c(self$data$n_treat, self$n_rep))
 
       if (self$dml_procedure == "dml1") {
         if (self$apply_cross_fitting) {
-          self$all_dml1_coef = array(NA, dim = c(
+          private$all_dml1_coef_ = array(NA, dim = c(
             self$data$n_treat, self$n_rep,
             self$n_folds))
         } else {
-          self$all_dml1_coef = array(NA, dim = c(
+          private$all_dml1_coef_ = array(NA, dim = c(
             self$data$n_treat, self$n_rep,
             1))
         }
@@ -1042,15 +1198,15 @@ DoubleML = R6Class("DoubleML",
     },
     initialize_boot_arrays = function(n_rep_boot) {
       private$n_rep_boot = n_rep_boot
-      self$boot_coef = array(NA, dim = c(
+      private$boot_coef_ = array(NA, dim = c(
         self$data$n_treat,
         n_rep_boot * self$n_rep))
-      self$boot_t_stat = array(NA, dim = c(
+      private$boot_t_stat_ = array(NA, dim = c(
         self$data$n_treat,
         n_rep_boot * self$n_rep))
     },
     initialize_predictions = function() {
-      self$predictions = sapply(self$params_names(),
+      private$predictions_ = sapply(self$params_names(),
         function(key) {
           array(NA, dim = c(
             self$data$n_obs, self$n_rep,
@@ -1061,7 +1217,7 @@ DoubleML = R6Class("DoubleML",
     store_predictions = function(preds) {
       for (learner in self$params_names()) {
         if (!is.null(preds[[learner]])) {
-          self$predictions[[learner]][
+          private$predictions_[[learner]][
             , private$i_rep,
             private$i_treat] = preds[[learner]]
         }
@@ -1074,38 +1230,10 @@ DoubleML = R6Class("DoubleML",
     # self._i_rep, the index of the cross-fitting sample.
     get__smpls = function() self$smpls[[private$i_rep]],
     get__psi_a = function() self$psi_a[, private$i_rep, private$i_treat],
-    set__psi_a = function(value) {
-      self$psi_a[, private$i_rep, private$i_treat] = value
-    },
     get__psi_b = function() self$psi_b[, private$i_rep, private$i_treat],
-    set__psi_b = function(value) {
-      self$psi_b[, private$i_rep, private$i_treat] = value
-    },
     get__psi = function() self$psi[, private$i_rep, private$i_treat],
-    set__psi = function(value) {
-      self$psi[, private$i_rep, private$i_treat] = value
-    },
     get__all_coef = function() self$all_coef[private$i_treat, private$i_rep],
-    set__all_dml1_coef = function(value) {
-      self$all_dml1_coef[private$i_treat, private$i_rep, ] = value
-    },
-    set__all_coef = function(value) {
-      self$all_coef[private$i_treat, private$i_rep] = value
-    },
     get__all_se = function() self$all_se[private$i_treat, private$i_rep],
-    set__all_se = function(value) {
-      self$all_se[private$i_treat, private$i_rep] = value
-    },
-    set__boot_coef = function(value) {
-      ind_start = (private$i_rep - 1) * private$n_rep_boot + 1
-      ind_end = private$i_rep * private$n_rep_boot
-      self$boot_coef[private$i_treat, ind_start:ind_end] = value
-    },
-    set__boot_t_stat = function(value) {
-      ind_start = (private$i_rep - 1) * private$n_rep_boot + 1
-      ind_end = private$i_rep * private$n_rep_boot
-      self$boot_t_stat[private$i_treat, ind_start:ind_end] = value
-    },
     est_causal_pars = function() {
       dml_procedure = self$dml_procedure
       n_folds = self$n_folds
@@ -1121,7 +1249,7 @@ DoubleML = R6Class("DoubleML",
           thetas[i_fold] = private$orth_est(inds = test_index)
         }
         coef = mean(thetas, na.rm = TRUE)
-        private$set__all_dml1_coef(thetas)
+        private$all_dml1_coef_[private$i_treat, private$i_rep, ] = thetas
       }
 
       else if (dml_procedure == "dml2") {
@@ -1145,7 +1273,7 @@ DoubleML = R6Class("DoubleML",
       # aggregate parameters from the repeated cross-fitting
       # don't use the getter (always for one treatment variable and one sample),
       # but the private variable
-      self$coef = apply(
+      private$coef_ = apply(
         self$all_coef, 1,
         function(x) median(x, na.rm = TRUE))
       if (self$apply_cross_fitting) {
@@ -1156,7 +1284,7 @@ DoubleML = R6Class("DoubleML",
         test_index = test_ids[[1]]
         n_obs = length(test_index)
       }
-      self$se = sqrt(apply(
+      private$se_ = sqrt(apply(
         n_obs * self$all_se^2 + (self$all_coef - self$coef)^2, 1,
         function(x) median(x, na.rm = TRUE))/n_obs)
 
@@ -1219,8 +1347,7 @@ DoubleML = R6Class("DoubleML",
     },
     compute_score = function() {
       psi = private$get__psi_a() * private$get__all_coef() + private$get__psi_b()
-      private$set__psi(psi)
-      invisible(self)
+      return(psi)
     }
   )
 )

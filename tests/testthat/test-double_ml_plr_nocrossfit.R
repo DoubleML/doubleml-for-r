@@ -34,8 +34,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     if (n_folds == 2) {
       my_task = Task$new("help task", "regr", df)
       my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
-      train_ids = list("train_ids" = my_sampling$train_set(1))
-      test_ids = list("test_ids" = my_sampling$test_set(1))
+      train_ids = list(my_sampling$train_set(1))
+      test_ids = list(my_sampling$test_set(1))
       
       smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     } else {
@@ -86,8 +86,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       # set up a task and cross-validation resampling scheme in mlr3
       my_task = Task$new("help task", "regr", df)
       my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
-      train_ids = list("train_ids" = my_sampling$train_set(1))
-      test_ids = list("test_ids" = my_sampling$test_set(1))
+      train_ids = list(my_sampling$train_set(1))
+      test_ids = list(my_sampling$test_set(1))
 
       smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 

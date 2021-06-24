@@ -11,7 +11,6 @@ double_ml_data_from_data_frame(
   y_col = NULL,
   d_cols = NULL,
   z_cols = NULL,
-  data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE
 )
 }
@@ -33,11 +32,6 @@ The treatment variable(s).}
 
 \item{z_cols}{(\code{NULL}, \code{character()}) \cr
 The instrumental variables. Default is \code{NULL}.}
-
-\item{data_class}{(\code{character(1)}) \cr
-Class of returned object. By default, an object of class \code{DoubleMLData} is
-returned. Setting \code{data_class = "data.table"} returns an object of class
-\code{data.table}.}
 
 \item{use_other_treat_as_covariate}{(\code{logical(1)}) \cr
 Indicates whether in the multiple-treatment case the other treatment

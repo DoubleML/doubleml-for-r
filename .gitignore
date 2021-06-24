@@ -34,3 +34,5 @@ DoubleML.Rproj
 # documentation files
 docs/
 docs
+doc
+inst/doc

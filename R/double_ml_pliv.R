@@ -69,15 +69,23 @@
 #' }
 #' @export
 DoubleMLPLIV = R6Class("DoubleMLPLIV",
-  inherit = DoubleML, public = list(
+  inherit = DoubleML,
+  active = list(
     #' @field partialX (`logical(1)`)  \cr
     #' Indicates whether covariates \eqn{X} should be partialled out.
-    partialX = NULL,
+    partialX = function(value) {
+      if (missing(value)) return(private$partialX_)
+      else stop("can't set field partialX")
+    },
 
     #' @field partialZ (`logical(1)`) \cr
     #' Indicates whether instruments \eqn{Z} should be partialled out.
-    partialZ = NULL,
-
+    partialZ = function(value) {
+      if (missing(value)) return(private$partialZ_)
+      else stop("can't set field partialZ")
+    }),
+  
+  public = list(
     #' @description
     #' Creates a new instance of this R6 class.
     #'
@@ -179,14 +187,14 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       private$check_score(self$score)
       assert_logical(partialX, len = 1)
       assert_logical(partialZ, len = 1)
-      self$partialX = partialX
-      self$partialZ = partialZ
+      private$partialX_ = partialX
+      private$partialZ_ = partialZ
 
       if (!self$partialX & self$partialZ) {
         ml_r = private$assert_learner(ml_r, "ml_r",
           Regr = TRUE,
           Classif = FALSE)
-        self$learner = list("ml_r" = ml_r)
+        private$learner_ = list("ml_r" = ml_r)
       } else {
         ml_g = private$assert_learner(ml_g, "ml_g",
           Regr = TRUE,
@@ -197,7 +205,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         ml_r = private$assert_learner(ml_r, "ml_r",
           Regr = TRUE,
           Classif = FALSE)
-        self$learner = list(
+        private$learner_ = list(
           "ml_g" = ml_g,
           "ml_m" = ml_m,
           "ml_r" = ml_r)
@@ -206,6 +214,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     }
   ),
   private = list(
+    partialX_ = NULL,
+    partialZ_ = NULL,
     n_nuisance = 3,
     i_instr = NULL,
     initialize_ml_nuisance_params = function() {
@@ -223,8 +233,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
 
-      self$params = rep(list(nuisance), length(valid_learner))
-      names(self$params) = valid_learner
+      private$params_ = rep(list(nuisance), length(valid_learner))
+      names(private$params_) = valid_learner
       invisible(self)
     },
     ml_nuisance_and_score_elements = function(smpls, ...) {
