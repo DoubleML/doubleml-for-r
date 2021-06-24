@@ -576,7 +576,6 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
       return(data)
     }
   }
-  return(data)
 }
 
 #' @title Generates data from a interactive regression (IRM) model.
