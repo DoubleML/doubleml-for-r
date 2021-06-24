@@ -27,6 +27,9 @@ The value of the intercept in the propensity score equation.}
 \item{alpha_0}{(\code{numeric(1)}) \cr
 The value of the intercept in the outcome regression equation.}
 
+\item{k}{(\code{numeric(1)}) \cr
+Constant used for multiplication of coefficients in propensity score.}
+
 \item{return_type}{(\code{character(1)}) \cr
 If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object.
 If \code{"data.frame"} returns a \code{data.frame()}.

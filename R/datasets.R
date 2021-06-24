@@ -838,9 +838,12 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 #'
 #' @param beta_0 (`numeric(1)`) \cr
 #' The value of the intercept in the propensity score equation.
-#'
+#' 
 #' @param alpha_0 (`numeric(1)`) \cr
 #' The value of the intercept in the outcome regression equation.
+#'
+#' @param k (`numeric(1)`) \cr
+#' Constant used for multiplication of coefficients in propensity score.
 #'
 #' @param return_type (`character(1)`) \cr
 #' If `"DoubleMLData"`, returns a `DoubleMLData` object.
