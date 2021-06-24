@@ -30,26 +30,26 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     set.seed(3141)
     plr_hat = dml_plr_multitreat(data_plr_multi,
-                                 y = "y", d = c("d1", "d2", "d3"),
-                                 n_folds = n_folds,
-                                 ml_g = learner_pars$ml_g$clone(),
-                                 ml_m = learner_pars$ml_m$clone(),
-                                 dml_procedure = dml_procedure, score = score)
+      y = "y", d = c("d1", "d2", "d3"),
+      n_folds = n_folds,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
     t = plr_hat$t
     pval = plr_hat$pval
-    #ci_ptwise = confint(plr_hat, joint = FALSE, level = 0.95)
+    # ci_ptwise = confint(plr_hat, joint = FALSE, level = 0.95)
 
     set.seed(3141)
     boot_theta = boot_plr_multitreat(plr_hat$thetas, plr_hat$ses,
-                                     data_plr_multi,
-                                     y = "y", d = c("d1", "d2", "d3"),
-                                     n_folds = n_folds, smpls = plr_hat$smpls,
-                                     all_preds= plr_hat$all_preds,
-                                     bootstrap = "normal", n_rep_boot = n_rep_boot,
-                                     score = score)$boot_coef
-    
+      data_plr_multi,
+      y = "y", d = c("d1", "d2", "d3"),
+      n_folds = n_folds, smpls = plr_hat$smpls,
+      all_preds = plr_hat$all_preds,
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      score = score)$boot_coef
+
     set.seed(3141)
     Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "d3", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_plr_multi,
@@ -85,7 +85,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     expect_equal(pval, pval_obj, tolerance = 1e-8)
 
     expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
-    #expect_equal(ci_ptwise, ci_ptwise_obj)
-    #expect_equal(ci_joint, ci_joint_obj)
+    # expect_equal(ci_ptwise, ci_ptwise_obj)
+    # expect_equal(ci_joint, ci_joint_obj)
   }
 )

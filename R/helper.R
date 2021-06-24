@@ -229,8 +229,9 @@ initiate_task = function(id, data, target, select_cols, learner_class) {
     task = TaskRegr$new(id = id, backend = data, target = target)
   } else if (learner_class == "LearnerClassif") {
     data[[target]] = factor(data[[target]])
-    assert_set_equal(levels(data[[target]]),
-                     c("0", "1"))
+    assert_set_equal(
+      levels(data[[target]]),
+      c("0", "1"))
     task = TaskClassif$new(
       id = id, backend = data, target = target,
       positive = "1")
@@ -350,24 +351,31 @@ check_is_partition = function(ind, n_obs) {
   }
 }
 
-check_smpl_split = function(smpl, n_obs, check_intersect=FALSE) {
+check_smpl_split = function(smpl, n_obs, check_intersect = FALSE) {
+
   assert_list(smpl, names = "named")
-  assert_set_equal(names(smpl), c('train_ids', 'test_ids'))
+  assert_set_equal(names(smpl), c("train_ids", "test_ids"))
   assert_list(smpl$train_ids, names = "unnamed")
   assert_list(smpl$test_ids, names = "unnamed")
   if (length(smpl$train_ids) != length(smpl$test_ids)) {
     stop("Number of folds for train and test samples do not match.")
   }
-  lapply(smpl$train_ids, function(train_ids)
-    assert_vector(train_ids, any.missing = FALSE, all.missing = FALSE,
-                  unique = TRUE, max.len = n_obs))
-  lapply(smpl$train_ids, function(train_ids)
-    assert_subset(train_ids, seq(n_obs)))
-  lapply(smpl$test_ids, function(test_ids)
-    assert_vector(test_ids, any.missing = FALSE, all.missing = FALSE,
-                  unique = TRUE, max.len = n_obs))
-  lapply(smpl$test_ids, function(test_ids)
-    assert_subset(test_ids, seq(n_obs)))
+  lapply(smpl$train_ids, function(train_ids) {
+    assert_vector(train_ids,
+      any.missing = FALSE, all.missing = FALSE,
+      unique = TRUE, max.len = n_obs)
+  })
+  lapply(smpl$train_ids, function(train_ids) {
+    assert_subset(train_ids, seq(n_obs))
+  })
+  lapply(smpl$test_ids, function(test_ids) {
+    assert_vector(test_ids,
+      any.missing = FALSE, all.missing = FALSE,
+      unique = TRUE, max.len = n_obs)
+  })
+  lapply(smpl$test_ids, function(test_ids) {
+    assert_subset(test_ids, seq(n_obs))
+  })
   if (check_intersect) {
     for (i_fold in seq(length(length(smpl$train_ids))))
     {
@@ -376,4 +384,3 @@ check_smpl_split = function(smpl, n_obs, check_intersect=FALSE) {
   }
   return(TRUE)
 }
-

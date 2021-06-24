@@ -77,20 +77,26 @@
 #'
 #' @export
 DoubleMLIRM = R6Class("DoubleMLIRM",
-  inherit = DoubleML, 
+  inherit = DoubleML,
   active = list(
     #' @field trimming_rule (`character(1)`) \cr
     #' A `character(1)` specifying the trimming approach.
     trimming_rule = function(value) {
-      if (missing(value)) return(private$trimming_rule_)
-      else stop("can't set field trimming_rule")
+      if (missing(value)) {
+        return(private$trimming_rule_)
+      } else {
+        stop("can't set field trimming_rule")
+      }
     },
 
     #' @field trimming_threshold (`numeric(1)`) \cr
     #' The threshold used for timming.
     trimming_threshold = function(value) {
-      if (missing(value)) return(private$trimming_threshold_)
-      else stop("can't set field trimming_threshold")
+      if (missing(value)) {
+        return(private$trimming_threshold_)
+      } else {
+        stop("can't set field trimming_threshold")
+      }
     }),
 
   public = list(
@@ -182,7 +188,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       private$learner_class = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
-      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
+      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
 
       private$learner_ = list(
@@ -381,7 +387,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         "needs to be specified as treatment variable.")
       if (one_treat) {
         binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
-                                       lower = 0, upper = 1)
+          lower = 0, upper = 1)
         if (!(one_treat & binary_treat)) {
           stop(err_msg)
         }

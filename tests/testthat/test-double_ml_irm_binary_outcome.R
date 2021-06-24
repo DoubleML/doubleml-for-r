@@ -11,7 +11,8 @@ if (on_cran) {
     dml_procedure = "dml1",
     score = "ATTE",
     trimming_threshold = 0,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
@@ -19,42 +20,47 @@ if (on_cran) {
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
     trimming_threshold = 0,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
   test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
-  .cases = test_cases, {
-    learner_pars = get_default_mlmethod_irm(learner)
+  .cases = test_cases,
+  {
+    learner_pars = get_default_mlmethod_irm_binary(learner)
     n_rep_boot = 498
 
     set.seed(3141)
-    irm_hat = dml_irm(data_irm$df,
+    irm_hat = dml_irm(data_irm_binary$df,
       y = "y", d = "d",
       n_folds = 5,
       ml_g = learner_pars$ml_g$clone(), ml_m = learner_pars$ml_m$clone(),
-      dml_procedure = dml_procedure, score = score)
+      dml_procedure = dml_procedure, score = score
+    )
     theta = irm_hat$coef
     se = irm_hat$se
 
     boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
-      data_irm$df,
+      data_irm_binary$df,
       y = "y", d = "d",
       n_folds = 5, smpls = irm_hat$smpls,
       all_preds = irm_hat$all_preds,
       score = score,
-      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+      bootstrap = "normal", n_rep_boot = n_rep_boot
+    )$boot_coef
 
 
     set.seed(3141)
     double_mlirm_obj = DoubleMLIRM$new(
-      data = data_irm$dml_data,
+      data = data_irm_binary$dml_data,
       n_folds = 5,
       ml_g = learner_pars$ml_g$clone(),
       ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     double_mlirm_obj$fit()
     theta_obj = double_mlirm_obj$coef

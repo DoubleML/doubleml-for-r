@@ -54,7 +54,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialX functional ini
     double_mlpliv_partX$fit()
     theta_partX = double_mlpliv_partX$coef
     se_partX = double_mlpliv_partX$se
-    
+
     expect_equal(theta_partX, theta_obj, tolerance = 1e-8)
     expect_equal(se_partX, se_obj, tolerance = 1e-8)
   }
@@ -66,18 +66,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialZ functional ini
     df = data_pliv$df
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
-                                             y_col = "y",
-                                             d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
+      y_col = "y",
+      d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
     # Partial out Z
     set.seed(3141)
     double_mlpliv_partZ = DoubleMLPLIV$new(data_ml,
-                                           n_folds = 5,
-                                           ml_g = NULL,
-                                           ml_m = NULL,
-                                           ml_r = learner_pars$ml_r$clone(),
-                                           dml_procedure = dml_procedure,
-                                           score = score,
-                                           partialX = FALSE, partialZ = TRUE)
+      n_folds = 5,
+      ml_g = NULL,
+      ml_m = NULL,
+      ml_r = learner_pars$ml_r$clone(),
+      dml_procedure = dml_procedure,
+      score = score,
+      partialX = FALSE, partialZ = TRUE)
 
     double_mlpliv_partZ$fit()
     theta_partZ = double_mlpliv_partZ$coef
@@ -93,7 +93,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialZ functional ini
     double_mlpliv_partZ_fun$fit()
     theta_partZ_fun = double_mlpliv_partZ_fun$coef
     se_partZ_fun = double_mlpliv_partZ_fun$se
-    
+
     expect_equal(theta_partZ, theta_partZ_fun, tolerance = 1e-8)
     expect_equal(se_partZ, se_partZ_fun, tolerance = 1e-8)
   }
@@ -105,23 +105,23 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialXZ functional in
     df = data_pliv$df
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
-                                             y_col = "y",
-                                             d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
+      y_col = "y",
+      d_cols = "d", x_cols = Xnames, z_cols = c("z", "z2"))
 
     set.seed(3141)
     double_mlpliv_partXZ = DoubleMLPLIV$new(data_ml,
-                                           n_folds = 5,
-                                           ml_g = learner_pars$ml_g$clone(),
-                                           ml_m = learner_pars$ml_m$clone(),
-                                           ml_r = learner_pars$ml_r$clone(),
-                                           dml_procedure = dml_procedure,
-                                           score = score,
-                                           partialX = TRUE, partialZ = TRUE)
-    
+      n_folds = 5,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
+      dml_procedure = dml_procedure,
+      score = score,
+      partialX = TRUE, partialZ = TRUE)
+
     double_mlpliv_partXZ$fit()
     theta_partXZ = double_mlpliv_partXZ$coef
     se_partXZ = double_mlpliv_partXZ$se
-    
+
     set.seed(3141)
     double_mlpliv_partXZ_fun = DoubleMLPLIV.partialXZ(data_ml,
       n_folds = 5,

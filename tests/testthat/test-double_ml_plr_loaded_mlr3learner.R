@@ -55,7 +55,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t = double_mlplr$t_stat
     pval = double_mlplr$pval
     ci = double_mlplr$confint(level = 0.95, joint = FALSE)
-    double_mlplr$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlplr$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta = double_mlplr$boot_coef
 
     set.seed(123)
@@ -74,7 +74,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t_loaded = double_mlplr_loaded$t_stat
     pval_loaded = double_mlplr_loaded$pval
     ci_loaded = double_mlplr_loaded$confint(level = 0.95, joint = FALSE)
-    double_mlplr$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlplr$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_loaded = double_mlplr$boot_coef
 
     set.seed(123)
@@ -104,7 +104,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     t_semiloaded = double_mlplr_semiloaded$t_stat
     pval_semiloaded = double_mlplr_semiloaded$pval
     ci_semiloaded = double_mlplr_semiloaded$confint(level = 0.95, joint = FALSE)
-    double_mlplr$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlplr$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_semiloaded = double_mlplr$boot_coef
 
     expect_equal(theta, theta_loaded, tolerance = 1e-8)
@@ -113,7 +113,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     expect_equal(pval, pval_loaded, tolerance = 1e-8)
     expect_equal(ci, ci_loaded, tolerance = 1e-8)
     expect_equal(as.vector(boot_theta), as.vector(boot_theta_loaded), tolerance = 1e-8)
-    
+
     expect_equal(theta_semiloaded, theta_loaded, tolerance = 1e-8)
     expect_equal(se_semiloaded, se_loaded, tolerance = 1e-8)
     expect_equal(t_semiloaded, t_loaded, tolerance = 1e-8)

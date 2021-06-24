@@ -73,7 +73,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm$fit()
     theta = double_mlirm$coef
     se = double_mlirm$se
-    double_mlirm$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlirm$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta = double_mlirm$boot_coef
 
 
@@ -90,9 +90,9 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     double_mlirm_loaded$fit()
     theta_loaded = double_mlirm_loaded$coef
     se_loaded = double_mlirm_loaded$se
-    double_mlirm_loaded$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlirm_loaded$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_loaded = double_mlirm_loaded$boot_coef
-    
+
     expect_equal(theta, theta_loaded, tolerance = 1e-8)
     expect_equal(se, se_loaded, tolerance = 1e-8)
     expect_equal(as.vector(boot_theta), as.vector(boot_theta_loaded), tolerance = 1e-8)

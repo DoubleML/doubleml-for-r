@@ -29,24 +29,24 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
 
     set.seed(3141)
     iivm_hat = dml_irmiv(data_iivm$df,
-                         y = "y", d = "d", z = "z",
-                         n_folds = 5,
-                         ml_g = learner_pars$ml_g$clone(),
-                         ml_m = learner_pars$ml_m$clone(),
-                         ml_r = learner_pars$ml_r$clone(),
-                         dml_procedure = dml_procedure, score = score,
-                         trimming_threshold = trimming_threshold)
+      y = "y", d = "d", z = "z",
+      n_folds = 5,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      ml_r = learner_pars$ml_r$clone(),
+      dml_procedure = dml_procedure, score = score,
+      trimming_threshold = trimming_threshold)
     theta = iivm_hat$coef
     se = iivm_hat$se
-    
+
     boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
-                                 data_iivm$df,
-                                 y = "y", d = "d", z = "z",
-                                 n_folds = 5, smpls = iivm_hat$smpls,
-                                 all_preds= iivm_hat$all_preds,
-                                 score = score,
-                                 bootstrap = "normal", n_rep_boot = n_rep_boot,
-                                 trimming_threshold = trimming_threshold)$boot_coef
+      data_iivm$df,
+      y = "y", d = "d", z = "z",
+      n_folds = 5, smpls = iivm_hat$smpls,
+      all_preds = iivm_hat$all_preds,
+      score = score,
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      trimming_threshold = trimming_threshold)$boot_coef
 
     set.seed(3141)
 
@@ -74,9 +74,9 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se_obj = double_mliivm_obj$se
 
     # bootstrap
-    double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mliivm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mliivm_obj$boot_coef
-    
+
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
     expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)

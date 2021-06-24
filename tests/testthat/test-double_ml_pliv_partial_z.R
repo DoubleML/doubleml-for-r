@@ -27,25 +27,25 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
     se = pliv_hat$se
 
     boot_theta = bootstrap_pliv_partial_z(pliv_hat$thetas, pliv_hat$ses,
-                                 data_pliv_partialZ$df,
-                                 y = "y", d = "d", z = paste0("Z", 1:dim_z),
-                                 n_folds = 5, smpls = pliv_hat$smpls,
-                                 all_preds= pliv_hat$all_preds,
-                                 bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
-    
+      data_pliv_partialZ$df,
+      y = "y", d = "d", z = paste0("Z", 1:dim_z),
+      n_folds = 5, smpls = pliv_hat$smpls,
+      all_preds = pliv_hat$all_preds,
+      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+
     set.seed(3141)
     double_mlpliv_obj = DoubleMLPLIV.partialZ(data_pliv_partialZ$dml_data,
-                                              ml_r = learner_pars$ml_r$clone(),
-                                              n_folds = 5,
-                                              score = score,
-                                              dml_procedure = dml_procedure)
+      ml_r = learner_pars$ml_r$clone(),
+      n_folds = 5,
+      score = score,
+      dml_procedure = dml_procedure)
 
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 
     # bootstrap
-    double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlpliv_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mlpliv_obj$boot_coef
 
     # at the moment the object result comes without a name
@@ -56,13 +56,16 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
 )
 
 test_that("Unit tests for PLIV.partialZ invalid score", {
-  msg = paste("Callable score not implemented for DoubleMLPLIV with",
-              "partialX=FALSE and partialZ=TRUE.")
+  msg = paste(
+    "Callable score not implemented for DoubleMLPLIV with",
+    "partialX=FALSE and partialZ=TRUE.")
   double_mlplr_obj <- DoubleMLPLIV.partialZ(
     data_pliv_partialZ$dml_data,
-    ml_r = mlr3::lrn('regr.rpart'),
-    score = function(x) return(mean(x)))
+    ml_r = mlr3::lrn("regr.rpart"),
+    score = function(x) {
+      return(mean(x))
+    })
   expect_error(double_mlplr_obj$fit(),
-               regexp = msg)
+    regexp = msg)
 }
 )

@@ -30,27 +30,27 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     if (g_learner == "regr.cv_glmnet") {
       ml_g = mlr3::lrn(g_learner)
       ml_m = mlr3::lrn(m_learner)
-      
+
       set.seed(3141)
       plr_hat = dml_plr(data_irm$df,
-                        y = "y", d = "d",
-                        n_folds = n_folds,
-                        ml_g = ml_g$clone(), ml_m = ml_m$clone(),
-                        dml_procedure = dml_procedure, score = score)
+        y = "y", d = "d",
+        n_folds = n_folds,
+        ml_g = ml_g$clone(), ml_m = ml_m$clone(),
+        dml_procedure = dml_procedure, score = score)
       theta = plr_hat$coef
       se = plr_hat$se
-      
+
       boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
-                                 data_irm$df,
-                                 y = "y", d = "d",
-                                 n_folds = n_folds, smpls = plr_hat$smpls,
-                                 all_preds= plr_hat$all_preds,
-                                 bootstrap = "normal", n_rep_boot = n_rep_boot,
-                                 score = score)$boot_coef
-      
+        data_irm$df,
+        y = "y", d = "d",
+        n_folds = n_folds, smpls = plr_hat$smpls,
+        all_preds = plr_hat$all_preds,
+        bootstrap = "normal", n_rep_boot = n_rep_boot,
+        score = score)$boot_coef
+
       t = plr_hat$t
       pval = plr_hat$pval
-      
+
       set.seed(3141)
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_irm$dml_data,
@@ -64,17 +64,17 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       se_obj = double_mlplr_obj$se
       t_obj = double_mlplr_obj$t_stat
       pval_obj = double_mlplr_obj$pval
-      #ci_obj = double_mlplr_obj$confint(level = 0.95, joint = FALSE)
-      
+      # ci_obj = double_mlplr_obj$confint(level = 0.95, joint = FALSE)
+
       # bootstrap
-      double_mlplr_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+      double_mlplr_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
       boot_theta_obj = double_mlplr_obj$boot_coef
-      
+
       expect_equal(theta, theta_obj, tolerance = 1e-8)
       expect_equal(se, se_obj, tolerance = 1e-8)
       expect_equal(t, t_obj, tolerance = 1e-8)
       expect_equal(pval, pval_obj, tolerance = 1e-8)
-      #expect_equal(ci, ci_obj, tolerance = 1e-8)
+      # expect_equal(ci, ci_obj, tolerance = 1e-8)
 
     } else if (g_learner == "classif.cv_glmnet") {
       msg = "Invalid learner provided for ml_g: must be of class 'LearnerRegr'"
@@ -85,37 +85,40 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score),
-        regexp = msg)
+      regexp = msg)
     }
   }
 )
 
 test_that("Unit tests for exception handling of PLR with classifier for ml_m:", {
   # Only binary outcome with values 0 and 1 is allowed when ml_m is a classifier
-  
+
   # Test with 0 and 2
   df = data_irm$df
-  df['d'] = df['d']*2
-  dml_data = double_ml_data_from_data_frame(df, y_col = 'y', d_cols = 'd')
-  double_mlplr_obj = DoubleMLPLR$new(data = dml_data,
-                                     ml_g = mlr3::lrn('regr.rpart'),
-                                     ml_m = mlr3::lrn('classif.rpart'))
-  msg = paste("Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
-              "Must be equal to set \\{'0','1'\\}, but is \\{'0','2'\\}.")
+  df["d"] = df["d"] * 2
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
+  double_mlplr_obj = DoubleMLPLR$new(
+    data = dml_data,
+    ml_g = mlr3::lrn("regr.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"))
+  msg = paste(
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
+    "Must be equal to set \\{'0','1'\\}, but is \\{'0','2'\\}.")
   expect_error(double_mlplr_obj$fit(),
-               regexp = msg)
-  
+    regexp = msg)
+
   # Test with 0.5 and 1
   df = data_irm$df
-  df['d'] = (df['d']+2)/2
-  dml_data = double_ml_data_from_data_frame(df, y_col = 'y', d_cols = 'd')
-  double_mlplr_obj = DoubleMLPLR$new(data = dml_data,
-                                     ml_g = mlr3::lrn('regr.rpart'),
-                                     ml_m = mlr3::lrn('classif.rpart'))
-  msg = paste("Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
-              "Must be equal to set \\{'0','1'\\}, but is \\{'1','1.5'\\}.")
+  df["d"] = (df["d"] + 2) / 2
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
+  double_mlplr_obj = DoubleMLPLR$new(
+    data = dml_data,
+    ml_g = mlr3::lrn("regr.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"))
+  msg = paste(
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
+    "Must be equal to set \\{'0','1'\\}, but is \\{'1','1.5'\\}.")
   expect_error(double_mlplr_obj$fit(),
-               regexp = msg)
-
-  }
+    regexp = msg)
+}
 )

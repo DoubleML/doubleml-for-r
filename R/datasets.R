@@ -84,14 +84,16 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
     data = data.frame(
       "net_tfa" = data$net_tfa,
       model.matrix(formula_x, data),
-      "p401" = data$p401, "e401" = data$e401)
+      "p401" = data$p401, "e401" = data$e401
+    )
     d_cols = "p401"
     z_cols = "e401"
   } else {
     # see https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K.R#L67
     data = data.frame(
       "net_tfa" = data$net_tfa, model.matrix(formula_x, data),
-      "e401" = data$e401)
+      "e401" = data$e401
+    )
     d_cols = "e401"
   }
   if (return_type == "data.frame") {
@@ -103,7 +105,8 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
     dt = as.data.table(data)
     data = DoubleMLData$new(dt,
       y_col = y_col, d_cols = d_cols, x_cols = x_cols,
-      z_cols = z_cols)
+      z_cols = z_cols
+    )
     return(data)
   }
 }
@@ -199,7 +202,9 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #'   x_cols = c(
 #'     "female", "black", "othrace", "dep1", "dep2",
 #'     "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54",
-#'     "durable", "lusd", "husd"))
+#'     "durable", "lusd", "husd"
+#'   )
+#' )
 #' obj_dml_data_bonus
 #' @export
 fetch_bonus = function(return_type = "DoubleMLData",
@@ -235,7 +240,8 @@ fetch_bonus = function(return_type = "DoubleMLData",
   }
   data = data.frame(
     "inuidur1" = data$inuidur1, model.matrix(formula_x, data),
-    "tg" = data$tg)
+    "tg" = data$tg
+  )
   if (return_type == "data.frame") {
     return(data)
   } else if (return_type == "data.table") {
@@ -315,7 +321,12 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(alpha, len = 1)
+
   cov_mat = toeplitz(0.7^(0:(dim_x - 1)))
   a_0 = 1
   a_1 = 0.25
@@ -404,6 +415,16 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @export
 make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
   return_type = "DoubleMLData", nu = 0, gamma = 1) {
+
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  assert_numeric(nu, len = 1)
+  assert_numeric(gamma, len = 1)
 
   b = 1 / (1:dim_x)
   sigma = genPositiveDefMat(dim_x)
@@ -497,7 +518,12 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
 
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_count(dim_z)
+  assert_numeric(alpha, len = 1)
   if (dim_x < dim_z) {
     stop("Dimension of X should be greater than dimension of Z.")
   }
@@ -545,13 +571,12 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
       data = DoubleMLData$new(dt,
         y_col = "y", d_cols = "d",
         x_cols = colnames(x),
-        z_cols = colnames(z))
+        z_cols = colnames(z)
+      )
       return(data)
     }
   }
-  return(data)
 }
-
 
 #' @title Generates data from a interactive regression (IRM) model.
 #'
@@ -610,7 +635,16 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
   # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723
   # (see supplement)
 
-  assert_choice(return_type, c("data.table", "matrix", "data.frame", "DoubleMLData"))
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  assert_numeric(R2_d, len = 1)
+  assert_numeric(R2_y, len = 1)
+
   v = runif(n_obs)
   zeta = rnorm(n_obs)
   cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
@@ -702,10 +736,16 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  assert_numeric(alpha_x, len = 1)
   xx = rmvnorm(
     n = n_obs, mean = rep(0, 2),
-    sigma = matrix(c(1, 0.3, 0.3, 1), ncol = 2, nrow = 2))
+    sigma = matrix(c(1, 0.3, 0.3, 1), ncol = 2, nrow = 2)
+  )
   u = xx[, 1]
   v = xx[, 2]
 
@@ -739,7 +779,135 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
       data = DoubleMLData$new(dt,
         y_col = "y", d_cols = "d",
         x_cols = colnames(x),
-        z_cols = "z")
+        z_cols = "z"
+      )
+      return(data)
+    }
+  }
+}
+
+#' @title Generates data from an interactive regression model with binary
+#' dependent variable used in Austin and Stuart (2017)
+#'
+#' @description
+#' Generates data from an interactive regression model with
+#' binary dependent outcome as considered in Austin and Stuart (2017).
+#'
+#' The data generating process is defined as
+#'
+#' \eqn{d_i = 1\left\lbrace \frac{\exp(x_i' \beta)}{1+\exp(x_i' \beta)}
+#' > v_i \right\rbrace,}
+#'
+#' \eqn{y_i = 1\left\lbrace \frac{\exp(x_i' \alpha)}{1+\exp(x_i' \alpha)}
+#' > u_i \right\rbrace,}
+#'
+#' with \eqn{v_i \sim \mathcal{U}(0,1)} and \eqn{u_i \sim \mathcal{U}(0,1)}.
+#'
+#' The values of the coefficients \eqn{\beta_j} in
+#' \eqn{\beta = (\beta_0, \beta_1, \ldots, \beta_{10})} with
+#' \eqn{j=1,\ldots,10} correspond to
+#' \eqn{\beta_j = \log(k \cdot \tilde{\beta}_j)} with a constant \eqn{k} and
+#' values
+#'
+#' \eqn{\tilde{\beta}=(1.05, 1.10, 1.20, 1.25, 1.50, 1.75, 2.00, 1.50, 1.25,
+#' 1.10).}
+#'
+#' The vector of coefficients \eqn{\alpha} is defined as
+#' \eqn{\alpha = (\alpha_0, \alpha_{treat}, \alpha_1, \ldots, \alpha_{10})}.
+#' The values of the coefficients \eqn{\alpha_j} with \eqn{j=1,\ldots,10}
+#' are set to
+#'
+#' \eqn{\alpha=(2.00, 1.75, 1.50, 1.25, 1.10, 1.05, 1.50, 1.75, 2.00, 1.25)}
+#'
+#' The covariates \eqn{x_1, \ldots, x_{10}} are independently drawn from a
+#' standard normal distribution, \eqn{x_{i,j} \sim \mathcal{N}(0, 1)}.
+#'
+#' The default values of the parameters are set to \eqn{\beta_0 = -1.5},
+#' \eqn{k=1}, \eqn{\alpha_0 = -1.75} and \eqn{\alpha_{treat} = \log(0.8)}.
+#'
+#' @references Austin, P. C., and Stuart, E. A. (2017). Estimating the effect of
+#' treatment on binary outcomes using full matching on the propensity score.
+#' Statistical Methods in Medical Research, 26(6), 2505–2525,
+#' \doi{10.1177/0962280215601134}.
+#'
+#' @param n_obs (`integer(1)`) \cr
+#' The number of observations to simulate.
+#'
+#' @param alpha_treat (`numeric(1)`) \cr
+#' The value of the causal parameter.
+#'
+#' @param beta_0 (`numeric(1)`) \cr
+#' The value of the intercept in the propensity score equation.
+#' 
+#' @param alpha_0 (`numeric(1)`) \cr
+#' The value of the intercept in the outcome regression equation.
+#'
+#' @param k (`numeric(1)`) \cr
+#' Constant used for multiplication of coefficients in propensity score.
+#'
+#' @param return_type (`character(1)`) \cr
+#' If `"DoubleMLData"`, returns a `DoubleMLData` object.
+#' If `"data.frame"` returns a `data.frame()`.
+#' If `"data.table"` returns a `data.table()`.
+#' If `"matrix"` a named `list()` with entries `X`, `y` and `d` is returned.
+#' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
+#'
+#' @return A data object according to the choice of `return_type`.
+#'
+#' @export
+make_irm_binary_data = function(n_obs = 500, alpha_treat = log(0.8),
+  beta_0 = -1.5, alpha_0 = -1.75,
+  k = 1, return_type = "DoubleMLData") {
+
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_numeric(alpha_treat, len = 1)
+  assert_numeric(beta_0, len = 1)
+  assert_numeric(alpha_0, len = 1)
+  assert_numeric(k, len = 1)
+
+  # DGP from Section 3 of https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5753848/
+  dim_x = 10
+  x = matrix(rnorm(n_obs * dim_x), ncol = dim_x, nrow = n_obs)
+  beta = log(k * c(1.05, 1.1, 1.2, 1.25, 1.5, 1.75, 2.0, 1.5, 1.25, 1.1))
+  d_indx = exp((beta_0 + c(tcrossprod(beta, x)))) /
+    (1 + exp((beta_0 + c(tcrossprod(beta, x)))))
+  v = runif(n_obs)
+  d = as.matrix(1 * (d_indx > v))
+
+  alpha = c(2, 1.75, 1.5, 1.25, 1.1, 1.05, 1.5, 1.75, 2, 1.25)
+  # Potential Outcome: Untreated
+  y_indx0 = exp(alpha_0 + c(tcrossprod(beta, x))) /
+    (1 + exp(alpha_0 + c(tcrossprod(beta, x))))
+  # Potential Outcome: Treated
+  y_indx1 = exp(alpha_treat + y_indx0) / (1 + exp(alpha_0 + y_indx0))
+  v2 = runif(n_obs)
+  y0 = 1 * (y_indx0 > v2)
+  y1 = 1 * (y_indx1 > v2)
+  y = as.matrix(d * y1 + (1 - d) * y0)
+
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "y"
+  colnames(d) = "d"
+
+  if (return_type == "matrix") {
+    return(list("X" = x, "y" = y, "d" = d))
+  } else {
+    if (return_type == "data.frame") {
+      data = data.frame(x, y, d)
+      return(data)
+    } else if (return_type == "data.table") {
+      data = data.table(x, y, d)
+      return(data)
+    } else if (return_type == "DoubleMLData") {
+      dt = data.table(x, y, d)
+      data = DoubleMLData$new(dt,
+        y_col = "y", d_cols = "d",
+        x_cols = colnames(x)
+      )
       return(data)
     }
   }

@@ -34,35 +34,36 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
     n_rep_boot = 498
     n_folds = 2
     n_rep = 3
-  
+
     learner_pars = get_default_mlmethod_irm(learner)
-    
-    set.seed(3141)
-    irm_hat = dml_irm(data_irm$df,
-                      y = "y", d = "d",
-                      n_folds = n_folds,
-                      n_rep = n_rep,
-                      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
-                      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
-                      params_g = learner_pars$params$params_g,
-                      params_m = learner_pars$params$params_m,
-                      dml_procedure = dml_procedure, score = score,
-                      trimming_threshold = trimming_threshold)
-    theta = irm_hat$coef
-    se = irm_hat$se
-    
-    boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
-                               data_irm$df,
-                               y = "y", d = "d",
-                               n_folds = n_folds, n_rep = n_rep,
-                               smpls = irm_hat$smpls,
-                               all_preds= irm_hat$all_preds,
-                               score = score,
-                               bootstrap = "normal", n_rep_boot = n_rep_boot,
-                               trimming_threshold = trimming_threshold)$boot_coef
 
     set.seed(3141)
-    double_mlirm_obj = DoubleMLIRM$new(data = data_irm$dml_data,
+    irm_hat = dml_irm(data_irm$df,
+      y = "y", d = "d",
+      n_folds = n_folds,
+      n_rep = n_rep,
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+      params_g = learner_pars$params$params_g,
+      params_m = learner_pars$params$params_m,
+      dml_procedure = dml_procedure, score = score,
+      trimming_threshold = trimming_threshold)
+    theta = irm_hat$coef
+    se = irm_hat$se
+
+    boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
+      data_irm$df,
+      y = "y", d = "d",
+      n_folds = n_folds, n_rep = n_rep,
+      smpls = irm_hat$smpls,
+      all_preds = irm_hat$all_preds,
+      score = score,
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      trimming_threshold = trimming_threshold)$boot_coef
+
+    set.seed(3141)
+    double_mlirm_obj = DoubleMLIRM$new(
+      data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
       ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
@@ -90,7 +91,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
     se_obj = double_mlirm_obj$se
 
     # bootstrap
-    double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlirm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mlirm_obj$boot_coef
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
@@ -115,28 +116,29 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
     irm_hat = dml_irm(data_irm$df,
-                      y = "y", d = "d",
-                      n_folds = 1,
-                      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
-                      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
-                      params_g = learner_pars$params$params_g,
-                      params_m = learner_pars$params$params_m,
-                      dml_procedure = dml_procedure, score = score,
-                      trimming_threshold = trimming_threshold,
-                      smpls=smpls)
+      y = "y", d = "d",
+      n_folds = 1,
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+      params_g = learner_pars$params$params_g,
+      params_m = learner_pars$params$params_m,
+      dml_procedure = dml_procedure, score = score,
+      trimming_threshold = trimming_threshold,
+      smpls = smpls)
     theta = irm_hat$coef
     se = irm_hat$se
-    
+
     set.seed(3141)
-    dml_irm_nocf = DoubleMLIRM$new(data = data_irm$dml_data,
-                                   n_folds = n_folds,
-                                   ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
-                                   ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
-                                   dml_procedure = dml_procedure,
-                                   score = score,
-                                   trimming_threshold = trimming_threshold,
-                                   apply_cross_fitting = FALSE)
-    
+    dml_irm_nocf = DoubleMLIRM$new(
+      data = data_irm$dml_data,
+      n_folds = n_folds,
+      ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+      dml_procedure = dml_procedure,
+      score = score,
+      trimming_threshold = trimming_threshold,
+      apply_cross_fitting = FALSE)
+
     # set params for nuisance part m
     dml_irm_nocf$set_ml_nuisance_params(
       learner = "ml_m",
@@ -151,11 +153,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
       learner = "ml_g1",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    
+
     dml_irm_nocf$fit()
     theta_obj = dml_irm_nocf$coef
     se_obj = dml_irm_nocf$se
-    
+
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
   }
@@ -169,14 +171,15 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
     learner_pars = get_default_mlmethod_irm(learner)
 
     set.seed(3141)
-    double_mlirm_obj = DoubleMLIRM$new(data = data_irm$dml_data,
-                                       n_folds = n_folds,
-                                       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
-                                       ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
-                                       dml_procedure = dml_procedure,
-                                       score = score,
-                                       n_rep = n_rep, trimming_threshold = trimming_threshold)
-    
+    double_mlirm_obj = DoubleMLIRM$new(
+      data = data_irm$dml_data,
+      n_folds = n_folds,
+      ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+      dml_procedure = dml_procedure,
+      score = score,
+      n_rep = n_rep, trimming_threshold = trimming_threshold)
+
     # set params for nuisance part m
     double_mlirm_obj$set_ml_nuisance_params(
       learner = "ml_m",
@@ -191,23 +194,24 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
       learner = "ml_g1",
       treat_var = "d",
       params = learner_pars$params$params_g)
-    
+
     double_mlirm_obj$fit()
     theta = double_mlirm_obj$coef
     se = double_mlirm_obj$se
-    
+
     params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
-    
+
     set.seed(3141)
-    dml_irm_fold_wise = DoubleMLIRM$new(data = data_irm$dml_data,
-                                       n_folds = n_folds,
-                                       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
-                                       ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
-                                       dml_procedure = dml_procedure,
-                                       score = score,
-                                       n_rep = n_rep, trimming_threshold = trimming_threshold)
-    
+    dml_irm_fold_wise = DoubleMLIRM$new(
+      data = data_irm$dml_data,
+      n_folds = n_folds,
+      ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_m = lrn(learner_pars$mlmethod$mlmethod_m, predict_type = "prob"),
+      dml_procedure = dml_procedure,
+      score = score,
+      n_rep = n_rep, trimming_threshold = trimming_threshold)
+
     # set params for nuisance part m
     dml_irm_fold_wise$set_ml_nuisance_params(
       learner = "ml_m",
@@ -225,11 +229,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
       treat_var = "d",
       params = params_g_fold_wise,
       set_fold_specific = TRUE)
-    
+
     dml_irm_fold_wise$fit()
     theta_fold_wise = dml_irm_fold_wise$coef
     se_fold_wise = dml_irm_fold_wise$se
-    
+
     expect_equal(theta, theta_fold_wise, tolerance = 1e-8)
     expect_equal(se, se_fold_wise, tolerance = 1e-8)
   }
@@ -239,32 +243,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (def
   .cases = test_cases, {
     n_folds = 2
     n_rep = 3
-    
+
     params_g = list(cp = 0.01, minsplit = 20) # this are defaults
     params_m = list(cp = 0.01, minsplit = 20) # this are defaults
-    
+
     set.seed(3141)
-    dml_irm_default = DoubleMLIRM$new(data = data_irm$dml_data,
-                                      n_folds = n_folds,
-                                      ml_g = lrn('regr.rpart'),
-                                      ml_m = lrn('classif.rpart', predict_type = "prob"),
-                                      dml_procedure = dml_procedure,
-                                      score = score,
-                                      n_rep = n_rep, trimming_threshold = trimming_threshold)
-    
+    dml_irm_default = DoubleMLIRM$new(
+      data = data_irm$dml_data,
+      n_folds = n_folds,
+      ml_g = lrn("regr.rpart"),
+      ml_m = lrn("classif.rpart", predict_type = "prob"),
+      dml_procedure = dml_procedure,
+      score = score,
+      n_rep = n_rep, trimming_threshold = trimming_threshold)
+
     dml_irm_default$fit()
     theta_default = dml_irm_default$coef
     se_default = dml_irm_default$se
-    
+
     set.seed(3141)
-    double_mlirm_obj = DoubleMLIRM$new(data = data_irm$dml_data,
-                                       n_folds = n_folds,
-                                       ml_g = lrn('regr.rpart'),
-                                       ml_m = lrn('classif.rpart', predict_type = "prob"),
-                                       dml_procedure = dml_procedure,
-                                       score = score,
-                                       n_rep = n_rep, trimming_threshold = trimming_threshold)
-    
+    double_mlirm_obj = DoubleMLIRM$new(
+      data = data_irm$dml_data,
+      n_folds = n_folds,
+      ml_g = lrn("regr.rpart"),
+      ml_m = lrn("classif.rpart", predict_type = "prob"),
+      dml_procedure = dml_procedure,
+      score = score,
+      n_rep = n_rep, trimming_threshold = trimming_threshold)
+
     # set params for nuisance part m
     double_mlirm_obj$set_ml_nuisance_params(
       learner = "ml_m",
@@ -279,11 +285,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (def
       learner = "ml_g1",
       treat_var = "d",
       params = params_g)
-    
+
     double_mlirm_obj$fit()
     theta = double_mlirm_obj$coef
     se = double_mlirm_obj$se
-    
+
     expect_equal(theta, theta_default, tolerance = 1e-8)
     expect_equal(se, se_default, tolerance = 1e-8)
   }
