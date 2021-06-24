@@ -74,17 +74,23 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' @field partialX (`logical(1)`)  \cr
     #' Indicates whether covariates \eqn{X} should be partialled out.
     partialX = function(value) {
-      if (missing(value)) return(private$partialX_)
-      else stop("can't set field partialX")
+      if (missing(value)) {
+        return(private$partialX_)
+      } else {
+        stop("can't set field partialX")
+      }
     },
 
     #' @field partialZ (`logical(1)`) \cr
     #' Indicates whether instruments \eqn{Z} should be partialled out.
     partialZ = function(value) {
-      if (missing(value)) return(private$partialZ_)
-      else stop("can't set field partialZ")
+      if (missing(value)) {
+        return(private$partialZ_)
+      } else {
+        stop("can't set field partialZ")
+      }
     }),
-  
+
   public = list(
     #' @description
     #' Creates a new instance of this R6 class.
@@ -182,7 +188,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
-      
+
       private$check_data(self$data)
       private$check_score(self$score)
       assert_logical(partialX, len = 1)
@@ -358,8 +364,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_b = psi_b)
       } else if (is.function(self$score)) {
         if (self$data$n_instr > 1) {
-          stop(paste("Callable score not implemented for DoubleMLPLIV with",
-                     "partialX=TRUE and partialZ=FALSE with several instruments."))
+          stop(paste(
+            "Callable score not implemented for DoubleMLPLIV with",
+            "partialX=TRUE and partialZ=FALSE with several instruments."))
         }
         psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
       }
@@ -394,7 +401,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       m_hat = m_hat_list$preds
       data_aux_list = lapply(m_hat_list$train_preds, function(x) {
         setnafill(data.table(self$data$data_model, "m_hat_on_train" = x),
-               fill = -9999.99) # mlr3 does not allow NA's (values are not used)
+          fill = -9999.99) # mlr3 does not allow NA's (values are not used)
       })
 
       m_hat_tilde = dml_cv_predict(self$learner$ml_r,
@@ -425,8 +432,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop(paste("Callable score not implemented for DoubleMLPLIV",
-                   "with partialX=TRUE and partialZ=TRUE."))
+        stop(paste(
+          "Callable score not implemented for DoubleMLPLIV",
+          "with partialX=TRUE and partialZ=TRUE."))
         # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
       }
       res$preds = list(
@@ -464,8 +472,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        stop(paste("Callable score not implemented for DoubleMLPLIV",
-                   "with partialX=FALSE and partialZ=TRUE."))
+        stop(paste(
+          "Callable score not implemented for DoubleMLPLIV",
+          "with partialX=FALSE and partialZ=TRUE."))
         # res = self$score(y, z, d, r_hat)
       }
       res$preds = list("ml_r" = r_hat)
