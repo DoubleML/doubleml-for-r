@@ -690,7 +690,7 @@ DoubleML = R6Class("DoubleML",
         message("fit() not yet called.")
       } else {
         k = length(self$coef)
-        table = matrix(NA, ncol = 4, nrow = k)
+        table = matrix(NA_real_, ncol = 4, nrow = k)
         rownames(table) = names(self$coef)
         colnames(table) = c("Estimate.", "Std. Error", "t value", "Pr(>|t|)")
         table[, 1] = self$coef
