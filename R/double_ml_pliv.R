@@ -456,11 +456,38 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
-
+      
+      if ( ! (is.null(self$data$x_cols) | length(self$data$x_cols) == 0)) {
+        # Partial out Xs from y and d based on linear regression
+        task_part_y = initiate_task("lm_part_out_y", self$data$data_model,
+                                    target = self$data$y_col,
+                                    select_cols = c(self$data$x_cols,
+                                                    self$data$other_treat_cols),
+                                    "LearnerRegr")
+        learner_lm = LearnerRegrLM$new()
+        resampling_part_y = rsmp("insample")$instantiate(task_part_y)
+        r_part_y = resample(task_part_y, learner_lm, resampling_part_y,
+                            store_models = TRUE)
+        u_hat = as.data.table(r_part_y$prediction())$response
+        
+        task_part_d = initiate_task("lm_part_out_d", self$data$data_model,
+                                    target = self$data$treat_col,
+                                    select_cols = c(self$data$x_cols,
+                                                    self$data$other_treat_cols),
+                                    "LearnerRegr")
+        resampling_part_d = rsmp("insample")$instantiate(task_part_d)
+        r_part_d = resample(task_part_d, learner_lm, resampling_part_d,
+                            store_models = TRUE)
+        w_hat = as.data.table(r_part_d$prediction())$response
+      } else {
+        w_hat = d
+        u_hat = y
+      }
+      
       if (is.character(self$score)) {
         if (self$score == "partialling out") {
-          psi_a = -r_hat * d
-          psi_b = r_hat * y
+          psi_a = -r_hat * w_hat
+          psi_b = r_hat * u_hat
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
