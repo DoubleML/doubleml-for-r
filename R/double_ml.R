@@ -700,9 +700,8 @@ DoubleML = R6Class("DoubleML",
         private$summary_table = table
 
         if (length(k)) {
-          print(paste(
-            "Estimates and significance testing of the",
-            "effect of target variables"))
+          cat("Estimates and significance testing of the",
+              "effect of target variables\n")
           res = as.matrix(printCoefmat(private$summary_table,
             digits = digits,
             P.values = TRUE,
