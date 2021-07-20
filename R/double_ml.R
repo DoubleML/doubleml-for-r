@@ -755,9 +755,8 @@ DoubleML = R6Class("DoubleML",
         a = c(a, 1 - a)
         pct = format.perc(a, 3)
         fac = qnorm(a)
-        ci = array(NA_real_, dim = c(length(parm), 2L), dimnames = list(
-          parm,
-          pct))
+        ci = array(NA_real_, dim = c(length(parm), 2L),
+                   dimnames = list(parm, pct))
         ci[] = self$coef[parm] + self$se[parm] %o% fac
       }
 
@@ -766,7 +765,8 @@ DoubleML = R6Class("DoubleML",
         a = (1 - level)
         ab = c(a / 2, 1 - a / 2)
         pct = format.perc(ab, 3)
-        ci = array(NA, dim = c(length(parm), 2L), dimnames = list(parm, pct))
+        ci = array(NA_real_, dim = c(length(parm), 2L),
+                   dimnames = list(parm, pct))
 
         if (all(is.na(self$boot_coef))) {
           stop(paste(
@@ -970,8 +970,8 @@ DoubleML = R6Class("DoubleML",
     t_stat_ = NULL,
     tuning_res_ = NULL,
     n_rep_boot = NULL,
-    i_rep = NA,
-    i_treat = NA,
+    i_rep = NA_integer_,
+    i_treat = NA_integer_,
     fold_specific_params = NULL,
     summary_table = NULL,
     learner_class = list(),
@@ -1168,29 +1168,31 @@ DoubleML = R6Class("DoubleML",
     },
     initialize_arrays = function() {
 
-      private$psi_ = array(NA, dim = c(
+      private$psi_ = array(NA_real_, dim = c(
         self$data$n_obs, self$n_rep,
         self$data$n_treat))
-      private$psi_a_ = array(NA, dim = c(
+      private$psi_a_ = array(NA_real_, dim = c(
         self$data$n_obs, self$n_rep,
         self$data$n_treat))
-      private$psi_b_ = array(NA, dim = c(
+      private$psi_b_ = array(NA_real_, dim = c(
         self$data$n_obs, self$n_rep,
         self$data$n_treat))
 
-      private$coef_ = array(NA, dim = c(self$data$n_treat))
-      private$se_ = array(NA, dim = c(self$data$n_treat))
+      private$coef_ = array(NA_real_, dim = c(self$data$n_treat))
+      private$se_ = array(NA_real_, dim = c(self$data$n_treat))
 
-      private$all_coef_ = array(NA, dim = c(self$data$n_treat, self$n_rep))
-      private$all_se_ = array(NA, dim = c(self$data$n_treat, self$n_rep))
+      private$all_coef_ = array(NA_real_,
+                                dim = c(self$data$n_treat, self$n_rep))
+      private$all_se_ = array(NA_real_,
+                              dim = c(self$data$n_treat, self$n_rep))
 
       if (self$dml_procedure == "dml1") {
         if (self$apply_cross_fitting) {
-          private$all_dml1_coef_ = array(NA, dim = c(
+          private$all_dml1_coef_ = array(NA_real_, dim = c(
             self$data$n_treat, self$n_rep,
             self$n_folds))
         } else {
-          private$all_dml1_coef_ = array(NA, dim = c(
+          private$all_dml1_coef_ = array(NA_real_, dim = c(
             self$data$n_treat, self$n_rep,
             1))
         }
@@ -1198,17 +1200,17 @@ DoubleML = R6Class("DoubleML",
     },
     initialize_boot_arrays = function(n_rep_boot) {
       private$n_rep_boot = n_rep_boot
-      private$boot_coef_ = array(NA, dim = c(
+      private$boot_coef_ = array(NA_real_, dim = c(
         self$data$n_treat,
         n_rep_boot * self$n_rep))
-      private$boot_t_stat_ = array(NA, dim = c(
+      private$boot_t_stat_ = array(NA_real_, dim = c(
         self$data$n_treat,
         n_rep_boot * self$n_rep))
     },
     initialize_predictions = function() {
       private$predictions_ = sapply(self$params_names(),
         function(key) {
-          array(NA, dim = c(
+          array(NA_real_, dim = c(
             self$data$n_obs, self$n_rep,
             self$data$n_treat))
         },
@@ -1243,7 +1245,7 @@ DoubleML = R6Class("DoubleML",
       if (dml_procedure == "dml1") {
         # Note that length(test_ids) is only not equal to self.n_folds
         # if self$apply_cross_fitting ==False
-        thetas = rep(NA, length(test_ids))
+        thetas = rep(NA_real_, length(test_ids))
         for (i_fold in seq_len(length(test_ids))) {
           test_index = test_ids[[i_fold]]
           thetas[i_fold] = private$orth_est(inds = test_index)
