@@ -552,6 +552,140 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
   return(data)
 }
 
+#' @title Generates data from a partially linear IV regression model used in
+#' Belloni et al (2012).
+#'
+#' @description
+#' Generates data from a linear IV regression model used in
+#' Belloni et al. (2012). The data generating process
+#' is defined as
+#'
+#' \eqn{y_i = \beta d_i + e_i,}
+#'
+#' \eqn{d_i = z_i'\Pi + v_i,}
+#' 
+#' with i.i.d.
+#' 
+#' \eqn{(e_i, v_i)  \sim  \mathcal{N} \left(0, \left( \begin{array}{cc}
+#' \sigma^2_e & \sigma_{ev} \\ \sigma_{ev} & \sigma^2_v\end{array}
+#' \right) \right),}
+#' 
+#' with \eqn{\beta} being the parameter of interests and
+#' \eqn{\Pi = \left(\pi^0, \pi_0^1, \pi_0^2 \ldots, \pi_0^{p_z - 1} \right)},
+#' instrumental variables \eqn{z_i = (z_{i1}, \ldots, z_{ip_z})} drawn from a
+#' normal distribution \eqn{N(0,\Sigma)} with covariance matrix \eqn{\Sigma_Z} and
+#' \eqn{E[z^2_{ih}]=\sigma^2_z} and \eqn{Corr(z_{ih}, z_{ij})=\rho^{j-h}}.
+#' The sparsity parameter `s` can be used to set coefficients in \eqn{\Pi}
+#' with \eqn{j>s} exactly to zero, i.e.,
+#' \eqn{\Pi =  \left(\pi^0, \pi_0^1, \pi_0^2 \ldots, \pi_0^{s}, 0,
+#' \ldots , 0 \right)}.
+#' 
+#' Default values are set to \eqn{\rho = 0.5}, \eqn{\sigma^2_e = 1},
+#' \eqn{\sigma^2_z = 1} and \eqn{Corr(e,v) = 0.6}. For the coefficient vectors
+#' defaults are set such that \eqn{\beta = 1} and \eqn{\pi_0 = 0.7}.
+#' 
+#' @references Belloni, A., Chen, D., Chernozhukov, V., and Hansen, C. (2012),
+#' Sparse Models and Methods for Optimal Instruments with an Application to
+#' Eminent Domain. Econometrica, 80 (6): 2369-2429.
+#'
+#' @param n_obs (`integer(1)`) \cr
+#' The number of observations to simulate.
+#'
+#' @param beta (`numeric(1)`) \cr
+#' The value of the causal parameter.
+#'
+#' @param dim_z (`integer(1)`) \cr
+#' The number of instruments.
+#' 
+#' @param pi_0 (`numeric(1)`) \cr
+#' Coefficient vector in first-stage equation.
+#' 
+#' @param s (`integer(1)`) \cr
+#' Sparsity index.
+#' 
+#' @param rho (`numeric(1)`) \cr
+#' Coefficient determining correlation between instruments.
+#' 
+#' @param sigma_z (`numeric(1)`) \cr
+#' Standard deviation of instruments.
+#' 
+#' @param corr (`numeric(1)`) \cr
+#' Correlation between errors \eqn{e} and \eqn{v}.
+#' 
+#' @param sigma_e (`numeric(1)`) \cr
+#' Standard deviation for error \eqn{e}.
+#'
+#' @param return_type (`character(1)`) \cr
+#' If `"DoubleMLData"`, returns a `DoubleMLData` object.
+#' If `"data.frame"` returns a `data.frame()`.
+#' If `"data.table"` returns a `data.table()`.
+#' If `"matrix"` a named `list()` with entries `X`, `y`, `d` and
+#' `z` is returned.
+#' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
+#'
+#' @return A data object according to the choice of `return_type`.
+#'
+#' @export
+make_pliv_BCCH2012 = function(n_obs = 100, beta = 1, dim_z = 100, pi_0 = 0.7,
+                              s = 0,
+                              rho = 0.5, sigma_z = 1,
+                              corr = 0.6, sigma_e = 1,
+                              return_type = "DoubleMLData") {
+  assert_count(n_obs)
+  assert_numeric(beta, len = 1)
+  assert_count(dim_z)
+  assert_numeric(pi_0, len = 1)
+  assert_count(s, positive = FALSE)
+  assert_numeric(rho, len = 1)
+  assert_numeric(sigma_z, len = 1)
+  assert_numeric(corr, len = 1)
+  assert_numeric(sigma_e, len = 1)
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+  
+  sigma_e_v = matrix(c(sigma_e^2, corr, corr, 1), ncol = 2)
+  mu_e_v = rep(0, 2)
+  e_v = rmvnorm(n = n_obs, mean = mu_e_v, sigma = sigma_e_v)
+  e = e_v[, 1]
+  v = e_v[, 2]
+
+  sigma_z = toeplitz(rho^(0:(dim_z - 1)))
+  mu_z = rep(0, dim_z)
+  z = rmvnorm(n = n_obs, mean = mu_z, sigma = sigma_z)
+
+  pi = pi_0^(0:(dim_z-1))
+  if (s > 0) {
+    pi[(s+1):dim_z] = 0
+  }
+  d = z %*% pi + v
+  y = beta * d + e
+  
+  if (return_type == "matrix") {
+    return(list("y" = y, "d" = d, "z" = z))
+  } else {
+    colnames(z) = paste0("Z", 1:dim_z)
+    colnames(y) = "y"
+    colnames(d) = "d"
+
+    if (return_type == "data.frame") {
+      data = data.frame(y, d, z)
+      return(data)
+    } else if (return_type == "data.table") {
+      data = data.table(y, d, z)
+      return(data)
+    } else if (return_type == "DoubleMLData") {
+      dt = data.table(y, d, z)
+      data = DoubleMLData$new(dt,
+        y_col = "y", d_cols = "d",
+        x_cols = NULL,
+        z_cols = colnames(z))
+      return(data)
+    }
+  }
+  return(data)
+}
+
 
 #' @title Generates data from a interactive regression (IRM) model.
 #'
