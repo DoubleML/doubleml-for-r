@@ -659,7 +659,7 @@ make_pliv_BCCH2012 = function(n_obs = 100, beta = 1, dim_z = 100, pi_0 = 0.7,
   z = rmvnorm(n = n_obs, mean = mu_z, sigma = sigma_z)
   pi = pi_0^(0:(dim_z-1))
   
-  scale = sqrt(mu2/((n_obs + mu2)*pi %*% sigma_z %*% pi))
+  scale = c(sqrt(mu2/((n_obs + mu2)*pi %*% sigma_z %*% pi)))
   sigma_v = sqrt(1 - (scale^2)*t(pi) %*% sigma_z %*% pi)
   sev = corr * sigma_e * sigma_v
   
