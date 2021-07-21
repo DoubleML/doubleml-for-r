@@ -251,7 +251,6 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
       return(res)
     },
-
     ml_nuisance_and_score_elements_partialX = function(smpls, ...) {
 
       g_hat = dml_cv_predict(self$learner$ml_g,
@@ -439,25 +438,28 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     ml_nuisance_and_score_elements_partialZ = function(smpls, ...) {
 
       # nuisance r
-
-      r_hat = dml_cv_predict(self$learner$ml_r,
-        c(
-          self$data$x_cols,
-          self$data$other_treat_cols,
-          self$data$z_cols),
-        self$data$treat_col,
-        self$data$data_model,
-        nuisance_id = "nuis_r",
-        smpls = smpls,
-        est_params = self$get_params("ml_r"),
-        return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_r,
-        fold_specific_params = private$fold_specific_params)
-
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
       
-      if ( ! (is.null(self$data$x_cols) | length(self$data$x_cols) == 0)) {
+      if (  (is.null(self$data$x_cols) | length(self$data$x_cols) == 0)) {
+        r_hat = dml_cv_predict(self$learner$ml_r,
+                               c(
+                                 self$data$x_cols,
+                                 self$data$other_treat_cols,
+                                 self$data$z_cols),
+                               self$data$treat_col,
+                               self$data$data_model,
+                               nuisance_id = "nuis_r",
+                               smpls = smpls,
+                               est_params = self$get_params("ml_r"),
+                               return_train_preds = FALSE,
+                               learner_class = private$learner_class$ml_r,
+                               fold_specific_params =
+                                 private$fold_specific_params)
+        w_hat = d
+        u_hat = y
+      }
+      else {
         # Partial out Xs from y and d based on linear regression
         task_part_y = initiate_task("lm_part_out_y", self$data$data_model,
                                     target = self$data$y_col,
@@ -479,11 +481,24 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         r_part_d = resample(task_part_d, learner_lm, resampling_part_d,
                             store_models = TRUE)
         w_hat = as.data.table(r_part_d$prediction())$response
-      } else {
-        w_hat = d
-        u_hat = y
-      }
-      
+        
+        data_aux = data.table(self$data$data_model, "w_hat" = w_hat)
+        
+        r_hat = dml_cv_predict(self$learner$ml_r,
+                               c(
+                                 self$data$x_cols,
+                                 self$data$other_treat_cols,
+                                 self$data$z_cols),
+                               "w_hat",
+                               data_aux,
+                               nuisance_id = "nuis_r",
+                               smpls = smpls,
+                               est_params = self$get_params("ml_r"),
+                               return_train_preds = FALSE,
+                               learner_class = private$learner_class$ml_r,
+                               fold_specific_params =
+                                 private$fold_specific_params)
+      } 
       if (is.character(self$score)) {
         if (self$score == "partialling out") {
           psi_a = -r_hat * w_hat
@@ -674,7 +689,6 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           params = tuning_result_r$params))
       return(tuning_result)
     },
-
     ml_nuisance_tuning_partialZ = function(smpls, param_set,
       tune_settings, tune_on_folds, ...) {
       if (!tune_on_folds) {
@@ -684,7 +698,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           smpls$train_ids,
           function(x) extract_training_data(self$data$data_model, x))
       }
-
+      
       tuning_result_r = dml_tune(self$learner$ml_r,
         c(
           self$data$x_cols,
