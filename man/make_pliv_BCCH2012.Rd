@@ -3,7 +3,7 @@
 \name{make_pliv_BCCH2012}
 \alias{make_pliv_BCCH2012}
 \title{Generates data from a partially linear IV regression model used in
-Belloni et al (2012).}
+Belloni et al. (2012).}
 \usage{
 make_pliv_BCCH2012(
   n_obs = 100,
@@ -11,6 +11,7 @@ make_pliv_BCCH2012(
   dim_z = 100,
   pi_0 = 0.7,
   s = 0,
+  mu2 = 30,
   rho = 0.5,
   sigma_z = 1,
   corr = 0.6,
@@ -33,6 +34,9 @@ Coefficient vector in first-stage equation.}
 
 \item{s}{(\code{integer(1)}) \cr
 Sparsity index.}
+
+\item{mu2}{(\code{numeric(1)}) \cr
+Value of concentration parameter used for calibration of constant \eqn{C}.}
 
 \item{rho}{(\code{numeric(1)}) \cr
 Coefficient determining correlation between instruments.}
@@ -73,18 +77,22 @@ with i.i.d.
 \right) \right),}
 
 with \eqn{\beta} being the parameter of interests and
-\eqn{\Pi = \left(\pi^0, \pi_0^1, \pi_0^2 \ldots, \pi_0^{p_z - 1} \right)},
-instrumental variables \eqn{z_i = (z_{i1}, \ldots, z_{ip_z})} drawn from a
-normal distribution \eqn{N(0,\Sigma)} with covariance matrix \eqn{\Sigma_Z} and
-\eqn{E[z^2_{ih}]=\sigma^2_z} and \eqn{Corr(z_{ih}, z_{ij})=\rho^{j-h}}.
+\eqn{\Pi = C \cdot \left(\pi_0^0, \pi_0^1, \pi_0^2 \ldots, \pi_0^{p_z - 1}
+\right)}, instrumental variables \eqn{z_i = (z_{i1}, \ldots, z_{ip_z})} drawn
+from a normal distribution \eqn{N(0,\Sigma)} with covariance matrix
+\eqn{\Sigma_Z} and \eqn{E[z^2_{ih}]=\sigma^2_z} and \eqn{Corr(z_{ih},
+z_{ij})=\rho^{j-h}}.
 The sparsity parameter \code{s} can be used to set coefficients in \eqn{\Pi}
 with \eqn{j>s} exactly to zero, i.e.,
-\eqn{\Pi =  \left(\pi^0, \pi_0^1, \pi_0^2 \ldots, \pi_0^{s}, 0,
-\ldots , 0 \right)}.
+\eqn{\Pi = C \cdot \left(\pi_0^0, \pi_0^1, \pi_0^2 \ldots, \pi_0^{s}, 0,
+\ldots , 0 \right)}. The constant \eqn{C} is calibrated internally such that
+the concentration parameter \eqn{\mu^2} is set to a specific value specified
+via \code{mu2}.
 
 Default values are set to \eqn{\rho = 0.5}, \eqn{\sigma^2_e = 1},
 \eqn{\sigma^2_z = 1} and \eqn{Corr(e,v) = 0.6}. For the coefficient vectors
-defaults are set such that \eqn{\beta = 1} and \eqn{\pi_0 = 0.7}.
+defaults are set such that \eqn{\beta = 1}, \eqn{\mu^2 = 30} and
+\eqn{\pi_0 = 0.7}.
 }
 \references{
 Belloni, A., Chen, D., Chernozhukov, V., and Hansen, C. (2012),
