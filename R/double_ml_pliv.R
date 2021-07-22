@@ -441,7 +441,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
       
-      if (  (is.null(self$data$x_cols) | length(self$data$x_cols) == 0)) {
+      if (test_character(self$data$x_cols, len = 0)) {
         r_hat = dml_cv_predict(self$learner$ml_r,
                                c(
                                  self$data$x_cols,
@@ -456,11 +456,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                                learner_class = private$learner_class$ml_r,
                                fold_specific_params =
                                  private$fold_specific_params)
-        w_hat = d
-        u_hat = y
-      }
-      else {
-        # Partial out Xs from y and d based on linear regression
+      } else {
+        # Partial out Xs from y and d by using linear regression
         task_part_y = initiate_task("lm_part_out_y", self$data$data_model,
                                     target = self$data$y_col,
                                     select_cols = c(self$data$x_cols,
@@ -470,7 +467,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         resampling_part_y = rsmp("insample")$instantiate(task_part_y)
         r_part_y = resample(task_part_y, learner_lm, resampling_part_y,
                             store_models = TRUE)
-        u_hat = as.data.table(r_part_y$prediction())$response
+        y_tilde = y - as.data.table(r_part_y$prediction())$response
         
         task_part_d = initiate_task("lm_part_out_d", self$data$data_model,
                                     target = self$data$treat_col,
@@ -480,16 +477,15 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         resampling_part_d = rsmp("insample")$instantiate(task_part_d)
         r_part_d = resample(task_part_d, learner_lm, resampling_part_d,
                             store_models = TRUE)
-        w_hat = as.data.table(r_part_d$prediction())$response
-        
-        data_aux = data.table(self$data$data_model, "w_hat" = w_hat)
-        
+        d_tilde = d - as.data.table(r_part_d$prediction())$response
+
+        data_aux = data.table(self$data$data_model, "d_tilde" = d_tilde)
         r_hat = dml_cv_predict(self$learner$ml_r,
                                c(
                                  self$data$x_cols,
                                  self$data$other_treat_cols,
                                  self$data$z_cols),
-                               "w_hat",
+                               "d_tilde",
                                data_aux,
                                nuisance_id = "nuis_r",
                                smpls = smpls,
@@ -501,8 +497,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       } 
       if (is.character(self$score)) {
         if (self$score == "partialling out") {
-          psi_a = -r_hat * w_hat
-          psi_b = r_hat * u_hat
+          if (test_character(self$data$x_cols, len = 0)) {
+            psi_a = -r_hat * d
+            psi_b = r_hat * y
+          } else {
+            psi_a = -r_hat * d_tilde
+            psi_b = r_hat * y_tilde
+          }
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
