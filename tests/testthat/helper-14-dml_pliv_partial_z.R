@@ -11,6 +11,17 @@ dml_pliv_partial_z = function(data, y, d, z,
   all_thetas = all_ses = rep(NA, n_rep)
   all_preds = list()
   
+  # check whether data contains Xs
+  x_indx = names(data)[! (names(data) %in% c(y,d,z))]
+  if (length(x_indx) != 0) {
+    formula_rhs = paste0(x_indx, collapse = " + ")
+    lm_y = lm(paste0("y ~ ", formula_rhs), data)
+    data$y_tilde = data[, y] - predict(lm_y)
+
+    lm_d = lm(paste0("d ~ ", formula_rhs), data)
+    data$d_tilde = data[, d] - predict(lm_d)
+  }
+  
   for (i_rep in 1:n_rep) {
     this_smpl = smpls[[i_rep]]
     
@@ -23,8 +34,14 @@ dml_pliv_partial_z = function(data, y, d, z,
                                                  this_smpl,
                                                  all_preds[[i_rep]])
     r_hat = residuals$r_hat
-    D = data[, d]
-    Y = data[, y]
+    
+    if (all(! (names(data) %in% c("y_tilde", "d_tilde")))) {
+      D = data[, d]
+      Y = data[, y]
+    } else {
+      D = data[, "d_tilde"]
+      Y = data[, "y_tilde"]
+    }
     
     # DML 1
     if (dml_procedure == "dml1") {
@@ -72,7 +89,8 @@ dml_pliv_partial_z = function(data, y, d, z,
   res = list(
     coef = theta, se = se, t = t, pval = pval,
     thetas = all_thetas, ses = all_ses,
-    all_preds=all_preds, smpls=smpls)
+    all_preds=all_preds, smpls=smpls,
+    data_with_res = data)
 
   return(res)
 }
@@ -83,24 +101,40 @@ fit_nuisance_pliv_partial_z = function(data, y, d, z,
                                        params_r) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
-
-  # nuisance r: E[D|X]
-  r_indx = names(data) != y
-  data_r = data[, r_indx, drop = FALSE]
-  task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
-  if (!is.null(params_r)) {
-    ml_r$param_set$values = params_r
-  }
   
-  resampling_r = mlr3::rsmp("custom")
-  resampling_r$instantiate(task_r, train_ids, test_ids)
-
-  r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
-  r_hat_list = lapply(r_r$predictions(), function(x) x$response)
+  if (all(! (names(data) %in% c("y_tilde", "d_tilde")))) {
+    # case without Xs
+    
+    # nuisance r: E[D|X]
+    r_indx = names(data) != y
+    data_r = data[, r_indx, drop = FALSE]
+    task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
+    if (!is.null(params_r)) {
+      ml_r$param_set$values = params_r
+    }
+    
+    resampling_r = mlr3::rsmp("custom")
+    resampling_r$instantiate(task_r, train_ids, test_ids)
+    
+    r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+    r_hat_list = lapply(r_r$predictions(), function(x) x$response)
+  } else {
+    r_indx = ! (names(data) %in% c(y, d, "y_tilde"))
+    data_r = data[, r_indx, drop = FALSE]
+    task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = "d_tilde")
+    if (!is.null(params_r)) {
+      ml_r$param_set$values = params_r
+    }
+    
+    resampling_r = mlr3::rsmp("custom")
+    resampling_r$instantiate(task_r, train_ids, test_ids)
+    
+    r_r = mlr3::resample(task_r, ml_r, resampling_r, store_models = TRUE)
+    r_hat_list = lapply(r_r$predictions(), function(x) x$response)
+  }
   
   all_preds = list(
     r_hat_list = r_hat_list)
-
   return(all_preds)
 }
 
@@ -147,9 +181,15 @@ bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
                                                  smpls[[i_rep]],
                                                  all_preds[[i_rep]])
     r_hat = residuals$r_hat
-    D = data[, d]
-    Y = data[, y]
     
+    if (all(! (names(data) %in% c("y_tilde", "d_tilde")))) {
+      D = data[, d]
+      Y = data[, y]
+    } else {
+      D = data[, "d_tilde"]
+      Y = data[, "y_tilde"]
+    }
+      
     psi = (Y - D * theta[i_rep]) * r_hat
     psi_a = - r_hat * D
 
