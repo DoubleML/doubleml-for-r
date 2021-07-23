@@ -65,3 +65,4 @@ reference:
       - make_irm_data
       - make_iivm_data
       - make_plr_turrell2018
+      - make_pliv_multiway_cluster_CKMS2021

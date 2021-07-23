@@ -744,3 +744,161 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
     }
   }
 }
+
+
+#' @title Generates data from a partially linear IV regression model with
+#' multiway cluster sample used in Chiang et al. (2021).
+#'
+#' @description
+#' Generates data from a partially linear IV regression model with multiway
+#' cluster sample used in Chiang et al. (2021). The data generating process
+#' is defined as
+#'
+#' \eqn{Z_{ij} = X_{ij}' \xi_0 + V_{ij},}
+#'
+#' \eqn{D_{ij} = Z_{ij}' \pi_{10} + X_{ij}' \pi_{20} + v_{ij},}
+#'
+#' \eqn{Y_{ij} = D_{ij} \theta + X_{ij}' \zeta_0 + \varepsilon_{ij},}
+#'
+#' with
+#'
+#' \eqn{X_{ij} = (1 - \omega_1^X - \omega_2^X) \alpha_{ij}^X 
+#' + \omega_1^X \alpha_{i}^X + \omega_2^X \alpha_{j}^X,}
+#'
+#' \eqn{\varepsilon_{ij} = (1 - \omega_1^\varepsilon - \omega_2^\varepsilon) \alpha_{ij}^\varepsilon 
+#' + \omega_1^\varepsilon \alpha_{i}^\varepsilon + \omega_2^\varepsilon \alpha_{j}^\varepsilon,}
+#' 
+#' \eqn{v_{ij} = (1 - \omega_1^v - \omega_2^v) \alpha_{ij}^v
+#' + \omega_1^v \alpha_{i}^v + \omega_2^v \alpha_{j}^v,}
+#' 
+#' \eqn{V_{ij} = (1 - \omega_1^V - \omega_2^V) \alpha_{ij}^V
+#' + \omega_1^V \alpha_{i}^V + \omega_2^V \alpha_{j}^V,}
+#'
+#' and \eqn{\alpha_{ij}^X, \alpha_{i}^X, \alpha_{j}^X \sim \mathcal{N}(0, \Sigma)}
+#' where \eqn{\Sigma} is a \eqn{p_x \times p_x} matrix with entries
+#' \eqn{\Sigma_{kj} = s_X^{|j-k|}}.
+#' 
+#' Further
+#' 
+#' \eqn{\left(\begin{array}{c} \alpha_{ij}^\varepsilon \\ \alpha_{ij}^v \end{array}\right),
+#' \left(\begin{array}{c} \alpha_{i}^\varepsilon \\ \alpha_{i}^v \end{array}\right),
+#' \left(\begin{array}{c} \alpha_{j}^\varepsilon \\ \alpha_{j}^v \end{array}\right)
+#' \sim \mathcal{N}\left(0, \left(\begin{array}{cc} 1 & s_{\varepsilon v} \\
+#' s_{\varepsilon v} & 1 \end{array}\right) \right)}
+#' 
+#' and \eqn{\alpha_{ij}^V, \alpha_{i}^V, \alpha_{j}^V \sim \mathcal{N}(0, 1)}.
+#'
+#' @references Chiang, H. D., Kato K., Ma, Y. and Sasaki, Y. (2021),
+#' Multiway Cluster Robust Double/Debiased Machine Learning,
+#' Journal of Business & Economic Statistics,
+#' \doi{10.1080/07350015.2021.1895815}, https://arxiv.org/abs/1909.03489.
+#'
+#' @param N (`integer(1)`) \cr
+#' The number of observations (first dimension).
+#'
+#' @param M (`integer(1)`) \cr
+#' The number of observations (second dimension).
+#'
+#' @param dim_X (`integer(1)`) \cr
+#' The number of covariates.
+#'
+#' @param theta (`numeric(1)`) \cr
+#' The value of the causal parameter.
+#'
+#' @param return_type (`character(1)`) \cr
+#' If `"DoubleMLClusterData"`, returns a `DoubleMLClusterData` object.
+#' If `"data.frame"` returns a `data.frame()`.
+#' If `"data.table"` returns a `data.table()`.
+#' If `"matrix"` a named `list()` with entries `X`, `y`, `d` and
+#' `z` is returned.
+#' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLClusterData"`.
+#'
+#' @return A data object according to the choice of `return_type`.
+#'
+#' @export
+make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
+                                               theta = 1., return_type = "DoubleMLClusterData",
+                                               ...) {
+  kwargs = list(...)
+  pi_10 = if("pi_10" %in% names(args)) kwargs$pi_10 else 1.0
+  zeta_0 = if("zeta_0" %in% names(args)) kwargs$zeta_0 else 0.5^(1:dim_x)
+  pi_20 = if("pi_20" %in% names(args)) kwargs$pi_20 else 0.5^(1:dim_x)
+  xi_0 = if("xi_0" %in% names(args)) kwargs$xi_0 else 0.5^(1:dim_x)
+  
+  omega_X = if("omega_X" %in% names(args)) kwargs$omega_X else c(0.25, 0.25)
+  omega_epsilon = if("omega_epsilon" %in% names(args)) kwargs$omega_epsilon else c(0.25, 0.25)
+  omega_v = if("omega_v" %in% names(args)) kwargs$omega_v else c(0.25, 0.25)
+  omega_V = if("omega_V" %in% names(args)) kwargs$omega_V else c(0.25, 0.25)
+  
+  s_X = if("s_X" %in% names(args)) kwargs$s_X else 0.25
+  s_epsilon_v = if("s_epsilon_v" %in% names(args)) kwargs$s_epsilon_v else 0.25
+  
+  alpha_V = rnorm(N * M)
+  alpha_V_i = rep(rnorm(N), each = M)
+  alpha_V_j = rep(rnoem(M), times = N)
+  
+  cov_mat = matrix(c(1, s_epsilon_v, s_epsilon_v, 1), nrow = 2)
+  alpha_eps_v = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps = alpha_eps_v[, 0]
+  alpha_v = alpha_eps_v[, 1]
+  
+  alpha_eps_v_i = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps_i = rep(alpha_eps_v_i[, 0], each = M)
+  alpha_v_i = rep(alpha_eps_v_i[, 1], each = M)
+  
+  alpha_eps_v_j = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps_j = rep(alpha_eps_v_j[, 0], times = N)
+  alpha_v_j = rep(alpha_eps_v_j[, 1], times = N)
+  
+  cov_mat = toeplitz(s_X^(0:(dim_x - 1)))
+  alpha_X = rmvnorm(n = N * M, mean = rep(0, dim_x), sigma = cov_mat)
+  xx = rmvnorm(N, mean = rep(0, dim_x), sigma = cov_mat)
+  alpha_X_i = matrix(rep(xx, each=M), ncol=ncol(xx), byrow=FALSE)
+  xx = rmvnorm(M, mean = rep(0, dim_x), sigma = cov_mat)
+  alpha_X_j = matrix(rep(xx, each=N), ncol=ncol(xx), byrow=TRUE)
+  
+  # generate variables
+  x = (1 - omega_X[1] - omega_X[2]) * alpha_X +
+    omega_X[1] * alpha_X_i + omega_X[2] * alpha_X_j
+  
+  eps = (1 - omega_epsilon[1] - omega_epsilon[2]) * alpha_eps +
+    omega_epsilon[1] * alpha_eps_i + omega_epsilon[2] * alpha_eps_j
+  
+  v = (1 - omega_v[1] - omega_v[2]) * alpha_v +
+    omega_v[1] * alpha_v_i + omega_v[2] * alpha_v_j
+  
+  V = (1 - omega_V[1] - omega_V[2]) * alpha_V +
+    omega_V[1] * alpha_V_i + omega_V[2] * alpha_V_j
+  
+  z = x %*% xi_0 + V
+  d = z * pi_10 + x %*% pi_20 + v
+  y = d * theta + x %*% zeta_0 + eps
+  
+  cluster_vars = expand.grid(seq(M), seq(N))[, c(2,1)]
+  
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "Y"
+  colnames(d) = "D"
+  colnames(z) = "Z"
+  colnames(cluster_vars) = c('cluster_var_i', 'cluster_var_j')
+  
+  if (return_type == "matrix") {
+    return(list("X" = x, "y" = y, "d" = d, "cluster_vars" = cluster_vars, "z" = z))
+  } else {
+    if (return_type == "data.frame") {
+      data = data.frame(x, y, d, cluster_vars, z)
+      return(data)
+    } else if (return_type == "data.table") {
+      data = data.table(x, y, d, cluster_vars, z)
+      return(data)
+    } else if (return_type == "DoubleMLData") {
+      dt = data.table(x, y, d, cluster_vars, z)
+      # TODO: DoubleMLClusterData
+      data = DoubleMLData$new(dt,
+                              y_col = "y", d_cols = "d",
+                              x_cols = colnames(x),
+                              z_cols = "z")
+      return(data)
+    }
+  }
+}
