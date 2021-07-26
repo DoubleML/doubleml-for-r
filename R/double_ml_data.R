@@ -516,8 +516,6 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     }
   )
 )
-                       
-
 
 #' @title Wrapper for Double machine learning data-backend initialization from
 #' data.frame.
@@ -543,12 +541,14 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
 #' @param z_cols (`NULL`, `character()`) \cr
 #' The instrumental variables. Default is `NULL`.
 #'
+#' @param cluster_cols (`NULL`, `character()`) \cr
+#' The cluster variables. Default is `NULL`.
+#'
 #' @param use_other_treat_as_covariate (`logical(1)`) \cr
 #' Indicates whether in the multiple-treatment case the other treatment
 #' variables should be added as covariates. Default is `TRUE`.
 #'
-#' @return Creates a new instance of class `DoubleMLData` by default. Class of
-#' returned object may change with input provided by option `data_class`.
+#' @return Creates a new instance of class `DoubleMLData`.
 #'
 #' @examples
 #' df = make_plr_CCDDHNR2018(return_type = "data.frame")
@@ -556,15 +556,23 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
 #' obj_dml_data = double_ml_data_from_data_frame(
 #'   df = df, x_cols = x_names,
 #'   y_col = "y", d_cols = "d")
-#' # Input: Data frame, Output: DoubleMLData or data.table
+#' # Input: Data frame, Output: DoubleMLData object
 #' @export
 double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
-  d_cols = NULL, z_cols = NULL,
+  d_cols = NULL, z_cols = NULL, cluster_cols = NULL,
   use_other_treat_as_covariate = TRUE) {
-  data = DoubleMLData$new(df,
-                          x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-                          z_cols = z_cols,
-                          use_other_treat_as_covariate = use_other_treat_as_covariate)
+  if (is.null(cluster_cols)) {
+    data = DoubleMLData$new(df,
+                            x_cols = x_cols, y_col = y_col, d_cols = d_cols,
+                            z_cols = z_cols,
+                            use_other_treat_as_covariate = use_other_treat_as_covariate)
+  } else {
+    data = DoubleMLClusterData$new(df,
+                                   x_cols = x_cols, y_col = y_col,
+                                   d_cols = d_cols, z_cols = z_cols,
+                                   cluster_cols = cluster_cols,
+                                   use_other_treat_as_covariate = use_other_treat_as_covariate)
+  }
   return(data)
 }
 
@@ -587,6 +595,9 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #' @param z (`matrix()`) \cr
 #' Matrix of instruments.
 #'
+#' @param cluster_vars (`matrix()`) \cr
+#' Matrix of cluster variables.
+#'
 #' @param data_class (`character(1)`) \cr
 #' Class of returned object. By default, an object of class `DoubleMLData` is
 #' returned. Setting `data_class = "data.table"` returns an object of class
@@ -606,32 +617,34 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #'   d = matrix_list$d)
 #' @export
 double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
+  cluster_vars = NULL,
   data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE) {
 
-  assert_choice(data_class, c("DoubleMLData", "data.table"))
+  assert_choice(data_class, c("DoubleMLData", "data.table",
+                              "DoubleMLClusterData"))
   assert_logical(use_other_treat_as_covariate, len = 1)
-  if (!is.null(X)) {
-    X = assure_matrix(X)
-  }
+  
   y = assure_matrix(y)
   d = assure_matrix(d)
-  if (is.null(z)) {
-    if (!is.null(X)) {
-      check_matrix_row(list(X, y, d))
-    } else {
-      check_matrix_row(list(y, d))
-    }
-    data = data.table(X, y, d)
-  } else {
-    z = assure_matrix(z)
-    if (!is.null(X)) {
-      check_matrix_row(list(X, y, d, z))
-    } else {
-      check_matrix_row(list(y, d, z))
-    }
-    data = data.table(X, y, d, z)
+  mat_list = list(y, d)
+  
+  if (!is.null(X)) {
+    X = assure_matrix(X)
+    mat_list[[length(mat_list)+1]] = X
   }
+  if (!is.null(z)) {
+    z = assure_matrix(z)
+    mat_list[[length(mat_list)+1]] = z
+  }
+  if (!is.null(cluster_vars)) {
+    cluster_vars = assure_matrix(cluster_vars)
+    mat_list[[length(mat_list)+1]] = cluster_vars
+  }
+  
+  check_matrix_row(mat_list)
+  data = data.table(X, y, d, z, cluster_vars)
+  
   if (!is.null(z)) {
     if (ncol(z) == 1) {
       z_cols = "z"
@@ -652,13 +665,34 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
   } else {
     x_cols = NULL
   }
-  names(data) = c(x_cols, y_col, d_cols, z_cols)
+  if (!is.null(cluster_vars)) {
+    if (ncol(cluster_vars) == 1) {
+      cluster_cols = "cluster_var"
+    } else {
+      cluster_cols = paste0("cluster_var", seq_len(ncol(z)))
+    }
+  } else {
+    cluster_cols = NULL
+  }
+  names(data) = c(x_cols, y_col, d_cols, z_cols, cluster_cols)
 
-  if (data_class == "DoubleMLData") {
-    data = DoubleMLData$new(data,
-      x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-      z_cols = z_cols,
-      use_other_treat_as_covariate = use_other_treat_as_covariate)
+  if (data_class %in% c("DoubleMLData", "DoubleMLClusterData")) {
+    if (is.null(cluster_vars)) {
+      if (data_class == "DoubleMLClusterData") {
+        stop(paste(
+          "To initialize a DoubleMLClusterData object a matrix of cluster",
+          "variables (`cluster_vars`) must be provided."))
+      }
+      data = DoubleMLData$new(data,
+        x_cols = x_cols, y_col = y_col, d_cols = d_cols,
+        z_cols = z_cols,
+        use_other_treat_as_covariate = use_other_treat_as_covariate)
+    } else {
+      data = DoubleMLClusterData$new(data,
+        x_cols = x_cols, y_col = y_col, d_cols = d_cols,
+        z_cols = z_cols, cluster_cols = cluster_cols,
+        use_other_treat_as_covariate = use_other_treat_as_covariate)
+    }
   }
   return(data)
 }
