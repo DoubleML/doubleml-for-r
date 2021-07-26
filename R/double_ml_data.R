@@ -353,7 +353,7 @@ DoubleMLData = R6Class("DoubleMLData",
 )
 
 #' @export
-DoubleMLClusterData = R6Class("DoubleMLData",
+DoubleMLClusterData = R6Class("DoubleMLClusterData",
   inherit = DoubleMLData,
   active = list(
     #' @field cluster_cols (`character()`)\cr
@@ -437,9 +437,65 @@ DoubleMLClusterData = R6Class("DoubleMLData",
                        use_other_treat_as_covariate)
       invisible(self)
     },
+    
+    #' @description
+    #' Print DoubleMLClusterData objects.
+    print = function() {
+      header = "================= DoubleMLClusterData Object ==================\n"
+      data_info = paste0(
+        "Outcome variable: ", self$y_col, "\n",
+        "Treatment variable(s): ", paste0(self$d_cols, collapse = ", "), "\n",
+        "Cluster variable(s): ", paste0(self$cluster_cols, collapse = ", "),
+        "\n",
+        "Covariates: ", paste0(self$x_cols, collapse = ", "), "\n",
+        "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
+        "No. Observations: ", self$n_obs, "\n")
+      cat(header, "\n",
+          "\n------------------ Data summary      ------------------\n",
+          data_info,
+          sep = "")
+      
+      invisible(self)
+    },
   ),
   private = list(
     cluster_cols_ = NULL,
+    check_disjoint_sets = function() {
+      # apply the standard checks from the DoubleMLData class
+      super$check_disjoint_sets()
+      
+      cluster_cols = self$cluster_cols
+      y_col = self$y_col
+      x_cols = self$x_cols
+      d_cols = self$d_cols
+      
+      if (y_col %in% cluster_cols) {
+        stop(paste(
+          y_col,
+          "cannot be set as outcome variable `y_col` and",
+          "cluster variable in 'cluster_cols'."))
+      }
+      if (any(d_cols %in% cluster_cols)) {
+        stop(paste(
+          "At least one variable/column is set as treatment",
+          "variable (`d_cols`) and as a cluster variable (`cluster_cols`)."))
+      }
+      if (any(x_cols %in% cluster_cols)) {
+        stop(paste(
+          "At least one variable/column is set as covariate (`x_cols`)",
+          "and as a cluster variable (`cluster_cols`)."))
+      }
+      
+      if (!is.null(self$z_cols)) {
+        z_cols = self$z_cols
+        
+        if (any(z_cols %in% cluster_cols)) {
+          stop(paste(
+            "At least one variable/column is set as instrumental variable",
+            "(`z_cols`) and as a cluster variable (`cluster_cols`)."))
+        }
+      }
+    }
   )
 )
                        
