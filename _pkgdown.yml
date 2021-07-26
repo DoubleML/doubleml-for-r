@@ -43,6 +43,7 @@ reference:
   - title: Double machine learning data class
     contents:
       - DoubleMLData
+      - DoubleMLClusterData
       - double_ml_data_from_data_frame
       - double_ml_data_from_matrix
   - title: Abstract base class for double machine learning models

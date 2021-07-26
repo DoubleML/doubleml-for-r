@@ -10,7 +10,7 @@ make_pliv_multiway_cluster_CKMS2021(
   M = 25,
   dim_X = 100,
   theta = 1,
-  return_type = "DoubleMLData",
+  return_type = "DoubleMLClusterData",
   ...
 )
 }
@@ -28,12 +28,12 @@ The number of covariates.}
 The value of the causal parameter.}
 
 \item{return_type}{(\code{character(1)}) \cr
-If \code{"DoubleMLData"}, returns a \code{DoubleMLData} object.
+If \code{"DoubleMLClusterData"}, returns a \code{DoubleMLClusterData} object.
 If \code{"data.frame"} returns a \code{data.frame()}.
 If \code{"data.table"} returns a \code{data.table()}.
 If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and
 \code{z} is returned.
-Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLData"}.}
+Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLClusterData"}.}
 }
 \value{
 A data object according to the choice of \code{return_type}.
@@ -66,13 +66,14 @@ with
 and \eqn{\alpha_{ij}^X, \alpha_{i}^X, \alpha_{j}^X \sim \mathcal{N}(0, \Sigma)}
 where \eqn{\Sigma} is a \eqn{p_x \times p_x} matrix with entries
 \eqn{\Sigma_{kj} = s_X^{|j-k|}}.
+
 Further
 
 \eqn{\left(\begin{array}{c} \alpha_{ij}^\varepsilon \\ \alpha_{ij}^v \end{array}\right),
 \left(\begin{array}{c} \alpha_{i}^\varepsilon \\ \alpha_{i}^v \end{array}\right),
 \left(\begin{array}{c} \alpha_{j}^\varepsilon \\ \alpha_{j}^v \end{array}\right)
 \sim \mathcal{N}\left(0, \left(\begin{array}{cc} 1 & s_{\varepsilon v} \\
-s_{\\varepsilon v} & 1 \end{array}\right) \right)}
+s_{\varepsilon v} & 1 \end{array}\right) \right)}
 
 and \eqn{\alpha_{ij}^V, \alpha_{i}^V, \alpha_{j}^V \sim \mathcal{N}(0, 1)}.
 }
