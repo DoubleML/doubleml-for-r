@@ -76,7 +76,7 @@ DoubleMLData = R6Class("DoubleMLData",
     },
 
     #' @field n_treat (`integer(1)`) \cr
-    #' The umber of treatment variables.
+    #' The number of treatment variables.
     n_treat = function(value) {
       if (missing(value)) return(length(self$d_cols))
       else stop("can't set field n_treat")
@@ -356,10 +356,36 @@ DoubleMLData = R6Class("DoubleMLData",
 DoubleMLClusterData = R6Class("DoubleMLData",
   inherit = DoubleMLData,
   active = list(
+    #' @field cluster_cols (`character()`)\cr
+    #' The cluster variable(s).
+    cluster_cols = function(value) {
+      if (missing(value)) return(private$cluster_cols_)
+      else {
+        cluster_cols = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
+        assert_character(cluster_cols, unique = TRUE)
+        assert_subset(cluster_cols, self$all_variables)
+        private$cluster_cols_ = cluster_cols
+        if (reset_value) {
+          # TODO: check what we have to adapt in check_disjoint_sets
+          private$check_disjoint_sets()
+          # TODO: check what we have to adapt in set_data_model
+          #self$set_data_model(self$d_cols[1])
+        }
+      }
+    },
+    
+    #' @field n_cluster_vars (`integer(1)`) \cr
+    #' The number of cluster variables.
+    n_cluster_vars = function(value) {
+      if (missing(value)) return(length(self$cluster_cols))
+      else stop("can't set field n_cluster_vars")
+    },
   ),
   public = list(
   ),
   private = list(
+    cluster_cols_ = NULL,
   )
 )
                        
