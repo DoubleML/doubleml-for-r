@@ -352,6 +352,19 @@ DoubleMLData = R6Class("DoubleMLData",
   )
 )
 
+#' @export
+DoubleMLClusterData = R6Class("DoubleMLData",
+  inherit = DoubleMLData,
+  active = list(
+  ),
+  public = list(
+  ),
+  private = list(
+  )
+)
+                       
+
+
 #' @title Wrapper for Double machine learning data-backend initialization from
 #' data.frame.
 #'
