@@ -408,6 +408,35 @@ DoubleMLClusterData = R6Class("DoubleMLData",
     },
   ),
   public = list(
+    initialize = function(data = NULL,
+                          x_cols = NULL,
+                          y_col = NULL,
+                          d_cols = NULL,
+                          cluster_cols = NULL,
+                          z_cols = NULL,
+                          use_other_treat_as_covariate = TRUE) {
+      
+      # we need to set cluster_cols (needs _data) before call to the super class
+      # initialize because of the x_cols active binding
+      if (all(class(data) == "data.frame")) {
+        data = data.table(data)
+      }
+      assert_class(data, "data.table")
+      assert_character(names(data), unique = TRUE)
+      
+      private$data_ = data
+      
+      self$cluster_cols = cluster_cols
+      
+      super$initialize(data,
+                       x_cols,
+                       y_col,
+                       d_cols,
+                       cluster_cols,
+                       z_cols,
+                       use_other_treat_as_covariate)
+      invisible(self)
+    },
   ),
   private = list(
     cluster_cols_ = NULL,
