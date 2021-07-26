@@ -384,7 +384,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     x_cols = function(value) {
       if (missing(value)) return(private$x_cols_)
       else {
-        if (!is.null(x_cols)) {
+        if (!is.null(value)) {
           super$x_cols = value
         } else {
           if (!is.null(self$z_cols)) {
@@ -405,7 +405,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     n_cluster_vars = function(value) {
       if (missing(value)) return(length(self$cluster_cols))
       else stop("can't set field n_cluster_vars")
-    },
+    }
   ),
   public = list(
     initialize = function(data = NULL,
@@ -432,7 +432,6 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
                        x_cols,
                        y_col,
                        d_cols,
-                       cluster_cols,
                        z_cols,
                        use_other_treat_as_covariate)
       invisible(self)
