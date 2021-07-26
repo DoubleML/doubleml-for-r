@@ -351,7 +351,29 @@ DoubleMLData = R6Class("DoubleMLData",
     }
   )
 )
-
+#' @title Double machine learning data-backend for data with cluster variables
+#'
+#' @description
+#' Double machine learning data-backend for data with cluster variables.
+#'
+#' `DoubleMLClusterData` objects can be initialized from a
+#' [data.table][data.table::data.table()]. Alternatively `DoubleML` provides
+#' functions to initialize from a collection of `matrix` objects or
+#' a `data.frame`. The following functions can be used to create a new
+#' instance of `DoubleMLClusterData`.
+#' * `DoubleMLClusterData$new()` for initialization from a `data.table`.
+#' * [double_ml_data_from_matrix()] for initialization from `matrix` objects,
+#' * [double_ml_data_from_data_frame()] for initialization from a `data.frame`.
+#'
+#'
+#' @examples
+#' library(DoubleML)
+#' dt = make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
+#' obj_dml_data = DoubleMLClusterData$new(dt,
+#'   y_col = "Y",
+#'   d_cols = "D",
+#'   z_cols="Z",
+#'   cluster_cols=c("cluster_var_i", "cluster_var_j"))
 #' @export
 DoubleMLClusterData = R6Class("DoubleMLClusterData",
   inherit = DoubleMLData,
@@ -406,6 +428,33 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     }
   ),
   public = list(
+    #' @description
+    #' Creates a new instance of this [R6][R6::R6Class] class.
+    #'
+    #' @param data ([`data.table`][data.table::data.table()], `data.frame()`)\cr
+    #' Data object.
+    #'
+    #' @param y_col (`character(1)`) \cr
+    #' The outcome variable.
+    #'
+    #' @param d_cols (`character()`) \cr
+    #' The treatment variable(s).
+    #'
+    #' @param cluster_cols (`character()`) \cr
+    #' The cluster variable(s).
+    #'
+    #' @param x_cols (`NULL`, `character()`) \cr
+    #' The covariates. If `NULL`, all variables (columns of `data`) which are
+    #' neither specified as outcome variable `y_col`, nor as treatment variables
+    #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
+    #' Default is `NULL`.
+    #'
+    #' @param z_cols (`NULL`, `character()`) \cr
+    #' The instrumental variables. Default is `NULL`.
+    #'
+    #' @param use_other_treat_as_covariate (`logical(1)`) \cr
+    #' Indicates whether in the multiple-treatment case the other treatment
+    #' variables should be added as covariates. Default is `TRUE`.
     initialize = function(data = NULL,
                           x_cols = NULL,
                           y_col = NULL,
