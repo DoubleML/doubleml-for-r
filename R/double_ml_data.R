@@ -375,6 +375,31 @@ DoubleMLClusterData = R6Class("DoubleMLData",
       }
     },
     
+    #' @field x_cols (`NULL`, `character()`) \cr
+    #' The covariates. If `NULL`, all variables (columns of `data`) which are
+    #' neither specified as outcome variable `y_col`, nor as treatment variables
+    #' `d_cols`, nor as instrumental variables `z_cols`, nor as cluster
+    #' variables `cluster_cols` are used as covariates.
+    #' Default is `NULL`.
+    x_cols = function(value) {
+      if (missing(value)) return(private$x_cols_)
+      else {
+        if (!is.null(x_cols)) {
+          super$x_cols = value
+        } else {
+          if (!is.null(self$z_cols)) {
+            y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols,
+                             self$cluster_cols))
+            x_cols = setdiff(self$all_variables, y_d_z)
+          } else {
+            y_d = union(self$y_col, self$d_cols, self$cluster_cols)
+            x_cols = setdiff(self$all_variables, y_d)
+          }
+          super$x_cols = x_cols
+        }
+      }
+    },
+    
     #' @field n_cluster_vars (`integer(1)`) \cr
     #' The number of cluster variables.
     n_cluster_vars = function(value) {
