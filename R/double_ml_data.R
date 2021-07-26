@@ -367,10 +367,8 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         assert_subset(cluster_cols, self$all_variables)
         private$cluster_cols_ = cluster_cols
         if (reset_value) {
-          # TODO: check what we have to adapt in check_disjoint_sets
           private$check_disjoint_sets()
-          # TODO: check what we have to adapt in set_data_model
-          #self$set_data_model(self$d_cols[1])
+          self$set_data_model(self$d_cols[1])
         }
       }
     },
