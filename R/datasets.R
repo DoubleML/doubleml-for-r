@@ -895,9 +895,9 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
     } else if (return_type == "DoubleMLClusterData") {
       dt = data.table(x, y, d, cluster_vars, z)
       data = DoubleMLClusterData$new(dt,
-                                     y_col = "y", d_cols = "d",
+                                     y_col = "Y", d_cols = "D",
                                      x_cols = colnames(x),
-                                     z_cols = "z",
+                                     z_cols = "Z",
                                      cluster_cols = c('cluster_var_i',
                                                       'cluster_var_j'))
       return(data)
