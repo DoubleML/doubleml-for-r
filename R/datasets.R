@@ -817,7 +817,8 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 #'
 #' @export
 make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
-                                               theta = 1., return_type = "DoubleMLClusterData",
+                                               theta = 1.,
+                                               return_type = "DoubleMLClusterData",
                                                ...) {
   kwargs = list(...)
   pi_10 = if("pi_10" %in% names(args)) kwargs$pi_10 else 1.0
@@ -891,13 +892,14 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
     } else if (return_type == "data.table") {
       data = data.table(x, y, d, cluster_vars, z)
       return(data)
-    } else if (return_type == "DoubleMLData") {
+    } else if (return_type == "DoubleMLClusterData") {
       dt = data.table(x, y, d, cluster_vars, z)
-      # TODO: DoubleMLClusterData
-      data = DoubleMLData$new(dt,
-                              y_col = "y", d_cols = "d",
-                              x_cols = colnames(x),
-                              z_cols = "z")
+      data = DoubleMLClusterData$new(dt,
+                                     y_col = "y", d_cols = "d",
+                                     x_cols = colnames(x),
+                                     z_cols = "z",
+                                     cluster_cols = c('cluster_var_i',
+                                                      'cluster_var_j'))
       return(data)
     }
   }
