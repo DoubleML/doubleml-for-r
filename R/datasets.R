@@ -820,6 +820,8 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
                                                theta = 1.,
                                                return_type = "DoubleMLClusterData",
                                                ...) {
+  assert_choice(return_type,
+                c("data.table", "matrix", "data.frame", "DoubleMLClusterData"))
   kwargs = list(...)
   pi_10 = if("pi_10" %in% names(args)) kwargs$pi_10 else 1.0
   zeta_0 = if("zeta_0" %in% names(args)) kwargs$zeta_0 else 0.5^(1:dim_X)
