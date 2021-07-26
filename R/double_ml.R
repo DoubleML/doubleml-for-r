@@ -361,24 +361,77 @@ DoubleML = R6Class("DoubleML",
       dummy_task = Task$new("dummy_resampling", "regr", self$data$data)
 
       if (self$apply_cross_fitting) {
-
-        dummy_resampling_scheme = rsmp("repeated_cv",
-          folds = self$n_folds,
-          repeats = self$n_rep)$instantiate(dummy_task)
-        train_ids = lapply(
-          1:(self$n_folds * self$n_rep),
-          function(x) dummy_resampling_scheme$train_set(x))
-        test_ids = lapply(
-          1:(self$n_folds * self$n_rep),
-          function(x) dummy_resampling_scheme$test_set(x))
-
-        smpls = lapply(1:self$n_rep, function(i_repeat) {
-          list(
-            train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):
-            (i_repeat * self$n_folds)],
-            test_ids = test_ids[((i_repeat - 1) * self$n_folds + 1):
-            (i_repeat * self$n_folds)])
-        })
+        if (private$is_cluster_data) {
+          all_smpls = list()
+          all_smpls_cluster = list()
+          for (i_rep in 1:self$n_rep) {
+            smpls_cluster_vars = list()
+            for (i_var in 1:self$data$n_cluster_vars) {
+              clusters = unique(self$data$data_model[[self$data$cluster_cols[i_var]]])
+              n_clusters = length(clusters)
+              
+              dummy_task = Task$new("dummy_resampling", "regr",
+                                    data.table(dummy_var=rep(0, n_clusters)))
+              dummy_resampling_scheme = rsmp("repeated_cv",
+                                             folds = self$n_folds,
+                                             repeats = 1)$instantiate(dummy_task)
+              train_ids = lapply(
+                1:(self$n_folds),
+                function(x) clusters[dummy_resampling_scheme$train_set(x)])
+              test_ids = lapply(
+                1:(self$n_folds),
+                function(x) clusters[dummy_resampling_scheme$test_set(x)])
+              
+              smpls_cluster_vars[[i_var]] = list(train_ids = train_ids,
+                                                 test_ids = test_ids)
+            }
+            smpls = list(train_ids = list(), test_ids = list())
+            smpls_cluster = list(train_ids = list(), test_ids = list())
+            cart = expand.grid(lapply(1:self$data$n_cluster_vars,
+                                      function(x) 1:self$n_folds))
+            for (i_smpl in 1:(self$n_folds^self$data$n_cluster_vars)) {
+              ind_train = rep(TRUE, self$data$n_obs)
+              ind_test = rep(TRUE, self$data$n_obs)
+              this_cluster_smpl_train = list()
+              this_cluster_smpl_test = list()
+              for (i_var in 1:self$data$n_cluster_vars) {
+                i_fold = cart[i_smpl, i_var]
+                train_clusters = smpls_cluster_vars[[i_var]]$train_ids[i_fold]
+                test_clusters = smpls_cluster_vars[[i_var]]$test_ids[i_fold]
+                this_cluster_smpl_train[[i_var]] = train_clusters
+                this_cluster_smpl_test[[i_var]] = test_clusters
+                xx = self$data$data_model[[self$data$cluster_cols[i_var]]] %in% train_clusters
+                ind_train = ind_train & xx
+                xx = self$data$data_model[[self$data$cluster_cols[i_var]]] %in% test_clusters
+                ind_test = ind_test & xx
+              }
+              smpls$train_ids[[i_smpl]] = ind_train
+              smpls$test_ids[[i_smpl]] = ind_test
+              smpls_cluster$train_ids[[i_smpl]] = this_cluster_smpl_train
+              smpls_cluster$test_ids[[i_smpl]] = this_cluster_smpl_test
+            }
+            all_smpls[[i_rep]] = smpls
+            all_smpls_cluster[[i_rep]] = smpls_cluster
+          }
+        } else {
+          dummy_resampling_scheme = rsmp("repeated_cv",
+            folds = self$n_folds,
+            repeats = self$n_rep)$instantiate(dummy_task)
+          train_ids = lapply(
+            1:(self$n_folds * self$n_rep),
+            function(x) dummy_resampling_scheme$train_set(x))
+          test_ids = lapply(
+            1:(self$n_folds * self$n_rep),
+            function(x) dummy_resampling_scheme$test_set(x))
+  
+          smpls = lapply(1:self$n_rep, function(i_repeat) {
+            list(
+              train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):
+              (i_repeat * self$n_folds)],
+              test_ids = test_ids[((i_repeat - 1) * self$n_folds + 1):
+              (i_repeat * self$n_folds)])
+          })
+        }
       } else {
         if (self$n_folds == 2) {
           dummy_resampling_scheme = rsmp("holdout", ratio = 0.5)$instantiate(dummy_task)
