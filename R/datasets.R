@@ -821,9 +821,9 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
                                                ...) {
   kwargs = list(...)
   pi_10 = if("pi_10" %in% names(args)) kwargs$pi_10 else 1.0
-  zeta_0 = if("zeta_0" %in% names(args)) kwargs$zeta_0 else 0.5^(1:dim_x)
-  pi_20 = if("pi_20" %in% names(args)) kwargs$pi_20 else 0.5^(1:dim_x)
-  xi_0 = if("xi_0" %in% names(args)) kwargs$xi_0 else 0.5^(1:dim_x)
+  zeta_0 = if("zeta_0" %in% names(args)) kwargs$zeta_0 else 0.5^(1:dim_X)
+  pi_20 = if("pi_20" %in% names(args)) kwargs$pi_20 else 0.5^(1:dim_X)
+  xi_0 = if("xi_0" %in% names(args)) kwargs$xi_0 else 0.5^(1:dim_X)
   
   omega_X = if("omega_X" %in% names(args)) kwargs$omega_X else c(0.25, 0.25)
   omega_epsilon = if("omega_epsilon" %in% names(args)) kwargs$omega_epsilon else c(0.25, 0.25)
@@ -835,26 +835,26 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
   
   alpha_V = rnorm(N * M)
   alpha_V_i = rep(rnorm(N), each = M)
-  alpha_V_j = rep(rnoem(M), times = N)
+  alpha_V_j = rep(rnorm(M), times = N)
   
   cov_mat = matrix(c(1, s_epsilon_v, s_epsilon_v, 1), nrow = 2)
   alpha_eps_v = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
-  alpha_eps = alpha_eps_v[, 0]
-  alpha_v = alpha_eps_v[, 1]
+  alpha_eps = alpha_eps_v[, 1]
+  alpha_v = alpha_eps_v[, 2]
   
-  alpha_eps_v_i = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
-  alpha_eps_i = rep(alpha_eps_v_i[, 0], each = M)
-  alpha_v_i = rep(alpha_eps_v_i[, 1], each = M)
+  alpha_eps_v_i = rmvnorm(n = N, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps_i = rep(alpha_eps_v_i[, 1], each = M)
+  alpha_v_i = rep(alpha_eps_v_i[, 2], each = M)
   
-  alpha_eps_v_j = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
-  alpha_eps_j = rep(alpha_eps_v_j[, 0], times = N)
-  alpha_v_j = rep(alpha_eps_v_j[, 1], times = N)
+  alpha_eps_v_j = rmvnorm(n = M, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps_j = rep(alpha_eps_v_j[, 1], times = N)
+  alpha_v_j = rep(alpha_eps_v_j[, 2], times = N)
   
-  cov_mat = toeplitz(s_X^(0:(dim_x - 1)))
-  alpha_X = rmvnorm(n = N * M, mean = rep(0, dim_x), sigma = cov_mat)
-  xx = rmvnorm(N, mean = rep(0, dim_x), sigma = cov_mat)
+  cov_mat = toeplitz(s_X^(0:(dim_X - 1)))
+  alpha_X = rmvnorm(n = N * M, mean = rep(0, dim_X), sigma = cov_mat)
+  xx = rmvnorm(N, mean = rep(0, dim_X), sigma = cov_mat)
   alpha_X_i = matrix(rep(xx, each=M), ncol=ncol(xx), byrow=FALSE)
-  xx = rmvnorm(M, mean = rep(0, dim_x), sigma = cov_mat)
+  xx = rmvnorm(M, mean = rep(0, dim_X), sigma = cov_mat)
   alpha_X_j = matrix(rep(xx, each=N), ncol=ncol(xx), byrow=TRUE)
   
   # generate variables
@@ -876,7 +876,7 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
   
   cluster_vars = expand.grid(seq(M), seq(N))[, c(2,1)]
   
-  colnames(x) = paste0("X", 1:dim_x)
+  colnames(x) = paste0("X", 1:dim_X)
   colnames(y) = "Y"
   colnames(d) = "D"
   colnames(z) = "Z"
