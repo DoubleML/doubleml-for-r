@@ -823,18 +823,18 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
   assert_choice(return_type,
                 c("data.table", "matrix", "data.frame", "DoubleMLClusterData"))
   kwargs = list(...)
-  pi_10 = if("pi_10" %in% names(args)) kwargs$pi_10 else 1.0
-  zeta_0 = if("zeta_0" %in% names(args)) kwargs$zeta_0 else 0.5^(1:dim_X)
-  pi_20 = if("pi_20" %in% names(args)) kwargs$pi_20 else 0.5^(1:dim_X)
-  xi_0 = if("xi_0" %in% names(args)) kwargs$xi_0 else 0.5^(1:dim_X)
+  pi_10 = if("pi_10" %in% names(kwargs)) kwargs$pi_10 else 1.0
+  zeta_0 = if("zeta_0" %in% names(kwargs)) kwargs$zeta_0 else 0.5^(1:dim_X)
+  pi_20 = if("pi_20" %in% names(kwargs)) kwargs$pi_20 else 0.5^(1:dim_X)
+  xi_0 = if("xi_0" %in% names(kwargs)) kwargs$xi_0 else 0.5^(1:dim_X)
   
-  omega_X = if("omega_X" %in% names(args)) kwargs$omega_X else c(0.25, 0.25)
-  omega_epsilon = if("omega_epsilon" %in% names(args)) kwargs$omega_epsilon else c(0.25, 0.25)
-  omega_v = if("omega_v" %in% names(args)) kwargs$omega_v else c(0.25, 0.25)
-  omega_V = if("omega_V" %in% names(args)) kwargs$omega_V else c(0.25, 0.25)
+  omega_X = if("omega_X" %in% names(kwargs)) kwargs$omega_X else c(0.25, 0.25)
+  omega_epsilon = if("omega_epsilon" %in% names(kwargs)) kwargs$omega_epsilon else c(0.25, 0.25)
+  omega_v = if("omega_v" %in% names(kwargs)) kwargs$omega_v else c(0.25, 0.25)
+  omega_V = if("omega_V" %in% names(kwargs)) kwargs$omega_V else c(0.25, 0.25)
   
-  s_X = if("s_X" %in% names(args)) kwargs$s_X else 0.25
-  s_epsilon_v = if("s_epsilon_v" %in% names(args)) kwargs$s_epsilon_v else 0.25
+  s_X = if("s_X" %in% names(kwargs)) kwargs$s_X else 0.25
+  s_epsilon_v = if("s_epsilon_v" %in% names(kwargs)) kwargs$s_epsilon_v else 0.25
   
   alpha_V = rnorm(N * M)
   alpha_V_i = rep(rnorm(N), each = M)
