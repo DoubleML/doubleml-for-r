@@ -1433,13 +1433,31 @@ DoubleML = R6Class("DoubleML",
           this_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
           clusters = unique(this_cluster_var)
           gamma_hat = 0
-          const = 1 / length(clusters)
-          for (cluster_value in clusters) {
-            ind_cluster = this_cluster_var == cluster_value
-            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                      psi[ind_cluster]))
+          
+          # const = 1 / length(clusters)
+          # for (cluster_value in clusters) {
+          #   ind_cluster = this_cluster_var == cluster_value
+          #   gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
+          #                                             psi[ind_cluster]))
+          # }
+          # j_hat = sum(psi_a) / length(clusters)
+          
+          j_hat = 0
+          smpls = private$get__smpls()
+          smpls_cluster = private$get__smpls_cluster()
+          for (i_fold in 1:self$n_folds) {
+            test_inds = smpls$test_ids[[i_fold]]
+            test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
+            I_k = test_cluster_inds[[1]]
+            const = 1 / length(I_k)
+            for (cluster_value in I_k) {
+              ind_cluster = (this_cluster_var == cluster_value)
+              gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
+                                                        psi[ind_cluster]))
+            }
+            j_hat = j_hat + sum(psi_a[test_inds])/length(I_k)
           }
-          j_hat = sum(psi_a) / length(clusters)
+          
           gamma_hat = gamma_hat / private$n_folds_per_cluster
           j_hat = j_hat / private$n_folds_per_cluster
           c_ = length(clusters)
