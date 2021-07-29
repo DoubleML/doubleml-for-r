@@ -153,6 +153,45 @@ test_that("y_col setter", {
   }
 )
 
+test_that("cluster_cols setter", {
+  set.seed(3141)
+  dml_data = make_plr_CCDDHNR2018(n_obs=101, return_type = "data.frame")
+  df = dml_data[,1:10]
+  names(df) = c(paste0("X", 1:5), c('y', 'd1', 'd2', 'c1', 'c2'))
+  dml_data = double_ml_data_from_data_frame(df, y_col = 'y',
+                                            d_cols = c('d1', 'd2'),
+                                            x_cols = paste0("X", 1:5),
+                                            cluster_cols = c('c1', 'c2'))
+  expect_equal(dml_data$n_obs, 101)
+  
+  # check that after changing d_cols, the data_model gets updated
+  data_comp = df[, c(paste0("X", 1:5), c('y', 'd1', 'd2', 'c2', 'c1'))]
+  dml_data$cluster_cols = c('c2', 'c1')
+  expect_equal(as.data.frame(dml_data$data_model), data_comp)
+  
+  msg = paste0("Assertion on 'cluster_cols' failed: Must be a subset of",
+               " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\},",
+               " but is \\{'c1','c13'\\}.") 
+  expect_error(dml_data$cluster_cols <- c('c1', 'c13'),
+               regexp = msg)
+  
+  msg = paste0("Assertion on 'cluster_cols' failed: Must be a subset of",
+               " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\},",
+               " but is \\{'c13'\\}.") 
+  expect_error(dml_data$cluster_cols <- 'c13',
+               regexp = msg)
+  
+  msg = "Assertion on 'cluster_cols' failed: Must be of type 'character', not 'double'."
+  expect_error(dml_data$cluster_cols <- 5,
+               regexp = msg)
+  
+  # check single treatment variable
+  dml_data$cluster_cols = 'c2'
+  expect_equal(dml_data$cluster_cols, 'c2')
+  expect_equal(dml_data$n_cluster_vars, 1)
+}
+)
+
 test_that("Tests for use_other_treat_as_covariate", {
   set.seed(3141)
   dml_data = make_plr_CCDDHNR2018(n_obs=101, return_type = "data.frame")
