@@ -312,7 +312,7 @@ DoubleMLData = R6Class("DoubleMLData",
       if (y_col %in% x_cols) {
         stop(paste(
           y_col,
-          "cannot be set as outcome variable `y_col` and",
+          "cannot be set as outcome variable 'y_col' and",
           "covariate in 'x_cols'."))
       }
       if (y_col %in% d_cols) {
@@ -324,7 +324,7 @@ DoubleMLData = R6Class("DoubleMLData",
       if (any(d_cols %in% x_cols)) {
         stop(paste(
           "At least one variable/column is set as treatment",
-          "variable (`d_cols`) and as a covariate (`x_cols`).",
+          "variable ('d_cols') and as a covariate ('x_cols').",
           "Consider using parameter 'use_other_treat_as_covariate'."))
       }
 
@@ -412,7 +412,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
                              self$cluster_cols))
             x_cols = setdiff(self$all_variables, y_d_z)
           } else {
-            y_d = union(self$y_col, self$d_cols, self$cluster_cols)
+            y_d = unique(c(self$y_col, self$d_cols, self$cluster_cols))
             x_cols = setdiff(self$all_variables, y_d)
           }
           super$x_cols = x_cols
@@ -539,18 +539,18 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
       if (y_col %in% cluster_cols) {
         stop(paste(
           y_col,
-          "cannot be set as outcome variable `y_col` and",
+          "cannot be set as outcome variable 'y_col' and",
           "cluster variable in 'cluster_cols'."))
       }
       if (any(d_cols %in% cluster_cols)) {
         stop(paste(
           "At least one variable/column is set as treatment",
-          "variable (`d_cols`) and as a cluster variable (`cluster_cols`)."))
+          "variable ('d_cols') and as a cluster variable ('cluster_cols')."))
       }
       if (any(x_cols %in% cluster_cols)) {
         stop(paste(
-          "At least one variable/column is set as covariate (`x_cols`)",
-          "and as a cluster variable (`cluster_cols`)."))
+          "At least one variable/column is set as covariate ('x_cols')",
+          "and as a cluster variable ('cluster_cols')."))
       }
       
       if (!is.null(self$z_cols)) {
@@ -559,7 +559,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         if (any(z_cols %in% cluster_cols)) {
           stop(paste(
             "At least one variable/column is set as instrumental variable",
-            "(`z_cols`) and as a cluster variable (`cluster_cols`)."))
+            "('z_cols') and as a cluster variable ('cluster_cols')."))
         }
       }
     }
