@@ -809,9 +809,16 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 #' If `"DoubleMLClusterData"`, returns a `DoubleMLClusterData` object.
 #' If `"data.frame"` returns a `data.frame()`.
 #' If `"data.table"` returns a `data.table()`.
-#' If `"matrix"` a named `list()` with entries `X`, `y`, `d` and
-#' `z` is returned.
+#' If `"matrix"` a named `list()` with entries `X`, `y`, `d`, `z` and
+#' `cluster_vars` is returned.
 #' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLClusterData"`.
+#' 
+#' Additional keyword arguments to set non-default values for the parameters
+#' \eqn{\pi_{10}=1.0},
+#' \eqn{\omega_X = \omega_{\varepsilon} = \omega_V = \omega_v = (0.25, 0.25)},
+#' \eqn{s_X = s_{\varepsilon v} = 0.25}, or the \eqn{p_x}-vectors
+#' \eqn{\zeta_0 = \pi_{20} = \xi_0} with default entries
+#' \eqn{\zeta_{0})_j = 0.5^j}.
 #'
 #' @return A data object according to the choice of `return_type`.
 #'
