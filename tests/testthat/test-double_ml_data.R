@@ -254,7 +254,7 @@ test_that("Unit tests for DoubleMLData", {
 
     D10_1d_setd = D10_1d$clone()$set_data_model("d2")
 
-    msg1 = "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\). Consider using parameter 'use_other_treat_as_covariate'."
+    msg1 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\). Consider using parameter 'use_other_treat_as_covariate'."
     
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = X_cols1,
@@ -271,7 +271,7 @@ test_that("Unit tests for DoubleMLData", {
                                                 z_cols = c(z_indx, X_cols1[1])), 
                  regexp = msg2)
     
-    msg3 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
+    msg3 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
     expect_error(double_ml_data_from_data_frame(data,
                                                 x_cols = c(y_indx, X_cols1),
                                                 y_col = y_indx,
@@ -325,7 +325,7 @@ test_that("Unit tests for DoubleMLData", {
     expect_identical(D9$data_model, D9_noXcols$data_model)
 
     # Exception handling
-    msg8 = "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\). Consider using parameter 'use_other_treat_as_covariate'."
+    msg8 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\). Consider using parameter 'use_other_treat_as_covariate'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = X_cols1,
                                   y_col = y_indx,
@@ -341,7 +341,7 @@ test_that("Unit tests for DoubleMLData", {
                                   z_cols = c(z_indx, X_cols1[1])),
                  regexp = msg9)
 
-    msg10 = "y cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
+    msg10 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
     expect_error(DoubleMLData$new(data,
                                   x_cols = c(y_indx, X_cols1),
                                   y_col = y_indx,
