@@ -1351,7 +1351,21 @@ DoubleML = R6Class("DoubleML",
       }
 
       else if (dml_procedure == "dml2") {
-        coef = private$orth_est()
+        if (private$is_cluster_data) {
+          # See Chiang et al. (2021) Algorithm 1
+          psi_a = private$get__psi_a()
+          psi_b = private$get__psi_b()
+          psi_a_subsample_mean = 0.
+          psi_b_subsample_mean = 0.
+          for (i_fold in seq_len(length(test_ids))) {
+            test_index = test_ids[[i_fold]]
+            psi_a_subsample_mean = psi_a_subsample_mean + mean(psi_a[test_index])
+            psi_b_subsample_mean = psi_b_subsample_mean + mean(psi_b[test_index])
+          }
+          coef = -sum(psi_b_subsample_mean) / sum(psi_a_subsample_mean)
+        } else {
+          coef = private$orth_est()
+        }
       }
 
       return(coef)
