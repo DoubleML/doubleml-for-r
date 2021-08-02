@@ -1052,8 +1052,9 @@ DoubleML = R6Class("DoubleML",
     summary_table = NULL,
     learner_class = list(),
     is_cluster_data = FALSE,
-    n_folds_per_cluster = NA,
+    n_folds_per_cluster = NA_integer_,
     smpls_cluster_ = NULL,
+    var_scaling_factor = NA_real_,
     initialize_double_ml = function(data,
       n_folds,
       n_rep,
@@ -1371,14 +1372,7 @@ DoubleML = R6Class("DoubleML",
       return(coef)
     },
     se_causal_pars = function() {
-      if (self$apply_cross_fitting) {
-        se = sqrt(private$var_est())
-      } else {
-        smpls = private$get__smpls()
-        test_ids = smpls$test_ids
-        test_index = test_ids[[1]]
-        se = sqrt(private$var_est(test_index))
-      }
+      se = sqrt(private$var_est())
       return(se)
     },
     agg_cross_fit = function() {
@@ -1388,17 +1382,12 @@ DoubleML = R6Class("DoubleML",
       private$coef_ = apply(
         self$all_coef, 1,
         function(x) median(x, na.rm = TRUE))
-      if (self$apply_cross_fitting) {
-        n_obs = self$data$n_obs
-      } else {
-        smpls = private$get__smpls()
-        test_ids = smpls$test_ids
-        test_index = test_ids[[1]]
-        n_obs = length(test_index)
-      }
+      # TODO: In the edge case of repeated no-cross-fitting, the test sets might
+      # have different size and therefore it would note be valid to always use
+      # the same self._var_scaling_factor
       private$se_ = sqrt(apply(
-        n_obs * self$all_se^2 + (self$all_coef - self$coef)^2, 1,
-        function(x) median(x, na.rm = TRUE))/n_obs)
+        private$var_scaling_factor * self$all_se^2 + (self$all_coef - self$coef)^2,
+        1, function(x) median(x, na.rm = TRUE)) / private$var_scaling_factor)
 
       invisible(self)
     },
@@ -1431,32 +1420,24 @@ DoubleML = R6Class("DoubleML",
       res = list(boot_coef = boot_coef, boot_t_stat = boot_t_stat)
       return(res)
     },
-    var_est = function(inds = NULL) {
+    var_est = function() {
       psi_a = private$get__psi_a()
       psi = private$get__psi()
-      if (!is.null(inds)) {
+      if (self$apply_cross_fitting) {
+        private$var_scaling_factor = self$data$n_obs
+      } else {
+        smpls = private$get__smpls()
+        test_ids = smpls$test_ids
+        test_index = test_ids[[1]]
         psi_a = psi_a[inds]
         psi = psi[inds]
-      }
-      if (self$apply_cross_fitting) {
-        n_obs = self$data$n_obs
-      } else {
-        n_obs = length(inds)
+        private$var_scaling_factor = length(inds)
       }
       if (private$is_cluster_data) {
         if (self$data$n_cluster_vars == 1) {
           this_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
           clusters = unique(this_cluster_var)
           gamma_hat = 0
-          
-          # const = 1 / length(clusters)
-          # for (cluster_value in clusters) {
-          #   ind_cluster = this_cluster_var == cluster_value
-          #   gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-          #                                             psi[ind_cluster]))
-          # }
-          # j_hat = sum(psi_a) / length(clusters)
-          
           j_hat = 0
           smpls = private$get__smpls()
           smpls_cluster = private$get__smpls_cluster()
@@ -1475,8 +1456,8 @@ DoubleML = R6Class("DoubleML",
           
           gamma_hat = gamma_hat / private$n_folds_per_cluster
           j_hat = j_hat / private$n_folds_per_cluster
-          c_ = length(clusters)
-          sigma2_hat = gamma_hat / (j_hat^2) / c_
+          private$var_scaling_factor = length(clusters)
+          sigma2_hat = gamma_hat / (j_hat^2) / private$var_scaling_factor
         } else {
           assert_choice(self$data$n_cluster_vars, 2)
           first_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
@@ -1509,12 +1490,12 @@ DoubleML = R6Class("DoubleML",
           j_hat = j_hat / (private$n_folds_per_cluster^2)
           n_first_clusters = length(unique(first_cluster_var))
           n_second_clusters = length(unique(second_cluster_var))
-          c_ = min(n_first_clusters, n_second_clusters)
-          sigma2_hat = gamma_hat / (j_hat^2) / c_
+          private$var_scaling_factor = min(n_first_clusters, n_second_clusters)
+          sigma2_hat = gamma_hat / (j_hat^2) / private$var_scaling_factor
         }
       } else {
         J = mean(psi_a)
-        sigma2_hat = 1 / n_obs * mean(psi^2) / (J^2)
+        sigma2_hat = mean(psi^2) / (J^2) / private$var_scaling_factor
       }
       return(sigma2_hat)
     },
