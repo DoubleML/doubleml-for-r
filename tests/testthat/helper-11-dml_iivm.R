@@ -12,7 +12,7 @@ dml_irmiv = function(data, y, d, z,
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
   
-  all_thetas = all_ses = rep(NA, n_rep)
+  all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
   
   for (i_rep in 1:n_rep) {
@@ -39,7 +39,7 @@ dml_irmiv = function(data, y, d, z,
     
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA, n_folds)
+      thetas = vars = rep(NA_real_, n_folds)
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
         orth_est = orth_irmiv_dml(
@@ -257,7 +257,7 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
   D = data[, d]
   Y = data[, y]
   Z = data[, z]
-  m_hat = g0_hat = g1_hat = r0_hat = r1_hat = rep(NA, n)
+  m_hat = g0_hat = g1_hat = r0_hat = r1_hat = rep(NA_real_, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
@@ -279,7 +279,7 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
 
 # Orthogonalized Estimation of Coefficient in irm
 orth_irmiv_dml = function(m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, score) {
-  theta = NA
+  theta = NA_real_
 
   if (score == "LATE" | score == "partialling out") {
     theta = 1 / mean(r1_hat - r0_hat + z * (d - r1_hat) / m_hat - ((1 - z) * (d - r0_hat) / (1 - m_hat))) *

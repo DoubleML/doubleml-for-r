@@ -8,7 +8,7 @@ dml_pliv_partial_xz = function(data, y, d, z,
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
   
-  all_thetas = all_ses = rep(NA, n_rep)
+  all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
   
   for (i_rep in 1:n_rep) {
@@ -28,7 +28,7 @@ dml_pliv_partial_xz = function(data, y, d, z,
     
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA, n_folds)
+      thetas = vars = rep(NA_real_, n_folds)
       for (i in 1:n_folds) {
         test_index = this_smpl$test_ids[[i]]
         orth_est = orth_pliv_partial_xz_dml(
@@ -119,7 +119,7 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   # nuisance r
   r_hat_list = list()
   for (i in seq_len(length(train_ids))) {
-    m_hat_train = rep(NA, n)
+    m_hat_train = rep(NA_real_, n)
     train_index = train_ids[[i]]
     m_hat_train[train_index] = m_hat_list_train[[i]]
     r_indx = names(data) != y & names(data) != d & (names(data) %in% z == FALSE)
@@ -156,7 +156,7 @@ compute_pliv_partial_xz_residuals = function(data, y, d, z, n_folds, smpls,
   D = data[, d]
   Y = data[, y]
   
-  u_hat = v_hat = w_hat = rep(NA, n)
+  u_hat = v_hat = w_hat = rep(NA_real_, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]

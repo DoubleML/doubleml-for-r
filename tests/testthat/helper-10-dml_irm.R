@@ -10,7 +10,7 @@ dml_irm = function(data, y, d,
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
   
-  all_thetas = all_ses = rep(NA, n_rep)
+  all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
   
   for (i_rep in 1:n_rep) {
@@ -36,7 +36,7 @@ dml_irm = function(data, y, d,
     
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA, n_folds)
+      thetas = vars = rep(NA_real_, n_folds)
       
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
@@ -184,7 +184,7 @@ extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score,
   D = data[, d]
   Y = data[, y]
   
-  g0_hat = g1_hat = u0_hat = u1_hat = m_hat = p_hat = rep(NA, n)
+  g0_hat = g1_hat = u0_hat = u1_hat = m_hat = p_hat = rep(NA_real_, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
