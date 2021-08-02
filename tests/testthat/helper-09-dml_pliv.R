@@ -9,7 +9,7 @@ dml_pliv = function(data, y, d, z,
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
   
-  all_thetas = all_ses = rep(NA, n_rep)
+  all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
   
   for (i_rep in 1:n_rep) {
@@ -30,7 +30,7 @@ dml_pliv = function(data, y, d, z,
     
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA, n_folds)
+      thetas = vars = rep(NA_real_, n_folds)
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
         orth_est = orth_pliv_dml(
@@ -149,7 +149,7 @@ compute_pliv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
   Y = data[, y]
   Z = data[, z]
   
-  v_hat = u_hat = w_hat = rep(NA, n)
+  v_hat = u_hat = w_hat = rep(NA_real_, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]

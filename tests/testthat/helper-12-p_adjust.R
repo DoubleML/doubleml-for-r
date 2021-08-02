@@ -67,7 +67,7 @@ p_adjust.DML = function(x, method = "RW", ...) {
     # v = x$residuals$v
     # ev = e * v
     # Ev2 = colMeans(v^2)
-    # Omegahat = matrix(NA, ncol = k, nrow = k)
+    # Omegahat = matrix(NA_real_, ncol = k, nrow = k)
     # for (j in 1:k) {
     #   for (l in 1:k) {
     #     Omegahat[j, l] = Omegahat[l, j] = 1/(Ev2[j] * Ev2[l]) * mean(ev[, j] * ev[, l])
@@ -75,7 +75,7 @@ p_adjust.DML = function(x, method = "RW", ...) {
     # }
     # se = sqrt(diag(Omegahat))
     #
-    # Beta_i = matrix(NA, ncol = k, nrow = B)
+    # Beta_i = matrix(NA_real_, ncol = k, nrow = B)
     # for (i in 1:B) {
     #   Beta_i[i, ] = MASS::mvrnorm(mu = rep(0, k), Sigma = Omegahat/n)
     # }

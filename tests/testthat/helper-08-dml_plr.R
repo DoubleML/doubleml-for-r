@@ -9,7 +9,7 @@ dml_plr = function(data, y, d,
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
 
-  all_thetas = all_ses = rep(NA, n_rep)
+  all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
 
   for (i_rep in 1:n_rep) {
@@ -66,7 +66,7 @@ dml_plr_multitreat = function(data, y, d,
   
   for (i_rep in 1:n_rep) {
     this_smpl = smpls[[i_rep]]
-    thetas_this_rep = ses_this_rep = rep(NA, n_d)
+    thetas_this_rep = ses_this_rep = rep(NA_real_, n_d)
     all_preds_this_rep = list()
     
     for (i_d in seq(n_d)) {
@@ -97,7 +97,7 @@ dml_plr_multitreat = function(data, y, d,
     
   }
   
-  theta = se = t = pval = rep(NA, n_d)
+  theta = se = t = pval = rep(NA_real_, n_d)
   if (length(this_smpl$train_ids) > 1) {
     n = nrow(data)
   } else {
@@ -145,7 +145,7 @@ fit_plr_single_split = function(data, y, d,
   
   # DML 1
   if (dml_procedure == "dml1") {
-    thetas = rep(NA, n_folds)
+    thetas = rep(NA_real_, n_folds)
     for (i in 1:n_folds) {
       test_index = test_ids[[i]]
       
@@ -249,7 +249,7 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   D = data[, d]
   Y = data[, y]
   
-  v_hat = u_hat = w_hat = rep(NA, n)
+  v_hat = u_hat = w_hat = rep(NA_real_, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
@@ -268,7 +268,7 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
 
 # Orthogonalized Estimation of Coefficient in PLR
 orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
-  theta = NA
+  theta = NA_real_
 
   if (score == "partialling out") {
     res_fit = stats::lm(u_hat ~ 0 + v_hat)
@@ -335,7 +335,7 @@ boot_plr_multitreat = function(thetas, ses, data, y, d,
   for (i_rep in 1:n_rep) {
     n = nrow(data)
     weights = draw_bootstrap_weights(bootstrap, n_rep_boot, n)
-    boot_theta = boot_t_stat = matrix(NA, nrow = n_d, ncol = n_rep_boot)
+    boot_theta = boot_t_stat = matrix(NA_real_, nrow = n_d, ncol = n_rep_boot)
     for (i_d in seq(n_d)) {
       this_res = boot_plr_single_split(thetas[[i_rep]][i_d], ses[[i_rep]][i_d],
                                        data, y, d[i_d], n_folds, smpls[[i_rep]],
