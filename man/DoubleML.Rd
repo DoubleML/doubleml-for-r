@@ -128,6 +128,9 @@ Standard errors for the causal parameter(s) after calling \code{fit()}.}
 \item{\code{smpls}}{(\code{list()}) \cr
 The partition used for cross-fitting.}
 
+\item{\code{smpls_cluster}}{(\code{list()}) \cr
+The partition of clusters used for cross-fitting.}
+
 \item{\code{t_stat}}{(\code{numeric()}) \cr
 t-statistics for the causal parameter(s) after calling \code{fit()}.}
 

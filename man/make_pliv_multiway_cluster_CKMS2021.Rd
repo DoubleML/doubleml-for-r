@@ -31,9 +31,16 @@ The value of the causal parameter.}
 If \code{"DoubleMLClusterData"}, returns a \code{DoubleMLClusterData} object.
 If \code{"data.frame"} returns a \code{data.frame()}.
 If \code{"data.table"} returns a \code{data.table()}.
-If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d} and
-\code{z} is returned.
-Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLClusterData"}.}
+If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d}, \code{z} and
+\code{cluster_vars} is returned.
+Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLClusterData"}.
+
+Additional keyword arguments to set non-default values for the parameters
+\eqn{\pi_{10}=1.0},
+\eqn{\omega_X = \omega_{\varepsilon} = \omega_V = \omega_v = (0.25, 0.25)},
+\eqn{s_X = s_{\varepsilon v} = 0.25}, or the \eqn{p_x}-vectors
+\eqn{\zeta_0 = \pi_{20} = \xi_0} with default entries
+\eqn{\zeta_{0})_j = 0.5^j}.}
 }
 \value{
 A data object according to the choice of \code{return_type}.
