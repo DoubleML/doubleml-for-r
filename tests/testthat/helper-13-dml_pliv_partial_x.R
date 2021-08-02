@@ -9,7 +9,7 @@ dml_pliv_partial_x = function(data, y, d, z,
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
   
-  all_thetas = all_ses = rep(NA, n_rep)
+  all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
   
   for (i_rep in 1:n_rep) {
@@ -29,7 +29,7 @@ dml_pliv_partial_x = function(data, y, d, z,
     
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA, n_folds)
+      thetas = vars = rep(NA_real_, n_folds)
       for (i in 1:n_folds) {
         test_index = this_smpl$test_ids[[i]]
         orth_est = orth_pliv_partial_x_dml(
@@ -129,8 +129,8 @@ fit_nuisance_pliv_partial_x = function(data, y, d, z,
   r_hat_list = lapply(r_r$predictions(), function(x) x$response)
   
   n = nrow(data)
-  r_hat_array = rep(NA, n)
-  m_hat_array = matrix(NA, nrow = n, ncol = n_z)
+  r_hat_array = rep(NA_real_, n)
+  m_hat_array = matrix(NA_real_, nrow = n, ncol = n_z)
   
   for (i_fold in seq_len(length(test_ids))) {
     test_index = test_ids[[i_fold]]
@@ -164,7 +164,7 @@ compute_pliv_partial_x_residuals = function(data, y, d, z, n_folds, smpls,
   D = data[, d]
   Y = data[, y]
   
-  u_hat = w_hat = rep(NA, n)
+  u_hat = w_hat = rep(NA_real_, n)
   
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
