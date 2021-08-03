@@ -150,7 +150,7 @@ fit_nuisance_irm = function(data, y, d,
       target = y, positive = "1"
     )
   } else {
-    task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", d), backend = data_g, target = y)
+    task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", y), backend = data_g, target = y)
   }
   ml_g0 = ml_g$clone()
   if (!is.null(params_g)) {
@@ -180,7 +180,7 @@ fit_nuisance_irm = function(data, y, d,
         target = y, positive = "1"
       )
     } else {
-      task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
+      task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", y), backend = data_g, target = y)
     }
     ml_g1 = ml_g$clone()
     if (!is.null(params_g)) {
