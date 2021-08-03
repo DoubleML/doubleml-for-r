@@ -1,4 +1,4 @@
-context("Unit tests for IRM")
+context("Unit tests for IRM, binary outcome")
 
 library("mlr3learners")
 
