@@ -94,6 +94,22 @@ data_iivm = list(
 )
 
 set.seed(1282)
+df = dgp1_irmiv_binary(
+  setting$theta,
+  setting$n,
+  setting$p
+)
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
+  y_col = "y",
+  d_cols = "d", x_cols = Xnames, z_col = "z"
+)
+data_iivm_binary = list(
+  df = df,
+  dml_data = dml_data
+)
+
+set.seed(1282)
 data_plr_multi = dgp1_toeplitz(
   setting$n,
   setting$p

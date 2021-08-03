@@ -389,3 +389,46 @@ get_default_mlmethod_irm_binary = function(learner) {
     ml_g = ml_g, ml_m = ml_m
   ))
 }
+
+get_default_mlmethod_iivm_binary = function(learner) {
+  if (learner == "cv_glmnet") {
+    mlmethod = list(
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("classif.", learner),
+      mlmethod_r = paste0("classif.", learner)
+    )
+    slambda = "lambda.min"
+
+    params = list(
+      params_m = list(s = slambda),
+      params_g = list(s = slambda),
+      params_r = list(s = slambda)
+    )
+  }
+
+  else if (learner == "rpart") {
+    mlmethod = list(
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("classif.", learner),
+      mlmethod_r = paste0("classif.", learner)
+    )
+
+    params = list(
+      params_m = list(cp = 0.01, minsplit = 20),
+      params_g = list(cp = 0.01, minsplit = 20),
+      params_r = list(cp = 0.01, minsplit = 20)
+    )
+
+  }
+  ml_g = mlr3::lrn(mlmethod$mlmethod_g, predict_type = "prob")
+  ml_g$param_set$values = params$params_g
+  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+  ml_m$param_set$values = params$params_m
+  ml_r = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
+  ml_r$param_set$values = params$params_r
+
+  return(list(
+    mlmethod = mlmethod, params = params,
+    ml_g = ml_g, ml_m = ml_m, ml_r = ml_r
+  ))
+}
