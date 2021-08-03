@@ -245,7 +245,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "ml_g" = NULL,
         "ml_m" = NULL,
         "ml_r" = NULL)
-      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
+      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
       ml_r = private$assert_learner(ml_r, "ml_r", Regr = FALSE, Classif = TRUE)
 
