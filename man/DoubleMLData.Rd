@@ -144,10 +144,10 @@ Print DoubleMLData objects.
 \if{html}{\out{<a id="method-set_data_model"></a>}}
 \if{latex}{\out{\hypertarget{method-set_data_model}{}}}
 \subsection{Method \code{set_data_model()}}{
-Setter function for \code{data_model}. The function implements the causal model
-as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and \code{z_cols} and
-assigns the role for the treatment variables in the multiple-treatment
-case.
+Setter function for \code{data_model}. The function implements the causal
+model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and
+\code{z_cols} and assigns the role for the treatment variables in the
+multiple-treatment case.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLData$set_data_model(treatment_var)}\if{html}{\out{</div>}}
 }

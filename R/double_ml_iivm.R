@@ -138,9 +138,11 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
     #' The `DoubleMLData` object providing the data and specifying the variables
     #' of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
+    #'  @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`LearnerClassif`][mlr3::LearnerClassif], `character(1)`,) \cr
+    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] or
+    #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
+    #' possibly with specified parameters, for example
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
     #' Alternatively, a `character(1)` specifying the name of a
     #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
@@ -150,7 +152,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
     #' for example `"regr.cv_glmnet"`. \cr
     #' `ml_g` refers to the nuisance function \eqn{g_0(Z,X) = E[Y|X,Z]}.
     #'
-    #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`) \cr
+    #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`)\cr
     #' An object of the class
     #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
     #' possibly with specified parameters, for example
@@ -163,7 +165,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
     #' for example `"classif.cv_glmnet"`. \cr
     #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.
     #'
-    #' @param ml_r ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`) \cr
+    #' @param ml_r ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`)\cr
     #' An object of the class
     #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
     #' possibly with specified parameters, for example

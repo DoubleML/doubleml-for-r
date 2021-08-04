@@ -107,9 +107,11 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
     #' The `DoubleMLData` object providing the data and specifying the variables
     #' of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
+    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`LearnerClassif`][mlr3::LearnerClassif], `character(1)`,) \cr
+    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] or
+    #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
+    #' possibly with specified parameters, for example
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
     #' Alternatively, a `character(1)` specifying the name of a
     #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
@@ -119,7 +121,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
     #' `"regr.cv_glmnet"`.  \cr
     #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X,D]}.
     #'
-    #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`) \cr
+    #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`)\cr
     #' An object of the class
     #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
     #' possibly with specified parameters, for example
@@ -242,7 +244,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         fold_specific_params = private$fold_specific_params)
 
       g1_hat = NULL
-      if ((is.character(self$score) && self$score == "ATE") | is.function(self$score)) {
+      if ((is.character(self$score) && self$score == "ATE") |
+        is.function(self$score)) {
         g1_hat = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,

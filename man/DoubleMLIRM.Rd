@@ -152,9 +152,11 @@ Creates a new instance of this R6 class.
 The \code{DoubleMLData} object providing the data and specifying the variables
 of the causal model.}
 
-\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to
-pass a learner, possibly with specified parameters, for example
+\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)},) \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} or
+\link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner,
+possibly with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a
 \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in
@@ -164,7 +166,7 @@ Alternatively, a \code{character(1)} specifying the name of a
 \code{"regr.cv_glmnet"}.  \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y|X,D]}.}
 
-\item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
+\item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)})\cr
 An object of the class
 \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner,
 possibly with specified parameters, for example

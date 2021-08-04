@@ -175,11 +175,13 @@ Creates a new instance of this R6 class.
 \describe{
 \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the data and specifying the variables
-of the causal model.}
+of the causal model.
 
-\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}}, \code{character(1)}) \cr
-An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} to
-pass a learner, possibly with specified parameters, for example
+@param ml_g (\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)},) \cr
+An object of the class \link[mlr3:LearnerRegr]{mlr3 regression learner} or
+\link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner,
+possibly with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}.
 Alternatively, a \code{character(1)} specifying the name of a
 \link[mlr3:LearnerRegr]{mlr3 regression learner} that is available in
@@ -189,7 +191,7 @@ Alternatively, a \code{character(1)} specifying the name of a
 for example \code{"regr.cv_glmnet"}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(Z,X) = E[Y|X,Z]}.}
 
-\item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
+\item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)})\cr
 An object of the class
 \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner,
 possibly with specified parameters, for example
@@ -202,7 +204,7 @@ in \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its extension packages
 for example \code{"classif.cv_glmnet"}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.}
 
-\item{\code{ml_r}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)}) \cr
+\item{\code{ml_r}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{character(1)})\cr
 An object of the class
 \link[mlr3:LearnerClassif]{mlr3 classification learner} to pass a learner,
 possibly with specified parameters, for example
