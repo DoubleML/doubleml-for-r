@@ -9,7 +9,7 @@ dml_pliv_partial_x = function(data, y, d, z,
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
-  
+
   all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
 
@@ -135,7 +135,7 @@ fit_nuisance_pliv_partial_x = function(data, y, d, z,
   n = nrow(data)
   r_hat_array = rep(NA_real_, n)
   m_hat_array = matrix(NA_real_, nrow = n, ncol = n_z)
-  
+
   for (i_fold in seq_len(length(test_ids))) {
     test_index = test_ids[[i_fold]]
     r_hat_array[test_index] = r_hat_list[[i_fold]]
@@ -169,9 +169,9 @@ compute_pliv_partial_x_residuals = function(data, y, d, z, n_folds, smpls,
   n = nrow(data)
   D = data[, d]
   Y = data[, y]
-  
+
   u_hat = w_hat = rep(NA_real_, n)
-  
+
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
 

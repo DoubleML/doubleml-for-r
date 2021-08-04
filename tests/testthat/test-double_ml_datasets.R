@@ -54,7 +54,7 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
       expect_is(df$y, "matrix")
       expect_is(df$d, "matrix")
     }
-    
+
     # Test IIVM
     if (return_type != "matrix") {
       df = make_iivm_data(return_type = return_type)

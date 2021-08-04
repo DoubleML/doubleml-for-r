@@ -130,7 +130,8 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
       select_cols = X_cols,
       learner_class = learner_class)
   })
-  ml_learner = initiate_learner(learner, learner_class, params = learner$param_set$values)
+  ml_learner = initiate_learner(learner, learner_class,
+    params = learner$param_set$values)
   tuning_instance = lapply(task_tune, function(x) {
     TuningInstanceSingleCrit$new(
       task = x,
@@ -190,7 +191,9 @@ extract_prediction = function(obj_resampling, learner_class, n_obs,
     }
   } else {
     preds = rep(NA_real_, n_obs)
-    if (testR6(obj_resampling, classes = "ResampleResult")) obj_resampling = list(obj_resampling)
+    if (testR6(obj_resampling, classes = "ResampleResult")) {
+      obj_resampling = list(obj_resampling)
+    }
     n_obj_rsmp = length(obj_resampling)
     for (i_obj_rsmp in 1:n_obj_rsmp) {
       f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction("test"))
@@ -201,11 +204,15 @@ extract_prediction = function(obj_resampling, learner_class, n_obs,
   return(preds)
 }
 
-initiate_learner = function(learner, learner_class, params, return_train_preds = FALSE) {
+initiate_learner = function(learner, learner_class, params,
+  return_train_preds = FALSE) {
+
   ml_learner = learner$clone()
 
   if (!is.null(params)) {
-    ml_learner$param_set$values = insert_named(ml_learner$param_set$values, params)
+    ml_learner$param_set$values = insert_named(
+      ml_learner$param_set$values,
+      params)
   } # else if (is.null(params) | length(params) == 0) {
   # message("No parameters provided for learners. Default values are used.")
   # }

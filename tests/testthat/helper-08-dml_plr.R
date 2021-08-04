@@ -98,7 +98,7 @@ dml_plr_multitreat = function(data, y, d,
     all_ses[[i_rep]] = ses_this_rep
 
   }
-  
+
   theta = se = t = pval = rep(NA_real_, n_d)
   if (length(this_smpl$train_ids) > 1) {
     n = nrow(data)
@@ -256,9 +256,9 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   n = nrow(data)
   D = data[, d]
   Y = data[, y]
-  
+
   v_hat = u_hat = w_hat = rep(NA_real_, n)
-  
+
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
 

@@ -289,10 +289,10 @@ DoubleMLData = R6Class("DoubleMLData",
     },
 
     #' @description
-    #' Setter function for `data_model`. The function implements the causal model
-    #' as specified by the user via `y_col`, `d_cols`, `x_cols` and `z_cols` and
-    #' assigns the role for the treatment variables in the multiple-treatment
-    #' case.
+    #' Setter function for `data_model`. The function implements the causal
+    #' model as specified by the user via `y_col`, `d_cols`, `x_cols` and
+    #' `z_cols` and assigns the role for the treatment variables in the
+    #' multiple-treatment case.
     #' @param treatment_var (`character()`)\cr
     #' Active treatment variable that will be set to `treat_col`.
     set_data_model = function(treatment_var) {

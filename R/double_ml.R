@@ -780,8 +780,9 @@ DoubleML = R6Class("DoubleML",
         private$summary_table = table
 
         if (length(k)) {
-          cat("Estimates and significance testing of the",
-              "effect of target variables\n")
+          cat(
+            "Estimates and significance testing of the",
+            "effect of target variables\n")
           res = as.matrix(printCoefmat(private$summary_table,
             digits = digits,
             P.values = TRUE,
@@ -834,8 +835,9 @@ DoubleML = R6Class("DoubleML",
         a = c(a, 1 - a)
         pct = format.perc(a, 3)
         fac = qnorm(a)
-        ci = array(NA_real_, dim = c(length(parm), 2L),
-                   dimnames = list(parm, pct))
+        ci = array(NA_real_,
+          dim = c(length(parm), 2L),
+          dimnames = list(parm, pct))
         ci[] = self$coef[parm] + self$se[parm] %o% fac
       }
 
@@ -844,8 +846,9 @@ DoubleML = R6Class("DoubleML",
         a = (1 - level)
         ab = c(a / 2, 1 - a / 2)
         pct = format.perc(ab, 3)
-        ci = array(NA_real_, dim = c(length(parm), 2L),
-                   dimnames = list(parm, pct))
+        ci = array(NA_real_,
+          dim = c(length(parm), 2L),
+          dimnames = list(parm, pct))
 
         if (all(is.na(self$boot_coef))) {
           stop(paste(
@@ -1261,9 +1264,9 @@ DoubleML = R6Class("DoubleML",
       private$se_ = array(NA_real_, dim = c(self$data$n_treat))
 
       private$all_coef_ = array(NA_real_,
-                                dim = c(self$data$n_treat, self$n_rep))
+        dim = c(self$data$n_treat, self$n_rep))
       private$all_se_ = array(NA_real_,
-                              dim = c(self$data$n_treat, self$n_rep))
+        dim = c(self$data$n_treat, self$n_rep))
 
       if (self$dml_procedure == "dml1") {
         if (self$apply_cross_fitting) {

@@ -11,7 +11,7 @@ dml_irmiv = function(data, y, d, z,
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
-  
+
   all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
 
@@ -148,7 +148,7 @@ fit_nuisance_iivm = function(data, y, d, z,
   # nuisance g0: E[Y|Z=0, X]
   g_indx = names(data) != d & names(data) != z
   data_g = data[, g_indx, drop = FALSE]
-  
+
   # binary or continuous outcome y
   if (any(class(ml_g) == "LearnerClassif")) {
     data_g[, y] = factor(data_g[, y])
@@ -159,7 +159,7 @@ fit_nuisance_iivm = function(data, y, d, z,
   } else {
     task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", y), backend = data_g, target = y)
   }
-  
+
   ml_g0 = ml_g$clone()
   if (!is.null(params_g)) {
     ml_g0$param_set$values = params_g
@@ -176,7 +176,7 @@ fit_nuisance_iivm = function(data, y, d, z,
   } else {
     g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
   }
-  
+
   # nuisance g1: E[Y|Z=1, X]
   if (any(class(ml_g) == "LearnerClassif")) {
     data_g[, y] = factor(data_g[, y])
@@ -199,11 +199,11 @@ fit_nuisance_iivm = function(data, y, d, z,
 
   r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
   if (any(class(ml_g) == "LearnerClassif")) {
-      g1_hat_list = lapply(r_g1$predictions(), function(x) x$prob[, "1"])
-    } else {
-      g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
-    }
-  
+    g1_hat_list = lapply(r_g1$predictions(), function(x) x$prob[, "1"])
+  } else {
+    g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
+  }
+
   # nuisance r0: E[D|Z=0, X]
   r_indx = names(data) != y & names(data) != z
   data_r = data[, r_indx, drop = FALSE]
@@ -287,7 +287,7 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
   Y = data[, y]
   Z = data[, z]
   m_hat = g0_hat = g1_hat = r0_hat = r1_hat = rep(NA_real_, n)
-  
+
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
 

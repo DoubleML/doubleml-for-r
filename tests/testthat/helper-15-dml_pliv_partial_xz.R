@@ -8,7 +8,7 @@ dml_pliv_partial_xz = function(data, y, d, z,
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
-  
+
   all_thetas = all_ses = rep(NA_real_, n_rep)
   all_preds = list()
 
@@ -160,9 +160,9 @@ compute_pliv_partial_xz_residuals = function(data, y, d, z, n_folds, smpls,
   n = nrow(data)
   D = data[, d]
   Y = data[, y]
-  
+
   u_hat = v_hat = w_hat = rep(NA_real_, n)
-  
+
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
 
