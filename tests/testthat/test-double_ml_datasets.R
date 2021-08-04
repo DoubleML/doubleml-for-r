@@ -54,19 +54,7 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
       expect_is(df$y, "matrix")
       expect_is(df$d, "matrix")
     }
-
-    # Test IRM binary outcome
-    if (return_type != "matrix") {
-      df = make_irm_binary_data(return_type = return_type)
-      expect_is(df, paste0(return_type))
-    } else {
-      df = make_irm_data(return_type = return_type)
-      expect_is(df, "list")
-      expect_is(df$X, "matrix")
-      expect_is(df$y, "matrix")
-      expect_is(df$d, "matrix")
-    }
-
+    
     # Test IIVM
     if (return_type != "matrix") {
       df = make_iivm_data(return_type = return_type)
