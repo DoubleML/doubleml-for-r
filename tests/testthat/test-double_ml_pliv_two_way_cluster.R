@@ -43,10 +43,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     set.seed(3141)
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
-    #se_obj = double_mlpliv_obj$se
+    se_obj = double_mlpliv_obj$se
     
     set.seed(3141)
     df = as.data.frame(data_two_way$data)
+    cluster_var1 = df$cluster_var_i
+    cluster_var2 = df$cluster_var_j
     # need to drop variables as x is not explicitly set
     df = df[ , !(names(df) %in% c('cluster_var_i', 'cluster_var_j'))]
     pliv_hat = dml_pliv(df,
@@ -57,11 +59,39 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure, score = score,
       smpls=double_mlpliv_obj$smpls)
-    theta = pliv_hat$coef
-    #se = pliv_hat$se
+    
+    
+    this_smpl = double_mlpliv_obj$smpls[[1]]
+    residuals = compute_pliv_residuals(df,
+                                       y = "Y", d = "D", z = "Z",
+                                       n_folds = 4,
+                                       this_smpl,
+                                       pliv_hat$all_preds[[1]])
+    u_hat = residuals$u_hat
+    v_hat = residuals$v_hat
+    w_hat = residuals$w_hat
+    
+    psi_a = - w_hat * v_hat
+    if (dml_procedure == "dml2") {
+      psi_b = w_hat * u_hat
+      theta = est_two_way_cluster_dml2(psi_a, psi_b,
+                                       cluster_var1,
+                                       cluster_var2,
+                                       this_smpl)
+    } else {
+      theta = pliv_hat$coef
+    }
+    psi = (u_hat - v_hat * theta) * w_hat
+    var = var_two_way_cluster(psi, psi_a,
+                              cluster_var1,
+                              cluster_var2,
+                              this_smpl)
+    se = sqrt(var)
+    names(theta) = 'D'
+    names(se) = 'D'
 
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)
-    #expect_equal(se, se_obj, tolerance = 1e-8)
+    expect_equal(se, se_obj, tolerance = 1e-8)
   }
 )

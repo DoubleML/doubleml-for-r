@@ -1335,44 +1335,34 @@ DoubleML = R6Class("DoubleML",
     get__all_se = function() self$all_se[private$i_treat, private$i_rep],
     est_causal_pars = function() {
       dml_procedure = self$dml_procedure
-      n_folds = self$n_folds
       smpls = private$get__smpls()
       test_ids = smpls$test_ids
-
-      if (dml_procedure == "dml1") {
-        # Note that length(test_ids) is only not equal to self.n_folds
-        # if self$apply_cross_fitting ==False
-        thetas = rep(NA_real_, length(test_ids))
-        for (i_fold in seq_len(length(test_ids))) {
-          test_index = test_ids[[i_fold]]
-          thetas[i_fold] = private$orth_est(inds = test_index)
-        }
-        coef = mean(thetas, na.rm = TRUE)
-        private$all_dml1_coef_[private$i_treat, private$i_rep, ] = thetas
-      }
-
-      else if (dml_procedure == "dml2") {
-        if (private$is_cluster_data) {
-          # See Chiang et al. (2021) Algorithm 1
-          psi_a = private$get__psi_a()
-          psi_b = private$get__psi_b()
-          psi_a_subsample_mean = 0.
-          psi_b_subsample_mean = 0.
+      
+      if (!private$is_cluster_data) {
+        if (dml_procedure == "dml1") {
+          # Note that length(test_ids) is only not equal to self.n_folds
+          # if self$apply_cross_fitting ==False
+          thetas = rep(NA_real_, length(test_ids))
           for (i_fold in seq_len(length(test_ids))) {
             test_index = test_ids[[i_fold]]
-            psi_a_subsample_mean = psi_a_subsample_mean + mean(psi_a[test_index])
-            psi_b_subsample_mean = psi_b_subsample_mean + mean(psi_b[test_index])
+            thetas[i_fold] = private$orth_est(inds = test_index)
           }
-          coef = -sum(psi_b_subsample_mean) / sum(psi_a_subsample_mean)
-        } else {
+          coef = mean(thetas, na.rm = TRUE)
+          private$all_dml1_coef_[private$i_treat, private$i_rep, ] = thetas
+        } else if (dml_procedure == "dml2") {
           coef = private$orth_est()
         }
+      } else {
+        coef = private$orth_est_cluster_data()
       }
-
       return(coef)
     },
     se_causal_pars = function() {
-      se = sqrt(private$var_est())
+      if (!private$is_cluster_data) {
+        se = sqrt(private$var_est())
+      } else {
+        se = sqrt(private$var_est_cluster_data())
+      }
       return(se)
     },
     agg_cross_fit = function() {
@@ -1433,69 +1423,72 @@ DoubleML = R6Class("DoubleML",
         psi = psi[inds]
         private$var_scaling_factor = length(inds)
       }
-      if (private$is_cluster_data) {
-        if (self$data$n_cluster_vars == 1) {
-          this_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
-          clusters = unique(this_cluster_var)
-          gamma_hat = 0
-          j_hat = 0
-          smpls = private$get__smpls()
-          smpls_cluster = private$get__smpls_cluster()
-          for (i_fold in 1:self$n_folds) {
-            test_inds = smpls$test_ids[[i_fold]]
-            test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
-            I_k = test_cluster_inds[[1]]
-            const = 1 / length(I_k)
-            for (cluster_value in I_k) {
-              ind_cluster = (this_cluster_var == cluster_value)
-              gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                        psi[ind_cluster]))
-            }
-            j_hat = j_hat + sum(psi_a[test_inds])/length(I_k)
+      J = mean(psi_a)
+      sigma2_hat = mean(psi^2) / (J^2) / private$var_scaling_factor
+      return(sigma2_hat)
+    },
+    var_est_cluster_data = function() {
+      psi_a = private$get__psi_a()
+      psi = private$get__psi()
+      
+      if (self$data$n_cluster_vars == 1) {
+        this_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
+        clusters = unique(this_cluster_var)
+        gamma_hat = 0
+        j_hat = 0
+        smpls = private$get__smpls()
+        smpls_cluster = private$get__smpls_cluster()
+        for (i_fold in 1:self$n_folds) {
+          test_inds = smpls$test_ids[[i_fold]]
+          test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
+          I_k = test_cluster_inds[[1]]
+          const = 1 / length(I_k)
+          for (cluster_value in I_k) {
+            ind_cluster = (this_cluster_var == cluster_value)
+            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
+                                                      psi[ind_cluster]))
           }
-          
-          gamma_hat = gamma_hat / private$n_folds_per_cluster
-          j_hat = j_hat / private$n_folds_per_cluster
-          private$var_scaling_factor = length(clusters)
-          sigma2_hat = gamma_hat / (j_hat^2) / private$var_scaling_factor
-        } else {
-          assert_choice(self$data$n_cluster_vars, 2)
-          first_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
-          second_cluster_var = self$data$data_model[[self$data$cluster_cols[2]]]
-          gamma_hat = 0
-          j_hat = 0
-          smpls = private$get__smpls()
-          smpls_cluster = private$get__smpls_cluster()
-          for (i_fold in 1:self$n_folds) {
-            test_inds = smpls$test_ids[[i_fold]]
-            test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
-            I_k = test_cluster_inds[[1]]
-            J_l = test_cluster_inds[[2]]
-            const = min(length(I_k), length(J_l)) / ((length(I_k) * length(J_l))^2)
-            for (cluster_value in I_k) {
-              ind_cluster = (first_cluster_var == cluster_value) &
-                second_cluster_var %in% J_l
-              gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                        psi[ind_cluster]))
-            }
-            for (cluster_value in J_l) {
-              ind_cluster = (second_cluster_var == cluster_value) &
-                first_cluster_var %in% I_k
-              gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                        psi[ind_cluster]))
-            }
-            j_hat = j_hat + sum(psi_a[test_inds])/(length(I_k) * length(J_l))
-          }
-          gamma_hat = gamma_hat / (private$n_folds_per_cluster^2)
-          j_hat = j_hat / (private$n_folds_per_cluster^2)
-          n_first_clusters = length(unique(first_cluster_var))
-          n_second_clusters = length(unique(second_cluster_var))
-          private$var_scaling_factor = min(n_first_clusters, n_second_clusters)
-          sigma2_hat = gamma_hat / (j_hat^2) / private$var_scaling_factor
+          j_hat = j_hat + sum(psi_a[test_inds])/length(I_k)
         }
+        
+        gamma_hat = gamma_hat / private$n_folds_per_cluster
+        j_hat = j_hat / private$n_folds_per_cluster
+        private$var_scaling_factor = length(clusters)
+        sigma2_hat = gamma_hat / (j_hat^2) / private$var_scaling_factor
       } else {
-        J = mean(psi_a)
-        sigma2_hat = mean(psi^2) / (J^2) / private$var_scaling_factor
+        assert_choice(self$data$n_cluster_vars, 2)
+        first_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
+        second_cluster_var = self$data$data_model[[self$data$cluster_cols[2]]]
+        gamma_hat = 0
+        j_hat = 0
+        smpls = private$get__smpls()
+        smpls_cluster = private$get__smpls_cluster()
+        for (i_fold in 1:self$n_folds) {
+          test_inds = smpls$test_ids[[i_fold]]
+          test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
+          I_k = test_cluster_inds[[1]]
+          J_l = test_cluster_inds[[2]]
+          const = min(length(I_k), length(J_l)) / ((length(I_k) * length(J_l))^2)
+          for (cluster_value in I_k) {
+            ind_cluster = (first_cluster_var == cluster_value) &
+              second_cluster_var %in% J_l
+            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
+                                                      psi[ind_cluster]))
+          }
+          for (cluster_value in J_l) {
+            ind_cluster = (second_cluster_var == cluster_value) &
+              first_cluster_var %in% I_k
+            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
+                                                      psi[ind_cluster]))
+          }
+          j_hat = j_hat + sum(psi_a[test_inds])/(length(I_k) * length(J_l))
+        }
+        gamma_hat = gamma_hat / (private$n_folds_per_cluster^2)
+        j_hat = j_hat / (private$n_folds_per_cluster^2)
+        n_first_clusters = length(unique(first_cluster_var))
+        n_second_clusters = length(unique(second_cluster_var))
+        private$var_scaling_factor = min(n_first_clusters, n_second_clusters)
+        sigma2_hat = gamma_hat / (j_hat^2) / private$var_scaling_factor
       }
       return(sigma2_hat)
     },
@@ -1507,6 +1500,53 @@ DoubleML = R6Class("DoubleML",
         psi_b = psi_b[inds]
       }
       theta = -mean(psi_b) / mean(psi_a)
+      return(theta)
+    },
+    orth_est_cluster_data = function() {
+      dml_procedure = self$dml_procedure
+      psi_a = private$get__psi_a()
+      psi_b = private$get__psi_b()
+      
+      smpls = private$get__smpls()
+      test_ids = smpls$test_ids
+      smpls_cluster = private$get__smpls_cluster()
+      
+      if (dml_procedure == "dml1") {
+        # note that in the dml1 case we could also simply apply the standard
+        # function without cluster adjustment
+        thetas = rep(NA_real_, length(test_ids))
+        for (i_fold in seq_len(length(test_ids))) {
+          test_index = test_ids[[i_fold]]
+          test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
+          xx = sapply(
+            test_cluster_inds,
+            function(x) length(x))
+          scaling_factor = 1/prod(xx)
+          thetas[i_fold] = -(scaling_factor * sum(psi_b[test_index])) /
+            (scaling_factor * sum(psi_a[test_index]))
+        }
+        theta = mean(thetas, na.rm = TRUE)
+        private$all_dml1_coef_[private$i_treat, private$i_rep, ] = thetas
+      } else if (dml_procedure == "dml2") {
+        # See Chiang et al. (2021) Algorithm 1
+        psi_a = private$get__psi_a()
+        psi_b = private$get__psi_b()
+        psi_a_subsample_mean = 0.
+        psi_b_subsample_mean = 0.
+        for (i_fold in seq_len(length(test_ids))) {
+          test_index = test_ids[[i_fold]]
+          test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
+          xx = sapply(
+            test_cluster_inds,
+            function(x) length(x))
+          scaling_factor = 1/prod(xx)
+          psi_a_subsample_mean = psi_a_subsample_mean +
+            scaling_factor * sum(psi_a[test_index])
+          psi_b_subsample_mean = psi_b_subsample_mean +
+            scaling_factor * sum(psi_b[test_index])
+        }
+        theta = -psi_b_subsample_mean / psi_a_subsample_mean
+      }
       return(theta)
     },
     compute_score = function() {
