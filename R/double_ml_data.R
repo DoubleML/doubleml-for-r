@@ -401,8 +401,8 @@ DoubleMLData = R6Class("DoubleMLData",
 #' obj_dml_data = DoubleMLClusterData$new(dt,
 #'   y_col = "Y",
 #'   d_cols = "D",
-#'   z_cols="Z",
-#'   cluster_cols=c("cluster_var_i", "cluster_var_j"))
+#'   z_cols = "Z",
+#'   cluster_cols = c("cluster_var_i", "cluster_var_j"))
 #' @export
 DoubleMLClusterData = R6Class("DoubleMLClusterData",
   inherit = DoubleMLData,
@@ -410,8 +410,9 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     #' @field cluster_cols (`character()`)\cr
     #' The cluster variable(s).
     cluster_cols = function(value) {
-      if (missing(value)) return(private$cluster_cols_)
-      else {
+      if (missing(value)) {
+        return(private$cluster_cols_)
+      } else {
         cluster_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
         assert_character(cluster_cols, unique = TRUE)
@@ -423,7 +424,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         }
       }
     },
-    
+
     #' @field x_cols (`NULL`, `character()`) \cr
     #' The covariates. If `NULL`, all variables (columns of `data`) which are
     #' neither specified as outcome variable `y_col`, nor as treatment variables
@@ -431,14 +432,16 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     #' variables `cluster_cols` are used as covariates.
     #' Default is `NULL`.
     x_cols = function(value) {
-      if (missing(value)) return(private$x_cols_)
-      else {
+      if (missing(value)) {
+        return(private$x_cols_)
+      } else {
         if (!is.null(value)) {
           super$x_cols = value
         } else {
           if (!is.null(self$z_cols)) {
-            y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols,
-                             self$cluster_cols))
+            y_d_z = unique(c(
+              self$y_col, self$d_cols, self$z_cols,
+              self$cluster_cols))
             x_cols = setdiff(self$all_variables, y_d_z)
           } else {
             y_d = unique(c(self$y_col, self$d_cols, self$cluster_cols))
@@ -448,12 +451,15 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         }
       }
     },
-    
+
     #' @field n_cluster_vars (`integer(1)`) \cr
     #' The number of cluster variables.
     n_cluster_vars = function(value) {
-      if (missing(value)) return(length(self$cluster_cols))
-      else stop("can't set field n_cluster_vars")
+      if (missing(value)) {
+        return(length(self$cluster_cols))
+      } else {
+        stop("can't set field n_cluster_vars")
+      }
     }
   ),
   public = list(
@@ -485,34 +491,36 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     #' Indicates whether in the multiple-treatment case the other treatment
     #' variables should be added as covariates. Default is `TRUE`.
     initialize = function(data = NULL,
-                          x_cols = NULL,
-                          y_col = NULL,
-                          d_cols = NULL,
-                          cluster_cols = NULL,
-                          z_cols = NULL,
-                          use_other_treat_as_covariate = TRUE) {
-      
+      x_cols = NULL,
+      y_col = NULL,
+      d_cols = NULL,
+      cluster_cols = NULL,
+      z_cols = NULL,
+      use_other_treat_as_covariate = TRUE) {
+
       # we need to set cluster_cols (needs _data) before call to the super class
       # initialize because of the x_cols active binding
+
       if (all(class(data) == "data.frame")) {
         data = data.table(data)
       }
       assert_class(data, "data.table")
       assert_character(names(data), unique = TRUE)
-      
+
       private$data_ = data
-      
+
       self$cluster_cols = cluster_cols
-      
-      super$initialize(data,
-                       x_cols,
-                       y_col,
-                       d_cols,
-                       z_cols,
-                       use_other_treat_as_covariate)
+
+      super$initialize(
+        data,
+        x_cols,
+        y_col,
+        d_cols,
+        z_cols,
+        use_other_treat_as_covariate)
       invisible(self)
     },
-    
+
     #' @description
     #' Print DoubleMLClusterData objects.
     print = function() {
@@ -526,31 +534,30 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
         "No. Observations: ", self$n_obs, "\n")
       cat(header, "\n",
-          "\n------------------ Data summary      ------------------\n",
-          data_info,
-          sep = "")
-      
+        "\n------------------ Data summary      ------------------\n",
+        data_info,
+        sep = "")
+
       invisible(self)
     },
-    
+
     #' @description
     #' Setter function for `data_model`. The function implements the causal model
-    #' as specified by the user via `y_col`, `d_cols`, `x_cols`, `z_cols` and 
+    #' as specified by the user via `y_col`, `d_cols`, `x_cols`, `z_cols` and
     #' `cluster_cols` and assigns the role for the treatment variables in the
     #' multiple-treatment case.
     #' @param treatment_var (`character()`)\cr
     #' Active treatment variable that will be set to `treat_col`.
     set_data_model = function(treatment_var) {
-      
       super$set_data_model(treatment_var)
-      
+
       # add the cluster_cols to the data_model_
       col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
         self$z_cols, self$cluster_cols)
       private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
-      
+
       invisible(self)
     }
   ),
@@ -558,13 +565,14 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     cluster_cols_ = NULL,
     check_disjoint_sets = function() {
       # apply the standard checks from the DoubleMLData class
+
       super$check_disjoint_sets()
-      
+
       cluster_cols = self$cluster_cols
       y_col = self$y_col
       x_cols = self$x_cols
       d_cols = self$d_cols
-      
+
       if (y_col %in% cluster_cols) {
         stop(paste(
           y_col,
@@ -581,10 +589,10 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
           "At least one variable/column is set as covariate ('x_cols')",
           "and as a cluster variable ('cluster_cols')."))
       }
-      
+
       if (!is.null(self$z_cols)) {
         z_cols = self$z_cols
-        
+
         if (any(z_cols %in% cluster_cols)) {
           stop(paste(
             "At least one variable/column is set as instrumental variable",
@@ -641,15 +649,15 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   use_other_treat_as_covariate = TRUE) {
   if (is.null(cluster_cols)) {
     data = DoubleMLData$new(df,
-                            x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-                            z_cols = z_cols,
-                            use_other_treat_as_covariate = use_other_treat_as_covariate)
+      x_cols = x_cols, y_col = y_col, d_cols = d_cols,
+      z_cols = z_cols,
+      use_other_treat_as_covariate = use_other_treat_as_covariate)
   } else {
     data = DoubleMLClusterData$new(df,
-                                   x_cols = x_cols, y_col = y_col,
-                                   d_cols = d_cols, z_cols = z_cols,
-                                   cluster_cols = cluster_cols,
-                                   use_other_treat_as_covariate = use_other_treat_as_covariate)
+      x_cols = x_cols, y_col = y_col,
+      d_cols = d_cols, z_cols = z_cols,
+      cluster_cols = cluster_cols,
+      use_other_treat_as_covariate = use_other_treat_as_covariate)
   }
   return(data)
 }
@@ -699,30 +707,31 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
   data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE) {
 
-  assert_choice(data_class, c("DoubleMLData", "data.table",
-                              "DoubleMLClusterData"))
+  assert_choice(data_class, c(
+    "DoubleMLData", "data.table",
+    "DoubleMLClusterData"))
   assert_logical(use_other_treat_as_covariate, len = 1)
-  
+
   y = assure_matrix(y)
   d = assure_matrix(d)
   mat_list = list(y, d)
-  
+
   if (!is.null(X)) {
     X = assure_matrix(X)
-    mat_list[[length(mat_list)+1]] = X
+    mat_list[[length(mat_list) + 1]] = X
   }
   if (!is.null(z)) {
     z = assure_matrix(z)
-    mat_list[[length(mat_list)+1]] = z
+    mat_list[[length(mat_list) + 1]] = z
   }
   if (!is.null(cluster_vars)) {
     cluster_vars = assure_matrix(cluster_vars)
-    mat_list[[length(mat_list)+1]] = cluster_vars
+    mat_list[[length(mat_list) + 1]] = cluster_vars
   }
-  
+
   check_matrix_row(mat_list)
   data = data.table(X, y, d, z, cluster_vars)
-  
+
   if (!is.null(z)) {
     if (ncol(z) == 1) {
       z_cols = "z"

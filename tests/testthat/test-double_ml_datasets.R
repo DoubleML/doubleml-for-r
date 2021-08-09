@@ -39,7 +39,7 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
       expect_is(df$d, "matrix")
       expect_is(df$z, "matrix")
     }
-    
+
     # Test CKMS2019
     N = 10
     M = 10

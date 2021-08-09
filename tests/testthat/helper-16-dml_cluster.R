@@ -1,6 +1,6 @@
 est_one_way_cluster_dml2 = function(psi_a, psi_b,
-                                    cluster_var,
-                                    smpls_one_split) {
+  cluster_var,
+  smpls_one_split) {
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   psi_a_subsample = 0
@@ -8,17 +8,18 @@ est_one_way_cluster_dml2 = function(psi_a, psi_b,
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
     I_k = unique(cluster_var[test_index])
-    const = 1/length(I_k)
-    psi_a_subsample = psi_a_subsample + const*sum(psi_a[test_index])
-    psi_b_subsample = psi_b_subsample + const*sum(psi_b[test_index])
+    const = 1 / length(I_k)
+    psi_a_subsample = psi_a_subsample + const * sum(psi_a[test_index])
+    psi_b_subsample = psi_b_subsample + const * sum(psi_b[test_index])
   }
   theta = -psi_b_subsample / psi_a_subsample
   return(theta)
 }
 
 var_one_way_cluster = function(psi, psi_a,
-                               cluster_var,
-                               smpls_one_split) {
+  cluster_var,
+  smpls_one_split) {
+
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   gamma_hat = 0
@@ -26,7 +27,7 @@ var_one_way_cluster = function(psi, psi_a,
   for (i_fold in 1:n_folds) {
     test_index = test_ids[[i_fold]]
     I_k = unique(cluster_var[test_index])
-    const = 1/length(I_k)
+    const = 1 / length(I_k)
     for (i in I_k) {
       ind = (cluster_var == i)
       for (val_i in psi[ind]) {
@@ -37,16 +38,17 @@ var_one_way_cluster = function(psi, psi_a,
       j_hat = j_hat + const * sum(psi_a[ind])
     }
   }
-  gamma_hat = gamma_hat/n_folds
-  j_hat = j_hat/n_folds
+  gamma_hat = gamma_hat / n_folds
+  j_hat = j_hat / n_folds
   var = gamma_hat / (j_hat^2) / length(unique(cluster_var))
   return(var)
 }
 
 est_two_way_cluster_dml2 = function(psi_a, psi_b,
-                                    cluster_var1,
-                                    cluster_var2,
-                                    smpls_one_split) {
+  cluster_var1,
+  cluster_var2,
+  smpls_one_split) {
+
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   psi_a_subsample = 0
@@ -55,18 +57,19 @@ est_two_way_cluster_dml2 = function(psi_a, psi_b,
     test_index = test_ids[[i]]
     I_k = unique(cluster_var1[test_index])
     J_l = unique(cluster_var2[test_index])
-    const = 1/(length(I_k) * length(J_l))
-    psi_a_subsample = psi_a_subsample + const*sum(psi_a[test_index])
-    psi_b_subsample = psi_b_subsample + const*sum(psi_b[test_index])
+    const = 1 / (length(I_k) * length(J_l))
+    psi_a_subsample = psi_a_subsample + const * sum(psi_a[test_index])
+    psi_b_subsample = psi_b_subsample + const * sum(psi_b[test_index])
   }
   theta = -psi_b_subsample / psi_a_subsample
   return(theta)
 }
 
 var_two_way_cluster = function(psi, psi_a,
-                               cluster_var1,
-                               cluster_var2,
-                               smpls_one_split) {
+  cluster_var1,
+  cluster_var2,
+  smpls_one_split) {
+
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   gamma_hat = 0
@@ -75,7 +78,7 @@ var_two_way_cluster = function(psi, psi_a,
     test_index = test_ids[[i_fold]]
     I_k = unique(cluster_var1[test_index])
     J_l = unique(cluster_var2[test_index])
-    const = min(length(I_k), length(J_l))/(length(I_k) * length(J_l))^2
+    const = min(length(I_k), length(J_l)) / (length(I_k) * length(J_l))^2
     for (i in I_k) {
       for (j in J_l) {
         for (j_ in J_l) {
@@ -94,10 +97,10 @@ var_two_way_cluster = function(psi, psi_a,
         }
       }
     }
-    j_hat = j_hat + sum(psi_a[test_index])/(length(I_k) * length(J_l))
+    j_hat = j_hat + sum(psi_a[test_index]) / (length(I_k) * length(J_l))
   }
-  gamma_hat = gamma_hat/n_folds
-  j_hat = j_hat/n_folds
+  gamma_hat = gamma_hat / n_folds
+  j_hat = j_hat / n_folds
   n_clusters1 = length(unique(cluster_var1))
   n_clusters2 = length(unique(cluster_var2))
   var_scaling_factor = min(n_clusters1, n_clusters2)

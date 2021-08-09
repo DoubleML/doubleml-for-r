@@ -44,337 +44,337 @@ test_that("Unit tests for DoubleMLData", {
   multZ_dt1b = as.data.table(
     data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
     with = FALSE]
-    expect_equal(D1_multZ$data, multZ_dt1)
-    expect_equal(D1_multZ$data_model, multZ_dt1)
+  expect_equal(D1_multZ$data, multZ_dt1)
+  expect_equal(D1_multZ$data_model, multZ_dt1)
 
-    # No X
-    D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult)
-    multZ_dt1b = as.data.table(
-      data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
-      with = FALSE]
-    expect_equal(D1b_multZ$data, multZ_dt1b)
-    expect_equal(D1b_multZ$data_model, multZ_dt1b)
-
-    # No z, with X
-    D2 = double_ml_data_from_matrix(X, y, d)
-    check_indx2 = c(names(data)[X_indx1], "y", "d")
-    X_dt2 = as.data.table(data)[, check_indx2, with = FALSE]
-    expect_equal(D2$data, X_dt2)
-    expect_equal(D2$data_model, X_dt2)
-
-    # No z, no X
-    D2b = double_ml_data_from_matrix(X = NULL, y, d)
-    X_dt2b = as.data.table(data)[, c("y", "d"), with = FALSE]
-    expect_equal(D2b$data, X_dt2b)
-    expect_equal(D2b$data_model, X_dt2b)
-
-    # test with only 1 d, 1 X, 1 Z
-    X = as.matrix(data$X1)
-    D2_1X = double_ml_data_from_matrix(X, y, d)
-    X_dt21X = as.data.table(data)[, c("X1", "y", "d"), with = FALSE]
-    expect_equal(D2_1X$data, X_dt21X)
-    expect_equal(D2_1X$data_model, X_dt21X)
-
-    # Two d variables
-    X_indx2 = names(data) %in% c("y", "d", "z", "d1", "d2") == FALSE
-    X2 = as.matrix(data[, X_indx2])
-    D3 = double_ml_data_from_matrix(X2, y, d2)
-
-    X_dt3 = as.data.table(
-      data.frame(data, "d1" = d2[, 1], "d2" = d2[, 2]))[, c(
-      names(data)[X_indx2],
-      "y", "d1", "d2"),
+  # No X
+  D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult)
+  multZ_dt1b = as.data.table(
+    data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
     with = FALSE]
-    expect_equal(D3$data, X_dt3)
-    expect_equal(D3$data_model, X_dt3)
+  expect_equal(D1b_multZ$data, multZ_dt1b)
+  expect_equal(D1b_multZ$data_model, multZ_dt1b)
 
-    # set_data_model
-    D3_setd_multd = D3$clone()$set_data_model("d2")
-    X_dt3_setd_multd = data.table::copy(X_dt3)[, c(
-      names(data)[X_indx2],
-      "y", "d2", "d1"),
-    with = FALSE]
-    expect_equal(D3_setd_multd$data, X_dt3)
-    expect_equal(D3_setd_multd$data_model, X_dt3_setd_multd)
+  # No z, with X
+  D2 = double_ml_data_from_matrix(X, y, d)
+  check_indx2 = c(names(data)[X_indx1], "y", "d")
+  X_dt2 = as.data.table(data)[, check_indx2, with = FALSE]
+  expect_equal(D2$data, X_dt2)
+  expect_equal(D2$data_model, X_dt2)
 
-    # Do not include other treatment var in nuisance part
-    D3_1d = double_ml_data_from_matrix(X2, y, d2,
-      use_other_treat_as_covariate = FALSE)
-    # Data backend
-    expect_equal(D3_1d$data, X_dt3)
+  # No z, no X
+  D2b = double_ml_data_from_matrix(X = NULL, y, d)
+  X_dt2b = as.data.table(data)[, c("y", "d"), with = FALSE]
+  expect_equal(D2b$data, X_dt2b)
+  expect_equal(D2b$data_model, X_dt2b)
 
-    # Data model
-    X_dt31d = data.table::copy(X_dt3)[, d2 := NULL]
-    expect_equal(D3_1d$data_model, X_dt31d)
+  # test with only 1 d, 1 X, 1 Z
+  X = as.matrix(data$X1)
+  D2_1X = double_ml_data_from_matrix(X, y, d)
+  X_dt21X = as.data.table(data)[, c("X1", "y", "d"), with = FALSE]
+  expect_equal(D2_1X$data, X_dt21X)
+  expect_equal(D2_1X$data_model, X_dt21X)
 
-    # set_data_model
-    D3_setd = D3_1d$clone()$set_data_model("d2")
-    X_dt3_setd = data.table::copy(X_dt3)[, d1 := NULL]
-    expect_equal(D3_setd$data_model, X_dt3_setd)
+  # Two d variables
+  X_indx2 = names(data) %in% c("y", "d", "z", "d1", "d2") == FALSE
+  X2 = as.matrix(data[, X_indx2])
+  D3 = double_ml_data_from_matrix(X2, y, d2)
 
-    # Input: Data frame, assign columns by names
-    d_indx = "d"
-    y_indx = "y"
-    z_null = NULL
-    z_indx = "z"
-    X_cols1 = names(data[, X_indx1])
+  X_dt3 = as.data.table(
+    data.frame(data, "d1" = d2[, 1], "d2" = d2[, 2]))[, c(
+    names(data)[X_indx2],
+    "y", "d1", "d2"),
+  with = FALSE]
+  expect_equal(D3$data, X_dt3)
+  expect_equal(D3$data_model, X_dt3)
 
-    D4 = double_ml_data_from_data_frame(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = z_indx)
+  # set_data_model
+  D3_setd_multd = D3$clone()$set_data_model("d2")
+  X_dt3_setd_multd = data.table::copy(X_dt3)[, c(
+    names(data)[X_indx2],
+    "y", "d2", "d1"),
+  with = FALSE]
+  expect_equal(D3_setd_multd$data, X_dt3)
+  expect_equal(D3_setd_multd$data_model, X_dt3_setd_multd)
 
-    D4b = double_ml_data_from_data_frame(data,
-      x_cols = NULL,
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = z_indx)
+  # Do not include other treatment var in nuisance part
+  D3_1d = double_ml_data_from_matrix(X2, y, d2,
+    use_other_treat_as_covariate = FALSE)
+  # Data backend
+  expect_equal(D3_1d$data, X_dt3)
 
-    # with renamed variables
-    data_renamed = data
-    names(data_renamed) = c("outc", "exposure", "instr", paste0("Explr", 1:(ncol(data_renamed) - 3)))
-    Expl_cols1 = names(data_renamed[, X_indx1])
-    D4_renamed = double_ml_data_from_data_frame(data_renamed,
-      x_cols = Expl_cols1,
-      y_col = "outc",
-      d_cols = "exposure",
-      z_cols = "instr")
+  # Data model
+  X_dt31d = data.table::copy(X_dt3)[, d2 := NULL]
+  expect_equal(D3_1d$data_model, X_dt31d)
 
-    D5 = double_ml_data_from_data_frame(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d_indx)
+  # set_data_model
+  D3_setd = D3_1d$clone()$set_data_model("d2")
+  X_dt3_setd = data.table::copy(X_dt3)[, d1 := NULL]
+  expect_equal(D3_setd$data_model, X_dt3_setd)
 
-    D5b = double_ml_data_from_data_frame(data,
-      x_cols = NULL,
-      y_col = y_indx,
-      d_cols = d_indx)
+  # Input: Data frame, assign columns by names
+  d_indx = "d"
+  y_indx = "y"
+  z_null = NULL
+  z_indx = "z"
+  X_cols1 = names(data[, X_indx1])
 
-    # test with only 1 d, 1 X, 1 Z
-    D5_1X = double_ml_data_from_data_frame(data,
-      x_cols = X_cols1[1],
-      y_col = y_indx,
-      d_cols = d_indx)
+  D4 = double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx)
 
-    D6 = double_ml_data_from_data_frame(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = z_null)
+  D4b = double_ml_data_from_data_frame(data,
+    x_cols = NULL,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx)
 
-    # Two d Variables
-    data2 = data.frame(data, d2)
-    d2_indx = colnames(d2)
+  # with renamed variables
+  data_renamed = data
+  names(data_renamed) = c("outc", "exposure", "instr", paste0("Explr", 1:(ncol(data_renamed) - 3)))
+  Expl_cols1 = names(data_renamed[, X_indx1])
+  D4_renamed = double_ml_data_from_data_frame(data_renamed,
+    x_cols = Expl_cols1,
+    y_col = "outc",
+    d_cols = "exposure",
+    z_cols = "instr")
 
-    D7 = double_ml_data_from_data_frame(data2,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d2_indx,
-      z_cols = z_null)
-    D7_setd_multd = D7$clone()$set_data_model("d2")
+  D5 = double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx)
 
-    D7_1d = double_ml_data_from_data_frame(data2,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d2_indx,
-      z_cols = z_null,
-      use_other_treat_as_covariate = FALSE)
-    D7_setd = D7_1d$clone()$set_data_model("d2")
+  D5b = double_ml_data_from_data_frame(data,
+    x_cols = NULL,
+    y_col = y_indx,
+    d_cols = d_indx)
 
-    expect_error(double_ml_data_from_data_frame(data),
-      regexp = "Assertion on 'y_col' failed: Must be of type 'character', not 'NULL'.")
+  # test with only 1 d, 1 X, 1 Z
+  D5_1X = double_ml_data_from_data_frame(data,
+    x_cols = X_cols1[1],
+    y_col = y_indx,
+    d_cols = d_indx)
 
-    expect_equal(D1$data_model, D4$data_model)
-    expect_equal(D2$data_model, D5$data_model)
-    expect_equal(D2_1X$data_model, D5_1X$data_model)
-    expect_equal(D2$data_model, D6$data_model)
-    expect_equal(D3$data_model, D7$data_model)
-    expect_identical(D3_1d$data_model, D7_1d$data_model)
-    expect_identical(D3_setd_multd$data_model, D7_setd_multd$data_model)
-    expect_identical(D3_setd$data_model, D7_setd$data_model)
+  D6 = double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_null)
 
-    # renaming / enforced names
-    expect_equivalent(D4$data, D4_renamed$data)
-    expect_equivalent(D4$data_model, D4_renamed$data_model)
+  # Two d Variables
+  data2 = data.frame(data, d2)
+  d2_indx = colnames(d2)
 
-    # NULL input for x_cols
-    expect_identical(D1$data[, c("y", "d", "z")], D1b$data)
-    expect_identical(D4$data, D4b$data)
-    expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
+  D7 = double_ml_data_from_data_frame(data2,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d2_indx,
+    z_cols = z_null)
+  D7_setd_multd = D7$clone()$set_data_model("d2")
 
-    # Instantiate DoubleMLData
-    data = data.table::data.table(data)
-    data2 = data.table::data.table(data2)
-    D8 = DoubleMLData$new(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = z_indx)
+  D7_1d = double_ml_data_from_data_frame(data2,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d2_indx,
+    z_cols = z_null,
+    use_other_treat_as_covariate = FALSE)
+  D7_setd = D7_1d$clone()$set_data_model("d2")
 
-    D8_noXcols = DoubleMLData$new(data,
-      y_col = y_indx,
-      d_cols = d_indx,
-      z_cols = z_indx)
-    # with renamed variables
-    data_renamed = data.table::copy(data)
-    data_renamed = data.table::setnames(data_renamed, c(
-      "outc", "exposure", "instr",
-      paste0("Explr", 1:(ncol(data_renamed) - 3))))
+  expect_error(double_ml_data_from_data_frame(data),
+    regexp = "Assertion on 'y_col' failed: Must be of type 'character', not 'NULL'.")
 
-    Expl_cols1 = names(data_renamed[, X_indx1, with = FALSE])
-    D8_renamed = DoubleMLData$new(data_renamed,
-      x_cols = Expl_cols1,
-      y_col = "outc",
-      d_cols = "exposure",
-      z_cols = "instr")
+  expect_equal(D1$data_model, D4$data_model)
+  expect_equal(D2$data_model, D5$data_model)
+  expect_equal(D2_1X$data_model, D5_1X$data_model)
+  expect_equal(D2$data_model, D6$data_model)
+  expect_equal(D3$data_model, D7$data_model)
+  expect_identical(D3_1d$data_model, D7_1d$data_model)
+  expect_identical(D3_setd_multd$data_model, D7_setd_multd$data_model)
+  expect_identical(D3_setd$data_model, D7_setd$data_model)
 
-    D9 = DoubleMLData$new(data,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d_indx)
+  # renaming / enforced names
+  expect_equivalent(D4$data, D4_renamed$data)
+  expect_equivalent(D4$data_model, D4_renamed$data_model)
 
-    # skip z if not X indx specified
-    data_noz = data[, which(names(data) != "z"), with = FALSE]
-    D9_noXcols = DoubleMLData$new(data_noz,
-      y_col = y_indx,
-      d_cols = d_indx)
+  # NULL input for x_cols
+  expect_identical(D1$data[, c("y", "d", "z")], D1b$data)
+  expect_identical(D4$data, D4b$data)
+  expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
 
-    D9_1X = DoubleMLData$new(data,
-      x_cols = "X1",
-      y_col = y_indx,
-      d_cols = d_indx)
+  # Instantiate DoubleMLData
+  data = data.table::data.table(data)
+  data2 = data.table::data.table(data2)
+  D8 = DoubleMLData$new(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx)
 
-    D10 = DoubleMLData$new(data2,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d2_indx,
-      z_cols = z_null)
+  D8_noXcols = DoubleMLData$new(data,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx)
+  # with renamed variables
+  data_renamed = data.table::copy(data)
+  data_renamed = data.table::setnames(data_renamed, c(
+    "outc", "exposure", "instr",
+    paste0("Explr", 1:(ncol(data_renamed) - 3))))
 
-    D10_setd = D10$clone()$set_data_model("d2")
+  Expl_cols1 = names(data_renamed[, X_indx1, with = FALSE])
+  D8_renamed = DoubleMLData$new(data_renamed,
+    x_cols = Expl_cols1,
+    y_col = "outc",
+    d_cols = "exposure",
+    z_cols = "instr")
 
-    D10_1d = DoubleMLData$new(data2,
-      x_cols = X_cols1,
-      y_col = y_indx,
-      d_cols = d2_indx,
-      z_cols = z_null,
-      use_other_treat_as_covariate = FALSE)
+  D9 = DoubleMLData$new(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx)
 
-    D10_1d_setd = D10_1d$clone()$set_data_model("d2")
+  # skip z if not X indx specified
+  data_noz = data[, which(names(data) != "z"), with = FALSE]
+  D9_noXcols = DoubleMLData$new(data_noz,
+    y_col = y_indx,
+    d_cols = d_indx)
 
-    msg1 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\). Consider using parameter 'use_other_treat_as_covariate'."
-    
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = X_cols1,
-                                                y_col = y_indx,
-                                                d_cols = c(d_indx, X_cols1[1]),
-                                                z_cols = z_indx), 
-                 regexp = msg1)
-    
-    msg2 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = X_cols1,
-                                                y_col = y_indx,
-                                                d_cols = d_indx,
-                                                z_cols = c(z_indx, X_cols1[1])), 
-                 regexp = msg2)
-    
-    msg3 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = c(y_indx, X_cols1),
-                                                y_col = y_indx,
-                                                d_cols = d_indx,
-                                                z_cols = z_indx),
-                 regexp = msg3)
-    
-    msg4 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = X_cols1,
-                                                y_col = y_indx,
-                                                d_cols = c(z_indx, d_indx),
-                                                z_cols = z_indx), 
-                 regexp = msg4)
-    
-    msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = X_cols1,
-                                                y_col = y_indx,
-                                                d_cols = c(d_indx, y_indx),
-                                                z_cols = z_indx), 
-                 regexp = msg5)
-    
-    msg6 = "y cannot be set as outcome variable 'y_col' and instrumental variable in 'z_cols'."
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = X_cols1,
-                                                y_col = y_indx,
-                                                d_cols = d_indx,
-                                                z_cols = c(z_indx, y_indx)), 
-                 regexp = msg6)
-    
-    msg7 = "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
-    expect_error(double_ml_data_from_data_frame(data,
-                                                x_cols = rep(X_cols1, 2),
-                                                y_col = y_indx,
-                                                d_cols = d_indx,
-                                                z_cols = z_indx), 
-                 regexp = msg7)
-    
-    expect_identical(D1$data_model, D8$data_model)
-    expect_identical(D2$data_model, D9$data_model)
-    expect_identical(D2_1X$data_model, D9_1X$data_model)
-    expect_identical(D3$data_model, D10$data_model)
-    expect_identical(D3_setd_multd$data_model, D10_setd$data_model)
-    expect_identical(D3_1d$data_model, D10_1d$data_model)
-    expect_identical(D3_setd$data_model, D10_1d_setd$data_model)
+  D9_1X = DoubleMLData$new(data,
+    x_cols = "X1",
+    y_col = y_indx,
+    d_cols = d_indx)
 
-    expect_identical(D4_renamed$data_model, D8_renamed$data_model)
-    expect_equivalent(D8$data_model, D8_renamed$data_model)
-    expect_identical(D8$data_model, D8_noXcols$data_model)
-    expect_identical(D9$data_model, D9_noXcols$data_model)
+  D10 = DoubleMLData$new(data2,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d2_indx,
+    z_cols = z_null)
 
-    # Exception handling
-    msg8 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\). Consider using parameter 'use_other_treat_as_covariate'."
-    expect_error(DoubleMLData$new(data,
-                                  x_cols = X_cols1,
-                                  y_col = y_indx,
-                                  d_cols = c(d_indx, X_cols1[1]),
-                                  z_cols = z_indx), 
-                 regexp = msg8)
-    
-    msg9 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
-    expect_error(DoubleMLData$new(data,
-                                  x_cols = X_cols1,
-                                  y_col = y_indx,
-                                  d_cols = d_indx,
-                                  z_cols = c(z_indx, X_cols1[1])),
-                 regexp = msg9)
+  D10_setd = D10$clone()$set_data_model("d2")
 
-    msg10 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
-    expect_error(DoubleMLData$new(data,
-                                  x_cols = c(y_indx, X_cols1),
-                                  y_col = y_indx,
-                                  d_cols = d_indx,
-                                  z_cols = z_indx), 
-                 regexp = msg10)
-    
-    msg11 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
-    expect_error(DoubleMLData$new(data,
-                                  x_cols = X_cols1,
-                                  y_col = y_indx,
-                                  d_cols = c(z_indx, d_indx),
-                                  z_cols = z_indx), 
-                 regexp = msg11)
-    
-    D11 = DoubleMLData$new(data,
-                           x_cols = X_cols1,
-                           y_col = y_indx,
-                           d_cols = d_indx,
-                           z_cols = z_indx)
-    
-    msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}, but is \\{'X1'\\}."
-    expect_error(D11$set_data_model(X_cols1[1]),
-                 regexp = msg12)
-  }
+  D10_1d = DoubleMLData$new(data2,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d2_indx,
+    z_cols = z_null,
+    use_other_treat_as_covariate = FALSE)
+
+  D10_1d_setd = D10_1d$clone()$set_data_model("d2")
+
+  msg1 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\). Consider using parameter 'use_other_treat_as_covariate'."
+
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = c(d_indx, X_cols1[1]),
+    z_cols = z_indx),
+  regexp = msg1)
+
+  msg2 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = c(z_indx, X_cols1[1])),
+  regexp = msg2)
+
+  msg3 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = c(y_indx, X_cols1),
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx),
+  regexp = msg3)
+
+  msg4 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = c(z_indx, d_indx),
+    z_cols = z_indx),
+  regexp = msg4)
+
+  msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = c(d_indx, y_indx),
+    z_cols = z_indx),
+  regexp = msg5)
+
+  msg6 = "y cannot be set as outcome variable 'y_col' and instrumental variable in 'z_cols'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = c(z_indx, y_indx)),
+  regexp = msg6)
+
+  msg7 = "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = rep(X_cols1, 2),
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx),
+  regexp = msg7)
+
+  expect_identical(D1$data_model, D8$data_model)
+  expect_identical(D2$data_model, D9$data_model)
+  expect_identical(D2_1X$data_model, D9_1X$data_model)
+  expect_identical(D3$data_model, D10$data_model)
+  expect_identical(D3_setd_multd$data_model, D10_setd$data_model)
+  expect_identical(D3_1d$data_model, D10_1d$data_model)
+  expect_identical(D3_setd$data_model, D10_1d_setd$data_model)
+
+  expect_identical(D4_renamed$data_model, D8_renamed$data_model)
+  expect_equivalent(D8$data_model, D8_renamed$data_model)
+  expect_identical(D8$data_model, D8_noXcols$data_model)
+  expect_identical(D9$data_model, D9_noXcols$data_model)
+
+  # Exception handling
+  msg8 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\). Consider using parameter 'use_other_treat_as_covariate'."
+  expect_error(DoubleMLData$new(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = c(d_indx, X_cols1[1]),
+    z_cols = z_indx),
+  regexp = msg8)
+
+  msg9 = "At least one variable/column is set as covariate \\('x_cols'\\) and instrumental variable in 'z_cols'."
+  expect_error(DoubleMLData$new(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = c(z_indx, X_cols1[1])),
+  regexp = msg9)
+
+  msg10 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
+  expect_error(DoubleMLData$new(data,
+    x_cols = c(y_indx, X_cols1),
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx),
+  regexp = msg10)
+
+  msg11 = "At least one variable/column is set as treatment variable \\('d_cols'\\) and instrumental variable in 'z_cols'."
+  expect_error(DoubleMLData$new(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = c(z_indx, d_indx),
+    z_cols = z_indx),
+  regexp = msg11)
+
+  D11 = DoubleMLData$new(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_indx)
+
+  msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}, but is \\{'X1'\\}."
+  expect_error(D11$set_data_model(X_cols1[1]),
+    regexp = msg12)
+}
 )
 
 test_that("Unit tests for invalid data", {

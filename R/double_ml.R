@@ -240,12 +240,15 @@ DoubleML = R6Class("DoubleML",
         stop("can't set field smpls")
       }
     },
-    
+
     #' @field smpls_cluster (`list()`) \cr
     #' The partition of clusters used for cross-fitting.
-    smpls_cluster  = function(value) {
-      if (missing(value)) return(private$smpls_cluster_)
-      else stop("can't set field smpls_cluster")
+    smpls_cluster = function(value) {
+      if (missing(value)) {
+        return(private$smpls_cluster_)
+      } else {
+        stop("can't set field smpls_cluster")
+      }
     },
 
     #' @field t_stat (`numeric()`) \cr
@@ -459,26 +462,29 @@ DoubleML = R6Class("DoubleML",
             for (i_var in 1:self$data$n_cluster_vars) {
               clusters = unique(self$data$data_model[[self$data$cluster_cols[i_var]]])
               n_clusters = length(clusters)
-              
-              dummy_task = Task$new("dummy_resampling", "regr",
-                                    data.table(dummy_var=rep(0, n_clusters)))
+
+              dummy_task = Task$new(
+                "dummy_resampling", "regr",
+                data.table(dummy_var = rep(0, n_clusters)))
               dummy_resampling_scheme = rsmp("repeated_cv",
-                                             folds = private$n_folds_per_cluster,
-                                             repeats = 1)$instantiate(dummy_task)
+                folds = private$n_folds_per_cluster,
+                repeats = 1)$instantiate(dummy_task)
               train_ids = lapply(
                 1:(private$n_folds_per_cluster),
                 function(x) clusters[dummy_resampling_scheme$train_set(x)])
               test_ids = lapply(
                 1:(private$n_folds_per_cluster),
                 function(x) clusters[dummy_resampling_scheme$test_set(x)])
-              
-              smpls_cluster_vars[[i_var]] = list(train_ids = train_ids,
-                                                 test_ids = test_ids)
+
+              smpls_cluster_vars[[i_var]] = list(
+                train_ids = train_ids,
+                test_ids = test_ids)
             }
             smpls = list(train_ids = list(), test_ids = list())
             smpls_cluster = list(train_ids = list(), test_ids = list())
-            cart = expand.grid(lapply(1:self$data$n_cluster_vars,
-                                      function(x) 1:private$n_folds_per_cluster))
+            cart = expand.grid(lapply(
+              1:self$data$n_cluster_vars,
+              function(x) 1:private$n_folds_per_cluster))
             for (i_smpl in 1:(self$n_folds)) {
               ind_train = rep(TRUE, self$data$n_obs)
               ind_test = rep(TRUE, self$data$n_obs)
@@ -515,7 +521,7 @@ DoubleML = R6Class("DoubleML",
           test_ids = lapply(
             1:(self$n_folds * self$n_rep),
             function(x) dummy_resampling_scheme$test_set(x))
-  
+
           smpls = lapply(1:self$n_rep, function(i_repeat) {
             list(
               train_ids = train_ids[((i_repeat - 1) * self$n_folds + 1):
@@ -594,10 +600,10 @@ DoubleML = R6Class("DoubleML",
     #'                   test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
     #' dml_plr_obj$set_sample_splitting(smpls)
     set_sample_splitting = function(smpls) {
-
       if (private$is_cluster_data) {
-        stop(paste("Externally setting the sample splitting for DoubleML is",
-                   "not yet implemented with clustering."))
+        stop(paste(
+          "Externally setting the sample splitting for DoubleML is",
+          "not yet implemented with clustering."))
       }
       if (test_list(smpls, names = "unnamed")) {
         lapply(smpls, function(x) check_smpl_split(x, self$data$n_obs))
@@ -1173,8 +1179,9 @@ DoubleML = R6Class("DoubleML",
       # set resampling specifications
       if (private$is_cluster_data) {
         if ((n_folds == 1) | (!apply_cross_fitting)) {
-          stop(paste("No cross-fitting (`apply_cross_fitting = False`)",
-                     "is not yet implemented with clustering."))
+          stop(paste(
+            "No cross-fitting (`apply_cross_fitting = False`)",
+            "is not yet implemented with clustering."))
         }
         private$n_folds_per_cluster = n_folds
         private$n_folds_ = n_folds^self$data$n_cluster_vars
@@ -1421,7 +1428,7 @@ DoubleML = R6Class("DoubleML",
       dml_procedure = self$dml_procedure
       smpls = private$get__smpls()
       test_ids = smpls$test_ids
-      
+
       if (!private$is_cluster_data) {
         if (dml_procedure == "dml1") {
           # Note that length(test_ids) is only not equal to self.n_folds
@@ -1453,6 +1460,7 @@ DoubleML = R6Class("DoubleML",
       # aggregate parameters from the repeated cross-fitting
       # don't use the getter (always for one treatment variable and one sample),
       # but the private variable
+
       private$coef_ = apply(
         self$all_coef, 1,
         function(x) median(x, na.rm = TRUE))
@@ -1514,7 +1522,7 @@ DoubleML = R6Class("DoubleML",
     var_est_cluster_data = function() {
       psi_a = private$get__psi_a()
       psi = private$get__psi()
-      
+
       if (self$data$n_cluster_vars == 1) {
         this_cluster_var = self$data$data_model[[self$data$cluster_cols[1]]]
         clusters = unique(this_cluster_var)
@@ -1529,12 +1537,13 @@ DoubleML = R6Class("DoubleML",
           const = 1 / length(I_k)
           for (cluster_value in I_k) {
             ind_cluster = (this_cluster_var == cluster_value)
-            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                      psi[ind_cluster]))
+            gamma_hat = gamma_hat + const * sum(outer(
+              psi[ind_cluster],
+              psi[ind_cluster]))
           }
-          j_hat = j_hat + sum(psi_a[test_inds])/length(I_k)
+          j_hat = j_hat + sum(psi_a[test_inds]) / length(I_k)
         }
-        
+
         gamma_hat = gamma_hat / private$n_folds_per_cluster
         j_hat = j_hat / private$n_folds_per_cluster
         private$var_scaling_factor = length(clusters)
@@ -1556,16 +1565,18 @@ DoubleML = R6Class("DoubleML",
           for (cluster_value in I_k) {
             ind_cluster = (first_cluster_var == cluster_value) &
               second_cluster_var %in% J_l
-            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                      psi[ind_cluster]))
+            gamma_hat = gamma_hat + const * sum(outer(
+              psi[ind_cluster],
+              psi[ind_cluster]))
           }
           for (cluster_value in J_l) {
             ind_cluster = (second_cluster_var == cluster_value) &
               first_cluster_var %in% I_k
-            gamma_hat = gamma_hat + const * sum(outer(psi[ind_cluster],
-                                                      psi[ind_cluster]))
+            gamma_hat = gamma_hat + const * sum(outer(
+              psi[ind_cluster],
+              psi[ind_cluster]))
           }
-          j_hat = j_hat + sum(psi_a[test_inds])/(length(I_k) * length(J_l))
+          j_hat = j_hat + sum(psi_a[test_inds]) / (length(I_k) * length(J_l))
         }
         gamma_hat = gamma_hat / (private$n_folds_per_cluster^2)
         j_hat = j_hat / (private$n_folds_per_cluster^2)
@@ -1587,14 +1598,15 @@ DoubleML = R6Class("DoubleML",
       return(theta)
     },
     orth_est_cluster_data = function() {
+
       dml_procedure = self$dml_procedure
       psi_a = private$get__psi_a()
       psi_b = private$get__psi_b()
-      
+
       smpls = private$get__smpls()
       test_ids = smpls$test_ids
       smpls_cluster = private$get__smpls_cluster()
-      
+
       if (dml_procedure == "dml1") {
         # note that in the dml1 case we could also simply apply the standard
         # function without cluster adjustment
@@ -1605,7 +1617,7 @@ DoubleML = R6Class("DoubleML",
           xx = sapply(
             test_cluster_inds,
             function(x) length(x))
-          scaling_factor = 1/prod(xx)
+          scaling_factor = 1 / prod(xx)
           thetas[i_fold] = -(scaling_factor * sum(psi_b[test_index])) /
             (scaling_factor * sum(psi_a[test_index]))
         }
@@ -1623,7 +1635,7 @@ DoubleML = R6Class("DoubleML",
           xx = sapply(
             test_cluster_inds,
             function(x) length(x))
-          scaling_factor = 1/prod(xx)
+          scaling_factor = 1 / prod(xx)
           psi_a_subsample_mean = psi_a_subsample_mean +
             scaling_factor * sum(psi_a[test_index])
           psi_b_subsample_mean = psi_b_subsample_mean +
