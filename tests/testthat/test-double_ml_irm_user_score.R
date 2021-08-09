@@ -54,7 +54,7 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
     double_mlirm_obj$fit()
     theta_obj = double_mlirm_obj$coef
     se_obj = double_mlirm_obj$se
-    double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlirm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mlirm_obj$boot_coef
 
     set.seed(3141)
@@ -70,7 +70,7 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
     theta_obj_score = double_mlirm_obj_score$coef
     se_obj_score = double_mlirm_obj_score$se
 
-    double_mlirm_obj_score$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlirm_obj_score$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_score = double_mlirm_obj_score$boot_coef
 
     expect_equal(theta_obj_score, theta_obj, tolerance = 1e-8)
