@@ -1419,9 +1419,9 @@ DoubleML = R6Class("DoubleML",
         smpls = private$get__smpls()
         test_ids = smpls$test_ids
         test_index = test_ids[[1]]
-        psi_a = psi_a[inds]
-        psi = psi[inds]
-        private$var_scaling_factor = length(inds)
+        psi_a = psi_a[test_index]
+        psi = psi[test_index]
+        private$var_scaling_factor = length(test_index)
       }
       J = mean(psi_a)
       sigma2_hat = mean(psi^2) / (J^2) / private$var_scaling_factor
