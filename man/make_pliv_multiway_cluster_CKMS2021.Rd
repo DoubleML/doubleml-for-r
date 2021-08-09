@@ -33,8 +33,9 @@ If \code{"data.frame"} returns a \code{data.frame()}.
 If \code{"data.table"} returns a \code{data.table()}.
 If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{d}, \code{z} and
 \code{cluster_vars} is returned.
-Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLClusterData"}.
+Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLClusterData"}.}
 
+\item{...}{\cr
 Additional keyword arguments to set non-default values for the parameters
 \eqn{\pi_{10}=1.0},
 \eqn{\omega_X = \omega_{\varepsilon} = \omega_V = \omega_v = (0.25, 0.25)},
@@ -58,10 +59,10 @@ is defined as
 
 with
 
-\eqn{X_{ij} = (1 - \omega_1^X - \omega_2^X) \alpha_{ij}^X 
+\eqn{X_{ij} = (1 - \omega_1^X - \omega_2^X) \alpha_{ij}^X
 + \omega_1^X \alpha_{i}^X + \omega_2^X \alpha_{j}^X,}
 
-\eqn{\varepsilon_{ij} = (1 - \omega_1^\varepsilon - \omega_2^\varepsilon) \alpha_{ij}^\varepsilon 
+\eqn{\varepsilon_{ij} = (1 - \omega_1^\varepsilon - \omega_2^\varepsilon) \alpha_{ij}^\varepsilon
 + \omega_1^\varepsilon \alpha_{i}^\varepsilon + \omega_2^\varepsilon \alpha_{j}^\varepsilon,}
 
 \eqn{v_{ij} = (1 - \omega_1^v - \omega_2^v) \alpha_{ij}^v

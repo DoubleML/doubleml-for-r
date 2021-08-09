@@ -23,8 +23,8 @@ dt = make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
 obj_dml_data = DoubleMLClusterData$new(dt,
   y_col = "Y",
   d_cols = "D",
-  z_cols="Z",
-  cluster_cols=c("cluster_var_i", "cluster_var_j"))
+  z_cols = "Z",
+  cluster_cols = c("cluster_var_i", "cluster_var_j"))
 }
 \section{Super class}{
 \code{\link[DoubleML:DoubleMLData]{DoubleML::DoubleMLData}} -> \code{DoubleMLClusterData}
