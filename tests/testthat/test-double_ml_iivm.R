@@ -38,14 +38,14 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       dml_procedure = dml_procedure, score = score)
     theta = iivm_hat$coef
     se = iivm_hat$se
-    
+
     boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
-                                 data_iivm$df,
-                                 y = "y", d = "d", z = "z",
-                                 n_folds = 5, smpls = iivm_hat$smpls,
-                                 all_preds= iivm_hat$all_preds,
-                                 score = score,
-                                 bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+      data_iivm$df,
+      y = "y", d = "d", z = "z",
+      n_folds = 5, smpls = iivm_hat$smpls,
+      all_preds = iivm_hat$all_preds,
+      score = score,
+      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
     set.seed(3141)
     double_mliivm_obj = DoubleMLIIVM$new(
@@ -62,7 +62,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     se_obj = double_mliivm_obj$se
 
     # bootstrap
-    double_mliivm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mliivm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mliivm_obj$boot_coef
 
     # at the moment the object result comes without a name

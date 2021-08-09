@@ -103,24 +103,33 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
     #' always takers in the sample. The entry `never_takers` (`logical(1)`)
     #' speficies whether there are never takers in the sample.
     subgroups = function(value) {
-      if (missing(value)) return(private$subgroups_)
-      else stop("can't set field subgroups")
+      if (missing(value)) {
+        return(private$subgroups_)
+      } else {
+        stop("can't set field subgroups")
+      }
     },
 
     #' @field trimming_rule (`character(1)`) \cr
     #' A `character(1)` specifying the trimming approach.
     trimming_rule = function(value) {
-      if (missing(value)) return(private$trimming_rule_)
-      else stop("can't set field trimming_rule")
+      if (missing(value)) {
+        return(private$trimming_rule_)
+      } else {
+        stop("can't set field trimming_rule")
+      }
     },
 
     #' @field trimming_threshold (`numeric(1)`) \cr
     #' The threshold used for timming.
     trimming_threshold = function(value) {
-      if (missing(value)) return(private$trimming_threshold_)
-      else stop("can't set field trimming_threshold")
+      if (missing(value)) {
+        return(private$trimming_threshold_)
+      } else {
+        stop("can't set field trimming_threshold")
+      }
     }),
-  
+
   public = list(
     #' @description
     #' Creates a new instance of this R6 class.
@@ -229,7 +238,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
-      
+
       private$check_data(self$data)
       private$check_score(self$score)
       private$learner_class = list(
@@ -484,7 +493,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "needs to be specified as treatment variable.")
       if (one_treat) {
         binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
-                                       lower = 0, upper = 1)
+          lower = 0, upper = 1)
         if (!(one_treat & binary_treat)) {
           stop(err_msg)
         }
@@ -500,7 +509,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "needs to be specified as instrumental variable.")
       if (one_instr) {
         binary_instr = test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]],
-                                       lower = 0, upper = 1)
+          lower = 0, upper = 1)
         if (!(one_instr & binary_instr)) {
           stop(err_msg)
         }

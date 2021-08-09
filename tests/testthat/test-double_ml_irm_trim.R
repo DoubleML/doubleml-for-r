@@ -29,23 +29,23 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
 
     set.seed(3141)
     irm_hat = dml_irm(data_irm$df,
-                      y = "y", d = "d",
-                      n_folds = 5, 
-                      ml_g = learner_pars$ml_g$clone(),
-                      ml_m = learner_pars$ml_m$clone(),
-                      dml_procedure = dml_procedure, score = score,
-                      trimming_threshold = trimming_threshold)
+      y = "y", d = "d",
+      n_folds = 5,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      dml_procedure = dml_procedure, score = score,
+      trimming_threshold = trimming_threshold)
     theta = irm_hat$coef
     se = irm_hat$se
-    
+
     boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
-                               data_irm$df,
-                               y = "y", d = "d",
-                               n_folds = 5, smpls = irm_hat$smpls,
-                               all_preds= irm_hat$all_preds,
-                               score = score,
-                               bootstrap = "normal", n_rep_boot = n_rep_boot,
-                               trimming_threshold = trimming_threshold)$boot_coef
+      data_irm$df,
+      y = "y", d = "d",
+      n_folds = 5, smpls = irm_hat$smpls,
+      all_preds = irm_hat$all_preds,
+      score = score,
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      trimming_threshold = trimming_threshold)$boot_coef
 
     set.seed(3141)
     double_mlirm_obj = DoubleMLIRM$new(
@@ -63,7 +63,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     se_obj = double_mlirm_obj$se
 
     # bootstrap
-    double_mlirm_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlirm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mlirm_obj$boot_coef
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
