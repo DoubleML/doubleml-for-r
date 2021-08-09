@@ -134,39 +134,39 @@ dgp1_toeplitz = function(n, p, betamax = 4, decay = 0.99, threshold = 0, noiseva
 }
 
 make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150) {
+
   sigma_e_u = matrix(c(1, 0.6, 0.6, 1), ncol = 2)
   mu_e_u = rep(0, 2)
   e_u = mvtnorm::rmvnorm(n = n_obs, mean = mu_e_u, sigma = sigma_e_u)
   epsilon = e_u[, 1]
   u = e_u[, 2]
-  
+
   sigma_x = toeplitz(0.5^(0:(dim_x - 1)))
   mu_x = rep(0, dim_x)
   x = mvtnorm::rmvnorm(n = n_obs, mean = mu_x, sigma = sigma_x)
-  
+
   I_z = diag(x = 1, ncol = dim_z, nrow = dim_z)
   mu_xi = rep(0, dim_z)
   xi = mvtnorm::rmvnorm(n = n_obs, mean = mu_xi, sigma = 0.25 * I_z)
-  
+
   beta = 1 / (1:dim_x)^2
   gamma = beta
   delta = 1 / (1:dim_z)^2
-  
+
   zeros = matrix(0, nrow = dim_x, ncol = (dim_z - dim_x))
   I_x = diag(x = 1, ncol = dim_x, nrow = dim_x)
   Pi = cbind(I_x, zeros)
-  
+
   z = x %*% Pi + xi
   d = x %*% gamma + z %*% delta + u
   y = alpha * d + x %*% beta + epsilon
-  
-  
+
+
   colnames(x) = paste0("X", 1:dim_x)
   colnames(z) = paste0("Z", 1:dim_z)
   colnames(y) = "y"
   colnames(d) = "d"
-  
+
   data = data.frame(x, y, d, z)
   return(data)
 }
-

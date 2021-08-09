@@ -71,8 +71,9 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
   ml_m = mlr3::lrn(mlmethod$mlmethod_m)
   ml_m$param_set$values = params$params_m
 
-  return(list(mlmethod = mlmethod, params = params,
-              ml_g = ml_g, ml_m = ml_m))
+  return(list(
+    mlmethod = mlmethod, params = params,
+    ml_g = ml_g, ml_m = ml_m))
 }
 
 get_default_mlmethod_pliv = function(learner) {
@@ -153,8 +154,9 @@ get_default_mlmethod_pliv = function(learner) {
   ml_r = mlr3::lrn(mlmethod$mlmethod_r)
   ml_r$param_set$values = params$params_r
 
-  return(list(mlmethod = mlmethod, params = params,
-              ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
+  return(list(
+    mlmethod = mlmethod, params = params,
+    ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
 }
 
 get_default_mlmethod_irm = function(learner) {
@@ -185,8 +187,9 @@ get_default_mlmethod_irm = function(learner) {
   ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
   ml_m$param_set$values = params$params_m
 
-  return(list(mlmethod = mlmethod, params = params,
-              ml_g = ml_g, ml_m = ml_m))
+  return(list(
+    mlmethod = mlmethod, params = params,
+    ml_g = ml_g, ml_m = ml_m))
 }
 
 get_default_mlmethod_iivm = function(learner) {
@@ -223,6 +226,7 @@ get_default_mlmethod_iivm = function(learner) {
   ml_r = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
   ml_r$param_set$values = params$params_r
 
-  return(list(mlmethod = mlmethod, params = params,
-              ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
+  return(list(
+    mlmethod = mlmethod, params = params,
+    ml_g = ml_g, ml_m = ml_m, ml_r = ml_r))
 }
