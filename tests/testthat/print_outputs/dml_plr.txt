@@ -1,0 +1,33 @@
+> print(dml_plr)
+================= DoubleMLPLR Object ==================
+
+
+------------------ Data summary      ------------------
+Outcome variable: y
+Treatment variable(s): d
+Covariates: X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18, X19, X20
+Instrument(s): 
+No. Observations: 100
+
+------------------ Score & algorithm ------------------
+Score function: partialling out
+DML algorithm: dml2
+
+------------------ Machine learner   ------------------
+ml_g: regr.rpart
+ml_m: regr.rpart
+
+------------------ Resampling        ------------------
+No. folds: 2
+No. repeated sample splits: 1
+Apply cross-fitting: TRUE
+
+------------------ Fit summary       ------------------
+ Estimates and significance testing of the effect of target variables
+  Estimate. Std. Error t value Pr(>|t|)    
+d    0.4067     0.1035   3.929 8.54e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+
+
