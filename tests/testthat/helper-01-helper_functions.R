@@ -1,5 +1,5 @@
 se_repeated = function(se_s, coefficients, theta_s) {
-    se = sqrt(stats::median(se_s^2 + (theta_s - coefficients)^2))
+  se = sqrt(stats::median(se_s^2 + (theta_s - coefficients)^2))
   return(se)
 }
 
@@ -31,17 +31,17 @@ draw_bootstrap_weights = function(bootstrap, n_rep_boot, n_obs) {
     stop("invalid boot method")
   }
   weights = matrix(weights, nrow = n_rep_boot, ncol = n_obs, byrow = TRUE)
-  
+
   return(weights)
 }
 
 
 functional_bootstrap = function(theta, se, psi, psi_a, k, smpls,
-                                n_rep_boot, weights) {
+  n_rep_boot, weights) {
   score = psi
   J = mean(psi_a)
-  boot_coef = matrix(NA, nrow = 1, ncol = n_rep_boot)
-  boot_t_stat = matrix(NA, nrow = 1, ncol = n_rep_boot)
+  boot_coef = matrix(NA_real_, nrow = 1, ncol = n_rep_boot)
+  boot_t_stat = matrix(NA_real_, nrow = 1, ncol = n_rep_boot)
   for (i in seq(n_rep_boot)) {
     boot_coef[1, i] = mean(weights[i, ] * 1 / J * score)
     boot_t_stat[1, i] = boot_coef[1, i] / se

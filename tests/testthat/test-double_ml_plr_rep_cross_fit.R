@@ -31,25 +31,25 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     set.seed(3141)
     n_folds = 5
     plr_hat = dml_plr(data_plr$df,
-                      y = "y", d = "d",
-                      n_folds = n_folds, n_rep = n_rep,
-                      ml_g = learner_pars$ml_g$clone(),
-                      ml_m = learner_pars$ml_m$clone(),
-                      dml_procedure = dml_procedure, score = score)
+      y = "y", d = "d",
+      n_folds = n_folds, n_rep = n_rep,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
+      dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
     t = plr_hat$t
     pval = plr_hat$pval
-    #ci = confint(plr_hat, level = 0.95, joint = FALSE)
-    
+    # ci = confint(plr_hat, level = 0.95, joint = FALSE)
+
     boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
-                               data_plr$df,
-                               y = "y", d = "d",
-                               n_folds = n_folds, n_rep = n_rep,
-                               smpls = plr_hat$smpls,
-                               all_preds= plr_hat$all_preds,
-                               bootstrap = "normal", n_rep_boot = n_rep_boot,
-                               score = score)$boot_coef
+      data_plr$df,
+      y = "y", d = "d",
+      n_folds = n_folds, n_rep = n_rep,
+      smpls = plr_hat$smpls,
+      all_preds = plr_hat$all_preds,
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      score = score)$boot_coef
 
     set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
@@ -66,18 +66,18 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     se_obj = double_mlplr_obj$se
     t_obj = double_mlplr_obj$t_stat
     pval_obj = double_mlplr_obj$pval
-    #ci_obj = double_mlplr_obj$confint(level = 0.95, joint = FALSE)
+    # ci_obj = double_mlplr_obj$confint(level = 0.95, joint = FALSE)
 
     # bootstrap
     double_mlplr_obj$bootstrap(method = "normal", n_rep_boot = n_rep_boot)
     boot_theta_obj = double_mlplr_obj$boot_coef
-    
+
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
     expect_equal(t, t_obj, tolerance = 1e-8)
     expect_equal(pval, pval_obj, tolerance = 1e-8)
-    #expect_equal(ci, ci_obj, tolerance = 1e-8)
-    
+    # expect_equal(ci, ci_obj, tolerance = 1e-8)
+
     expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
   }
 )

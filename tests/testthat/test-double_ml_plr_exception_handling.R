@@ -57,7 +57,7 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
         n_rep = n_rep,
         score = score,
         apply_cross_fitting = apply_cross_fitting),
-        regexp = msg)
+      regexp = msg)
     } else {
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_ml,
@@ -87,7 +87,7 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
       utils::capture.output(double_mlplr_obj$summary(), file = NULL)
       msg = "Apply fit\\(\\) before bootstrap\\(\\)."
       expect_error(double_mlplr_obj$bootstrap(method = "normal", n_rep_boot = n_rep_boot),
-                   regexp = msg)
+        regexp = msg)
 
       double_mlplr_obj$fit()
 
@@ -96,10 +96,10 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
 
       msg = "'level' must be > 0 and < 1."
       expect_error(double_mlplr_obj$confint(level = 1.2),
-                   regexp = msg)
+        regexp = msg)
       msg = "Multiplier bootstrap has not yet been performed. First call bootstrap\\(\\) and then try confint\\(\\) again."
       expect_error(double_mlplr_obj$confint(joint = TRUE, level = 0.95),
-                   regexp = msg)
+        regexp = msg)
     }
   }
 )

@@ -25,15 +25,19 @@ DoubleMLData = R6Class("DoubleMLData",
     #' @field all_variables (`character()`)\cr
     #' All variables available in the dataset.
     all_variables = function(value) {
-      if (missing(value)) return(names(self$data))
-      else stop("can't set field all_variables")
+      if (missing(value)) {
+        return(names(self$data))
+      } else {
+        stop("can't set field all_variables")
+      }
     },
 
     #' @field d_cols (`character()`)\cr
     #' The treatment variable(s).
     d_cols = function(value) {
-      if (missing(value)) return(private$d_cols_)
-      else {
+      if (missing(value)) {
+        return(private$d_cols_)
+      } else {
         d_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
         assert_character(d_cols, unique = TRUE)
@@ -49,37 +53,52 @@ DoubleMLData = R6Class("DoubleMLData",
     #' @field data ([`data.table`][data.table::data.table()])\cr
     #' Data object.
     data = function(value) {
-      if (missing(value)) return(private$data_)
-      else stop("can't set field data")
+      if (missing(value)) {
+        return(private$data_)
+      } else {
+        stop("can't set field data")
+      }
     },
 
     #' @field data_model ([`data.table`][data.table::data.table()])\cr
     #' Internal data object that implements the causal model as specified by
     #' the user via `y_col`, `d_cols`, `x_cols` and `z_cols`.
     data_model = function(value) {
-      if (missing(value)) return(private$data_model_)
-      else stop("can't set field data_model")
+      if (missing(value)) {
+        return(private$data_model_)
+      } else {
+        stop("can't set field data_model")
+      }
     },
 
     #' @field n_instr (`NULL`, `integer(1)`) \cr
     #' The number of instruments.
     n_instr = function(value) {
-      if (missing(value)) return(length(self$z_cols))
-      else stop("can't set field n_instr")
+      if (missing(value)) {
+        return(length(self$z_cols))
+      } else {
+        stop("can't set field n_instr")
+      }
     },
 
     #' @field n_obs (`integer(1)`) \cr
     #' The number of observations.
     n_obs = function(value) {
-      if (missing(value)) return(dim(self$data)[1])
-      else stop("can't set field n_obs")
+      if (missing(value)) {
+        return(dim(self$data)[1])
+      } else {
+        stop("can't set field n_obs")
+      }
     },
 
     #' @field n_treat (`integer(1)`) \cr
     #' The umber of treatment variables.
     n_treat = function(value) {
-      if (missing(value)) return(length(self$d_cols))
-      else stop("can't set field n_treat")
+      if (missing(value)) {
+        return(length(self$d_cols))
+      } else {
+        stop("can't set field n_treat")
+      }
     },
 
     #' @field other_treat_cols (`NULL`, `character()`) \cr
@@ -89,23 +108,30 @@ DoubleMLData = R6Class("DoubleMLData",
     #' the fitting stage. If `use_other_treat_as_covariate` is `FALSE`,
     #' `other_treat_cols` is `NULL`.
     other_treat_cols = function(value) {
-      if (missing(value)) return(private$other_treat_cols_)
-      else stop("can't set field other_treat_cols")
+      if (missing(value)) {
+        return(private$other_treat_cols_)
+      } else {
+        stop("can't set field other_treat_cols")
+      }
     },
 
     #' @field treat_col (`character(1)`) \cr
     #' "Active" treatment variable in the multiple-treatment case.
     treat_col = function(value) {
-      if (missing(value)) return(private$treat_col_)
-      else stop("can't set field treat_col")
+      if (missing(value)) {
+        return(private$treat_col_)
+      } else {
+        stop("can't set field treat_col")
+      }
     },
 
     #' @field use_other_treat_as_covariate (`logical(1)`) \cr
     #' Indicates whether in the multiple-treatment case the other treatment
     #' variables should be added as covariates. Default is `TRUE`.
     use_other_treat_as_covariate = function(value) {
-      if (missing(value)) return(private$use_other_treat_as_covariate_)
-      else {
+      if (missing(value)) {
+        return(private$use_other_treat_as_covariate_)
+      } else {
         use_other_treat_as_covariate = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
         assert_logical(use_other_treat_as_covariate, len = 1)
@@ -123,8 +149,9 @@ DoubleMLData = R6Class("DoubleMLData",
     #' `d_cols`, nor as instrumental variables `z_cols` are used as covariates.
     #' Default is `NULL`.
     x_cols = function(value) {
-      if (missing(value)) return(private$x_cols_)
-      else {
+      if (missing(value)) {
+        return(private$x_cols_)
+      } else {
         x_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
         if (!is.null(x_cols)) {
@@ -153,8 +180,9 @@ DoubleMLData = R6Class("DoubleMLData",
     #' @field y_col (`character(1)`) \cr
     #' The outcome variable.
     y_col = function(value) {
-      if (missing(value)) return(private$y_col_)
-      else {
+      if (missing(value)) {
+        return(private$y_col_)
+      } else {
         y_col = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
         assert_character(y_col, len = 1)
@@ -170,8 +198,9 @@ DoubleMLData = R6Class("DoubleMLData",
     #' @field z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
     z_cols = function(value) {
-      if (missing(value)) return(private$z_cols_)
-      else {
+      if (missing(value)) {
+        return(private$z_cols_)
+      } else {
         z_cols = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
         if (!is.null(z_cols)) {
@@ -239,7 +268,7 @@ DoubleMLData = R6Class("DoubleMLData",
 
       invisible(self)
     },
-    
+
     #' @description
     #' Print DoubleMLData objects.
     print = function() {
@@ -252,10 +281,10 @@ DoubleMLData = R6Class("DoubleMLData",
         "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
         "No. Observations: ", self$n_obs, "\n")
       cat(header, "\n",
-          "\n------------------ Data summary      ------------------\n",
-          data_info,
-          sep = "")
-      
+        "\n------------------ Data summary      ------------------\n",
+        data_info,
+        sep = "")
+
       invisible(self)
     },
 
@@ -395,9 +424,9 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
   d_cols = NULL, z_cols = NULL,
   use_other_treat_as_covariate = TRUE) {
   data = DoubleMLData$new(df,
-                          x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-                          z_cols = z_cols,
-                          use_other_treat_as_covariate = use_other_treat_as_covariate)
+    x_cols = x_cols, y_col = y_col, d_cols = d_cols,
+    z_cols = z_cols,
+    use_other_treat_as_covariate = use_other_treat_as_covariate)
   return(data)
 }
 

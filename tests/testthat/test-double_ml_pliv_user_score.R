@@ -47,12 +47,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 
-    double_mlpliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlpliv_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = double_mlpliv_obj$boot_coef
 
     set.seed(3141)
     double_mlpliv_obj_score = DoubleMLPLIV$new(
-    data = data_pliv$dml_data,
+      data = data_pliv$dml_data,
       n_folds = 5,
       ml_g = lrn(learner),
       ml_m = lrn(learner),
@@ -64,7 +64,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     theta_obj_score = double_mlpliv_obj_score$coef
     se_obj_score = double_mlpliv_obj_score$se
 
-    double_mlpliv_obj_score$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    double_mlpliv_obj_score$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_score = double_mlpliv_obj_score$boot_coef
 
     expect_equal(theta_obj, theta_obj_score, tolerance = 1e-8)
