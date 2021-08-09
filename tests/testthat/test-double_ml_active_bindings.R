@@ -75,7 +75,7 @@ test_that("Not setable fields", {
     regexp = msg)
   msg = "can't set field smpls_cluster"
   expect_error(dml_plr$smpls_cluster <- 5,
-               regexp = msg)
+    regexp = msg)
   msg = "can't set field t_stat"
   expect_error(dml_plr$t_stat <- 5,
     regexp = msg)

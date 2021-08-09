@@ -285,11 +285,12 @@ DoubleML = R6Class("DoubleML",
       header = paste0(
         "================= ", class_name,
         " Object ==================\n")
-      
+
       if (private$is_cluster_data) {
-        cluster_info = paste0("Cluster variable(s): ",
-                              paste0(self$data$cluster_cols, collapse = ", "),
-                              "\n")
+        cluster_info = paste0(
+          "Cluster variable(s): ",
+          paste0(self$data$cluster_cols, collapse = ", "),
+          "\n")
       } else {
         cluster_info = ""
       }
