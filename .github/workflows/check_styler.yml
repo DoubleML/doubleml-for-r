@@ -1,5 +1,5 @@
 # Workflow based on https://github.com/r-lib/actions/tree/master/examples#standard-ci-workflow
-name: build
+name: Check styler guidelines
 
 on:
   push:
