@@ -40,17 +40,18 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v1
 
+      - name: Install dependencies
+        run: |
+          install.packages('remotes')
+          remotes::install_github("pat-s/styler@mlr-style", dependencies=TRUE)
+        shell: Rscript {0}
+
       - name: Install system dependencies
         run: |
           while read -r cmd
           do
             eval sudo $cmd
           done < <(Rscript -e 'writeLines(remotes::system_requirements("ubuntu", "20.04"))')
-
-      - name: Install dependencies
-        run: |
-          remotes::install_github("pat-s/styler@mlr-style", dependencies=TRUE)
-        shell: Rscript {0}
 
       - name: Check styler
         run: |
