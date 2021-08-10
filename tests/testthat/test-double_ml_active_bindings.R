@@ -5,9 +5,7 @@ test_that("Not setable fields", {
   dml_data = make_plr_CCDDHNR2018(n_obs = 101)
   ml_g = lrn("regr.ranger")
   ml_m = ml_g$clone()
-  dml_plr = DoubleMLPLR$new(
-dml_data,ml_g,
-ml_m)
+  dml_plr = DoubleMLPLR$new(dml_data, ml_g, ml_m)
 
   msg = "can't set field all_coef"
   expect_error(dml_plr$all_coef <- 5,
