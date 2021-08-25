@@ -11,6 +11,7 @@ double_ml_data_from_data_frame(
   y_col = NULL,
   d_cols = NULL,
   z_cols = NULL,
+  cluster_cols = NULL,
   use_other_treat_as_covariate = TRUE
 )
 }
@@ -33,13 +34,15 @@ The treatment variable(s).}
 \item{z_cols}{(\code{NULL}, \code{character()}) \cr
 The instrumental variables. Default is \code{NULL}.}
 
+\item{cluster_cols}{(\code{NULL}, \code{character()}) \cr
+The cluster variables. Default is \code{NULL}.}
+
 \item{use_other_treat_as_covariate}{(\code{logical(1)}) \cr
 Indicates whether in the multiple-treatment case the other treatment
 variables should be added as covariates. Default is \code{TRUE}.}
 }
 \value{
-Creates a new instance of class \code{DoubleMLData} by default. Class of
-returned object may change with input provided by option \code{data_class}.
+Creates a new instance of class \code{DoubleMLData}.
 }
 \description{
 Initalization of DoubleMLData from \code{data.frame}.
@@ -50,5 +53,5 @@ x_names = names(df)[grepl("X", names(df))]
 obj_dml_data = double_ml_data_from_data_frame(
   df = df, x_cols = x_names,
   y_col = "y", d_cols = "d")
-# Input: Data frame, Output: DoubleMLData or data.table
+# Input: Data frame, Output: DoubleMLData object
 }

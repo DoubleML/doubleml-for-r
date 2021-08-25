@@ -10,6 +10,7 @@ double_ml_data_from_matrix(
   y,
   d,
   z = NULL,
+  cluster_vars = NULL,
   data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE
 )
@@ -26,6 +27,9 @@ Matrix of treatment variables.}
 
 \item{z}{(\code{matrix()}) \cr
 Matrix of instruments.}
+
+\item{cluster_vars}{(\code{matrix()}) \cr
+Matrix of cluster variables.}
 
 \item{data_class}{(\code{character(1)}) \cr
 Class of returned object. By default, an object of class \code{DoubleMLData} is
