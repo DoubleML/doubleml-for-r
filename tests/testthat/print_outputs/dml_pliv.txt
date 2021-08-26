@@ -1,0 +1,36 @@
+> print(dml_pliv)
+================= DoubleMLPLIV Object ==================
+
+
+------------------ Data summary      ------------------
+Outcome variable: Y
+Treatment variable(s): D
+Covariates: X1, X2, X3, X4, X5
+Instrument(s): Z
+Cluster variable(s): cluster_var_i, cluster_var_j
+No. Observations: 100
+
+------------------ Score & algorithm ------------------
+Score function: partialling out
+DML algorithm: dml2
+
+------------------ Machine learner   ------------------
+ml_g: regr.rpart
+ml_m: regr.rpart
+ml_r: regr.rpart
+
+------------------ Resampling        ------------------
+No. folds per cluster: 2
+No. folds: 4
+No. repeated sample splits: 1
+Apply cross-fitting: TRUE
+
+------------------ Fit summary       ------------------
+ Estimates and significance testing of the effect of target variables
+  Estimate. Std. Error t value Pr(>|t|)    
+D    1.0138     0.1667    6.08  1.2e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+
+

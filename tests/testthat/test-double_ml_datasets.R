@@ -52,6 +52,25 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
       expect_is(df$z, "matrix")
     }
 
+    # Test CKMS2019
+    N = 10
+    M = 10
+    if (return_type == "DoubleMLData") {
+      df = make_pliv_multiway_cluster_CKMS2021(N, M,
+        return_type = "DoubleMLClusterData")
+      expect_is(df, "DoubleMLClusterData")
+    } else if (return_type != "matrix") {
+      df = make_pliv_multiway_cluster_CKMS2021(N, M, return_type = return_type)
+      expect_is(df, paste0(return_type))
+    } else {
+      df = make_pliv_multiway_cluster_CKMS2021(N, M, return_type = return_type)
+      expect_is(df, "list")
+      expect_is(df$X, "matrix")
+      expect_is(df$y, "matrix")
+      expect_is(df$d, "matrix")
+      expect_is(df$z, "matrix")
+    }
+
     # Test IRM
     if (return_type != "matrix") {
       df = make_irm_data(return_type = return_type)

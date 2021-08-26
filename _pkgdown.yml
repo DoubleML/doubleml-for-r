@@ -43,6 +43,7 @@ reference:
   - title: Double machine learning data class
     contents:
       - DoubleMLData
+      - DoubleMLClusterData
       - double_ml_data_from_data_frame
       - double_ml_data_from_matrix
   - title: Abstract base class for double machine learning models
@@ -66,3 +67,4 @@ reference:
       - make_irm_data
       - make_iivm_data
       - make_plr_turrell2018
+      - make_pliv_multiway_cluster_CKMS2021

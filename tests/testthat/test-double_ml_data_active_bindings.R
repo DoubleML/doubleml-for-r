@@ -162,6 +162,48 @@ test_that("y_col setter", {
 }
 )
 
+test_that("cluster_cols setter", {
+  set.seed(3141)
+  dml_data = make_plr_CCDDHNR2018(n_obs = 101, return_type = "data.frame")
+  df = dml_data[, 1:10]
+  names(df) = c(paste0("X", 1:5), c("y", "d1", "d2", "c1", "c2"))
+  dml_data = double_ml_data_from_data_frame(df,
+    y_col = "y",
+    d_cols = c("d1", "d2"),
+    x_cols = paste0("X", 1:5),
+    cluster_cols = c("c1", "c2"))
+  expect_equal(dml_data$n_obs, 101)
+
+  # check that after changing d_cols, the data_model gets updated
+  data_comp = df[, c(paste0("X", 1:5), c("y", "d1", "d2", "c2", "c1"))]
+  dml_data$cluster_cols = c("c2", "c1")
+  expect_equal(as.data.frame(dml_data$data_model), data_comp)
+
+  msg = paste0(
+    "Assertion on 'cluster_cols' failed: Must be a subset of",
+    " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\},",
+    " but is \\{'c1','c13'\\}.")
+  expect_error(dml_data$cluster_cols <- c("c1", "c13"),
+    regexp = msg)
+
+  msg = paste0(
+    "Assertion on 'cluster_cols' failed: Must be a subset of",
+    " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\},",
+    " but is \\{'c13'\\}.")
+  expect_error(dml_data$cluster_cols <- "c13",
+    regexp = msg)
+
+  msg = "Assertion on 'cluster_cols' failed: Must be of type 'character', not 'double'."
+  expect_error(dml_data$cluster_cols <- 5,
+    regexp = msg)
+
+  # check single treatment variable
+  dml_data$cluster_cols = "c2"
+  expect_equal(dml_data$cluster_cols, "c2")
+  expect_equal(dml_data$n_cluster_vars, 1)
+}
+)
+
 test_that("Tests for use_other_treat_as_covariate", {
   set.seed(3141)
   dml_data = make_plr_CCDDHNR2018(n_obs = 101, return_type = "data.frame")
@@ -214,7 +256,7 @@ test_that("Disjoint sets", {
   dt = data.table::as.data.table(df)
 
   msg = paste0(
-    "At least one variable/column is set as treatment variable \\(`d_cols`\\) and as a covariate \\(`x_cols`\\).",
+    "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a covariate \\('x_cols'\\).",
     " Consider using parameter 'use_other_treat_as_covariate'.")
   expect_error(DoubleMLData$new(dt,
     y_col = "yy",
@@ -229,7 +271,7 @@ test_that("Disjoint sets", {
     x_cols = c("xx1", "xx2")),
   regexp = msg)
 
-  msg = "yy cannot be set as outcome variable `y_col` and covariate in 'x_cols'."
+  msg = "yy cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
   expect_error(DoubleMLData$new(dt,
     y_col = "yy",
     d_cols = "dd1",
@@ -259,6 +301,39 @@ test_that("Disjoint sets", {
     x_cols = c("xx1", "xx2"),
     z_cols = "xx2"),
   regexp = msg)
+
+  msg = "yy cannot be set as outcome variable 'y_col' and cluster variable in 'cluster_cols'."
+  expect_error(DoubleMLClusterData$new(dt,
+    y_col = "yy",
+    d_cols = c("dd1"),
+    x_cols = c("xx1", "xx2"),
+    cluster_cols = "yy"),
+  regexp = msg)
+
+  msg = "At least one variable/column is set as treatment variable \\('d_cols'\\) and as a cluster variable \\('cluster_cols'\\)."
+  expect_error(DoubleMLClusterData$new(dt,
+    y_col = "yy",
+    d_cols = c("dd1", "xx2"),
+    x_cols = c("xx1"),
+    cluster_cols = "xx2"),
+  regexp = msg)
+
+  msg = "At least one variable/column is set as covariate \\('x_cols'\\) and as a cluster variable \\('cluster_cols'\\)."
+  expect_error(DoubleMLClusterData$new(dt,
+    y_col = "yy",
+    d_cols = "dd1",
+    x_cols = c("xx1", "xx2"),
+    cluster_cols = "xx2"),
+  regexp = msg)
+
+  msg = "At least one variable/column is set as instrumental variable \\('z_cols'\\) and as a cluster variable \\('cluster_cols'\\)."
+  expect_error(DoubleMLClusterData$new(dt,
+    y_col = "yy",
+    d_cols = "dd1",
+    x_cols = c("xx1"),
+    z_cols = "xx2",
+    cluster_cols = "xx2"),
+  regexp = msg)
 }
 )
 
@@ -268,7 +343,10 @@ test_that("Test duplicates", {
   dml_data = DoubleMLData$new(dt,
     y_col = "y",
     d_cols = "d")
-
+  dml_cluster_data = DoubleMLClusterData$new(dt,
+    y_col = "y",
+    d_cols = "d",
+    cluster_cols = "X2")
   msg = "Assertion on 'd_cols' failed: Contains duplicated values, position 2."
   expect_error(DoubleMLData$new(dt,
     y_col = "y",
@@ -297,6 +375,16 @@ test_that("Test duplicates", {
   expect_error(dml_data$z_cols <- c("X15", "X12", "X12", "X15"),
     regexp = msg)
 
+  msg = "Assertion on 'cluster_cols' failed: Contains duplicated values, position 2."
+  expect_error(DoubleMLClusterData$new(dt,
+    y_col = "y",
+    d_cols = c("X1"),
+    x_cols = c("X3", "X2"),
+    cluster_cols = c("d", "d")),
+  regexp = msg)
+  expect_error(dml_cluster_data$cluster_cols <- c("d", "d"),
+    regexp = msg)
+
   df = as.data.frame(matrix(rnorm(20), ncol = 5))
   names(df) = c("y", "d", "X3", "X2", "y")
   dt = data.table::as.data.table(df)
@@ -306,38 +394,67 @@ test_that("Test duplicates", {
     d_cols = "d",
     x_cols = c("X3", "X2")),
   regexp = msg)
+  expect_error(DoubleMLClusterData$new(dt,
+    y_col = "y",
+    d_cols = "d",
+    x_cols = c("X3"),
+    cluster_cols = "X2"),
+  regexp = msg)
 }
 )
 
 test_that("Not setable fields", {
   set.seed(3141)
   dml_data = make_plr_CCDDHNR2018(n_obs = 101)
+  dml_cluster_data = DoubleMLClusterData$new(dml_data$data,
+    y_col = "y",
+    d_cols = "d",
+    cluster_cols = "X2")
+  msg = "can't set field n_cluster_vars"
+  expect_error(dml_cluster_data$n_cluster_vars <- 5,
+    regexp = msg)
 
   msg = "can't set field all_variables"
   expect_error(dml_data$all_variables <- "abc",
     regexp = msg)
+  expect_error(dml_cluster_data$all_variables <- "abc",
+    regexp = msg)
   msg = "can't set field data"
   expect_error(dml_data$data <- "abc",
     regexp = msg)
+  expect_error(dml_cluster_data$data <- "abc",
+    regexp = msg)
   msg = "can't set field data_model"
   expect_error(dml_data$data_model <- "abc",
+    regexp = msg)
+  expect_error(dml_cluster_data$data_model <- "abc",
     regexp = msg)
 
   msg = "can't set field n_instr"
   expect_error(dml_data$n_instr <- 5,
     regexp = msg)
+  expect_error(dml_cluster_data$n_instr <- 5,
+    regexp = msg)
   msg = "can't set field n_obs"
   expect_error(dml_data$n_obs <- 5,
     regexp = msg)
+  expect_error(dml_cluster_data$n_obs <- 5,
+    regexp = msg)
   msg = "can't set field n_treat"
   expect_error(dml_data$n_treat <- 5,
+    regexp = msg)
+  expect_error(dml_cluster_data$n_treat <- 5,
     regexp = msg)
 
   msg = "can't set field other_treat_cols"
   expect_error(dml_data$other_treat_cols <- "abc",
     regexp = msg)
+  expect_error(dml_cluster_data$other_treat_cols <- "abc",
+    regexp = msg)
   msg = "can't set field treat_col"
   expect_error(dml_data$treat_col <- "abc",
+    regexp = msg)
+  expect_error(dml_cluster_data$treat_col <- "abc",
     regexp = msg)
 }
 )
