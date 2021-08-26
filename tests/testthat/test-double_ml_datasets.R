@@ -39,8 +39,8 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
       expect_is(df$d, "matrix")
       expect_is(df$z, "matrix")
     }
-    
-     # Test BCCH2012
+
+    # Test BCCH2012
     if (return_type != "matrix") {
       df = make_pliv_BCCH2012(return_type = return_type)
       expect_is(df, paste0(return_type))

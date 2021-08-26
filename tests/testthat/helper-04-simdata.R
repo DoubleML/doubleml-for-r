@@ -122,7 +122,8 @@ df = make_data_pliv_partialZ(
   return_x_vars = TRUE)
 Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
 dml_data = double_ml_data_from_data_frame(df,
-                                          y_col = "y",
-                                          d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
-data_pliv_partialZ_with_X = list(df = df,
-                          dml_data = dml_data)
+  y_col = "y",
+  d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z))
+data_pliv_partialZ_with_X = list(
+  df = df,
+  dml_data = dml_data)

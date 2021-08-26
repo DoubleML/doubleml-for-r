@@ -69,7 +69,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
     z_cols = z_vars[[z_indx]]
     set.seed(3141)
     df = data_pliv$df
-    
+
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
@@ -127,18 +127,18 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
     # }
     #
     if (data_ml$n_instr > 1) {
-      
+
       # Case without X's
       set.seed(3141)
       data_ml_noX = double_ml_data_from_data_frame(df,
-                                               y_col = "y",
-                                               d_cols = "d", x_cols = character(0), z_cols = z_cols)
+        y_col = "y",
+        d_cols = "d", x_cols = character(0), z_cols = z_cols)
       double_mlpliv_obj_tuned_Z_noX = DoubleMLPLIV.partialZ(data_ml_noX,
-                                                        n_folds = n_folds,
-                                                        ml_r = learner,
-                                                        dml_procedure = dml_procedure,
-                                                        score = score,
-                                                        n_rep = n_rep)
+        n_folds = n_folds,
+        ml_r = learner,
+        dml_procedure = dml_procedure,
+        score = score,
+        n_rep = n_rep)
       param_grid_r = list("ml_r" = param_grid[["ml_r"]])
       tune_settings_r = tune_settings
       tune_settings_r$measure$ml_g = tune_settings_r$measure$ml_m = NULL
@@ -146,22 +146,22 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
         param_set = param_grid_r, tune_on_folds = tune_on_folds,
         tune_settings = tune_settings_r)
       double_mlpliv_obj_tuned_Z_noX$fit()
-      
+
       theta_obj_tuned_Z_noX = double_mlpliv_obj_tuned_Z_noX$coef
       se_obj_tuned_Z_noX = double_mlpliv_obj_tuned_Z_noX$se
-      
+
       expect_is(theta_obj_tuned_Z_noX, "numeric")
       expect_is(se_obj_tuned_Z_noX, "numeric")
-      
+
       # Case with X's
       set.seed(3141)
       double_mlpliv_obj_tuned_Z = DoubleMLPLIV.partialZ(data_ml,
-                                                        n_folds = n_folds,
-                                                        ml_r = learner,
-                                                        dml_procedure = dml_procedure,
-                                                        score = score,
-                                                        n_rep = n_rep)
-      
+        n_folds = n_folds,
+        ml_r = learner,
+        dml_procedure = dml_procedure,
+        score = score,
+        n_rep = n_rep)
+
       param_grid_r = list("ml_r" = param_grid[["ml_r"]])
       tune_settings_r = tune_settings
       tune_settings_r$measure$ml_g = tune_settings_r$measure$ml_m = NULL
@@ -169,10 +169,10 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
         param_set = param_grid_r, tune_on_folds = tune_on_folds,
         tune_settings = tune_settings_r)
       double_mlpliv_obj_tuned_Z$fit()
-      
+
       theta_obj_tuned_Z = double_mlpliv_obj_tuned_Z$coef
       se_obj_tuned_Z = double_mlpliv_obj_tuned_Z$se
-      
+
       expect_is(theta_obj_tuned_Z, "numeric")
       expect_is(se_obj_tuned_Z, "numeric")
 
