@@ -29,12 +29,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
 
     learner_pars = get_default_mlmethod_pliv(learner)
     df = data_pliv$df
-    
-    if (! with_x) {
+
+    if (!with_x) {
       x_indx = grep("X", names(df))
-      df = df[, - x_indx, drop = FALSE]
+      df = df[, -x_indx, drop = FALSE]
     }
-    
+
     set.seed(3141)
     pliv_hat = dml_pliv_partial_z(df,
       y = "y", d = "d", z = c("z", "z2"),
@@ -44,22 +44,22 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
-    
-    if (! with_x) {
+
+    if (!with_x) {
       df_boot = df
     } else {
       df_boot = pliv_hat$data_with_res
     }
-    
+
     set.seed(3141)
     boot_theta = bootstrap_pliv_partial_z(pliv_hat$thetas, pliv_hat$ses,
-                                          df_boot,
-                                          y = "y", d = "d", z = c("z", "z2"),
-                                          n_folds = n_folds, n_rep = n_rep,
-                                          smpls = pliv_hat$smpls,
-                                          all_preds= pliv_hat$all_preds,
-                                          bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
-    
+      df_boot,
+      y = "y", d = "d", z = c("z", "z2"),
+      n_folds = n_folds, n_rep = n_rep,
+      smpls = pliv_hat$smpls,
+      all_preds = pliv_hat$all_preds,
+      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+
     set.seed(3141)
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
 
@@ -85,7 +85,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
 
     # bootstrap
     set.seed(3141)
-    dml_pliv_obj$bootstrap(method = 'normal',  n_rep = n_rep_boot)
+    dml_pliv_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = dml_pliv_obj$boot_coef
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
@@ -101,12 +101,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
 
     learner_pars = get_default_mlmethod_pliv(learner)
     df = data_pliv$df
-    
-    if (! with_x) {
+
+    if (!with_x) {
       x_indx = grep("X", names(df))
-      df = df[, - x_indx, drop = FALSE]
+      df = df[, -x_indx, drop = FALSE]
     }
-    
+
     # Passing for non-cross-fitting case
     set.seed(3141)
     my_task = Task$new("help task", "regr", data_pliv$df)

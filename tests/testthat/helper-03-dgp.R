@@ -133,7 +133,8 @@ dgp1_toeplitz = function(n, p, betamax = 4, decay = 0.99, threshold = 0, noiseva
   return(data)
 }
 
-make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150) {
+make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150,
+  return_x_vars = TRUE) {
 
   sigma_e_u = matrix(c(1, 0.6, 0.6, 1), ncol = 2)
   mu_e_u = rep(0, 2)
@@ -161,12 +162,16 @@ make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150) {
   d = x %*% gamma + z %*% delta + u
   y = alpha * d + x %*% beta + epsilon
 
-
   colnames(x) = paste0("X", 1:dim_x)
   colnames(z) = paste0("Z", 1:dim_z)
   colnames(y) = "y"
   colnames(d) = "d"
 
-  data = data.frame(x, y, d, z)
+  if (return_x_vars) {
+    data = data.frame(x, y, d, z)
+  } else {
+    data = data.frame(y, d, z)
+  }
+
   return(data)
 }
