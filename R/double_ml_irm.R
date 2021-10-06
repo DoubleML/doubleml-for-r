@@ -242,7 +242,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         fold_specific_params = private$fold_specific_params)
 
       g1_hat = NULL
-      if ((is.character(self$score) && self$score == "ATE") | is.function(self$score)) {
+      if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
         g1_hat = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
@@ -341,7 +341,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         tune_settings$measure$ml_g,
         private$learner_class$ml_g)
 
-      if (self$score == "ATE" | is.function(self$score)) {
+      if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
         tuning_result_g1 = dml_tune(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
