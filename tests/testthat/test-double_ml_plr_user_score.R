@@ -30,7 +30,7 @@ if (on_cran) {
     n_rep = c(1, 2),
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
   .cases = test_cases, {

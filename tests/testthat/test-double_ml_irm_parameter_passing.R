@@ -26,8 +26,8 @@ test_cases_nocf = expand.grid(
   trimming_threshold = 1e-5,
   stringsAsFactors = FALSE)
 
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
-test_cases_nocf["test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases_nocf[".test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop vs fun):",
   .cases = test_cases, {
