@@ -37,7 +37,7 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 }
 
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
   .cases = test_cases, {

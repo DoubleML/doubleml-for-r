@@ -27,7 +27,7 @@ if (on_cran) {
     dml_procedure = "dml2",
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
     learner = "regr.glmnet",
@@ -35,7 +35,7 @@ if (on_cran) {
     dml_procedure = c("dml1", "dml2"),
     trimming_threshold = c(0, 0.01),
     stringsAsFactors = FALSE)
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
 patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
