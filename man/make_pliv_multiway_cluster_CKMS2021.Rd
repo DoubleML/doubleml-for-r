@@ -35,8 +35,7 @@ If \code{"matrix"} a named \code{list()} with entries \code{X}, \code{y}, \code{
 \code{cluster_vars} is returned.
 Every entry in the list is a \code{matrix()} object.  Default is \code{"DoubleMLClusterData"}.}
 
-\item{...}{\cr
-Additional keyword arguments to set non-default values for the parameters
+\item{...}{Additional keyword arguments to set non-default values for the parameters
 \eqn{\pi_{10}=1.0},
 \eqn{\omega_X = \omega_{\varepsilon} = \omega_V = \omega_v = (0.25, 0.25)},
 \eqn{s_X = s_{\varepsilon v} = 0.25}, or the \eqn{p_x}-vectors
