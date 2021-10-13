@@ -813,7 +813,7 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 #' `cluster_vars` is returned.
 #' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLClusterData"`.
 #'
-#' @param ... \cr
+#' @param ...
 #' Additional keyword arguments to set non-default values for the parameters
 #' \eqn{\pi_{10}=1.0},
 #' \eqn{\omega_X = \omega_{\varepsilon} = \omega_V = \omega_v = (0.25, 0.25)},
