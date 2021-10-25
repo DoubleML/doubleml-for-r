@@ -77,6 +77,7 @@ jobs:
         if: matrix.config.mlr3 == 'dev'
         run: |
           remotes::install_github("mlr-org/mlr3")
+          remotes::install_github("mllg/checkmate")
         shell: Rscript {0}
 
       - name: Check
