@@ -4,12 +4,22 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(
-  g_learner = "regr.cv_glmnet",
-  m_learner = "regr.cv_glmnet",
-  dml_procedure = "dml2",
-  score = "partialling out",
-  stringsAsFactors = FALSE)
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(
+    g_learner = "regr.rpart",
+    m_learner = "regr.rpart",
+    dml_procedure = "dml2",
+    score = "partialling out",
+    stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(
+    g_learner = "regr.cv_glmnet",
+    m_learner = "regr.cv_glmnet",
+    dml_procedure = "dml2",
+    score = "partialling out",
+    stringsAsFactors = FALSE)
+}
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:",
