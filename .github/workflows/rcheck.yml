@@ -16,7 +16,7 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
-    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }}; mlr3 ${{ matrix.config.mlr3 }})
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }}; mlr3 ${{ matrix.config.mlr3 }}; cran_no_glmnet ${{ matrix.config.cran_no_glmnet }})
 
     strategy:
       fail-fast: false
