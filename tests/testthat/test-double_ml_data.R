@@ -371,7 +371,7 @@ test_that("Unit tests for DoubleMLData", {
     d_cols = d_indx,
     z_cols = z_indx)
 
-  msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}, but is \\{'X1'\\}."
+  msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}"
   expect_error(D11$set_data_model(X_cols1[1]),
     regexp = msg12)
 }
