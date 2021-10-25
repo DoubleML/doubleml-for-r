@@ -94,6 +94,7 @@ jobs:
         if: matrix.config.cran_no_glmnet == 'true'
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
+          _R_CHECK_FORCE_SUGGESTS_: false
           NOT_CRAN: false
         run:  |
           remove.packages("glmnet")
