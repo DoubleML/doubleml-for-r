@@ -35,8 +35,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML", {
     test_ids = list(c(6, 7)),
     ids = list(c(8, 9, 10)))
   msg = paste(
-    "Assertion on 'names\\(smpl\\)' failed: Must be equal to set",
-    "\\{'train_ids','test_ids'\\}")
+    "Assertion on 'names\\(smpl\\)' failed: .* set \\{'train_ids','test_ids'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
@@ -238,8 +237,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
       train_ids = list(c(1, 3, 4, 5, 7, 9), c(2, 4, 6, 8, 10)),
       test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
   msg = paste(
-    "Assertion on 'smpl\\$train_ids\\[\\[i_fold\\]\\]' failed:",
-    "Must be disjunct from set \\{'2','4','6','8','10'\\}")
+    "Assertion on 'smpl\\$train_ids\\[\\[i_fold\\]\\]' failed: .* \\{'2','4','6','8','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
