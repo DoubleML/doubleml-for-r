@@ -102,8 +102,7 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart"))
   msg = paste(
-    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
-    "Must be equal to set \\{'0','1'\\}")
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
   expect_error(double_mlplr_obj$fit(),
     regexp = msg)
 
@@ -116,8 +115,7 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart"))
   msg = paste(
-    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
-    "Must be equal to set \\{'0','1'\\}")
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
   expect_error(double_mlplr_obj$fit(),
     regexp = msg)
 }
