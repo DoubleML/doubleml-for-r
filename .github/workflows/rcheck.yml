@@ -81,8 +81,9 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
-        if: runner.os != 'macOS'
-        if: matrix.config.cran_no_glmnet == 'false'
+        if: |
+          runner.os != 'macOS' &&
+          matrix.config.cran_no_glmnet == 'false'
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
           NOT_CRAN: false
@@ -100,8 +101,9 @@ jobs:
         shell: Rscript {0}
 
       - name: Check
-        if: runner.os == 'macOS'
-        if: matrix.config.cran_no_glmnet == 'false'
+        if: |
+          runner.os == 'macOS' &&
+          matrix.config.cran_no_glmnet == 'false'
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         run: rcmdcheck::rcmdcheck(args = c("--no-manual"), error_on = "warning", check_dir = "check")
