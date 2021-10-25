@@ -77,7 +77,6 @@ jobs:
         if: matrix.config.mlr3 == 'dev'
         run: |
           remotes::install_github("mlr-org/mlr3")
-          remotes::install_github("mllg/checkmate")
         shell: Rscript {0}
 
       - name: Check
@@ -92,7 +91,9 @@ jobs:
         if: runner.os == 'macOS'
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual"), error_on = "warning", check_dir = "check")
+        run: |
+          remotes::install_github("mllg/checkmate")
+          rcmdcheck::rcmdcheck(args = c("--no-manual"), error_on = "warning", check_dir = "check")
         shell: Rscript {0}
 
       - name: Upload check results
