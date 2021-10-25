@@ -18,8 +18,7 @@ test_that("x_cols setter", {
 
   msg = paste0(
     "Assertion on 'x_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','X5','X6','X7','X8','X9','X10','X11','X12','X13','X14','X15','X16','X17','X18','X19','X20','y','d'\\},",
-    " but is \\{'X1','X11','A13'\\}.")
+    " \\{'X1','X2','X3','X4','X5','X6','X7','X8','X9','X10','X11','X12','X13','X14','X15','X16','X17','X18','X19','X20','y','d'\\}")
   expect_error(dml_data$x_cols <- c("X1", "X11", "A13"),
     regexp = msg)
 
@@ -55,15 +54,13 @@ test_that("d_cols setter", {
 
   msg = paste0(
     "Assertion on 'd_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\},",
-    " but is \\{'d1','d13'\\}.")
+    " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\}")
   expect_error(dml_data$d_cols <- c("d1", "d13"),
     regexp = msg)
 
   msg = paste0(
     "Assertion on 'd_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\},",
-    " but is \\{'d13'\\}.")
+    " \\{'X1','X2','X3','X4','X5','X6','X7','y','d1','d2'\\}")
   expect_error(dml_data$d_cols <- "d13",
     regexp = msg)
 
@@ -99,15 +96,13 @@ test_that("z_cols setter", {
 
   msg = paste0(
     "Assertion on 'z_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\},",
-    " but is \\{'z1','a13'\\}.")
+    " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\}")
   expect_error(dml_data$z_cols <- c("z1", "a13"),
     regexp = msg)
 
   msg = paste0(
     "Assertion on 'z_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\},",
-    " but is \\{'a13'\\}.")
+    " \\{'X1','X2','X3','X4','z1','z2','z3','y','d1','d2'\\}")
   expect_error(dml_data$z_cols <- "a13",
     regexp = msg)
 
@@ -151,8 +146,7 @@ test_that("y_col setter", {
 
   msg = paste0(
     "Assertion on 'y_col' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','X5','X6','X7','y','y123','d'\\},",
-    " but is \\{'d13'\\}.")
+    " \\{'X1','X2','X3','X4','X5','X6','X7','y','y123','d'\\}")
   expect_error(dml_data$y_col <- "d13",
     regexp = msg)
 
@@ -181,15 +175,13 @@ test_that("cluster_cols setter", {
 
   msg = paste0(
     "Assertion on 'cluster_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\},",
-    " but is \\{'c1','c13'\\}.")
+    " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\}")
   expect_error(dml_data$cluster_cols <- c("c1", "c13"),
     regexp = msg)
 
   msg = paste0(
     "Assertion on 'cluster_cols' failed: Must be a subset of",
-    " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\},",
-    " but is \\{'c13'\\}.")
+    " \\{'X1','X2','X3','X4','X5','y','d1','d2','c1','c2'\\}")
   expect_error(dml_data$cluster_cols <- "c13",
     regexp = msg)
 
@@ -239,7 +231,7 @@ test_that("Tests for use_other_treat_as_covariate", {
   expect_error(dml_data$use_other_treat_as_covariate <- 5,
     regexp = msg)
 
-  msg = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d1','d2'\\}, but is \\{'d3'\\}."
+  msg = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d1','d2'\\}"
   expect_error(dml_data$set_data_model("d3"),
     regexp = msg)
 
