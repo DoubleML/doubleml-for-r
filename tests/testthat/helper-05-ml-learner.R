@@ -178,8 +178,8 @@ get_default_mlmethod_irm = function(learner) {
       mlmethod_g = paste0("regr.", learner))
 
     params = list(
-      params_g = list(cp = 0.02, minsplit = 20),
-      params_m = list(cp = 0.02, minsplit = 20))
+      params_g = list(cp = 0.01, minsplit = 20),
+      params_m = list(cp = 0.01, minsplit = 20))
 
   }
   ml_g = mlr3::lrn(mlmethod$mlmethod_g)
@@ -214,9 +214,9 @@ get_default_mlmethod_iivm = function(learner) {
       mlmethod_r = paste0("classif.", learner))
 
     params = list(
-      params_m = list(cp = 0.02, minsplit = 20),
-      params_g = list(cp = 0.02, minsplit = 20),
-      params_r = list(cp = 0.02, minsplit = 20))
+      params_m = list(cp = 0.01, minsplit = 20),
+      params_g = list(cp = 0.01, minsplit = 20),
+      params_r = list(cp = 0.01, minsplit = 20))
 
   }
   ml_g = mlr3::lrn(mlmethod$mlmethod_g)
