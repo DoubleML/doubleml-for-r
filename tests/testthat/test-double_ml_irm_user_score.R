@@ -25,7 +25,7 @@ if (on_cran) {
     learner = "regr.rpart",
     learner_m = "classif.rpart",
     dml_procedure = "dml2",
-    trimming_threshold = 0.0001,
+    trimming_threshold = 1e-5,
     stringsAsFactors = FALSE)
   test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
@@ -33,7 +33,7 @@ if (on_cran) {
     learner = "regr.glmnet",
     learner_m = "classif.glmnet",
     dml_procedure = c("dml1", "dml2"),
-    trimming_threshold = c(0.0001, 0.01),
+    trimming_threshold = c(1e-5, 0.01),
     stringsAsFactors = FALSE)
   test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
