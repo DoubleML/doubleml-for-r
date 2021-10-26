@@ -384,3 +384,18 @@ check_smpl_split = function(smpl, n_obs, check_intersect = FALSE) {
   }
   return(TRUE)
 }
+
+check_finite_predictions = function(preds, learner, learner_name, smpls) {
+  for (i_fold in seq_len(length(smpls$test_ids))) {
+    test_indices = smpls$test_ids[[i_fold]]
+    is_finite = check_numeric(preds[test_indices],
+                              finite = TRUE,
+                              any.missing = FALSE)
+    if (!is_finite) {
+      stop(paste0('Predictions from learner ',
+                  learner, ' for ', learner_name,
+                  ' are not finite.'))
+    }
+  }
+  return(TRUE)
+}

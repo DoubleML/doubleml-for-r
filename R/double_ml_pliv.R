@@ -270,6 +270,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_g,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(g_hat, self$learner$ml_g$id, "ml_g", smpls)
 
       r_hat = dml_cv_predict(self$learner$ml_r,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -281,6 +282,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_r,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(r_hat, self$learner$ml_r$id, "ml_r", smpls)
 
       if (self$data$n_instr == 1) {
         m_hat = dml_cv_predict(self$learner$ml_m,
@@ -293,6 +295,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           return_train_preds = FALSE,
           learner_class = private$learner_class$ml_m,
           fold_specific_params = private$fold_specific_params)
+        check_finite_predictions(m_hat, self$learner$ml_m$id, "ml_m", smpls)
       } else {
         m_hat = do.call(
           cbind,
@@ -310,6 +313,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 learner_class = private$learner_class$ml_m,
                 fold_specific_params = private$fold_specific_params)
             }))
+        check_finite_predictions(m_hat, self$learner$ml_m$id, "ml_m_", smpls)
       }
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -384,6 +388,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_g,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(g_hat, self$learner$ml_g$id, "ml_g", smpls)
 
       m_hat_list = dml_cv_predict(self$learner$ml_m,
         c(
@@ -399,6 +404,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         learner_class = private$learner_class$ml_m,
         fold_specific_params = private$fold_specific_params)
       m_hat = m_hat_list$preds
+      check_finite_predictions(m_hat, self$learner$ml_m$id, "ml_m", smpls)
       data_aux_list = lapply(m_hat_list$train_preds, function(x) {
         setnafill(data.table(self$data$data_model, "m_hat_on_train" = x),
           fill = -9999.99) # mlr3 does not allow NA's (values are not used)
@@ -416,6 +422,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_r,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(m_hat_tilde, self$learner$ml_r$id, "ml_r", smpls)
 
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
@@ -461,6 +468,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_r,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(r_hat, self$learner$ml_r$id, "ml_r", smpls)
 
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]

@@ -183,6 +183,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_g,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(g_hat, self$learner$ml_g$id, "ml_g", smpls)
 
       m_hat = dml_cv_predict(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -194,6 +195,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         return_train_preds = FALSE,
         learner_class = private$learner_class$ml_m,
         fold_specific_params = private$fold_specific_params)
+      check_finite_predictions(m_hat, self$learner$ml_m$id, "ml_m", smpls)
 
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
