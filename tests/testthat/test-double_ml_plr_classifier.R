@@ -7,8 +7,8 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    g_learner = c("regr.cv_glmnet", "classif.cv_glmnet"),
-    m_learner = "classif.cv_glmnet",
+    g_learner = c("regr.rpart", "classif.rpart"),
+    m_learner = "classif.rpart",
     dml_procedure = "dml2",
     score = "partialling out",
     stringsAsFactors = FALSE)
@@ -102,8 +102,7 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart"))
   msg = paste(
-    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
-    "Must be equal to set \\{'0','1'\\}, but is \\{'0','2'\\}.")
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
   expect_error(double_mlplr_obj$fit(),
     regexp = msg)
 
@@ -116,8 +115,7 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart"))
   msg = paste(
-    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed:",
-    "Must be equal to set \\{'0','1'\\}, but is \\{'1','1.5'\\}.")
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
   expect_error(double_mlplr_obj$fit(),
     regexp = msg)
 }

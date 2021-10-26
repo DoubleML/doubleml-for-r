@@ -7,7 +7,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet",
+    learner = "regr.rpart",
     dml_procedure = "dml1",
     score = "partialling out",
     method = c("romano-wolf"),
@@ -26,8 +26,7 @@ test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
-    ml_m = lrn(learner, s = "lambda.min")
-    ml_g = lrn(learner, s = "lambda.min")
+    learner_pars = get_default_mlmethod_plr(learner)
 
     n_rep_boot = 498
 
@@ -55,8 +54,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       y_col = "y",
       d_cols = colnames(X)[1:k])
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = ml_g,
-      ml_m = ml_m,
+      ml_g = learner_pars$ml_g$clone(),
+      ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,

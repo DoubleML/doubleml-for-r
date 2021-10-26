@@ -4,15 +4,25 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-test_cases = expand.grid(
-  g_learner = "regr.cv_glmnet",
-  m_learner = "regr.cv_glmnet",
-  dml_procedure = "dml2",
-  score = "partialling out",
-  stringsAsFactors = FALSE)
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
+if (on_cran) {
+  test_cases = expand.grid(
+    g_learner = "regr.rpart",
+    m_learner = "regr.rpart",
+    dml_procedure = "dml2",
+    score = "partialling out",
+    stringsAsFactors = FALSE)
+} else {
+  test_cases = expand.grid(
+    g_learner = c("regr.rpart", "regr.lm"),
+    m_learner = c("regr.rpart", "regr.lm"),
+    dml_procedure = "dml2",
+    score = "partialling out",
+    stringsAsFactors = FALSE)
+}
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
-patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:",
+patrick::with_parameters_test_that("Unit tests for for the export of predictions:",
   .cases = test_cases, {
     n_folds = 3
 
@@ -31,6 +41,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     double_mlplr_obj$fit(store_predictions = TRUE)
 
     set.seed(3141)
+    Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
     indx = (names(df) %in% c(Xnames, "y"))
     data = df[, indx]
     task = mlr3::TaskRegr$new(id = "ml_g", backend = data, target = "y")
@@ -42,6 +53,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     preds_g = as.data.table(resampling_pred$prediction())
     data.table::setorder(preds_g, "row_ids")
 
+    Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
     indx = (names(df) %in% c(Xnames, "d"))
     data = df[, indx]
     task = mlr3::TaskRegr$new(id = "ml_m", backend = data, target = "d")
