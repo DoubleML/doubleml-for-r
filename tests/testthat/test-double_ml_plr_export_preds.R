@@ -52,7 +52,7 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     resampling_pred = resample(task, lrn(g_learner), resampling_smpls)
     preds_g = as.data.table(resampling_pred$prediction())
     data.table::setorder(preds_g, "row_ids")
-    
+
     Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
     indx = (names(df) %in% c(Xnames, "d"))
     data = df[, indx]
