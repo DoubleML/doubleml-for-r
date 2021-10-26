@@ -60,6 +60,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     double_mliivm_obj$fit()
     theta_obj = double_mliivm_obj$coef
     se_obj = double_mliivm_obj$se
+    print(learner_pars)
 
     # bootstrap
     double_mliivm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
