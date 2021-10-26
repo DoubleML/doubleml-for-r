@@ -25,8 +25,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     set.seed(3141)
 
     # load learner by name
-    learner_name = "regr.cv_glmnet"
-    params = list("s" = "lambda.min", "family" = "gaussian", "nfolds" = 5)
+    learner_name = "regr.rpart"
+    params = list("cp" = 0.01, "minsplit" = 20)
 
     set.seed(123)
     double_mlplr = DoubleMLPLR$new(
@@ -59,7 +59,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     boot_theta = double_mlplr$boot_coef
 
     set.seed(123)
-    loaded_learner = mlr3::lrn("regr.cv_glmnet", "s" = "lambda.min", "family" = "gaussian", "nfolds" = 5)
+    loaded_learner = mlr3::lrn("regr.rpart", "cp" = 0.01, "minsplit" = 20)
     double_mlplr_loaded = DoubleMLPLR$new(
       data = data_plr$dml_data,
       ml_g = loaded_learner,
@@ -78,7 +78,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     boot_theta_loaded = double_mlplr$boot_coef
 
     set.seed(123)
-    semiloaded_learner = mlr3::lrn("regr.cv_glmnet")
+    semiloaded_learner = mlr3::lrn("regr.rpart")
     double_mlplr_semiloaded = DoubleMLPLR$new(
       data = data_plr$dml_data,
       ml_g = semiloaded_learner,

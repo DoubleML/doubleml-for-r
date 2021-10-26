@@ -18,7 +18,7 @@ score_fct = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.glmnet",
+    learner = "regr.lm",
     dml_procedure = "dml2",
     stringsAsFactors = FALSE)
 } else {

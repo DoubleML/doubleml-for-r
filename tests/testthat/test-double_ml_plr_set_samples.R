@@ -7,7 +7,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet",
+    learner = "regr.rpart",
     dml_procedure = "dml2",
     score = "partialling out",
     n_folds = c(2),

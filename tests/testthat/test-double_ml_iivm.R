@@ -7,17 +7,17 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "cv_glmnet",
+    learner = "rpart",
     dml_procedure = "dml2",
     score = "LATE",
-    trimming_threshold = c(0),
+    trimming_threshold = c(1e-5),
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = "cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
-    trimming_threshold = c(0),
+    trimming_threshold = c(1e-5),
     stringsAsFactors = FALSE)
 }
 
@@ -35,7 +35,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       ml_g = learner_pars$ml_g$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
-      dml_procedure = dml_procedure, score = score)
+      dml_procedure = dml_procedure, score = score,
+      trimming_threshold = trimming_threshold)
     theta = iivm_hat$coef
     se = iivm_hat$se
 
@@ -45,7 +46,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       n_folds = 5, smpls = iivm_hat$smpls,
       all_preds = iivm_hat$all_preds,
       score = score,
-      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      trimming_threshold = trimming_threshold)$boot_coef
 
     set.seed(3141)
     double_mliivm_obj = DoubleMLIIVM$new(
