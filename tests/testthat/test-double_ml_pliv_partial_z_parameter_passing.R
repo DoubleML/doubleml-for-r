@@ -8,12 +8,14 @@ test_cases = expand.grid(
   learner = "regr.rpart",
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
+  with_x = c(TRUE, FALSE),
   stringsAsFactors = FALSE)
 
 test_cases_nocf = expand.grid(
   learner = "regr.rpart",
   dml_procedure = "dml1",
   score = "partialling out",
+  with_x = c(TRUE, FALSE),
   stringsAsFactors = FALSE)
 
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -28,6 +30,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     learner_pars = get_default_mlmethod_pliv(learner)
     df = data_pliv$df
 
+    if (!with_x) {
+      x_indx = grep("X", names(df))
+      df = df[, -x_indx, drop = FALSE]
+    }
+
     set.seed(3141)
     pliv_hat = dml_pliv_partial_z(df,
       y = "y", d = "d", z = c("z", "z2"),
@@ -38,8 +45,15 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     theta = pliv_hat$coef
     se = pliv_hat$se
 
+    if (!with_x) {
+      df_boot = df
+    } else {
+      df_boot = pliv_hat$data_with_res
+    }
+
+    set.seed(3141)
     boot_theta = bootstrap_pliv_partial_z(pliv_hat$thetas, pliv_hat$ses,
-      df,
+      df_boot,
       y = "y", d = "d", z = c("z", "z2"),
       n_folds = n_folds, n_rep = n_rep,
       smpls = pliv_hat$smpls,
@@ -70,6 +84,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
     se_obj = dml_pliv_obj$se
 
     # bootstrap
+    set.seed(3141)
     dml_pliv_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta_obj = dml_pliv_obj$boot_coef
 
@@ -86,6 +101,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
 
     learner_pars = get_default_mlmethod_pliv(learner)
     df = data_pliv$df
+
+    if (!with_x) {
+      x_indx = grep("X", names(df))
+      df = df[, -x_indx, drop = FALSE]
+    }
 
     # Passing for non-cross-fitting case
     set.seed(3141)
@@ -187,7 +207,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.par
   }
 )
 
-patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.partialXZ (default vs explicit)",
+patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV.partialZ (default vs explicit)",
   .cases = test_cases, {
     n_folds = 2
     n_rep = 3

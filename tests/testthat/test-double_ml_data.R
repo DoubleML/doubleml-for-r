@@ -44,14 +44,6 @@ test_that("Unit tests for DoubleMLData", {
   multZ_dt1b = as.data.table(
     data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
     with = FALSE]
-  expect_equal(D1_multZ$data, multZ_dt1)
-  expect_equal(D1_multZ$data_model, multZ_dt1)
-
-  # No X
-  D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult)
-  multZ_dt1b = as.data.table(
-    data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
-    with = FALSE]
   expect_equal(D1b_multZ$data, multZ_dt1b)
   expect_equal(D1b_multZ$data_model, multZ_dt1b)
 
