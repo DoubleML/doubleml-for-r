@@ -25,7 +25,7 @@ if (on_cran) {
     apply_cross_fitting = c(TRUE, FALSE),
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
   .cases = test_cases, {

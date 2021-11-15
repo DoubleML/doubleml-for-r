@@ -17,7 +17,7 @@ score_fct = function(y, d, g_hat, m_hat, smpls) {
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.glmnet",
+    learner = "regr.lm",
     dml_procedure = "dml1",
     n_folds = c(3),
     n_rep = c(2),
@@ -30,7 +30,7 @@ if (on_cran) {
     n_rep = c(1, 2),
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
   .cases = test_cases, {

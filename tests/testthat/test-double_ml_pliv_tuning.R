@@ -44,7 +44,7 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 }
 
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 # skip('Skip tests for tuning')
 

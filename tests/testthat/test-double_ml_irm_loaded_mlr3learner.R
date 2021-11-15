@@ -18,7 +18,7 @@ if (on_cran) {
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {

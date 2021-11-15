@@ -42,7 +42,7 @@ Suggests:
     rmarkdown,
     testthat,
     covr,
-    patrick,
+    patrick (>= 0.1.0),
     paradox (>= 0.4.0),
     dplyr,
     glmnet,
