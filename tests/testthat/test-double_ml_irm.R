@@ -7,12 +7,12 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "cv_glmnet",
+    learner = "rpart",
     dml_procedure = "dml1",
     score = "ATTE",
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
     learner = "cv_glmnet",
@@ -20,7 +20,7 @@ if (on_cran) {
     score = c("ATE", "ATTE"),
     trimming_threshold = 0,
     stringsAsFactors = FALSE)
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
 patrick::with_parameters_test_that("Unit tests for IRM:",

@@ -12,7 +12,7 @@ if (on_cran) {
     score = "partialling out",
     n_rep = c(5),
     stringsAsFactors = FALSE)
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
@@ -20,7 +20,7 @@ if (on_cran) {
     score = c("IV-type", "partialling out"),
     n_rep = c(2, 5),
     stringsAsFactors = FALSE)
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
 patrick::with_parameters_test_that("Unit tests for PLR:",

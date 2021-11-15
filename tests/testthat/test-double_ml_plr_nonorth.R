@@ -15,7 +15,7 @@ non_orth_score = function(y, d, g_hat, m_hat, smpls) {
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet",
+    learner = "regr.lm",
     dml_procedure = "dml1",
     score = c(non_orth_score),
     n_folds = c(3),
@@ -30,7 +30,7 @@ if (on_cran) {
     n_rep = c(1, 2),
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {

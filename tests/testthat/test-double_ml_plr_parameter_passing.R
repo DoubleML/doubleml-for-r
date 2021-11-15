@@ -23,8 +23,8 @@ test_cases_nocf = expand.grid(
   score = "partialling out",
   stringsAsFactors = FALSE)
 
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
-test_cases_nocf["test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases_nocf[".test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
 
 # skip('Skip tests for tuning')
 

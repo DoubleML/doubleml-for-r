@@ -7,7 +7,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet",
+    learner = "regr.rpart",
     dml_procedure = "dml2",
     score = "partialling out",
     n_folds = c(2),
@@ -22,7 +22,7 @@ if (on_cran) {
     n_rep = c(1, 3),
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("PLR with external sample provision:",
   .cases = test_cases, {
