@@ -1255,9 +1255,9 @@ DoubleML = R6Class("DoubleML",
         learner = lrn(learner)
       }
 
-      if ((Regr & learner$task_type == "regr") | 
-          (Classif & learner$task_type == "classif")) {
-            private$task_type[learner_name] = learner$task_type
+      if ((Regr & learner$task_type == "regr") |
+        (Classif & learner$task_type == "classif")) {
+        private$task_type[learner_name] = learner$task_type
       }
 
       if ((Regr & !Classif & !learner$task_type == "regr")) {
