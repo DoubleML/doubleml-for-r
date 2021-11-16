@@ -268,7 +268,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_g"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       r_hat = dml_cv_predict(self$learner$ml_r,
@@ -279,7 +279,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_r"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_r,
+        task_type = private$task_type$ml_r,
         fold_specific_params = private$fold_specific_params)
 
       if (self$data$n_instr == 1) {
@@ -291,7 +291,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           smpls = smpls,
           est_params = self$get_params("ml_m"),
           return_train_preds = FALSE,
-          learner_class = private$learner_class$ml_m,
+          task_type = private$task_type$ml_m,
           fold_specific_params = private$fold_specific_params)
       } else {
         m_hat = do.call(
@@ -307,7 +307,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 smpls = smpls,
                 est_params = self$get_params(paste0("ml_m_", x)),
                 return_train_preds = FALSE,
-                learner_class = private$learner_class$ml_m,
+                task_type = private$task_type$ml_m,
                 fold_specific_params = private$fold_specific_params)
             }))
       }
@@ -382,7 +382,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_g"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       m_hat_list = dml_cv_predict(self$learner$ml_m,
@@ -396,7 +396,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_m"),
         return_train_preds = TRUE,
-        learner_class = private$learner_class$ml_m,
+        task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
       m_hat = m_hat_list$preds
       data_aux_list = lapply(m_hat_list$train_preds, function(x) {
@@ -414,7 +414,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_r"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_r,
+        task_type = private$task_type$ml_r,
         fold_specific_params = private$fold_specific_params)
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -459,7 +459,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_r"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_r,
+        task_type = private$task_type$ml_r,
         fold_specific_params = private$fold_specific_params)
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -523,7 +523,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_g",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
       tuning_result_r = dml_tune(self$learner$ml_r,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -531,7 +531,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_r",
         param_set$ml_r, tune_settings,
         tune_settings$measure$ml_r,
-        private$learner_class$ml_r)
+        private$task_type$ml_r)
 
       if (self$data$n_instr == 1) {
         tuning_result_m = dml_tune(self$learner$ml_m,
@@ -540,7 +540,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           nuisance_id = "nuis_m",
           param_set$ml_m, tune_settings,
           tune_settings$measure$ml_m,
-          private$learner_class$ml_m)
+          private$task_type$ml_m)
 
         tuning_result = list(
           "ml_g" = list(tuning_result_g,
@@ -572,7 +572,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             nuisance_id = paste0("nuis_m_", this_z),
             param_set$ml_m, tune_settings,
             tune_settings$measure$ml_m,
-            private$learner_class$ml_m)
+            private$task_type$ml_m)
           tuning_result[[paste0("ml_m_", this_z)]] = list(tuning_result_this_z,
             params = tuning_result_this_z$params)
         }
@@ -598,7 +598,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_g",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
       tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$z_cols),
@@ -606,12 +606,12 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_m)
+        private$task_type$ml_m)
 
       m_params = tuning_result_m$params
       ml_m = lapply(m_params, function(x) {
         initiate_learner(self$learner$ml_m,
-          private$learner_class$ml_m,
+          private$task_type$ml_m,
           params = x,
           return_train_preds = TRUE)
       })
@@ -619,7 +619,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         initiate_task("nuis_m", x,
           target = self$data$treat_col,
           select_cols = c(self$data$x_cols, self$data$z_cols),
-          private$learner_class$ml_m)
+          private$task_type$ml_m)
       })
       resampling_m_on_train = lapply(
         task_m,
@@ -632,7 +632,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             store_models = TRUE)
         })
       m_hat_on_train = extract_prediction(r_m_on_train,
-        private$learner_class$ml_m,
+        private$task_type$ml_m,
         self$data$n_obs,
         return_train_preds = TRUE)
       data_aux_list = lapply(seq_len(length(data_tune_list)), function(x) {
@@ -645,7 +645,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_r",
         param_set$ml_r, tune_settings,
         tune_settings$measure$ml_r,
-        private$learner_class$ml_r)
+        private$task_type$ml_r)
 
       tuning_result = list(
         "ml_g" = list(tuning_result_g,
@@ -676,7 +676,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_r",
         param_set$ml_r, tune_settings,
         tune_settings$measure$ml_r,
-        private$learner_class$ml_r)
+        private$task_type$ml_r)
 
       tuning_result = list("ml_r" = list(tuning_result_r,
         params = tuning_result_r$params))

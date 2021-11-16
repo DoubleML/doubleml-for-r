@@ -185,7 +185,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      private$learner_class = list(
+      private$task_type = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
@@ -227,7 +227,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         smpls = smpls,
         est_params = self$get_params("ml_m"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_m,
+        task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
 
       g0_hat = dml_cv_predict(self$learner$ml_g,
@@ -238,7 +238,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         smpls = cond_smpls$smpls_0,
         est_params = self$get_params("ml_g0"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       g1_hat = NULL
@@ -251,7 +251,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           smpls = cond_smpls$smpls_1,
           est_params = self$get_params("ml_g1"),
           return_train_preds = FALSE,
-          learner_class = private$learner_class$ml_g,
+          task_type = private$task_type$ml_g,
           fold_specific_params = private$fold_specific_params)
       }
 
@@ -330,7 +330,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
-        private$learner_class$ml_m)
+        private$task_type$ml_m)
 
       tuning_result_g0 = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -339,7 +339,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         nuisance_id = "nuis_g0",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
       if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
         tuning_result_g1 = dml_tune(self$learner$ml_g,
@@ -349,7 +349,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           nuisance_id = "nuis_g1",
           param_set$ml_g, tune_settings,
           tune_settings$measure$ml_g,
-          private$learner_class$ml_g)
+          private$task_type$ml_g)
       } else {
         tuning_result_g1 = list(list(), "params" = list(list()))
       }

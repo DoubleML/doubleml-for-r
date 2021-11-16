@@ -147,7 +147,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      private$learner_class = list(
+      private$task_type = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
@@ -181,7 +181,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         smpls = smpls,
         est_params = self$get_params("ml_g"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       m_hat = dml_cv_predict(self$learner$ml_m,
@@ -192,7 +192,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         smpls = smpls,
         est_params = self$get_params("ml_m"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_m,
+        task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -240,7 +240,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         nuisance_id = "nuis_g",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
       tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -248,7 +248,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
-        private$learner_class$ml_m)
+        private$task_type$ml_m)
 
       tuning_result = list(
         "ml_g" = list(tuning_result_g, params = tuning_result_g$params),
