@@ -1245,10 +1245,16 @@ DoubleML = R6Class("DoubleML",
       invisible(self)
     },
     assert_learner = function(learner, learner_name, Regr, Classif) {
+
       assert(
         check_character(learner, max.len = 1),
         check_class(learner, "Learner"))
 
+      if (test_class(learner, "AutoTuner")) {
+        stop(paste0(
+          "Learners of class 'AutoTuner' are not supported."
+        ))
+      }
       if (is.character(learner)) {
         # warning("Learner provision by character() will be deprecated in the
         # future.")
