@@ -14,7 +14,7 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = "cv_glmnet",
+    learner = c("cv_glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
     trimming_threshold = c(1e-5),
