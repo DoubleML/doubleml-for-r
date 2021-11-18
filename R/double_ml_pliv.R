@@ -99,40 +99,43 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' The `DoubleMLData` object providing the data and specifying the variables
     #' of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"regr.cv_glmnet"`.  \cr
+    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.  \cr
     #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
     #'
-    #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"regr.cv_glmnet"`.  \cr
+    #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.
     #'
-    #' @param ml_r ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"regr.cv_glmnet"`.   \cr
+    #' @param ml_r ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_r` refers to the nuisance function \eqn{r_0(X) = E[D|X]}.
     #'
     #' @param partialX (`logical(1)`)  \cr
