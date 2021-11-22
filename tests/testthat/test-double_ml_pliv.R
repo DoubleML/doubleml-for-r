@@ -13,7 +13,7 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = c("regr.lm", "regr.glmnet"),
+    learner = c("regr.lm", "regr.glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
     score = "partialling out",
     stringsAsFactors = FALSE)

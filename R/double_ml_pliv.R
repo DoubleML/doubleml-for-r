@@ -99,40 +99,43 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' The `DoubleMLData` object providing the data and specifying the variables
     #' of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"regr.cv_glmnet"`.  \cr
+    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.  \cr
     #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
     #'
-    #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"regr.cv_glmnet"`.  \cr
+    #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.
     #'
-    #' @param ml_r ([`LearnerRegr`][mlr3::LearnerRegr], `character(1)`) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] to
-    #' pass a learner, possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"regr.cv_glmnet"`.   \cr
+    #' @param ml_r ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_r` refers to the nuisance function \eqn{r_0(X) = E[D|X]}.
     #'
     #' @param partialX (`logical(1)`)  \cr
@@ -267,7 +270,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_g"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       r_hat = dml_cv_predict(self$learner$ml_r,
@@ -278,7 +281,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_r"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_r,
+        task_type = private$task_type$ml_r,
         fold_specific_params = private$fold_specific_params)
 
       if (self$data$n_instr == 1) {
@@ -290,7 +293,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           smpls = smpls,
           est_params = self$get_params("ml_m"),
           return_train_preds = FALSE,
-          learner_class = private$learner_class$ml_m,
+          task_type = private$task_type$ml_m,
           fold_specific_params = private$fold_specific_params)
       } else {
         m_hat = do.call(
@@ -306,7 +309,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 smpls = smpls,
                 est_params = self$get_params(paste0("ml_m_", x)),
                 return_train_preds = FALSE,
-                learner_class = private$learner_class$ml_m,
+                task_type = private$task_type$ml_m,
                 fold_specific_params = private$fold_specific_params)
             }))
       }
@@ -338,7 +341,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         data_aux = data.table(w_hat, v_hat)
         task_r_tilde = initiate_task("nuis_r_tilde", data_aux,
           target = "w_hat",
-          select_cols = c(self$data$z_cols), "LearnerRegr")
+          select_cols = c(self$data$z_cols), "regr")
         # equivalent to ml_r_tilde = lrn("regr.lm")
         ml_r_tilde = LearnerRegrLM$new()
         resampling_r_tilde = rsmp("insample")$instantiate(task_r_tilde)
@@ -381,7 +384,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_g"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       m_hat_list = dml_cv_predict(self$learner$ml_m,
@@ -395,7 +398,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_m"),
         return_train_preds = TRUE,
-        learner_class = private$learner_class$ml_m,
+        task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
       m_hat = m_hat_list$preds
       data_aux_list = lapply(m_hat_list$train_preds, function(x) {
@@ -413,7 +416,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         smpls = smpls,
         est_params = self$get_params("ml_r"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_r,
+        task_type = private$task_type$ml_r,
         fold_specific_params = private$fold_specific_params)
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -568,7 +571,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_g",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
       tuning_result_r = dml_tune(self$learner$ml_r,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -576,7 +579,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_r",
         param_set$ml_r, tune_settings,
         tune_settings$measure$ml_r,
-        private$learner_class$ml_r)
+        private$task_type$ml_r)
 
       if (self$data$n_instr == 1) {
         tuning_result_m = dml_tune(self$learner$ml_m,
@@ -585,7 +588,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           nuisance_id = "nuis_m",
           param_set$ml_m, tune_settings,
           tune_settings$measure$ml_m,
-          private$learner_class$ml_m)
+          private$task_type$ml_m)
 
         tuning_result = list(
           "ml_g" = list(tuning_result_g,
@@ -617,7 +620,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             nuisance_id = paste0("nuis_m_", this_z),
             param_set$ml_m, tune_settings,
             tune_settings$measure$ml_m,
-            private$learner_class$ml_m)
+            private$task_type$ml_m)
           tuning_result[[paste0("ml_m_", this_z)]] = list(tuning_result_this_z,
             params = tuning_result_this_z$params)
         }
@@ -643,7 +646,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_g",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
       tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$z_cols),
@@ -651,12 +654,12 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_m)
+        private$task_type$ml_m)
 
       m_params = tuning_result_m$params
       ml_m = lapply(m_params, function(x) {
         initiate_learner(self$learner$ml_m,
-          private$learner_class$ml_m,
+          private$task_type$ml_m,
           params = x,
           return_train_preds = TRUE)
       })
@@ -664,7 +667,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         initiate_task("nuis_m", x,
           target = self$data$treat_col,
           select_cols = c(self$data$x_cols, self$data$z_cols),
-          private$learner_class$ml_m)
+          private$task_type$ml_m)
       })
       resampling_m_on_train = lapply(
         task_m,
@@ -677,7 +680,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             store_models = TRUE)
         })
       m_hat_on_train = extract_prediction(r_m_on_train,
-        private$learner_class$ml_m,
+        private$task_type$ml_m,
         self$data$n_obs,
         return_train_preds = TRUE)
       data_aux_list = lapply(seq_len(length(data_tune_list)), function(x) {
@@ -690,7 +693,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_r",
         param_set$ml_r, tune_settings,
         tune_settings$measure$ml_r,
-        private$learner_class$ml_r)
+        private$task_type$ml_r)
 
       tuning_result = list(
         "ml_g" = list(tuning_result_g,

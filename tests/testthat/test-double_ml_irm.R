@@ -15,7 +15,7 @@ if (on_cran) {
   test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
-    learner = "cv_glmnet",
+    learner = c("cv_glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
     trimming_threshold = 0,

@@ -51,7 +51,8 @@ Suggests:
     sandwich,
     AER,
     rpart,
-    bbotk
+    bbotk,
+    mlr3pipelines
 VignetteBuilder: knitr
 Collate:
     'double_ml.R'

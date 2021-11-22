@@ -52,9 +52,7 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
         params_g = list(
           s = "lambda.min",
           family = "gaussian"))
-
     }
-
   }
 
   else if (default == TRUE) {
@@ -64,12 +62,28 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
     params = list(
       params_g = list(),
       params_m = list())
-
   }
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m
+
+  if (learner == "graph_learner") {
+    # pipeline learner
+    pipe_learner = mlr3pipelines::po("learner",
+      lrn("regr.glmnet"),
+      lambda = 0.01,
+      family = "gaussian")
+    mlmethod = list(
+      mlmethod_m = "graph_learner",
+      mlmethod_g = "graph_learner")
+    params = list(
+      params_g = list(),
+      params_m = list())
+    ml_g = mlr3::as_learner(pipe_learner)
+    ml_m = mlr3::as_learner(pipe_learner)
+  } else {
+    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g$param_set$values = params$params_g
+    ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+    ml_m$param_set$values = params$params_m
+  }
 
   return(list(
     mlmethod = mlmethod, params = params,
@@ -147,12 +161,31 @@ get_default_mlmethod_pliv = function(learner) {
         family = "gaussian"))
 
   }
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m)
-  ml_m$param_set$values = params$params_m
-  ml_r = mlr3::lrn(mlmethod$mlmethod_r)
-  ml_r$param_set$values = params$params_r
+
+  if (learner == "graph_learner") {
+    # pipeline learner
+    pipe_learner = mlr3pipelines::po("learner",
+      lrn("regr.glmnet"),
+      lambda = 0.01,
+      family = "gaussian")
+    mlmethod = list(
+      mlmethod_m = "graph_learner",
+      mlmethod_g = "graph_learner",
+      mlmethod_r = "graph_learner")
+    params = list(
+      params_g = list(),
+      params_m = list())
+    ml_g = mlr3::as_learner(pipe_learner)
+    ml_m = mlr3::as_learner(pipe_learner)
+    ml_r = mlr3::as_learner(pipe_learner)
+  } else {
+    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g$param_set$values = params$params_g
+    ml_m = mlr3::lrn(mlmethod$mlmethod_m)
+    ml_m$param_set$values = params$params_m
+    ml_r = mlr3::lrn(mlmethod$mlmethod_r)
+    ml_r$param_set$values = params$params_r
+  }
 
   return(list(
     mlmethod = mlmethod, params = params,
@@ -182,11 +215,30 @@ get_default_mlmethod_irm = function(learner) {
       params_m = list(cp = 0.01, minsplit = 20))
 
   }
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
-  ml_m$param_set$values = params$params_m
 
+  if (learner == "graph_learner") {
+    # pipeline learner
+    pipe_learner = mlr3pipelines::po("learner",
+      lrn("regr.rpart"),
+      cp = 0.01, minsplit = 20)
+    pipe_learner_classif = mlr3pipelines::po("learner",
+      lrn("classif.rpart",
+        predict_type = "prob"),
+      cp = 0.01, minsplit = 20)
+    mlmethod = list(
+      mlmethod_m = "graph_learner",
+      mlmethod_g = "graph_learner")
+    params = list(
+      params_g = list(),
+      params_m = list())
+    ml_g = mlr3::as_learner(pipe_learner)
+    ml_m = mlr3::as_learner(pipe_learner_classif)
+  } else {
+    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g$param_set$values = params$params_g
+    ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+    ml_m$param_set$values = params$params_m
+  }
   return(list(
     mlmethod = mlmethod, params = params,
     ml_g = ml_g, ml_m = ml_m))
@@ -219,12 +271,35 @@ get_default_mlmethod_iivm = function(learner) {
       params_r = list(cp = 0.01, minsplit = 20))
 
   }
-  ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-  ml_g$param_set$values = params$params_g
-  ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
-  ml_m$param_set$values = params$params_m
-  ml_r = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
-  ml_r$param_set$values = params$params_r
+
+  if (learner == "graph_learner") {
+    # pipeline learner
+    pipe_learner = mlr3pipelines::po("learner",
+      lrn("regr.rpart"),
+      cp = 0.01, minsplit = 20)
+    pipe_learner_classif = mlr3pipelines::po("learner",
+      lrn("classif.rpart",
+        predict_type = "prob"),
+      cp = 0.01, minsplit = 20)
+    mlmethod = list(
+      mlmethod_m = "graph_learner",
+      mlmethod_g = "graph_learner",
+      mlmethod_r = "graph_learner")
+    params = list(
+      params_g = list(),
+      params_m = list(),
+      params_r = list())
+    ml_g = mlr3::as_learner(pipe_learner)
+    ml_m = mlr3::as_learner(pipe_learner_classif)
+    ml_r = mlr3::as_learner(pipe_learner_classif)
+  } else {
+    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g$param_set$values = params$params_g
+    ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+    ml_m$param_set$values = params$params_m
+    ml_r = mlr3::lrn(mlmethod$mlmethod_r, predict_type = "prob")
+    ml_r$param_set$values = params$params_r
+  }
 
   return(list(
     mlmethod = mlmethod, params = params,
