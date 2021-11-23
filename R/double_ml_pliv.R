@@ -92,6 +92,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     }),
 
   public = list(
+    n_folds_inner = 2,
     #' @description
     #' Creates a new instance of this R6 class.
     #'
@@ -149,6 +150,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' @param n_folds (`integer(1)`)\cr
     #' Number of folds. Default is `5`.
     #'
+    #' @param n_folds_inner (`integer(1)`)\cr
+    #' Number of folds in internal cross-validation. Default is `2`.
+    #'
     #' @param n_rep (`integer(1)`) \cr
     #' Number of repetitions for the sample splitting. Default is `1`.
     #'
@@ -177,6 +181,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       partialX = TRUE,
       partialZ = FALSE,
       n_folds = 5,
+      n_folds_inner = 2,
       n_rep = 1,
       score = "partialling out",
       dml_procedure = "dml2",
@@ -198,6 +203,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       assert_logical(partialZ, len = 1)
       private$partialX_ = partialX
       private$partialZ_ = partialZ
+      self$n_folds_inner = n_folds_inner
 
       if (!self$partialX & self$partialZ) {
         ml_r = private$assert_learner(ml_r, "ml_r",
@@ -387,7 +393,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
-      m_hat_list = dml_cv_predict(self$learner$ml_m,
+      # standard test-predictions for ml_m
+      m_hat = dml_cv_predict(self$learner$ml_m,
         c(
           self$data$x_cols,
           self$data$other_treat_cols,
@@ -397,20 +404,63 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         nuisance_id = "nuis_m",
         smpls = smpls,
         est_params = self$get_params("ml_m"),
-        return_train_preds = TRUE,
+        return_train_preds = FALSE,
         task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
-      m_hat = m_hat_list$preds
-      data_aux_list = lapply(m_hat_list$train_preds, function(x) {
-        setnafill(data.table(self$data$data_model, "m_hat_on_train" = x),
-          fill = -9999.99) # mlr3 does not allow NA's (values are not used)
-      })
 
+      # nested cross-fitting for test samples
+      # auxiliary sample split
+      train_ids_inner = list()
+      test_ids_inner = list()
+      fold_id_test = rep(NA_integer_, self$data$n_obs)
+      
+      for (i_fold in seq_len(self$n_folds)) {
+        fold_id_test[smpls$test_ids[[i_fold]]] = i_fold
+        test_ids_i_fold = data.table("dummy_var" = smpls$test_ids[[i_fold]])
+        dummy_task = Task$new("dummy", "regr", test_ids_i_fold)
+        cv_aux = rsmp("cv", folds = self$n_folds_inner)
+        cv_aux$instantiate(dummy_task)
+
+        test_ids_inner[[i_fold]] = lapply(
+          1:self$n_folds_inner,
+          function(x) test_ids_i_fold[cv_aux$test_set(x), ]$dummy_var)
+        train_ids_inner[[i_fold]] = lapply(
+          1:self$n_folds_inner,
+          function(x) test_ids_i_fold[cv_aux$train_set(x), ]$dummy_var)
+      }
+
+      m_hat_list = lapply(
+        seq_len(self$n_folds),
+        function(x) {
+          dml_cv_predict(self$learner$ml_m,
+            c(
+              self$data$x_cols,
+              self$data$other_treat_cols,
+              self$data$z_cols),
+            self$data$treat_col,
+            self$data$data_model,
+            nuisance_id = "nuis_m",
+            smpls = list(
+              "train_ids" = test_ids_inner[[x]],
+              "test_ids" = test_ids_inner[[x]]),
+            est_params = self$get_params("ml_m"),
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_m,
+            fold_specific_params = private$fold_specific_params)
+        })
+
+      # merge nested cross-fitted predictions and pass to next nuisance part
+      data_aux_list = data.table(self$data$data_model, "m_hat_cfn" = NA_real_)
+
+      for (i_fold in seq_len(self$n_folds)) {
+        data_aux_list[smpls$test_ids[[i_fold]], ]$m_hat_cfn = m_hat_list[[i_fold]][smpls$test_ids[[i_fold]]]
+      }
+      
       m_hat_tilde = dml_cv_predict(self$learner$ml_r,
         c(
           self$data$x_cols,
           self$data$other_treat_cols),
-        "m_hat_on_train",
+        "m_hat_cfn",
         data_aux_list,
         nuisance_id = "nuis_r",
         smpls = smpls,
@@ -464,7 +514,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           smpls = smpls,
           est_params = self$get_params("ml_r"),
           return_train_preds = FALSE,
-          learner_class = private$learner_class$ml_r,
+          task_type = private$task_type$ml_r,
           fold_specific_params =
             private$fold_specific_params)
       } else {
@@ -504,7 +554,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           smpls = smpls,
           est_params = self$get_params("ml_r"),
           return_train_preds = FALSE,
-          learner_class = private$learner_class$ml_r,
+          task_type = private$task_type$ml_r,
           fold_specific_params =
             private$fold_specific_params)
       }
@@ -723,7 +773,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           nuisance_id = "nuis_r",
           param_set$ml_r, tune_settings,
           tune_settings$measure$ml_r,
-          private$learner_class$ml_r)
+          private$task_type$ml_r)
       } else {
         # Partial out Xs from d by using linear regression
         task_part_d = initiate_task("lm_part_out_d", self$data$data_model,
@@ -757,7 +807,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           nuisance_id = "nuis_r",
           param_set$ml_r, tune_settings,
           tune_settings$measure$ml_r,
-          private$learner_class$ml_r)
+          private$task_type$ml_r)
       }
 
       tuning_result = list("ml_r" = list(tuning_result_r,
@@ -847,6 +897,7 @@ DoubleMLPLIV.partialXZ = function(data,
   ml_m,
   ml_r,
   n_folds = 5,
+  n_rep_inner,
   n_rep = 1,
   score = "partialling out",
   dml_procedure = "dml2",
@@ -860,6 +911,7 @@ DoubleMLPLIV.partialXZ = function(data,
     partialX = TRUE,
     partialZ = TRUE,
     n_folds,
+    n_rep_inner,
     n_rep,
     score,
     dml_procedure,
