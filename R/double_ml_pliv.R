@@ -92,7 +92,6 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     }),
 
   public = list(
-    n_folds_inner = 2,
     #' @description
     #' Creates a new instance of this R6 class.
     #'

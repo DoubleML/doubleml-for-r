@@ -43,6 +43,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialXZ:",
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       n_folds = 5,
+      n_rep_inner = 2,
       score = score,
       dml_procedure = dml_procedure)
 

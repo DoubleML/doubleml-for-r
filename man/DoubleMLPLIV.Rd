@@ -130,6 +130,7 @@ Creates a new instance of this R6 class.
   partialX = TRUE,
   partialZ = FALSE,
   n_folds = 5,
+  n_folds_inner = 2,
   n_rep = 1,
   score = "partialling out",
   dml_procedure = "dml2",
@@ -194,6 +195,9 @@ Default is \code{FALSE}.}
 
 \item{\code{n_folds}}{(\code{integer(1)})\cr
 Number of folds. Default is \code{5}.}
+
+\item{\code{n_folds_inner}}{(\code{integer(1)})\cr
+Number of folds in internal cross-validation. Default is \code{2}.}
 
 \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for the sample splitting. Default is \code{1}.}
