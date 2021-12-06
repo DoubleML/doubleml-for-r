@@ -1,5 +1,8 @@
 destination: docs
 
+template:
+  bootstrap: 5
+
 home:
   title: DoubleML - Double Machine Learning with R
   links:
