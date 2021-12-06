@@ -18,7 +18,7 @@ toc:
 navbar:
   structure:
     left:  [home, userguide, getstarted, reference, articles]
-    right: [github]
+    right: [github, discuss]
   components:
     home: ~
     userguide:
@@ -38,6 +38,9 @@ navbar:
           href: articles/install.html
         - text: Introduction to Double Machine Learning
           href: articles/Introduction_to_DoubleML.html
+    discuss:
+      icon: fa fa-comments
+      href: https://github.com/DoubleML/doubleml-for-r/discussions/landing
     news:
       text: Release Notes
       href: https://docs.doubleml.org/stable/release/release.html
