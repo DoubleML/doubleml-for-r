@@ -66,8 +66,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     boot_theta_obj = double_mliivm_obj$boot_coef
 
     # at the moment the object result comes without a name
-    expect_equal(theta, theta_obj, tolerance = 1e-8)
-    expect_equal(se, se_obj, tolerance = 1e-8)
-    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)
+    expect_equal(theta, theta_obj, tolerance = 1e-4)
+    expect_equal(se, se_obj, tolerance = 1e-4)
+    expect_equal(as.vector(boot_theta), as.vector(boot_theta_obj), tolerance = 1e-4)
   }
 )
