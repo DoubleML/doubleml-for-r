@@ -427,11 +427,23 @@ get_default_mlmethod_iivm_binary = function(learner) {
 
   }
 
+  else if (learner == "logreg") {
+    mlmethod = list(
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("classif.", learner),
+      mlmethod_r = paste0("classif.", learner)
+    )
+
+    params = list(
+      params_m = list(),
+      params_g = list(),
+      params_r = list()
+    )
+
+  }
+
   if (learner == "graph_learner") {
     # pipeline learner
-    pipe_learner = mlr3pipelines::po("learner",
-      lrn("regr.rpart"),
-      cp = 0.01, minsplit = 20)
     pipe_learner_classif = mlr3pipelines::po("learner",
       lrn("classif.rpart",
         predict_type = "prob"),
@@ -444,7 +456,7 @@ get_default_mlmethod_iivm_binary = function(learner) {
       params_g = list(),
       params_m = list(),
       params_r = list())
-    ml_g = mlr3::as_learner(pipe_learner)
+    ml_g = mlr3::as_learner(pipe_learner_classif)
     ml_m = mlr3::as_learner(pipe_learner_classif)
     ml_r = mlr3::as_learner(pipe_learner_classif)
   } else {

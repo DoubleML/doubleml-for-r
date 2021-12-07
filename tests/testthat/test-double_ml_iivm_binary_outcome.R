@@ -7,7 +7,7 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "rpart",
+    learner = "log_reg",
     dml_procedure = "dml2",
     score = "LATE",
     trimming_threshold = 0.025,
