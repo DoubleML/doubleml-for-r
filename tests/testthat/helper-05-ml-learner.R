@@ -427,7 +427,7 @@ get_default_mlmethod_iivm_binary = function(learner) {
 
   }
 
-  else if (learner == "logreg") {
+  else if (learner == "log_reg") {
     mlmethod = list(
       mlmethod_m = paste0("classif.", learner),
       mlmethod_g = paste0("classif.", learner),
