@@ -175,19 +175,22 @@ Creates a new instance of this R6 class.
 \describe{
 \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the data and specifying the variables
-of the causal model.
+of the causal model.}
 
 \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
-\code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
+\code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{\link[mlr3:Learner]{Learner}},
+\code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerRegr]{LearnerRegr}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
 extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
+For binary treatment outcomes, an object of the class
+\code{\link[mlr3:LearnerClassif]{LearnerClassif}} can be passed, for example
+\code{lrn("classif.cv_glmnet", s = "lambda.min")}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
-\code{task_type = "regr"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
-be passed with specified parameters, for example
-\code{lrn("regr.cv_glmnet", s = "lambda.min")}. \cr
+\code{task_type = "regr"} or \code{task_type = "classif"} can be passed,
+respectively, for example of class
+\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(Z,X) = E[Y|X,Z]}.}
 
 \item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}},
