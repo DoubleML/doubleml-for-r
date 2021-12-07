@@ -35,9 +35,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML", {
     test_ids = list(c(6, 7)),
     ids = list(c(8, 9, 10)))
   msg = paste(
-    "Assertion on 'names\\(smpl\\)' failed: Must be equal to set",
-    "\\{'train_ids','test_ids'\\}, but is",
-    "\\{'train_ids','test_ids','ids'\\}.")
+    "Assertion on 'names\\(smpl\\)' failed: .* set \\{'train_ids','test_ids'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
@@ -214,8 +212,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
       test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
   msg = paste(
     "Assertion on 'train_ids' failed: Must be a subset of",
-    "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
-    "but is \\{'1','2.2','3','4','5'\\}.")
+    "\\{'1','2','3','4','5','6','7','8','9','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
@@ -228,8 +225,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
       test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
   msg = paste(
     "Assertion on 'train_ids' failed: Must be a subset of",
-    "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
-    "but is \\{'2','4.5','6','8','10'\\}.")
+    "\\{'1','2','3','4','5','6','7','8','9','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
@@ -241,9 +237,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
       train_ids = list(c(1, 3, 4, 5, 7, 9), c(2, 4, 6, 8, 10)),
       test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
   msg = paste(
-    "Assertion on 'smpl\\$train_ids\\[\\[i_fold\\]\\]' failed:",
-    "Must be disjunct from set \\{'2','4','6','8','10'\\},",
-    "but has \\{'4'\\}.")
+    "Assertion on 'smpl\\$train_ids\\[\\[i_fold\\]\\]' failed: .* \\{'2','4','6','8','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
@@ -282,8 +276,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
       test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
   msg = paste(
     "Assertion on 'train_ids' failed: Must be a subset of",
-    "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
-    "but is \\{'1','2','3','4','5','20'\\}.")
+    "\\{'1','2','3','4','5','6','7','8','9','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 
@@ -296,8 +289,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
       test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
   msg = paste(
     "Assertion on 'test_ids' failed: Must be a subset of",
-    "\\{'1','2','3','4','5','6','7','8','9','10'\\},",
-    "but is \\{'6','-7','8','9','10'\\}.")
+    "\\{'1','2','3','4','5','6','7','8','9','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
 }

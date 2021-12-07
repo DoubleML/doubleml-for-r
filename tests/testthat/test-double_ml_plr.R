@@ -7,18 +7,18 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    learner = "regr.cv_glmnet",
+    learner = "regr.lm",
     dml_procedure = "dml2",
     score = "partialling out",
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    learner = c("regr.lm", "regr.cv_glmnet"),
+    learner = c("regr.lm", "regr.cv_glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
     stringsAsFactors = FALSE)
 }
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {

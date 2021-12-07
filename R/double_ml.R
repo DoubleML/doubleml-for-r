@@ -719,7 +719,7 @@ DoubleML = R6Class("DoubleML",
     #' in the [mlr3tuning](https://mlr3tuning.mlr-org.com/) package. For more
     #' information on tuning in [mlr3](https://mlr3.mlr-org.com/), we refer to
     #' the section on parameter tuning in the
-    #' [mlr3 book](https://mlr3book.mlr-org.com/tuning.html).
+    #' [mlr3 book](https://mlr3book.mlr-org.com/optimization.html#tuning).
     #'
     #' @param param_set (named `list()`) \cr
     #' A named `list` with a parameter grid for each nuisance model/learner
@@ -1150,7 +1150,7 @@ DoubleML = R6Class("DoubleML",
     i_treat = NA_integer_,
     fold_specific_params = NULL,
     summary_table = NULL,
-    learner_class = list(),
+    task_type = list(),
     is_cluster_data = FALSE,
     n_folds_per_cluster = NA_integer_,
     smpls_cluster_ = NULL,
@@ -1250,28 +1250,31 @@ DoubleML = R6Class("DoubleML",
         check_character(learner, max.len = 1),
         check_class(learner, "Learner"))
 
+      if (test_class(learner, "AutoTuner")) {
+        stop(paste0(
+          "Learners of class 'AutoTuner' are not supported."
+        ))
+      }
       if (is.character(learner)) {
         # warning("Learner provision by character() will be deprecated in the
         # future.")
         learner = lrn(learner)
       }
 
-      if (Regr & test_class(learner, "LearnerRegr")) {
-        private$learner_class[learner_name] = "LearnerRegr"
-      }
-      if (Classif & test_class(learner, "LearnerClassif")) {
-        private$learner_class[learner_name] = "LearnerClassif"
+      if ((Regr & learner$task_type == "regr") |
+        (Classif & learner$task_type == "classif")) {
+        private$task_type[learner_name] = learner$task_type
       }
 
-      if ((Regr & !Classif & !test_class(learner, "LearnerRegr"))) {
+      if ((Regr & !Classif & !learner$task_type == "regr")) {
         stop(paste0(
           "Invalid learner provided for ", learner_name,
-          ": must be of class 'LearnerRegr'"))
+          ": 'learner$task_type' must be 'regr'"))
       }
-      if ((Classif & !Regr & !test_class(learner, "LearnerClassif"))) {
+      if ((Classif & !Regr & !learner$task_type == "classif")) {
         stop(paste0(
           "Invalid learner provided for ", learner_name,
-          ": must be of class 'LearnerClassif'"))
+          ": 'learner$task_type must be 'classif'"))
       }
       invisible(learner)
     },
@@ -1333,7 +1336,7 @@ DoubleML = R6Class("DoubleML",
           this_learner = names(tune_settings$measure)[i_msr]
           tune_settings$measure[[this_learner]] = set_default_measure(
             tune_settings$measure[[this_learner]],
-            private$learner_class[[this_learner]])
+            private$task_type[[this_learner]])
         }
       }
 

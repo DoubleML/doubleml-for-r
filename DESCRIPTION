@@ -42,7 +42,7 @@ Suggests:
     rmarkdown,
     testthat,
     covr,
-    patrick,
+    patrick (>= 0.1.0),
     paradox (>= 0.4.0),
     dplyr,
     glmnet,
@@ -51,7 +51,8 @@ Suggests:
     sandwich,
     AER,
     rpart,
-    bbotk
+    bbotk,
+    mlr3pipelines
 VignetteBuilder: knitr
 Collate:
     'double_ml.R'

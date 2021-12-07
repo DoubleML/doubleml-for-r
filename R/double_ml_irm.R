@@ -108,30 +108,29 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
     #' of the causal model.
     #'
     #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
-    #' [`LearnerClassif`][mlr3::LearnerClassif], `character(1)`,) \cr
-    #' An object of the class [mlr3 regression learner][mlr3::LearnerRegr] or
-    #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
-    #' possibly with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 regression learner][mlr3::LearnerRegr] that is available in
-    #' [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/), for example
-    #' `"regr.cv_glmnet"`.  \cr
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X,D]}.
     #'
-    #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif], `character(1)`)\cr
-    #' An object of the class
-    #' [mlr3 classification learner][mlr3::LearnerClassif] to pass a learner,
-    #' possibly with specified parameters, for example
-    #' `lrn("classif.cv_glmnet", s = "lambda.min")`.
-    #' Alternatively, a `character(1)` specifying the name of a
-    #' [mlr3 classification learner][mlr3::LearnerClassif] that is available
-    #' in [mlr3](https://mlr3.mlr-org.com/index.html) or its extension packages
-    #' [mlr3learners](https://mlr3learners.mlr-org.com/) or
-    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/),
-    #' for example `"classif.cv_glmnet"`. \cr
+    #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerClassif`][mlr3::LearnerClassif], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "classif"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("classif.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[D|X]}.
     #'
     #' @param n_folds (`integer(1)`)\cr
@@ -187,7 +186,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      private$learner_class = list(
+      private$task_type = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
@@ -229,7 +228,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         smpls = smpls,
         est_params = self$get_params("ml_m"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_m,
+        task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
 
       g0_hat = dml_cv_predict(self$learner$ml_g,
@@ -240,12 +239,11 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         smpls = cond_smpls$smpls_0,
         est_params = self$get_params("ml_g0"),
         return_train_preds = FALSE,
-        learner_class = private$learner_class$ml_g,
+        task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
       g1_hat = NULL
-      if ((is.character(self$score) && self$score == "ATE") |
-        is.function(self$score)) {
+      if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
         g1_hat = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
@@ -254,7 +252,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           smpls = cond_smpls$smpls_1,
           est_params = self$get_params("ml_g1"),
           return_train_preds = FALSE,
-          learner_class = private$learner_class$ml_g,
+          task_type = private$task_type$ml_g,
           fold_specific_params = private$fold_specific_params)
       }
 
@@ -333,7 +331,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
-        private$learner_class$ml_m)
+        private$task_type$ml_m)
 
       tuning_result_g0 = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -342,9 +340,9 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         nuisance_id = "nuis_g0",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$learner_class$ml_g)
+        private$task_type$ml_g)
 
-      if (self$score == "ATE" | is.function(self$score)) {
+      if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
         tuning_result_g1 = dml_tune(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
@@ -352,7 +350,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           nuisance_id = "nuis_g1",
           param_set$ml_g, tune_settings,
           tune_settings$measure$ml_g,
-          private$learner_class$ml_g)
+          private$task_type$ml_g)
       } else {
         tuning_result_g1 = list(list(), "params" = list(list()))
       }

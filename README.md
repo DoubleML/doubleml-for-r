@@ -4,7 +4,7 @@
 # DoubleML - Double Machine Learning in R <a href="https://docs.doubleml.org"><img src="man/figures/logo.png" align="right" width = "120" /></a>
 
 [![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
-[![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/master/graph/badge.svg?token=C5aiyo2MVL)](https://codecov.io/gh/DoubleML/doubleml-for-r)
+[![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/master/graph/badge.svg?token=C5aiyo2MVL)](https://app.codecov.io/gh/DoubleML/doubleml-for-r/)
 [![CodeFactor](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r/badge)](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r)
 [![CRAN
 Version](https://www.r-pkg.org/badges/version/DoubleML)](https://cran.r-project.org/package=DoubleML)

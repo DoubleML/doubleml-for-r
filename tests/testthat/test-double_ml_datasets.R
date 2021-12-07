@@ -10,7 +10,7 @@ test_cases = expand.grid(
   stringsAsFactors = FALSE
 )
 
-test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 testthat::skip_on_cran()
 patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
