@@ -10,14 +10,14 @@ if (on_cran) {
     learner = "log_reg",
     dml_procedure = "dml2",
     score = "LATE",
-    trimming_threshold = 0,
+    trimming_threshold = 0.025,
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = "cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
-    trimming_threshold = 0,
+    trimming_threshold = 0.025,
     stringsAsFactors = FALSE)
 }
 
@@ -46,6 +46,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       y = "y", d = "d", z = "z",
       n_folds = 5, smpls = iivm_hat$smpls,
       all_preds = iivm_hat$all_preds,
+      trimming_threshold = trimming_threshold,
       score = score,
       bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
 
