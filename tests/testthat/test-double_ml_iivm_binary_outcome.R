@@ -10,14 +10,14 @@ if (on_cran) {
     learner = "log_reg",
     dml_procedure = "dml2",
     score = "LATE",
-    trimming_threshold = 0.025,
+    trimming_threshold = 0,
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
     learner = "cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
-    trimming_threshold = 0.025,
+    trimming_threshold = 0,
     stringsAsFactors = FALSE)
 }
 
