@@ -4,6 +4,7 @@
 ^docs$
 ^pkgdown$
 ^README.Rmd
+^CONTRIBUTING.md
 ^\.github$
 ^codecov\.yml$
 ^doc$
