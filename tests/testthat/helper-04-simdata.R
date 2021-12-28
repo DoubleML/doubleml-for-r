@@ -5,10 +5,8 @@ setting = list(theta = 0.5, n = 1000, p = 20)
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   setting_irm = list(theta = 0.5, n = 1000, p = 20)
-  setting_irm_binary = list(theta = 0.5, n = 1000, p = 20)
 } else {
   setting_irm = list(theta = 0.5, n = 5000, p = 20)
-  setting_irm_binary = list(theta = 0.5, n = 5000, p = 20)
 }
 
 setting_pliv_partial = list(theta = 1.0, n = 500)
@@ -63,9 +61,9 @@ data_irm = list(
 
 set.seed(1282)
 df = dgp1_irm_binary(
-  setting_irm_binary$theta,
-  setting_irm_binary$n,
-  setting_irm_binary$p
+  setting_irm$theta,
+  setting_irm$n,
+  setting_irm$p
 )
 Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
 dml_data = double_ml_data_from_data_frame(df,
