@@ -148,7 +148,18 @@ fit_nuisance_iivm = function(data, y, d, z,
   # nuisance g0: E[Y|Z=0, X]
   g_indx = names(data) != d & names(data) != z
   data_g = data[, g_indx, drop = FALSE]
-  task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", z), backend = data_g, target = y)
+
+  # binary or continuous outcome y
+  if (any(class(ml_g) == "LearnerClassif")) {
+    data_g[, y] = factor(data_g[, y])
+    task_g0 = mlr3::TaskClassif$new(
+      id = paste0("nuis_g0_", y), backend = data_g,
+      target = y, positive = "1"
+    )
+  } else {
+    task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", y), backend = data_g, target = y)
+  }
+
   ml_g0 = ml_g$clone()
   if (!is.null(params_g)) {
     ml_g0$param_set$values = params_g
@@ -160,10 +171,22 @@ fit_nuisance_iivm = function(data, y, d, z,
   test_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$test_set(x))
 
   r_g0 = mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
-  g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
+  if (any(class(ml_g) == "LearnerClassif")) {
+    g0_hat_list = lapply(r_g0$predictions(), function(x) x$prob[, "1"])
+  } else {
+    g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
+  }
 
   # nuisance g1: E[Y|Z=1, X]
-  task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", z), backend = data_g, target = y)
+  if (any(class(ml_g) == "LearnerClassif")) {
+    data_g[, y] = factor(data_g[, y])
+    task_g1 = mlr3::TaskClassif$new(
+      id = paste0("nuis_g1_", y), backend = data_g,
+      target = y, positive = "1"
+    )
+  } else {
+    task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", y), backend = data_g, target = y)
+  }
   ml_g1 = ml_g$clone()
   if (!is.null(params_g)) {
     ml_g1$param_set$values = params_g
@@ -175,8 +198,11 @@ fit_nuisance_iivm = function(data, y, d, z,
   test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
 
   r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
-  # g1_hat_list = lapply(r_g1$data$prediction, function(x) x$test$response)
-  g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
+  if (any(class(ml_g) == "LearnerClassif")) {
+    g1_hat_list = lapply(r_g1$predictions(), function(x) x$prob[, "1"])
+  } else {
+    g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
+  }
 
   # nuisance r0: E[D|Z=0, X]
   r_indx = names(data) != y & names(data) != z

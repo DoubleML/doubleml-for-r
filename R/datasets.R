@@ -84,14 +84,16 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
     data = data.frame(
       "net_tfa" = data$net_tfa,
       model.matrix(formula_x, data),
-      "p401" = data$p401, "e401" = data$e401)
+      "p401" = data$p401, "e401" = data$e401
+    )
     d_cols = "p401"
     z_cols = "e401"
   } else {
     # see https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K.R#L67
     data = data.frame(
       "net_tfa" = data$net_tfa, model.matrix(formula_x, data),
-      "e401" = data$e401)
+      "e401" = data$e401
+    )
     d_cols = "e401"
   }
   if (return_type == "data.frame") {
@@ -103,7 +105,8 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
     dt = as.data.table(data)
     data = DoubleMLData$new(dt,
       y_col = y_col, d_cols = d_cols, x_cols = x_cols,
-      z_cols = z_cols)
+      z_cols = z_cols
+    )
     return(data)
   }
 }
@@ -199,7 +202,9 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #'   x_cols = c(
 #'     "female", "black", "othrace", "dep1", "dep2",
 #'     "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54",
-#'     "durable", "lusd", "husd"))
+#'     "durable", "lusd", "husd"
+#'   )
+#' )
 #' obj_dml_data_bonus
 #' @export
 fetch_bonus = function(return_type = "DoubleMLData",
@@ -235,7 +240,8 @@ fetch_bonus = function(return_type = "DoubleMLData",
   }
   data = data.frame(
     "inuidur1" = data$inuidur1, model.matrix(formula_x, data),
-    "tg" = data$tg)
+    "tg" = data$tg
+  )
   if (return_type == "data.frame") {
     return(data)
   } else if (return_type == "data.table") {
@@ -315,7 +321,12 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(alpha, len = 1)
+
   cov_mat = toeplitz(0.7^(0:(dim_x - 1)))
   a_0 = 1
   a_1 = 0.25
@@ -404,6 +415,16 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @export
 make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
   return_type = "DoubleMLData", nu = 0, gamma = 1) {
+
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  assert_numeric(nu, len = 1)
+  assert_numeric(gamma, len = 1)
 
   b = 1 / (1:dim_x)
   sigma = genPositiveDefMat(dim_x)
@@ -497,7 +518,12 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
 
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_count(dim_z)
+  assert_numeric(alpha, len = 1)
   if (dim_x < dim_z) {
     stop("Dimension of X should be greater than dimension of Z.")
   }
@@ -545,13 +571,12 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
       data = DoubleMLData$new(dt,
         y_col = "y", d_cols = "d",
         x_cols = colnames(x),
-        z_cols = colnames(z))
+        z_cols = colnames(z)
+      )
       return(data)
     }
   }
-  return(data)
 }
-
 
 #' @title Generates data from a interactive regression (IRM) model.
 #'
@@ -610,7 +635,16 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
   # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723
   # (see supplement)
 
-  assert_choice(return_type, c("data.table", "matrix", "data.frame", "DoubleMLData"))
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  assert_numeric(R2_d, len = 1)
+  assert_numeric(R2_y, len = 1)
+
   v = runif(n_obs)
   zeta = rnorm(n_obs)
   cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
@@ -702,10 +736,16 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  assert_numeric(alpha_x, len = 1)
   xx = rmvnorm(
     n = n_obs, mean = rep(0, 2),
-    sigma = matrix(c(1, 0.3, 0.3, 1), ncol = 2, nrow = 2))
+    sigma = matrix(c(1, 0.3, 0.3, 1), ncol = 2, nrow = 2)
+  )
   u = xx[, 1]
   v = xx[, 2]
 
@@ -739,7 +779,8 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
       data = DoubleMLData$new(dt,
         y_col = "y", d_cols = "d",
         x_cols = colnames(x),
-        z_cols = "z")
+        z_cols = "z"
+      )
       return(data)
     }
   }

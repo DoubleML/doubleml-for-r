@@ -71,6 +71,31 @@ dgp1_irm = function(theta, N, k) {
   return(data)
 }
 
+dgp1_irm_binary = function(theta, N, k) {
+
+  b = 1 / (1:k)
+  sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
+
+  X = mvtnorm::rmvnorm(N, sigma = sigma)
+  G = g(as.vector(X %*% b))
+  M = m(as.vector(X %*% b))
+  pr = 1 / (1 + exp(-(1) * (X[, 1] * (-0.5) + X[, 2] * 0.5 + rnorm(N))))
+  d = rbinom(N, 1, pr)
+
+  err = rnorm(N)
+
+  # y1 = theta + G + err
+  # y0 = G + err
+  # ATTE = mean(y1[d==1]) - mean(y0[d==1])
+
+  pry = 1 / (1 + exp(-1 * theta * d + G + err))
+  y = rbinom(N, 1, pry)
+
+  data = data.frame(y, d, X)
+
+  return(data)
+}
+
 dgp1_irmiv = function(theta, N, k) {
 
   b = 1 / (1:k)
@@ -94,6 +119,34 @@ dgp1_irmiv = function(theta, N, k) {
   # y0 = G + err
   # ATTE = mean(y1[d==1]) - mean(y0[d==1])
 
+  data = data.frame(y, d, z, X)
+
+  return(data)
+}
+
+dgp1_irmiv_binary = function(theta, N, k) {
+
+  b = 1 / (1:k)
+  sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
+
+  X = mvtnorm::rmvnorm(N, sigma = sigma)
+  G = g(as.vector(X %*% b))
+  M = m(as.vector(X %*% b))
+
+  pr_z = 1 / (1 + exp(-(1) * X[, 1] * b[5] + X[, 2] * b[2] + rnorm(N)))
+  z = rbinom(N, 1, pr_z)
+
+  U = rnorm(N)
+  pr = 1 / (1 + exp(-(1) * (0.5 * z + X[, 1] * (-0.5) + X[, 2] * 0.25 - 0.5 * U + rnorm(N))))
+  d = rbinom(N, 1, pr)
+  err = rnorm(N)
+
+  pry = 1 / (1 + exp((-1) * theta * d + G + 4 * U + err))
+  y = rbinom(N, 1, pry)
+
+  # y1 = theta + G + err
+  # y0 = G + err
+  # ATTE = mean(y1[d==1]) - mean(y0[d==1])
 
   data = data.frame(y, d, z, X)
 
