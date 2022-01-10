@@ -22,10 +22,12 @@ dml_irm = function(data, y, d,
       data, y, d,
       ml_g, ml_m,
       train_ids, test_ids, score,
-      params_g, params_m)
+      params_g, params_m
+    )
     res = extract_irm_residuals(data, y, d, n_folds, this_smpl,
       all_preds[[i_rep]], score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     u0_hat = res$u0_hat
     u1_hat = res$u1_hat
     m_hat = res$m_hat
@@ -46,7 +48,8 @@ dml_irm = function(data, y, d,
           u0_hat = u0_hat[test_index], u1_hat = u1_hat[test_index],
           d = D[test_index], p_hat = p_hat[test_index], m = m_hat[test_index],
           y = Y[test_index],
-          score = score)
+          score = score
+        )
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
@@ -65,14 +68,16 @@ dml_irm = function(data, y, d,
       orth_est = orth_irm_dml(
         g0_hat = g0_hat, g1_hat = g1_hat,
         u0_hat = u0_hat, u1_hat = u1_hat, d = D, p_hat = p_hat,
-        y = Y, m = m_hat, score = score)
+        y = Y, m = m_hat, score = score
+      )
       all_thetas[i_rep] = orth_est$theta
     }
 
     all_ses[i_rep] = sqrt(var_irm(
       theta = all_thetas[i_rep], g0_hat = g0_hat, g1_hat = g1_hat,
       u0_hat = u0_hat, u1_hat = u1_hat,
-      d = D, p_hat = p_hat, m = m_hat, y = Y, score = score))
+      d = D, p_hat = p_hat, m = m_hat, y = Y, score = score
+    ))
   }
 
   theta = stats::median(all_thetas)
@@ -90,7 +95,8 @@ dml_irm = function(data, y, d,
   res = list(
     coef = theta, se = se, t = t, pval = pval,
     thetas = all_thetas, ses = all_ses,
-    all_preds = all_preds, smpls = smpls)
+    all_preds = all_preds, smpls = smpls
+  )
 
   return(res)
 }
@@ -109,7 +115,8 @@ fit_nuisance_irm = function(data, y, d,
   data_m[, d] = factor(data_m[, d])
   task_m = mlr3::TaskClassif$new(
     id = paste0("nuis_p_", d), backend = data_m,
-    target = d, positive = "1")
+    target = d, positive = "1"
+  )
 
   resampling_m = mlr3::rsmp("custom")
   resampling_m$instantiate(task_m, train_ids, test_ids)
@@ -134,7 +141,17 @@ fit_nuisance_irm = function(data, y, d,
   # nuisance g0: E[Y|D=0, X]
   g_indx = names(data) != d
   data_g = data[, g_indx, drop = FALSE]
-  task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", d), backend = data_g, target = y)
+
+  # binary or continuous outcome y
+  if (any(class(ml_g) == "LearnerClassif")) {
+    data_g[, y] = factor(data_g[, y])
+    task_g0 = mlr3::TaskClassif$new(
+      id = paste0("nuis_g0_", y), backend = data_g,
+      target = y, positive = "1"
+    )
+  } else {
+    task_g0 = mlr3::TaskRegr$new(id = paste0("nuis_g0_", y), backend = data_g, target = y)
+  }
   ml_g0 = ml_g$clone()
   if (!is.null(params_g)) {
     ml_g0$param_set$values = params_g
@@ -146,11 +163,25 @@ fit_nuisance_irm = function(data, y, d,
   test_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$test_set(x))
 
   r_g0 = mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
-  g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
+
+  if (any(class(ml_g) == "LearnerClassif")) {
+    g0_hat_list = lapply(r_g0$predictions(), function(x) x$prob[, "1"])
+  } else {
+    g0_hat_list = lapply(r_g0$predictions(), function(x) x$response)
+  }
 
   # nuisance g1: E[Y|D=1, X]
   if (score == "ATE") {
-    task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", d), backend = data_g, target = y)
+    # binary or continuous outcome y
+    if (any(class(ml_g) == "LearnerClassif")) {
+      data_g[, y] = factor(data_g[, y])
+      task_g1 = mlr3::TaskClassif$new(
+        id = paste0("nuis_g1_", y), backend = data_g,
+        target = y, positive = "1"
+      )
+    } else {
+      task_g1 = mlr3::TaskRegr$new(id = paste0("nuis_g1_", y), backend = data_g, target = y)
+    }
     ml_g1 = ml_g$clone()
     if (!is.null(params_g)) {
       ml_g1$param_set$values = params_g
@@ -161,7 +192,11 @@ fit_nuisance_irm = function(data, y, d,
     test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
 
     r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
-    g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
+    if (any(class(ml_g) == "LearnerClassif")) {
+      g1_hat_list = lapply(r_g1$predictions(), function(x) x$prob[, "1"])
+    } else {
+      g1_hat_list = lapply(r_g1$predictions(), function(x) x$response)
+    }
   } else {
     g1_hat_list = NULL
   }
@@ -169,7 +204,8 @@ fit_nuisance_irm = function(data, y, d,
   all_preds = list(
     m_hat_list = m_hat_list,
     g0_hat_list = g0_hat_list,
-    g1_hat_list = g1_hat_list)
+    g1_hat_list = g1_hat_list
+  )
 
   return(all_preds)
 }
@@ -212,7 +248,8 @@ extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score,
   res = list(
     u0_hat = u0_hat, u1_hat = u1_hat,
     m_hat = m_hat, p_hat = p_hat,
-    g0_hat = g0_hat, g1_hat = g1_hat)
+    g0_hat = g0_hat, g1_hat = g1_hat
+  )
 
   return(res)
 }
@@ -254,7 +291,8 @@ bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
   for (i_rep in 1:n_rep) {
     res = extract_irm_residuals(data, y, d, n_folds,
       smpls[[i_rep]], all_preds[[i_rep]], score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     u0_hat = res$u0_hat
     u1_hat = res$u1_hat
     m_hat = res$m_hat
@@ -277,7 +315,8 @@ bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
     this_res = functional_bootstrap(
       theta[i_rep], se[i_rep], psi, psi_a, n_folds,
       smpls[[i_rep]],
-      n_rep_boot, weights)
+      n_rep_boot, weights
+    )
     if (i_rep == 1) {
       boot_res = this_res
     } else {

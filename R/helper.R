@@ -190,7 +190,9 @@ extract_prediction = function(obj_resampling, task_type, n_obs,
     }
   } else {
     preds = rep(NA_real_, n_obs)
-    if (testR6(obj_resampling, classes = "ResampleResult")) obj_resampling = list(obj_resampling)
+    if (testR6(obj_resampling, classes = "ResampleResult")) {
+      obj_resampling = list(obj_resampling)
+    }
     n_obj_rsmp = length(obj_resampling)
     for (i_obj_rsmp in 1:n_obj_rsmp) {
       f_hat = as.data.table(obj_resampling[[i_obj_rsmp]]$prediction("test"))
@@ -205,7 +207,9 @@ initiate_learner = function(learner, task_type, params, return_train_preds = FAL
   ml_learner = learner$clone()
 
   if (!is.null(params)) {
-    ml_learner$param_set$values = insert_named(ml_learner$param_set$values, params)
+    ml_learner$param_set$values = insert_named(
+      ml_learner$param_set$values,
+      params)
   } # else if (is.null(params) | length(params) == 0) {
   # message("No parameters provided for learners. Default values are used.")
   # }

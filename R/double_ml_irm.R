@@ -108,16 +108,19 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
     #' of the causal model.
     #'
     #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
-    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' [`LearnerClassif`][mlr3::LearnerClassif], [`Learner`][mlr3::Learner],
+    #' `character(1)`) \cr
     #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
     #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
     #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
     #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' For binary treatment outcomes, an object of the class
+    #' [`LearnerClassif`][mlr3::LearnerClassif] can be passed, for example
+    #' `lrn("classif.cv_glmnet", s = "lambda.min")`.
     #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
-    #' `task_type = "regr"` can be passed, for example of class
-    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
-    #' be passed with specified parameters, for example
-    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
+    #' `task_type = "regr"` or `task_type = "classif"` can be passed,
+    #' respectively, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. \cr
     #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X,D]}.
     #'
     #' @param ml_m ([`LearnerClassif`][mlr3::LearnerClassif],
@@ -189,7 +192,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       private$task_type = list(
         "ml_g" = NULL,
         "ml_m" = NULL)
-      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
+      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
 
       private$learner_ = list(

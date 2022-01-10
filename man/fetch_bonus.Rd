@@ -87,7 +87,9 @@ obj_dml_data_bonus = DoubleMLData$new(df_bonus,
   x_cols = c(
     "female", "black", "othrace", "dep1", "dep2",
     "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54",
-    "durable", "lusd", "husd"))
+    "durable", "lusd", "husd"
+  )
+)
 obj_dml_data_bonus
 }
 \references{
