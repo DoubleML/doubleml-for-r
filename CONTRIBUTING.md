@@ -52,7 +52,7 @@ The following guidelines and hints help you to get started.
 
 ### Development Workflow
 In the following, the recommended way to contribute to DoubleML is described in detail.
-If you are just starting to work with Git and GitHub, we recommend to read [Happy Git and GitHub for the useR](https://happygitwithr.com/index.html) and the [chapter on Git and GitHub](https://r-pkgs.org/git.html) in Hadley Wickham's book R packages.
+If you are just starting to work with Git and GitHub, we recommend to read [Happy Git and GitHub for the useR](https://happygitwithr.com/index.html) and the [chapter on Git and GitHub](https://r-pkgs.org/git.html) in Hadley Wickham's book R Packages.
 The most important steps are: To **fork** the repo, then **add your changes** and finally submit a **pull-request**.
 1. **Fork** the [DoubleML repo](https://github.com/DoubleML/doubleml-for-r)
 by clicking on the Fork button (this requires a GitHub account).
@@ -127,7 +127,7 @@ If your PR is still **work in progress**, please consider marking it a **draft P
 ### Unit Tests and Test Coverage
 We use the **testthat** package for unit testing.
 Unit testing is considered to be a fundamental part of the development workflow.
-We recommend to read the [chapter on testing](https://r-pkgs.org/tests.html) of Hadley Wickham's book R packages.
+We recommend to read the [chapter on testing](https://r-pkgs.org/tests.html) of Hadley Wickham's book R Packages.
 The tests are located in the `tests/testthat` subfolder.
 The test coverage is determined with the `covr` package.
 Coverage reports for the package, PRs, branches etc. are available from
