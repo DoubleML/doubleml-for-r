@@ -52,6 +52,7 @@ The following guidelines and hints help you to get started.
 
 ### Development Workflow
 In the following, the recommended way to contribute to DoubleML is described in detail.
+If you are just starting to work with Git and GitHub, we recommend to read [Happy Git and GitHub for the useR](https://happygitwithr.com/index.html) and the [chapter on Git and GitHub](https://r-pkgs.org/git.html) in Hadley Wickham's book R packages.
 The most important steps are: To **fork** the repo, then **add your changes** and finally submit a **pull-request**.
 1. **Fork** the [DoubleML repo](https://github.com/DoubleML/doubleml-for-r)
 by clicking on the Fork button (this requires a GitHub account).
@@ -77,21 +78,16 @@ $ git fetch upstream
 $ git merge upstream/master
 ```
 
-5. Install the **development dependencies** via
-TODO: Adapt to R or remove
-
-6. **Install DoubleML in editable mode** (more details can be found ...)
-via 
-TODO: Adapt to R or remove
-
-7. **Develop** your code changes. The changes can be added and pushed via
+5. **Develop** your code changes. A helpful resource for package development in R
+is Hadley Wickham's [R Packages](https://r-pkgs.org/preface.html).
+The changes can be added and pushed via
 ```bash
 $ git add your_new_file your_modified_file
 $ git commit -m "A commit message which briefly summarizes the changes made"
 $ git push origin my_feature_branch
 ```
 
-8. Generate a **pull request** from your fork.
+6. Generate a **pull request** from your fork.
 Please follow our guidelines for pull requests.
 When opening the PR you will be guided with a checklist.
 
@@ -103,12 +99,14 @@ When opening the PR you will be guided with a checklist.
 
 - [x] **References** to related issues or PRs are added.
 
-- [x] The code passes **all (unit) tests** (see
-[below](https://github.com/DoubleML/doubleml-for-r/blob/master/CONTRIBUTING.md#unit-test-and-test-coverage)
-for details).
-To check, please run
-```bash
-$ pytest .
+- [x] The code passes `R CMD check` and **all (unit) tests**
+To check your code for common problems, run
+```R
+devtools::check()
+```
+In case you only want to run the tests, run
+```R
+devtools::test()
 ```
 
 - [x] If you add an **enhancements** or **new feature**, **unit tests**
@@ -127,7 +125,26 @@ If your PR is still **work in progress**, please consider marking it a **draft P
 (see also [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)).
 
 ### Unit Tests and Test Coverage
-TODO: Adapt to R
+We use the **testthat** package for unit testing.
+Unit testing is considered to be a fundamental part of the development workflow.
+We recommend to read the [chapter on testing](https://r-pkgs.org/tests.html) of Hadley Wickham's book R packages.
+The tests are located in the `tests/testthat` subfolder.
+The test coverage is determined with the `covr` package.
+Coverage reports for the package, PRs, branches etc. are available from
+[codecov](https://app.codecov.io/gh/DoubleML/doubleml-for-r).
+It is mandatory to equip new features with an appropriate level of unit test coverage.
+To **run all unit tests** (for further option see the [devtools docu](https://devtools.r-lib.org/reference/test.html)) call
+```R
+devtools::test()
+```
+For a unit test coverage report you can run
+```R
+covr::report()
+```
+or, alternatively,
+```R
+devtools::test_coverage()
+```
 
 ### Contribute a New Model Class
 The **DoubleML package** is particularly designed in a flexible way to make it **easily extendable** with regard to
@@ -148,20 +165,25 @@ A **template for new model classes** is available
 [here](https://github.com/DoubleML/doubleml-docs/blob/master/model_templates/double_ml_model_template.py).--->
 
 ## Contribute Documentation :books:
-TODO: Adapt to R
-The **documentation** of DoubleML is generated with **sphinx** and hosted at
-[https://docs.doubleml.org](https://docs.doubleml.org).
-The R API documentation is generated from docstrings in the source code.
+
+The **documentation** of DoubleML is generated with **roxygen2**. The corresponding website
+for the R API documentation is generated using **pkgdown** and hosted at
+[https://docs.doubleml.org/r/stable](https://docs.doubleml.org/r/stable/).
+The website [https:://docs.doubleml.org](https://docs.doubleml.org) is built with
+sphinx.
 The source code for the website, user guide, example gallery, etc. is available in a separate repository
 [https://github.com/DoubleML/doubleml-docs](https://github.com/DoubleML/doubleml-docs).
 
 ### Contribute to the API Documentation
-TODO: Adapt to R
-The **API documentation** is generated from **docstrings** in the source code.
-It can be generated locally (dev requirements sphinx and pydata-sphinx-theme need to be installed) via 
-```bash
-$ cd doc/
-$ make html
+The **documentation** of DoubleML is generated with **roxygen2**. The corresponding website
+for the R API documentation is generated using **pkdgdown**.
+To build the documentation of the package run
+```R
+devtools::document()
+```
+To build the documentation website, run (for more details, see the [pkgdown documentation](https://pkgdown.r-lib.org/))
+```R
+pkgdown::build_site()
 ```
 
 ### Contribute to the User Guide and Documentation
