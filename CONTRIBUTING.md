@@ -79,7 +79,7 @@ $ git merge upstream/master
 ```
 
 5. **Develop** your code changes. A helpful resource for package development in R
-is Hadley Wickham's [R Packages](https://r-pkgs.org/preface.html).
+is Hadley Wickham's [R Packages](https://r-pkgs.org/preface.html) and [rOpenSci Packages](https://devguide.ropensci.org/).
 The changes can be added and pushed via
 ```bash
 $ git add your_new_file your_modified_file
@@ -99,12 +99,12 @@ When opening the PR you will be guided with a checklist.
 
 - [x] **References** to related issues or PRs are added.
 
-- [x] The code passes `R CMD check` and **all (unit) tests**
+- [x] The code passes `R CMD check` and **all (unit) tests**.
 To check your code for common problems, run
 ```R
 devtools::check()
 ```
-In case you only want to run the tests, run
+By default, this runs all tests. In case you only want to run the tests, run
 ```R
 devtools::test()
 ```
