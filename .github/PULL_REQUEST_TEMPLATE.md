@@ -19,6 +19,6 @@ Please fill out this PR checklist (see our [contributing guidelines](https://git
 - [ ] The title of the pull request summarizes the changes made.
 - [ ] The PR contains a detailed description of all changes and additions.
 - [ ] References to related issues or PRs are added.
-- [ ] The code passes all (unit) tests.
+- [ ] The code passes `R CMD check` and all (unit) tests.
 - [ ] Enhancements or new feature are equipped with unit tests.
 - [ ] The changes adhere to the ["mlr-style" standards](https://github.com/DoubleML/doubleml-for-r/blob/master/CONTRIBUTING.md#checklist-for-pull-requests-pr) for details).
