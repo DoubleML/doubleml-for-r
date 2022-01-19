@@ -59,7 +59,7 @@ by clicking on the Fork button (this requires a GitHub account).
 2. **Clone** your fork to your local machine via
 ```bash
 $ git clone git@github.com:YourGitHubAccount/doubleml-for-r.git
-$ cd doubleml-for-py
+$ cd doubleml-for-r
 ```
 
 3. Create a **feature branch** via
