@@ -176,7 +176,7 @@ The source code for the website, user guide, example gallery, etc. is available 
 
 ### Contribute to the API Documentation
 The **documentation** of DoubleML is generated with **roxygen2**. The corresponding website
-for the R API documentation is generated using **pkdgdown**.
+for the R API documentation is generated using **pkgdown**.
 To build the documentation of the package run
 ```R
 devtools::document()
