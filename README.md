@@ -101,6 +101,15 @@ remotes::install_github("DoubleML/doubleml-for-r")
 -   clusterGeneration
 -   readstata13
 
+## Contributing
+
+DoubleML is a community effort. Everyone is welcome to contribute. To
+get started for your first contribution we recommend reading our
+[contributing
+guidelines](https://github.com/DoubleML/doubleml-for-r/blob/master/CONTRIBUTING.md)
+and our [code of
+conduct](https://github.com/DoubleML/doubleml-for-r/blob/master/CODE_OF_CONDUCT.md).
+
 ## Citation
 
 If you use the DoubleML package a citation is highly appreciated:
