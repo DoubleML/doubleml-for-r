@@ -48,7 +48,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       learner = "ml_l",
       treat_var = "d",
       params = params)
-    
+
     if (score == "IV-type") {
       # set params for nuisance part g
       double_mlplr$set_ml_nuisance_params(
@@ -105,7 +105,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       learner = "ml_l",
       treat_var = "d",
       params = params)
-    
+
     if (score == "IV-type") {
       # set params for nuisance part g
       double_mlplr_semiloaded$set_ml_nuisance_params(

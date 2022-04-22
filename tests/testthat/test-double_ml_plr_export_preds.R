@@ -66,7 +66,7 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     data.table::setorder(preds_m, "row_ids")
 
     # TODO: extend for IV-type score to g_hat and l_hat
-    
+
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_l),
       as.vector(preds_g$response),
       tolerance = 1e-8)

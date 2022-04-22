@@ -167,11 +167,11 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
       if ((is.character(self$score) && (self$score == "IV-type")) ||
-          is.function(self$score)) {
-      private$params_ = list(
-        "ml_l" = nuisance,
-        "ml_g" = nuisance,
-        "ml_m" = nuisance)
+        is.function(self$score)) {
+        private$params_ = list(
+          "ml_l" = nuisance,
+          "ml_g" = nuisance,
+          "ml_m" = nuisance)
       } else {
         private$params_ = list(
           "ml_l" = nuisance,
@@ -203,31 +203,31 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         return_train_preds = FALSE,
         task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
-      
+
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
-      
+
       g_hat = NULL
       if ((is.character(self$score) && (self$score == "IV-type")) ||
-          is.function(self$score)) {
+        is.function(self$score)) {
         # get an initial estimate for theta using the partialling out score
-        psi_a = - (d - m_hat) * (d - m_hat)
+        psi_a = -(d - m_hat) * (d - m_hat)
         psi_b = (d - m_hat) * (y - l_hat)
-        theta_initial = - mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
-        
+        theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+
         data_aux = data.table(self$data$data_model,
-                              "y_minus_theta_d" = y - theta_initial*d)
-        
+          "y_minus_theta_d" = y - theta_initial * d)
+
         g_hat = dml_cv_predict(self$learner$ml_g,
-                               c(self$data$x_cols, self$data$other_treat_cols),
-                               "y_minus_theta_d",
-                               data_aux,
-                               nuisance_id = "nuis_g",
-                               smpls = smpls,
-                               est_params = self$get_params("ml_g"),
-                               return_train_preds = FALSE,
-                               task_type = private$task_type$ml_g,
-                               fold_specific_params = private$fold_specific_params)
+          c(self$data$x_cols, self$data$other_treat_cols),
+          "y_minus_theta_d",
+          data_aux,
+          nuisance_id = "nuis_g",
+          smpls = smpls,
+          est_params = self$get_params("ml_g"),
+          return_train_preds = FALSE,
+          task_type = private$task_type$ml_g,
+          fold_specific_params = private$fold_specific_params)
       }
 
       res = private$score_elements(y, d, l_hat, g_hat, m_hat, smpls)
@@ -260,6 +260,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     },
     ml_nuisance_tuning = function(smpls, param_set, tune_settings,
       tune_on_folds, ...) {
+
       if (!tune_on_folds) {
         data_tune_list = list(self$data$data_model)
       } else {
@@ -283,7 +284,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
         private$task_type$ml_m)
-      
+
       if (self$score == "IV-type") {
         if (tune_on_folds) {
           params_l = tuning_result_l$params
@@ -293,37 +294,37 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           params_m = tuning_result_m$params[[1]]
         }
         l_hat = dml_cv_predict(self$learner$ml_g,
-                               c(self$data$x_cols, self$data$other_treat_cols),
-                               self$data$y_col,
-                               self$data$data_model,
-                               nuisance_id = "nuis_l",
-                               smpls = smpls,
-                               est_params = params_l,
-                               return_train_preds = FALSE,
-                               task_type = private$task_type$ml_g,
-                               fold_specific_params = private$fold_specific_params)
-        
+          c(self$data$x_cols, self$data$other_treat_cols),
+          self$data$y_col,
+          self$data$data_model,
+          nuisance_id = "nuis_l",
+          smpls = smpls,
+          est_params = params_l,
+          return_train_preds = FALSE,
+          task_type = private$task_type$ml_g,
+          fold_specific_params = private$fold_specific_params)
+
         m_hat = dml_cv_predict(self$learner$ml_m,
-                               c(self$data$x_cols, self$data$other_treat_cols),
-                               self$data$treat_col,
-                               self$data$data_model,
-                               nuisance_id = "nuis_m",
-                               smpls = smpls,
-                               est_params = params_m,
-                               return_train_preds = FALSE,
-                               task_type = private$task_type$ml_m,
-                               fold_specific_params = private$fold_specific_params)
-        
+          c(self$data$x_cols, self$data$other_treat_cols),
+          self$data$treat_col,
+          self$data$data_model,
+          nuisance_id = "nuis_m",
+          smpls = smpls,
+          est_params = params_m,
+          return_train_preds = FALSE,
+          task_type = private$task_type$ml_m,
+          fold_specific_params = private$fold_specific_params)
+
         d = self$data$data_model[[self$data$treat_col]]
         y = self$data$data_model[[self$data$y_col]]
-        
-        psi_a = - (d - m_hat) * (d - m_hat)
+
+        psi_a = -(d - m_hat) * (d - m_hat)
         psi_b = (d - m_hat) * (y - l_hat)
-        theta_initial = - mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
-        
+        theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+
         data_aux = data.table(self$data$data_model,
-                              "y_minus_theta_d" = y - theta_initial*d)
-        
+          "y_minus_theta_d" = y - theta_initial * d)
+
         if (!tune_on_folds) {
           data_aux_tune_list = list(data_aux)
         } else {
@@ -331,14 +332,14 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
             extract_training_data(data_aux, x)
           })
         }
-        
+
         tuning_result_g = dml_tune(self$learner$ml_g,
-                                   c(self$data$x_cols, self$data$other_treat_cols),
-                                   "y_minus_theta_d", data_aux_tune_list,
-                                   nuisance_id = "nuis_g",
-                                   param_set$ml_g, tune_settings,
-                                   tune_settings$measure$ml_g,
-                                   private$task_type$ml_g)
+          c(self$data$x_cols, self$data$other_treat_cols),
+          "y_minus_theta_d", data_aux_tune_list,
+          nuisance_id = "nuis_g",
+          param_set$ml_g, tune_settings,
+          tune_settings$measure$ml_g,
+          private$task_type$ml_g)
         tuning_result = list(
           "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
           "ml_g" = list(tuning_result_g, params = tuning_result_g$params),
@@ -348,7 +349,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
           "ml_m" = list(tuning_result_m, params = tuning_result_m$params))
       }
-      
+
       return(tuning_result)
     },
     check_score = function(score) {

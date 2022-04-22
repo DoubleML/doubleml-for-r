@@ -179,7 +179,7 @@ fit_plr_single_split = function(data, y, d,
   if (dml_procedure == "dml2") {
     orth_est = orth_plr_dml(
       y_minus_l_hat = y_minus_l_hat,
-      y_minus_g_hat = y_minus_g_hat, 
+      y_minus_g_hat = y_minus_g_hat,
       d_minus_m_hat = d_minus_m_hat,
       d = D, score = score)
     theta = orth_est$theta
@@ -211,8 +211,9 @@ fit_nuisance_plr = function(data, y, d,
   # nuisance l
   l_indx = names(data) != d
   data_l = data[, l_indx, drop = FALSE]
-  task_l = mlr3::TaskRegr$new(id = paste0("nuis_l_", d),
-                              backend = data_l, target = y)
+  task_l = mlr3::TaskRegr$new(
+    id = paste0("nuis_l_", d),
+    backend = data_l, target = y)
 
   resampling_l = mlr3::rsmp("custom")
   resampling_l$instantiate(task_l, train_ids, test_ids)
@@ -252,7 +253,7 @@ fit_nuisance_plr = function(data, y, d,
     r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     m_hat_list = lapply(r_m$predictions(), function(x) as.data.table(x)$prob.1)
   }
-  
+
   if (fit_g) {
     # nuisance g
     residuals = compute_plr_residuals(
@@ -263,26 +264,27 @@ fit_nuisance_plr = function(data, y, d,
         m_hat_list = m_hat_list))
     y_minus_l_hat = residuals$y_minus_l_hat
     d_minus_m_hat = residuals$d_minus_m_hat
-    psi_a = - d_minus_m_hat*d_minus_m_hat
-    psi_b = d_minus_m_hat*y_minus_l_hat
-    theta_initial = - mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
-    
+    psi_a = -d_minus_m_hat * d_minus_m_hat
+    psi_b = d_minus_m_hat * y_minus_l_hat
+    theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+
     D = data[, d]
     Y = data[, y]
     g_indx = names(data) != y & names(data) != d
-    y_minus_theta_d = Y - theta_initial*D
+    y_minus_theta_d = Y - theta_initial * D
     data_g = cbind(data[, g_indx, drop = FALSE], y_minus_theta_d)
-    
-    task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g,
-                                target = "y_minus_theta_d")
-    
+
+    task_g = mlr3::TaskRegr$new(
+      id = paste0("nuis_g_", d), backend = data_g,
+      target = "y_minus_theta_d")
+
     resampling_g = mlr3::rsmp("custom")
     resampling_g$instantiate(task_g, train_ids, test_ids)
-    
+
     if (!is.null(params_g)) {
       ml_g$param_set$values = params_g
     }
-    
+
     r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
     g_hat_list = lapply(r_g$predictions(), function(x) x$response)
   } else {
@@ -300,7 +302,7 @@ fit_nuisance_plr = function(data, y, d,
 compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
 
   test_ids = smpls$test_ids
-  
+
   l_hat_list = all_preds$l_hat_list
   g_hat_list = all_preds$g_hat_list
   m_hat_list = all_preds$m_hat_list
@@ -313,21 +315,22 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
 
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
-    
+
     l_hat = l_hat_list[[i]]
     m_hat = m_hat_list[[i]]
 
     y_minus_l_hat[test_index] = Y[test_index] - l_hat
     d_minus_m_hat[test_index] = D[test_index] - m_hat
-    
+
     if (!is.null(g_hat_list)) {
       g_hat = g_hat_list[[i]]
       y_minus_g_hat[test_index] = Y[test_index] - g_hat
     }
   }
-  residuals = list(y_minus_l_hat = y_minus_l_hat,
-                   y_minus_g_hat = y_minus_g_hat,
-                   d_minus_m_hat = d_minus_m_hat)
+  residuals = list(
+    y_minus_l_hat = y_minus_l_hat,
+    y_minus_g_hat = y_minus_g_hat,
+    d_minus_m_hat = d_minus_m_hat)
 
   return(residuals)
 }
@@ -436,7 +439,7 @@ boot_plr_single_split = function(theta, se, data, y, d,
   y_minus_l_hat = residuals$y_minus_l_hat
   y_minus_g_hat = residuals$y_minus_g_hat
   d_minus_m_hat = residuals$d_minus_m_hat
-  
+
   D = data[, d]
 
   if (score == "partialling out") {

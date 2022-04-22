@@ -85,7 +85,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = learner_pars$params$params_m)
-    if (score == 'IV-type') {
+    if (score == "IV-type") {
       double_mlplr_obj$set_ml_nuisance_params(
         treat_var = "d1", learner = "ml_g",
         params = learner_pars$params$params_g)
@@ -165,7 +165,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
     double_mlplr_obj_nocf$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = learner_pars$params$params_m)
-    if (score == 'IV-type') {
+    if (score == "IV-type") {
       double_mlplr_obj_nocf$set_ml_nuisance_params(
         treat_var = "d1", learner = "ml_g",
         params = learner_pars$params$params_g)
@@ -218,7 +218,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = learner_pars$params$params_m)
-    if (score == 'IV-type') {
+    if (score == "IV-type") {
       double_mlplr_obj$set_ml_nuisance_params(
         treat_var = "d1", learner = "ml_g",
         params = learner_pars$params$params_g)
@@ -259,7 +259,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
       treat_var = "d2", learner = "ml_m",
       params = params_m_fold_wise,
       set_fold_specific = TRUE)
-    if (score == 'IV-type') {
+    if (score == "IV-type") {
       dml_plr_fold_wise$set_ml_nuisance_params(
         treat_var = "d1", learner = "ml_g",
         params = params_g_fold_wise,
@@ -326,7 +326,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = params_m)
-    if (score == 'IV-type') {
+    if (score == "IV-type") {
       double_mlplr_obj$set_ml_nuisance_params(
         treat_var = "d1", learner = "ml_g",
         params = params_g)
