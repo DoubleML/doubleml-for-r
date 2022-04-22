@@ -265,7 +265,7 @@ fit_nuisance_plr = function(data, y, d,
     d_minus_m_hat = residuals$d_minus_m_hat
     psi_a = - d_minus_m_hat*d_minus_m_hat
     psi_b = d_minus_m_hat*y_minus_l_hat
-    theta_initial = -mean(psi_b) / mean(psi_a)
+    theta_initial = - mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
     
     D = data[, d]
     Y = data[, y]

@@ -43,11 +43,19 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       treat_var = "d",
       params = params)
 
-    # set params for nuisance part g
+    # set params for nuisance part l
     double_mlplr$set_ml_nuisance_params(
-      learner = "ml_g",
+      learner = "ml_l",
       treat_var = "d",
       params = params)
+    
+    if (score == "IV-type") {
+      # set params for nuisance part g
+      double_mlplr$set_ml_nuisance_params(
+        learner = "ml_g",
+        treat_var = "d",
+        params = params)
+    }
 
     double_mlplr$fit()
     theta = double_mlplr$coef
@@ -92,11 +100,19 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       treat_var = "d",
       params = params)
 
-    # set params for nuisance part g
+    # set params for nuisance part l
     double_mlplr_semiloaded$set_ml_nuisance_params(
-      learner = "ml_g",
+      learner = "ml_l",
       treat_var = "d",
       params = params)
+    
+    if (score == "IV-type") {
+      # set params for nuisance part g
+      double_mlplr_semiloaded$set_ml_nuisance_params(
+        learner = "ml_g",
+        treat_var = "d",
+        params = params)
+    }
 
     double_mlplr_semiloaded$fit()
     theta_semiloaded = double_mlplr_semiloaded$coef

@@ -4,7 +4,7 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-non_orth_score = function(y, d, g_hat, m_hat, smpls) {
+non_orth_score = function(y, d, l_hat, g_hat, m_hat, smpls) {
   u_hat = y - g_hat
   psi_a = -1 * d * d
   psi_b = d * u_hat

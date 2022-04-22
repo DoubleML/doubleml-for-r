@@ -76,11 +76,20 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
           treat_var = "d",
           params = learner_pars$params$params_m)
 
-        # set params for nuisance part g
+        # set params for nuisance part l
         double_mlplr_obj$set_ml_nuisance_params(
-          learner = "ml_g",
+          learner = "ml_l",
           treat_var = "d",
           params = learner_pars$params$params_g)
+        
+        if (score == 'IV-type') {
+          # set params for nuisance part g
+          double_mlplr_obj$set_ml_nuisance_params(
+            learner = "ml_g",
+            treat_var = "d",
+            params = learner_pars$params$params_g)
+        }
+        
       }
 
       # currently, no warning or message printed

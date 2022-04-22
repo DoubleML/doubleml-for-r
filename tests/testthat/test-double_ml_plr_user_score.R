@@ -4,9 +4,9 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-score_fct = function(y, d, g_hat, m_hat, smpls) {
+score_fct = function(y, d, l_hat, g_hat, m_hat, smpls) {
   v_hat = d - m_hat
-  u_hat = y - g_hat
+  u_hat = y - l_hat
   v_hatd = v_hat * d
   psi_a = -v_hat * v_hat
   psi_b = v_hat * u_hat
