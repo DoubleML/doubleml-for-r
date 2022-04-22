@@ -268,11 +268,10 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         })
       }
 
-      # TODO: Tuning for ml_l
-      tuning_result_g = dml_tune(self$learner$ml_g,
+      tuning_result_l = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list,
-        nuisance_id = "nuis_g",
+        nuisance_id = "nuis_l",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
         private$task_type$ml_g)
@@ -284,10 +283,72 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
         private$task_type$ml_m)
-
-      tuning_result = list(
-        "ml_g" = list(tuning_result_g, params = tuning_result_g$params),
-        "ml_m" = list(tuning_result_m, params = tuning_result_m$params))
+      
+      if (self$score == "IV-type") {
+        if (tune_on_folds) {
+          params_l = tuning_result_l$params
+          params_m = tuning_result_m$params
+        } else {
+          params_l = tuning_result_l$params[[1]]
+          params_m = tuning_result_m$params[[1]]
+        }
+        l_hat = dml_cv_predict(self$learner$ml_g,
+                               c(self$data$x_cols, self$data$other_treat_cols),
+                               self$data$y_col,
+                               self$data$data_model,
+                               nuisance_id = "nuis_l",
+                               smpls = smpls,
+                               est_params = params_l,
+                               return_train_preds = FALSE,
+                               task_type = private$task_type$ml_g,
+                               fold_specific_params = private$fold_specific_params)
+        
+        m_hat = dml_cv_predict(self$learner$ml_m,
+                               c(self$data$x_cols, self$data$other_treat_cols),
+                               self$data$treat_col,
+                               self$data$data_model,
+                               nuisance_id = "nuis_m",
+                               smpls = smpls,
+                               est_params = params_m,
+                               return_train_preds = FALSE,
+                               task_type = private$task_type$ml_m,
+                               fold_specific_params = private$fold_specific_params)
+        
+        d = self$data$data_model[[self$data$treat_col]]
+        y = self$data$data_model[[self$data$y_col]]
+        
+        psi_a = - (d - m_hat) * (d - m_hat)
+        psi_b = (d - m_hat) * (y - l_hat)
+        theta_initial = - mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+        
+        data_aux = data.table(self$data$data_model,
+                              "y_minus_theta_d" = y - theta_initial*d)
+        
+        if (!tune_on_folds) {
+          data_aux_tune_list = list(data_aux)
+        } else {
+          data_aux_tune_list = lapply(smpls$train_ids, function(x) {
+            extract_training_data(data_aux, x)
+          })
+        }
+        
+        tuning_result_g = dml_tune(self$learner$ml_g,
+                                   c(self$data$x_cols, self$data$other_treat_cols),
+                                   "y_minus_theta_d", data_aux_tune_list,
+                                   nuisance_id = "nuis_g",
+                                   param_set$ml_g, tune_settings,
+                                   tune_settings$measure$ml_g,
+                                   private$task_type$ml_g)
+        tuning_result = list(
+          "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
+          "ml_g" = list(tuning_result_g, params = tuning_result_g$params),
+          "ml_m" = list(tuning_result_m, params = tuning_result_m$params))
+      } else {
+        tuning_result = list(
+          "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
+          "ml_m" = list(tuning_result_m, params = tuning_result_m$params))
+      }
+      
       return(tuning_result)
     },
     check_score = function(score) {
