@@ -166,7 +166,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     initialize_ml_nuisance_params = function() {
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
-      if ((is.character(self$score) & self$score == "IV-type") |
+      if ((is.character(self$score) && (self$score == "IV-type")) ||
           is.function(self$score)) {
       private$params_ = list(
         "ml_l" = nuisance,
@@ -208,12 +208,12 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       y = self$data$data_model[[self$data$y_col]]
       
       g_hat = NULL
-      if ((is.character(self$score) & self$score == "IV-type") |
+      if ((is.character(self$score) && (self$score == "IV-type")) ||
           is.function(self$score)) {
         # get an initial estimate for theta using the partialling out score
         psi_a = - (d - m_hat) * (d - m_hat)
         psi_b = (d - m_hat) * (y - l_hat)
-        theta_initial = -mean(psi_b) / mean(psi_a)
+        theta_initial = - mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
         
         data_aux = data.table(self$data$data_model,
                               "y_minus_theta_d" = y - theta_initial*d)
