@@ -3,7 +3,7 @@ dml_plr = function(data, y, d,
   n_folds, ml_g, ml_m,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_g = NULL, params_m = NULL) {
+  params_l = NULL, params_g = NULL, params_m = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -24,7 +24,7 @@ dml_plr = function(data, y, d,
       n_folds, ml_g, ml_m,
       dml_procedure, score,
       this_smpl,
-      params_g, params_m)
+      params_l, params_g, params_m)
 
     all_preds[[i_rep]] = res_single_split$all_preds
     all_thetas[i_rep] = res_single_split$theta
@@ -56,7 +56,7 @@ dml_plr_multitreat = function(data, y, d,
   n_folds, ml_g, ml_m,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_g = NULL, params_m = NULL) {
+  params_l = NULL, params_g = NULL, params_m = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -71,6 +71,11 @@ dml_plr_multitreat = function(data, y, d,
     all_preds_this_rep = list()
 
     for (i_d in seq(n_d)) {
+      if (!is.null(params_l)) {
+        this_params_l = params_l[[i_d]]
+      } else {
+        this_params_l = NULL
+      }
       if (!is.null(params_g)) {
         this_params_g = params_g[[i_d]]
       } else {
@@ -86,7 +91,7 @@ dml_plr_multitreat = function(data, y, d,
         n_folds, ml_g, ml_m,
         dml_procedure, score,
         this_smpl,
-        this_params_g, this_params_m)
+        this_params_l, this_params_g, this_params_m)
 
       all_preds_this_rep[[i_d]] = res_single_split$all_preds
       thetas_this_rep[i_d] = res_single_split$theta
@@ -127,25 +132,26 @@ dml_plr_multitreat = function(data, y, d,
 fit_plr_single_split = function(data, y, d,
   n_folds, ml_g, ml_m,
   dml_procedure, score, smpl,
-  params_g, params_m) {
+  params_l, params_g, params_m) {
 
   train_ids = smpl$train_ids
   test_ids = smpl$test_ids
 
+  fit_g = (score == "IV-type") | is.function(score)
   all_preds = fit_nuisance_plr(
     data, y, d,
     ml_g, ml_m,
-    smpl,
-    params_g, params_m)
+    n_folds, smpl, fit_g,
+    params_l, params_g, params_m)
 
   residuals = compute_plr_residuals(
     data, y, d, n_folds, smpl,
     all_preds)
-  u_hat = residuals$u_hat
-  v_hat = residuals$v_hat
+  y_minus_l_hat = residuals$y_minus_l_hat
+  y_minus_g_hat = residuals$y_minus_g_hat
+  d_minus_m_hat = residuals$d_minus_m_hat
   D = data[, d]
   Y = data[, y]
-  v_hatd = v_hat * D
 
   # DML 1
   if (dml_procedure == "dml1") {
@@ -154,30 +160,37 @@ fit_plr_single_split = function(data, y, d,
       test_index = test_ids[[i]]
 
       orth_est = orth_plr_dml(
-        u_hat = u_hat[test_index], v_hat = v_hat[test_index],
-        v_hatd = v_hatd[test_index],
+        y_minus_l_hat = y_minus_l_hat[test_index],
+        y_minus_g_hat = y_minus_g_hat[test_index],
+        d_minus_m_hat = d_minus_m_hat[test_index],
+        d = D[test_index],
         score = score)
       thetas[i] = orth_est$theta
     }
     theta = mean(thetas, na.rm = TRUE)
     if (length(train_ids) == 1) {
       D = D[test_index]
-      u_hat = u_hat[test_index]
-      v_hat = v_hat[test_index]
-      v_hatd = v_hatd[test_index]
+      y_minus_l_hat = y_minus_l_hat[test_index]
+      y_minus_g_hat = y_minus_g_hat[test_index]
+      d_minus_m_hat = d_minus_m_hat[test_index]
     }
   }
 
   if (dml_procedure == "dml2") {
     orth_est = orth_plr_dml(
-      u_hat = u_hat, v_hat = v_hat,
-      v_hatd = v_hatd, score = score)
+      y_minus_l_hat = y_minus_l_hat,
+      y_minus_g_hat = y_minus_g_hat, 
+      d_minus_m_hat = d_minus_m_hat,
+      d = D, score = score)
     theta = orth_est$theta
   }
 
   se = sqrt(var_plr(
-    theta = theta, d = D, u_hat = u_hat, v_hat = v_hat,
-    v_hatd = v_hatd, score = score))
+    theta = theta, d = D,
+    y_minus_l_hat = y_minus_l_hat,
+    y_minus_g_hat = y_minus_g_hat,
+    d_minus_m_hat = d_minus_m_hat,
+    score = score))
 
   res = list(
     theta = theta, se = se,
@@ -189,26 +202,27 @@ fit_plr_single_split = function(data, y, d,
 
 fit_nuisance_plr = function(data, y, d,
   ml_g, ml_m,
-  smpls,
-  params_g, params_m) {
+  n_folds, smpls, fit_g,
+  params_l, params_g, params_m) {
 
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
-  # nuisance g
-  g_indx = names(data) != d
-  data_g = data[, g_indx, drop = FALSE]
-  task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
+  # nuisance l
+  l_indx = names(data) != d
+  data_l = data[, l_indx, drop = FALSE]
+  task_l = mlr3::TaskRegr$new(id = paste0("nuis_l_", d),
+                              backend = data_l, target = y)
 
-  resampling_g = mlr3::rsmp("custom")
-  resampling_g$instantiate(task_g, train_ids, test_ids)
+  resampling_l = mlr3::rsmp("custom")
+  resampling_l$instantiate(task_l, train_ids, test_ids)
 
-  if (!is.null(params_g)) {
-    ml_g$param_set$values = params_g
+  if (!is.null(params_l)) {
+    ml_l$param_set$values = params_l
   }
 
-  r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
+  r_l = mlr3::resample(task_l, ml_g, resampling_l, store_models = TRUE)
+  l_hat_list = lapply(r_l$predictions(), function(x) x$response)
 
   # nuisance m
   if (!is.null(params_m)) {
@@ -238,10 +252,47 @@ fit_nuisance_plr = function(data, y, d,
     r_m = mlr3::resample(task_m, ml_m, resampling_m, store_models = TRUE)
     m_hat_list = lapply(r_m$predictions(), function(x) as.data.table(x)$prob.1)
   }
+  
+  if (fit_g) {
+    # nuisance g
+    residuals = compute_plr_residuals(
+      data, y, d, n_folds,
+      smpls, list(
+        l_hat_list = l_hat_list,
+        g_hat_list = NULL,
+        m_hat_list = m_hat_list))
+    y_minus_l_hat = residuals$y_minus_l_hat
+    d_minus_m_hat = residuals$d_minus_m_hat
+    psi_a = - d_minus_m_hat*d_minus_m_hat
+    psi_b = d_minus_m_hat*y_minus_l_hat
+    theta_initial = -mean(psi_b) / mean(psi_a)
+    
+    D = data[, d]
+    Y = data[, y]
+    g_indx = names(data) != y & names(data) != d
+    y_minus_theta_d = Y - theta_initial*D
+    data_g = cbind(data[, g_indx, drop = FALSE], y_minus_theta_d)
+    
+    task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g,
+                                target = "y_minus_theta_d")
+    
+    resampling_g = mlr3::rsmp("custom")
+    resampling_g$instantiate(task_g, train_ids, test_ids)
+    
+    if (!is.null(params_g)) {
+      ml_g$param_set$values = params_g
+    }
+    
+    r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
+    g_hat_list = lapply(r_g$predictions(), function(x) x$response)
+  } else {
+    g_hat_list = NULL
+  }
 
   all_preds = list(
-    m_hat_list = m_hat_list,
-    g_hat_list = g_hat_list)
+    l_hat_list = l_hat_list,
+    g_hat_list = g_hat_list,
+    m_hat_list = m_hat_list)
 
   return(all_preds)
 }
@@ -249,7 +300,8 @@ fit_nuisance_plr = function(data, y, d,
 compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
 
   test_ids = smpls$test_ids
-
+  
+  l_hat_list = all_preds$l_hat_list
   g_hat_list = all_preds$g_hat_list
   m_hat_list = all_preds$m_hat_list
 
@@ -257,35 +309,41 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   D = data[, d]
   Y = data[, y]
 
-  v_hat = u_hat = w_hat = rep(NA_real_, n)
+  y_minus_l_hat = y_minus_g_hat = d_minus_m_hat = rep(NA_real_, n)
 
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
-
-    g_hat = g_hat_list[[i]]
+    
+    l_hat = l_hat_list[[i]]
     m_hat = m_hat_list[[i]]
 
-    u_hat[test_index] = Y[test_index] - g_hat
-    v_hat[test_index] = D[test_index] - m_hat
+    y_minus_l_hat[test_index] = Y[test_index] - l_hat
+    d_minus_m_hat[test_index] = D[test_index] - m_hat
+    
+    if (!is.null(g_hat_list)) {
+      g_hat = g_hat_list[[i]]
+      y_minus_g_hat[test_index] = Y[test_index] - g_hat
+    }
   }
-  residuals = list(u_hat = u_hat, v_hat = v_hat)
+  residuals = list(y_minus_l_hat = y_minus_l_hat,
+                   y_minus_g_hat = y_minus_g_hat,
+                   d_minus_m_hat = d_minus_m_hat)
 
   return(residuals)
 }
 
 
 # Orthogonalized Estimation of Coefficient in PLR
-orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
+orth_plr_dml = function(y_minus_l_hat, y_minus_g_hat, d_minus_m_hat, d, score) {
   theta = NA_real_
 
   if (score == "partialling out") {
-    res_fit = stats::lm(u_hat ~ 0 + v_hat)
+    res_fit = stats::lm(y_minus_l_hat ~ 0 + d_minus_m_hat)
     theta = stats::coef(res_fit)
   }
 
   else if (score == "IV-type") {
-    theta = mean(v_hat * u_hat) / mean(v_hatd)
-    # se = 1/(mean(u_hat)^2) * mean((v_hat - theta*u_hat)*u_hat)^2
+    theta = mean(d_minus_m_hat * y_minus_g_hat) / mean(d_minus_m_hat * d)
   }
 
   else {
@@ -298,15 +356,15 @@ orth_plr_dml = function(u_hat, v_hat, v_hatd, score) {
 
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_plr = function(theta, d, u_hat, v_hat, v_hatd, score) {
+var_plr = function(theta, d, y_minus_l_hat, y_minus_g_hat, d_minus_m_hat, score) {
   n = length(d)
   if (score == "partialling out") {
-    var = 1 / n * 1 / (mean(v_hat^2))^2 *
-      mean(((u_hat - v_hat * theta) * v_hat)^2)
+    var = 1 / n * 1 / (mean(d_minus_m_hat^2))^2 *
+      mean(((y_minus_l_hat - d_minus_m_hat * theta) * d_minus_m_hat)^2)
   }
   else if (score == "IV-type") {
-    var = 1 / n * 1 / mean(v_hatd)^2 *
-      mean(((u_hat - d * theta) * v_hat)^2)
+    var = 1 / n * 1 / mean(d_minus_m_hat * d)^2 *
+      mean(((y_minus_g_hat - d * theta) * d_minus_m_hat)^2)
   }
   return(c(var))
 }
@@ -375,18 +433,19 @@ boot_plr_single_split = function(theta, se, data, y, d,
   residuals = compute_plr_residuals(
     data, y, d, n_folds,
     smpl, all_preds)
-  u_hat = residuals$u_hat
-  v_hat = residuals$v_hat
+  y_minus_l_hat = residuals$y_minus_l_hat
+  y_minus_g_hat = residuals$y_minus_g_hat
+  d_minus_m_hat = residuals$d_minus_m_hat
+  
   D = data[, d]
-  v_hatd = v_hat * D
 
   if (score == "partialling out") {
-    psi = (u_hat - v_hat * theta) * v_hat
-    psi_a = -v_hat * v_hat
+    psi = (y_minus_l_hat - d_minus_m_hat * theta) * d_minus_m_hat
+    psi_a = -d_minus_m_hat * d_minus_m_hat
   }
   else if (score == "IV-type") {
-    psi = (u_hat - D * theta) * v_hat
-    psi_a = -v_hatd
+    psi = (y_minus_g_hat - D * theta) * d_minus_m_hat
+    psi_a = -d_minus_m_hat * D
   }
 
   res = functional_bootstrap(

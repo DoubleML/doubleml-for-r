@@ -84,7 +84,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
     #' be passed with specified parameters, for example
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
-    #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
+    #' `ml_g` refers to the nuisance functions \eqn{l_0(X) = E[Y|X]} and
+    #' \eqn{g_0(X) = E[Y - D\theta_0|X]}.
     #'
     #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`LearnerClassif`][mlr3::LearnerClassif], [`Learner`][mlr3::Learner],
@@ -112,7 +113,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' A `character(1)` (`"partialling out"` or `IV-type`) or a `function()`
     #' specifying the score function.
     #' If a `function()` is provided, it must be of the form
-    #' `function(y, d, g_hat, m_hat, smpls)` and
+    #' `function(y, d, l_hat, g_hat, m_hat, smpls)` and
     #' the returned output must be a named `list()` with elements `psi_a` and
     #' `psi_b`. Default is `"partialling out"`.
     #'
@@ -165,21 +166,29 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     initialize_ml_nuisance_params = function() {
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
+      if ((is.character(self$score) & self$score == "IV-type") |
+          is.function(self$score)) {
       private$params_ = list(
+        "ml_l" = nuisance,
         "ml_g" = nuisance,
         "ml_m" = nuisance)
+      } else {
+        private$params_ = list(
+          "ml_l" = nuisance,
+          "ml_m" = nuisance)
+      }
       invisible(self)
     },
 
     ml_nuisance_and_score_elements = function(smpls, ...) {
 
-      g_hat = dml_cv_predict(self$learner$ml_g,
+      l_hat = dml_cv_predict(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
-        nuisance_id = "nuis_g",
+        nuisance_id = "nuis_l",
         smpls = smpls,
-        est_params = self$get_params("ml_g"),
+        est_params = self$get_params("ml_l"),
         return_train_preds = FALSE,
         task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
@@ -194,33 +203,58 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         return_train_preds = FALSE,
         task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
-
+      
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
+      
+      g_hat = NULL
+      if ((is.character(self$score) & self$score == "IV-type") |
+          is.function(self$score)) {
+        # get an initial estimate for theta using the partialling out score
+        psi_a = - (d - m_hat) * (d - m_hat)
+        psi_b = (d - m_hat) * (y - l_hat)
+        theta_initial = -mean(psi_b) / mean(psi_a)
+        
+        data_aux = data.table(self$data$data_model,
+                              "y_minus_theta_d" = y - theta_initial*d)
+        
+        g_hat = dml_cv_predict(self$learner$ml_g,
+                               c(self$data$x_cols, self$data$other_treat_cols),
+                               "y_minus_theta_d",
+                               data_aux,
+                               nuisance_id = "nuis_g",
+                               smpls = smpls,
+                               est_params = self$get_params("ml_g"),
+                               return_train_preds = FALSE,
+                               task_type = private$task_type$ml_g,
+                               fold_specific_params = private$fold_specific_params)
+      }
 
-      res = private$score_elements(y, d, g_hat, m_hat, smpls)
+      res = private$score_elements(y, d, l_hat, g_hat, m_hat, smpls)
       res$preds = list(
+        "ml_l" = l_hat,
         "ml_g" = g_hat,
         "ml_m" = m_hat)
       return(res)
     },
-    score_elements = function(y, d, g_hat, m_hat, smpls) {
+    score_elements = function(y, d, l_hat, g_hat, m_hat, smpls) {
       v_hat = d - m_hat
-      u_hat = y - g_hat
+      u_hat = y - l_hat
       v_hatd = v_hat * d
 
       if (is.character(self$score)) {
         if (self$score == "IV-type") {
           psi_a = -v_hatd
+          psi_b = v_hat * (y - g_hat)
         } else if (self$score == "partialling out") {
           psi_a = -v_hat * v_hat
+          psi_b = v_hat * u_hat
         }
-        psi_b = v_hat * u_hat
         psis = list(
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        psis = self$score(y, d, g_hat, m_hat, smpls)
+        psis = self$score(y, d, l_hat, g_hat, m_hat, smpls)
       }
       return(psis)
     },
@@ -234,6 +268,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         })
       }
 
+      # TODO: Tuning for ml_l
       tuning_result_g = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list,
