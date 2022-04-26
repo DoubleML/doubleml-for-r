@@ -50,8 +50,8 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
       double_mlplr_obj$smpls[[1]]$train_ids,
       double_mlplr_obj$smpls[[1]]$test_ids)
     resampling_pred = resample(task, lrn(g_learner), resampling_smpls)
-    preds_g = as.data.table(resampling_pred$prediction())
-    data.table::setorder(preds_g, "row_ids")
+    preds_l = as.data.table(resampling_pred$prediction())
+    data.table::setorder(preds_l, "row_ids")
 
     Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
     indx = (names(df) %in% c(Xnames, "d"))
@@ -65,10 +65,36 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     preds_m = as.data.table(resampling_pred$prediction())
     data.table::setorder(preds_m, "row_ids")
 
-    # TODO: extend for IV-type score to g_hat and l_hat
+    if (score == "IV-type") {
+      d = df[["d"]]
+      y = df[["y"]]
+      psi_a = -(d - preds_m$response) * (d - preds_m$response)
+      psi_b = (d - preds_m$response) * (y - preds_l$response)
+      theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+
+      data_aux = cbind(df, "y_minus_theta_d" = y - theta_initial * d)
+      Xnames = names(data_aux)[names(data_aux) %in%
+        c("y", "d", "z", "y_minus_theta_d") == FALSE]
+      indx = (names(data_aux) %in% c(Xnames, "y_minus_theta_d"))
+      data = data_aux[, indx]
+      task = mlr3::TaskRegr$new(
+        id = "ml_g", backend = data,
+        target = "y_minus_theta_d")
+      resampling_smpls = rsmp("custom")$instantiate(
+        task,
+        double_mlplr_obj$smpls[[1]]$train_ids,
+        double_mlplr_obj$smpls[[1]]$test_ids)
+      resampling_pred = resample(task, lrn(g_learner), resampling_smpls)
+      preds_g = as.data.table(resampling_pred$prediction())
+      data.table::setorder(preds_g, "row_ids")
+
+      expect_equal(as.vector(double_mlplr_obj$predictions$ml_g),
+        as.vector(preds_g$response),
+        tolerance = 1e-8)
+    }
 
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_l),
-      as.vector(preds_g$response),
+      as.vector(preds_l$response),
       tolerance = 1e-8)
 
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_m),
