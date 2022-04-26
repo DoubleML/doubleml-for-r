@@ -139,7 +139,8 @@ Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}. \cr
-\code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.}
+\code{ml_g} refers to the nuisance functions \eqn{l_0(X) = E[Y|X]} and
+\eqn{g_0(X) = E[Y - D\theta_0|X]}.}
 
 \item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
 \code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{\link[mlr3:Learner]{Learner}},
@@ -167,7 +168,7 @@ Number of repetitions for the sample splitting. Default is \code{1}.}
 A \code{character(1)} (\code{"partialling out"} or \code{IV-type}) or a \verb{function()}
 specifying the score function.
 If a \verb{function()} is provided, it must be of the form
-\verb{function(y, d, g_hat, m_hat, smpls)} and
+\verb{function(y, d, l_hat, g_hat, m_hat, smpls)} and
 the returned output must be a named \code{list()} with elements \code{psi_a} and
 \code{psi_b}. Default is \code{"partialling out"}.}
 
