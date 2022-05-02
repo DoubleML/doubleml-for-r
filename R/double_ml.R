@@ -1311,7 +1311,7 @@ DoubleML = R6Class("DoubleML",
         tune_settings$rsmp_tune = rsmp("cv", folds = tune_settings$n_folds_tune)
       }
 
-      if (test_names(names(tune_settings), must.include = "measure")) {
+      if (test_names(names(tune_settings), must.include = "measure") && !is.null(tune_settings$measure)) {
         assert_list(tune_settings$measure)
         if (!test_names(names(tune_settings$measure),
           subset.of = valid_learner)) {
