@@ -1,4 +1,5 @@
 destination: docs
+url: https://docs.doubleml.org/r/stable
 
 home:
   title: DoubleML - Double Machine Learning with R
