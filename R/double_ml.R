@@ -771,7 +771,7 @@ DoubleML = R6Class("DoubleML",
       n_folds_tune = 5,
       rsmp_tune = mlr3::rsmp("cv", folds = 5),
       measure = NULL,
-      terminator = mlr3tunin::trm("evals", n_evals = 20),
+      terminator = mlr3tuning::trm("evals", n_evals = 20),
       algorithm = mlr3tuning::tnr("grid_search"),
       resolution = 5),
     tune_on_folds = FALSE) {
