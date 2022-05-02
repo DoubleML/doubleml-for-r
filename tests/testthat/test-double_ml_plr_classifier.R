@@ -28,7 +28,7 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
   .cases = test_cases, {
     n_rep_boot = 498
     n_folds = 3
-    
+
     ml_l = mlr3::lrn(l_learner)
     ml_m = mlr3::lrn(m_learner)
     ml_g = mlr3::lrn(g_learner)

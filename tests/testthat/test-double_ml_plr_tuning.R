@@ -80,9 +80,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
       "ml_m" = paradox::ParamSet$new(list(
         paradox::ParamDbl$new("cp", lower = 0.03, upper = 0.04),
         paradox::ParamInt$new("minsplit", lower = 2, upper = 3))))
-    
-    if (score == 'IV-type') {
-      param_grid[['ml_g']] = paradox::ParamSet$new(list(
+
+    if (score == "IV-type") {
+      param_grid[["ml_g"]] = paradox::ParamSet$new(list(
         paradox::ParamDbl$new("cp", lower = 0.015, upper = 0.025),
         paradox::ParamInt$new("minsplit", lower = 3, upper = 4)))
     }

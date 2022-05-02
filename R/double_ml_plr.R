@@ -151,13 +151,15 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       dml_procedure = "dml2",
       draw_sample_splitting = TRUE,
       apply_cross_fitting = TRUE) {
+
       if (missing(ml_l)) {
-        if (!missing(ml_g)){
-          warning(paste0("The argument ml_g was renamed to ml_l. ",
-                  "Please adapt the argument name accordingly. ",
-                  "ml_g is redirected to ml_l.\n",
-                  "The redirection will be removed in a future version."), 
-                  call. = FALSE)
+        if (!missing(ml_g)) {
+          warning(paste0(
+            "The argument ml_g was renamed to ml_l. ",
+            "Please adapt the argument name accordingly. ",
+            "ml_g is redirected to ml_l.\n",
+            "The redirection will be removed in a future version."),
+          call. = FALSE)
           ml_l = ml_g
           ml_g = NULL
         }
@@ -174,7 +176,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      
+
       private$check_and_set_learner(ml_l, ml_m, ml_g)
       private$initialize_ml_nuisance_params()
 
@@ -188,8 +190,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       private$params_ = list(
         "ml_l" = nuisance,
         "ml_m" = nuisance)
-      if (exists('ml_g', where=private$learner_)) {
-        private$params_[['ml_g']] = nuisance
+      if (exists("ml_g", where = private$learner_)) {
+        private$params_[["ml_g"]] = nuisance
       }
       invisible(self)
     },
@@ -222,7 +224,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       y = self$data$data_model[[self$data$y_col]]
 
       g_hat = NULL
-      if (exists('ml_g', where=private$learner_)) {
+      if (exists("ml_g", where = private$learner_)) {
         # get an initial estimate for theta using the partialling out score
         psi_a = -(d - m_hat) * (d - m_hat)
         psi_b = (d - m_hat) * (y - l_hat)
@@ -298,7 +300,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         tune_settings$measure$ml_m,
         private$task_type$ml_m)
 
-      if (exists('ml_g', where=private$learner_)) {
+      if (exists("ml_g", where = private$learner_)) {
         if (tune_on_folds) {
           params_l = tuning_result_l$params
           params_m = tuning_result_m$params
@@ -391,31 +393,31 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         "ml_m" = NULL)
       ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
-      
+
       private$learner_ = list(
         "ml_l" = ml_l,
         "ml_m" = ml_m)
       if (is.character(self$score) && (self$score == "IV-type")) {
         if (is.null(ml_g)) {
-          warning(paste0("For score = 'IV-type', learners ml_l and ml_g ",
-                         "should be specified. ",
-                         "Set ml_g = ml_l$clone()."), 
-                  call. = FALSE)
-          private$task_type[['ml_g']] = NULL
+          warning(paste0(
+            "For score = 'IV-type', learners ml_l and ml_g ",
+            "should be specified. ",
+            "Set ml_g = ml_l$clone()."),
+          call. = FALSE)
+          private$task_type[["ml_g"]] = NULL
           ml_g = private$assert_learner(ml_l$clone(), "ml_g",
-                                        Regr = TRUE, Classif = FALSE)
+            Regr = TRUE, Classif = FALSE)
         } else {
-          private$task_type[['ml_g']] = NULL
+          private$task_type[["ml_g"]] = NULL
           ml_g = private$assert_learner(ml_g, "ml_g",
-                                        Regr = TRUE, Classif = FALSE)
-          
+            Regr = TRUE, Classif = FALSE)
         }
-        private$learner_[['ml_g']] = ml_g
+        private$learner_[["ml_g"]] = ml_g
       } else if (is.function(self$score) && !is.null(ml_g)) {
-        private$task_type[['ml_g']] = NULL
+        private$task_type[["ml_g"]] = NULL
         ml_g = private$assert_learner(ml_g, "ml_g",
-                                      Regr = TRUE, Classif = FALSE)
-        private$learner_[['ml_g']] = ml_g
+          Regr = TRUE, Classif = FALSE)
+        private$learner_[["ml_g"]] = ml_g
       }
       return()
     }

@@ -49,14 +49,14 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       score = score)$boot_coef
 
     set.seed(3141)
-    if (score == 'partialling out'){
-    double_mlplr_obj = DoubleMLPLR$new(
-      data = data_plr$dml_data,
-      ml_l = learner_pars$ml_g$clone(),
-      ml_m = learner_pars$ml_m$clone(),
-      dml_procedure = dml_procedure,
-      n_folds = n_folds,
-      score = score)
+    if (score == "partialling out") {
+      double_mlplr_obj = DoubleMLPLR$new(
+        data = data_plr$dml_data,
+        ml_l = learner_pars$ml_g$clone(),
+        ml_m = learner_pars$ml_m$clone(),
+        dml_procedure = dml_procedure,
+        n_folds = n_folds,
+        score = score)
     } else {
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_plr$dml_data,

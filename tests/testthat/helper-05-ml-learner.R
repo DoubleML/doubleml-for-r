@@ -63,7 +63,7 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
         params_l = list(
           s = "lambda.min",
           family = "gaussian"
-          ),
+        ),
         params_m = list(
           s = "lambda.min",
           family = "gaussian"
