@@ -223,7 +223,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       }
 
       assert_list(tune_settings)
-      if (test_names(names(tune_settings), must.include = "measure")) {
+      if (test_names(names(tune_settings), must.include = "measure") && !is.null(tune_settings$measure)) {
         assert_list(tune_settings$measure)
         if (exists("ml_g", where = tune_settings$measure) && !exists("ml_l", where = tune_settings$measure)) {
           warning(paste0(
