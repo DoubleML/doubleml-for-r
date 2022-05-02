@@ -2,7 +2,10 @@ context("Unit tests for exception handling if fit() or bootstrap() was not run y
 
 library("mlr3learners")
 
+logger = lgr::get_logger("bbotk")
+logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
+
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
@@ -113,4 +116,32 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
         regexp = msg)
     }
   }
+)
+
+test_that("Unit tests for deprecation warnings of PLR", {
+  set.seed(3141)
+  dml_data = make_plr_CCDDHNR2018(n_obs = 101)
+  ml_g = lrn("regr.ranger")
+  ml_m = ml_g$clone()
+  msg = paste0("The argument ml_g was renamed to ml_l.")
+  expect_warning(DoubleMLPLR$new(dml_data, ml_g = ml_g, ml_m = ml_m),
+    regexp = msg)
+
+  dml_obj = DoubleMLPLR$new(dml_data, ml_l = ml_g, ml_m = ml_m)
+
+  msg = paste0("Learner ml_g was renamed to ml_l.")
+  expect_warning(dml_obj$set_ml_nuisance_params(
+    "ml_g", "d", list("num.trees" = 10)),
+  regexp = msg)
+
+  par_grids = list(
+    "ml_g" = paradox::ParamSet$new(list(
+      paradox::ParamInt$new("num.trees", lower = 9, upper = 10))),
+    "ml_m" = paradox::ParamSet$new(list(
+      paradox::ParamInt$new("num.trees", lower = 10, upper = 11))))
+
+  msg = paste0("Learner ml_g was renamed to ml_l.")
+  expect_warning(dml_obj$tune(par_grids),
+    regexp = msg)
+}
 )
