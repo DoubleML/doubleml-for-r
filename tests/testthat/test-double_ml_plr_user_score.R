@@ -4,7 +4,7 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-score_fct = function(y, d, l_hat, g_hat, m_hat, smpls) {
+score_fct = function(y, d, l_hat, m_hat, g_hat, smpls) {
   v_hat = d - m_hat
   u_hat = y - l_hat
   v_hatd = v_hat * d
@@ -39,8 +39,9 @@ patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
 
     double_mlplr_obj = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = lrn(learner),
+      ml_l = lrn(learner),
       ml_m = lrn(learner),
+      ml_g = lrn(learner),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = "partialling out")
@@ -55,8 +56,9 @@ patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
     set.seed(3141)
     double_mlplr_obj_score = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = lrn(learner),
+      ml_l = lrn(learner),
       ml_m = lrn(learner),
+      ml_g = lrn(learner),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score_fct)

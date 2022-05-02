@@ -14,7 +14,7 @@ Score function: partialling out
 DML algorithm: dml2
 
 ------------------ Machine learner   ------------------
-ml_g: regr.rpart
+ml_l: regr.rpart
 ml_m: regr.rpart
 
 ------------------ Resampling        ------------------

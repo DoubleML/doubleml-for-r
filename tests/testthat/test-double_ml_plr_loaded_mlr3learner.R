@@ -31,8 +31,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     set.seed(123)
     double_mlplr = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = learner_name,
+      ml_l = learner_name,
       ml_m = learner_name,
+      ml_g = learner_name,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -70,8 +71,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     loaded_learner = mlr3::lrn("regr.rpart", "cp" = 0.01, "minsplit" = 20)
     double_mlplr_loaded = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = loaded_learner,
+      ml_l = loaded_learner,
       ml_m = loaded_learner,
+      ml_g = loaded_learner,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -89,8 +91,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     semiloaded_learner = mlr3::lrn("regr.rpart")
     double_mlplr_semiloaded = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = semiloaded_learner,
+      ml_l = semiloaded_learner,
       ml_m = semiloaded_learner,
+      ml_g = semiloaded_learner,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)

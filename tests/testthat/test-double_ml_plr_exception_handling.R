@@ -50,8 +50,9 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
       }
       expect_error(DoubleMLPLR$new(
         data = data_ml,
-        ml_g = learner_pars$mlmethod$mlmethod_g,
+        ml_l = learner_pars$mlmethod$mlmethod_l,
         ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+        ml_g = learner_pars$mlmethod$mlmethod_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         n_rep = n_rep,
@@ -61,8 +62,9 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
     } else {
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_ml,
-        ml_g = learner_pars$mlmethod$mlmethod_g,
+        ml_l = learner_pars$mlmethod$mlmethod_l,
         ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+        ml_g = learner_pars$mlmethod$mlmethod_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         n_rep = n_rep,
@@ -80,7 +82,7 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
         double_mlplr_obj$set_ml_nuisance_params(
           learner = "ml_l",
           treat_var = "d",
-          params = learner_pars$params$params_g)
+          params = learner_pars$params$params_l)
 
         if (score == "IV-type") {
           # set params for nuisance part g

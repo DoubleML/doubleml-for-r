@@ -73,7 +73,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' The `DoubleMLData` object providing the data and specifying the
     #' variables of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' @param ml_l ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
     #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
     #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
@@ -84,8 +84,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
     #' be passed with specified parameters, for example
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
-    #' `ml_g` refers to the nuisance functions \eqn{l_0(X) = E[Y|X]} and
-    #' \eqn{g_0(X) = E[Y - D\theta_0|X]}.
+    #' `ml_l` refers to the nuisance function \eqn{l_0(X) = E[Y|X]}.
     #'
     #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`LearnerClassif`][mlr3::LearnerClassif], [`Learner`][mlr3::Learner],
@@ -103,6 +102,21 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' [`GraphLearner`][mlr3pipelines::GraphLearner]. \cr
     #' `ml_m` refers to the nuisance function \eqn{m_0(X) = E[D|X]}.
     #'
+    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
+    #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y - D\theta_0|X]}.
+    #' Note: The learner `ml_g` is only required for the score `'IV-type'`.
+    #' Optionally, it can be specified and estimated for callable scores.
+    #'
     #' @param n_folds (`integer(1)`)\cr
     #' Number of folds. Default is `5`.
     #'
@@ -113,7 +127,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' A `character(1)` (`"partialling out"` or `IV-type`) or a `function()`
     #' specifying the score function.
     #' If a `function()` is provided, it must be of the form
-    #' `function(y, d, l_hat, g_hat, m_hat, smpls)` and
+    #' `function(y, d, l_hat, m_hat, g_hat, smpls)` and
     #' the returned output must be a named `list()` with elements `psi_a` and
     #' `psi_b`. Default is `"partialling out"`.
     #'
@@ -128,14 +142,26 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Indicates whether cross-fitting should be applied. Default is `TRUE`.
     initialize = function(data,
-      ml_g,
+      ml_l,
       ml_m,
+      ml_g = NULL,
       n_folds = 5,
       n_rep = 1,
       score = "partialling out",
       dml_procedure = "dml2",
       draw_sample_splitting = TRUE,
       apply_cross_fitting = TRUE) {
+      if (missing(ml_l)) {
+        if (!missing(ml_g)){
+          warning(paste0("The argument ml_g was renamed to ml_l. ",
+                  "Please adapt the argument name accordingly. ",
+                  "ml_g is redirected to ml_l.\n",
+                  "The redirection will be removed in a future version."), 
+                  call. = FALSE)
+          ml_l = ml_g
+          ml_g = NULL
+        }
+      }
 
       super$initialize_double_ml(
         data,
@@ -148,15 +174,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      private$task_type = list(
-        "ml_g" = NULL,
-        "ml_m" = NULL)
-      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
-      ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
-
-      private$learner_ = list(
-        "ml_g" = ml_g,
-        "ml_m" = ml_m)
+      
+      private$check_and_set_learner(ml_l, ml_m, ml_g)
       private$initialize_ml_nuisance_params()
 
     }
@@ -166,23 +185,18 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     initialize_ml_nuisance_params = function() {
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
-      if ((is.character(self$score) && (self$score == "IV-type")) ||
-        is.function(self$score)) {
-        private$params_ = list(
-          "ml_l" = nuisance,
-          "ml_g" = nuisance,
-          "ml_m" = nuisance)
-      } else {
-        private$params_ = list(
-          "ml_l" = nuisance,
-          "ml_m" = nuisance)
+      private$params_ = list(
+        "ml_l" = nuisance,
+        "ml_m" = nuisance)
+      if (exists('ml_g', where=private$learner_)) {
+        private$params_[['ml_g']] = nuisance
       }
       invisible(self)
     },
 
     ml_nuisance_and_score_elements = function(smpls, ...) {
 
-      l_hat = dml_cv_predict(self$learner$ml_g,
+      l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
@@ -190,7 +204,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         smpls = smpls,
         est_params = self$get_params("ml_l"),
         return_train_preds = FALSE,
-        task_type = private$task_type$ml_g,
+        task_type = private$task_type$ml_l,
         fold_specific_params = private$fold_specific_params)
 
       m_hat = dml_cv_predict(self$learner$ml_m,
@@ -208,8 +222,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       y = self$data$data_model[[self$data$y_col]]
 
       g_hat = NULL
-      if ((is.character(self$score) && (self$score == "IV-type")) ||
-        is.function(self$score)) {
+      if (exists('ml_g', where=private$learner_)) {
         # get an initial estimate for theta using the partialling out score
         psi_a = -(d - m_hat) * (d - m_hat)
         psi_b = (d - m_hat) * (y - l_hat)
@@ -230,14 +243,14 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           fold_specific_params = private$fold_specific_params)
       }
 
-      res = private$score_elements(y, d, l_hat, g_hat, m_hat, smpls)
+      res = private$score_elements(y, d, l_hat, m_hat, g_hat, smpls)
       res$preds = list(
         "ml_l" = l_hat,
-        "ml_g" = g_hat,
-        "ml_m" = m_hat)
+        "ml_m" = m_hat,
+        "ml_g" = g_hat)
       return(res)
     },
-    score_elements = function(y, d, l_hat, g_hat, m_hat, smpls) {
+    score_elements = function(y, d, l_hat, m_hat, g_hat, smpls) {
       v_hat = d - m_hat
       u_hat = y - l_hat
       v_hatd = v_hat * d
@@ -254,7 +267,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        psis = self$score(y, d, l_hat, g_hat, m_hat, smpls)
+        psis = self$score(y, d, l_hat, m_hat, g_hat, smpls)
       }
       return(psis)
     },
@@ -269,13 +282,13 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         })
       }
 
-      tuning_result_l = dml_tune(self$learner$ml_g,
+      tuning_result_l = dml_tune(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list,
         nuisance_id = "nuis_l",
-        param_set$ml_g, tune_settings,
-        tune_settings$measure$ml_g,
-        private$task_type$ml_g)
+        param_set$ml_l, tune_settings,
+        tune_settings$measure$ml_l,
+        private$task_type$ml_l)
 
       tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -285,7 +298,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         tune_settings$measure$ml_m,
         private$task_type$ml_m)
 
-      if (self$score == "IV-type") {
+      if (exists('ml_g', where=private$learner_)) {
         if (tune_on_folds) {
           params_l = tuning_result_l$params
           params_m = tuning_result_m$params
@@ -369,6 +382,40 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           "has been set as instrumental variable(s).\n",
           "To fit a partially linear IV regression model use",
           "DoubleMLPLIV instead of DoubleMLPLR."))
+      }
+      return()
+    },
+    check_and_set_learner = function(ml_l, ml_m, ml_g) {
+      private$task_type = list(
+        "ml_l" = NULL,
+        "ml_m" = NULL)
+      ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
+      ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
+      
+      private$learner_ = list(
+        "ml_l" = ml_l,
+        "ml_m" = ml_m)
+      if (is.character(self$score) && (self$score == "IV-type")) {
+        if (is.null(ml_g)) {
+          warning(paste0("For score = 'IV-type', learners ml_l and ml_g ",
+                         "should be specified. ",
+                         "Set ml_g = ml_l$clone()."), 
+                  call. = FALSE)
+          private$task_type[['ml_g']] = NULL
+          ml_g = private$assert_learner(ml_l$clone(), "ml_g",
+                                        Regr = TRUE, Classif = FALSE)
+        } else {
+          private$task_type[['ml_g']] = NULL
+          ml_g = private$assert_learner(ml_g, "ml_g",
+                                        Regr = TRUE, Classif = FALSE)
+          
+        }
+        private$learner_[['ml_g']] = ml_g
+      } else if (is.function(self$score) && !is.null(ml_g)) {
+        private$task_type[['ml_g']] = NULL
+        ml_g = private$assert_learner(ml_g, "ml_g",
+                                      Regr = TRUE, Classif = FALSE)
+        private$learner_[['ml_g']] = ml_g
       }
       return()
     }

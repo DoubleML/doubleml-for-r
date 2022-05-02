@@ -1,6 +1,6 @@
 # Double Machine Learning for Partially Linear Regression.
 dml_plr = function(data, y, d,
-  n_folds, ml_g, ml_m,
+  n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
   params_l = NULL, params_g = NULL, params_m = NULL) {
@@ -21,7 +21,7 @@ dml_plr = function(data, y, d,
 
     res_single_split = fit_plr_single_split(
       data, y, d,
-      n_folds, ml_g, ml_m,
+      n_folds, ml_l, ml_m, ml_g,
       dml_procedure, score,
       this_smpl,
       params_l, params_g, params_m)
@@ -53,7 +53,7 @@ dml_plr = function(data, y, d,
 
 
 dml_plr_multitreat = function(data, y, d,
-  n_folds, ml_g, ml_m,
+  n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
   params_l = NULL, params_g = NULL, params_m = NULL) {
@@ -88,7 +88,7 @@ dml_plr_multitreat = function(data, y, d,
       }
       res_single_split = fit_plr_single_split(
         data, y, d[i_d],
-        n_folds, ml_g, ml_m,
+        n_folds, ml_l, ml_m, ml_g,
         dml_procedure, score,
         this_smpl,
         this_params_l, this_params_g, this_params_m)
@@ -130,7 +130,7 @@ dml_plr_multitreat = function(data, y, d,
 
 
 fit_plr_single_split = function(data, y, d,
-  n_folds, ml_g, ml_m,
+  n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score, smpl,
   params_l, params_g, params_m) {
 
@@ -140,7 +140,7 @@ fit_plr_single_split = function(data, y, d,
   fit_g = (score == "IV-type") | is.function(score)
   all_preds = fit_nuisance_plr(
     data, y, d,
-    ml_g, ml_m,
+    ml_l, ml_m, ml_g,
     n_folds, smpl, fit_g,
     params_l, params_g, params_m)
 
@@ -201,7 +201,7 @@ fit_plr_single_split = function(data, y, d,
 
 
 fit_nuisance_plr = function(data, y, d,
-  ml_g, ml_m,
+  ml_l, ml_m, ml_g,
   n_folds, smpls, fit_g,
   params_l, params_g, params_m) {
 
@@ -222,7 +222,7 @@ fit_nuisance_plr = function(data, y, d,
     ml_l$param_set$values = params_l
   }
 
-  r_l = mlr3::resample(task_l, ml_g, resampling_l, store_models = TRUE)
+  r_l = mlr3::resample(task_l, ml_l, resampling_l, store_models = TRUE)
   l_hat_list = lapply(r_l$predictions(), function(x) x$response)
 
   # nuisance m

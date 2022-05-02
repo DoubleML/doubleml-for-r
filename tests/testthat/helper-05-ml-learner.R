@@ -2,36 +2,42 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
   if (default == FALSE) {
     if (learner == "regr.lm") {
       mlmethod = list(
+        mlmethod_l = learner,
         mlmethod_m = learner,
         mlmethod_g = learner
       )
       params = list(
-        params_g = list(),
-        params_m = list()
+        params_l = list(),
+        params_m = list(),
+        params_g = list()
       )
 
     }
     else if (learner == "regr.ranger") {
       mlmethod = list(
+        mlmethod_l = learner,
         mlmethod_m = learner,
         mlmethod_g = learner
       )
 
       params = list(
-        params_g = list(num.trees = 100),
-        params_m = list(num.trees = 120)
+        params_l = list(num.trees = 60),
+        params_m = list(num.trees = 120),
+        params_g = list(num.trees = 100)
       )
 
     }
     else if (learner == "regr.rpart") {
       mlmethod = list(
+        mlmethod_l = learner,
         mlmethod_m = learner,
         mlmethod_g = learner
       )
 
       params = list(
-        params_g = list(cp = 0.01, minsplit = 20),
-        params_m = list(cp = 0.01, minsplit = 20)
+        params_l = list(cp = 0.013, minsplit = 18),
+        params_m = list(cp = 0.01, minsplit = 20),
+        params_g = list(cp = 0.005, minsplit = 10)
       )
 
     }
@@ -48,11 +54,16 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
     # }
     else if (learner == "regr.cv_glmnet") {
       mlmethod = list(
+        mlmethod_l = learner,
         mlmethod_m = learner,
         mlmethod_g = learner
       )
 
       params = list(
+        params_l = list(
+          s = "lambda.min",
+          family = "gaussian"
+          ),
         params_m = list(
           s = "lambda.min",
           family = "gaussian"
@@ -65,12 +76,14 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
 
   else if (default == TRUE) {
     mlmethod = list(
+      mlmethod_l = learner,
       mlmethod_m = learner,
       mlmethod_g = learner
     )
     params = list(
-      params_g = list(),
-      params_m = list())
+      params_l = list(),
+      params_m = list(),
+      params_g = list())
   }
 
   if (learner == "graph_learner") {
@@ -80,23 +93,27 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
       lambda = 0.01,
       family = "gaussian")
     mlmethod = list(
+      mlmethod_l = "graph_learner",
       mlmethod_m = "graph_learner",
       mlmethod_g = "graph_learner")
     params = list(
       params_g = list(),
       params_m = list())
-    ml_g = mlr3::as_learner(pipe_learner)
+    ml_l = mlr3::as_learner(pipe_learner)
     ml_m = mlr3::as_learner(pipe_learner)
+    ml_g = mlr3::as_learner(pipe_learner)
   } else {
-    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
-    ml_g$param_set$values = params$params_g
+    ml_l = mlr3::lrn(mlmethod$mlmethod_l)
+    ml_l$param_set$values = params$params_l
     ml_m = mlr3::lrn(mlmethod$mlmethod_m)
     ml_m$param_set$values = params$params_m
+    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g$param_set$values = params$params_g
   }
 
   return(list(
     mlmethod = mlmethod, params = params,
-    ml_g = ml_g, ml_m = ml_m
+    ml_l = ml_l, ml_g = ml_g, ml_m = ml_m
   ))
 }
 

@@ -7,15 +7,17 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
   test_cases = expand.grid(
-    g_learner = "regr.rpart",
+    l_learner = "regr.rpart",
     m_learner = "regr.rpart",
+    g_learner = "regr.rpart",
     dml_procedure = "dml2",
     score = "partialling out",
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
-    g_learner = c("regr.rpart", "regr.lm"),
+    l_learner = c("regr.rpart", "regr.lm"),
     m_learner = c("regr.rpart", "regr.lm"),
+    g_learner = c("regr.rpart", "regr.lm"),
     dml_procedure = "dml2",
     score = c("partialling out", "IV-type"),
     stringsAsFactors = FALSE)
@@ -32,8 +34,9 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
 
     double_mlplr_obj = DoubleMLPLR$new(
       data = dml_data,
-      ml_g = lrn(g_learner),
+      ml_l = lrn(l_learner),
       ml_m = lrn(m_learner),
+      ml_g = lrn(g_learner),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -44,12 +47,12 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
     indx = (names(df) %in% c(Xnames, "y"))
     data = df[, indx]
-    task = mlr3::TaskRegr$new(id = "ml_g", backend = data, target = "y")
+    task = mlr3::TaskRegr$new(id = "ml_l", backend = data, target = "y")
     resampling_smpls = rsmp("custom")$instantiate(
       task,
       double_mlplr_obj$smpls[[1]]$train_ids,
       double_mlplr_obj$smpls[[1]]$test_ids)
-    resampling_pred = resample(task, lrn(g_learner), resampling_smpls)
+    resampling_pred = resample(task, lrn(l_learner), resampling_smpls)
     preds_l = as.data.table(resampling_pred$prediction())
     data.table::setorder(preds_l, "row_ids")
 
