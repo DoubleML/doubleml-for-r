@@ -58,7 +58,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       d_cols = c("d1", "d2", "d3"), x_cols = Xnames)
 
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_l = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_g = learner_pars$ml_g$clone(),
       dml_procedure = dml_procedure,

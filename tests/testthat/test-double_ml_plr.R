@@ -60,7 +60,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     } else {
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_plr$dml_data,
-        ml_l = learner_pars$ml_g$clone(),
+        ml_l = learner_pars$ml_l$clone(),
         ml_m = learner_pars$ml_m$clone(),
         ml_g = learner_pars$ml_g$clone(),
         dml_procedure = dml_procedure,
