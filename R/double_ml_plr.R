@@ -176,10 +176,42 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-
-      private$check_and_set_learner(ml_l, ml_m, ml_g)
+      
+      private$task_type = list(
+        "ml_l" = NULL,
+        "ml_m" = NULL)
+      ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
+      ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
+      
+      private$learner_ = list(
+        "ml_l" = ml_l,
+        "ml_m" = ml_m)
+      
+      if (!is.null(ml_g)) {
+        assert(check_character(ml_g, max.len = 1),
+               check_class(ml_g, "Learner"))
+        if ((is.character(self$score) && (self$score == "IV-type")) ||
+            is.function(self$score)) {
+          private$task_type[["ml_g"]] = NULL
+          ml_g = private$assert_learner(ml_g, "ml_g",
+                                        Regr = TRUE, Classif = FALSE)
+          private$learner_[["ml_g"]] = ml_g
+        }
+        # Question: Add a warning when ml_g is set for partialling out score
+        # where it is not required / used?
+      } else if (is.character(self$score) && (self$score == "IV-type")) {
+        warning(paste0(
+          "For score = 'IV-type', learners ml_l and ml_g ",
+          "should be specified. ",
+          "Set ml_g = ml_l$clone()."),
+          call. = FALSE)
+        private$task_type[["ml_g"]] = NULL
+        ml_g = private$assert_learner(ml_l$clone(), "ml_g",
+                                      Regr = TRUE, Classif = FALSE)
+        private$learner_[["ml_g"]] = ml_g
+      }
+      
       private$initialize_ml_nuisance_params()
-
     },
     # To be removed in version 0.6.0
     set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
@@ -441,40 +473,6 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           "has been set as instrumental variable(s).\n",
           "To fit a partially linear IV regression model use",
           "DoubleMLPLIV instead of DoubleMLPLR."))
-      }
-      return()
-    },
-    check_and_set_learner = function(ml_l, ml_m, ml_g) {
-      private$task_type = list(
-        "ml_l" = NULL,
-        "ml_m" = NULL)
-      ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
-      ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
-
-      private$learner_ = list(
-        "ml_l" = ml_l,
-        "ml_m" = ml_m)
-      if (is.character(self$score) && (self$score == "IV-type")) {
-        if (is.null(ml_g)) {
-          warning(paste0(
-            "For score = 'IV-type', learners ml_l and ml_g ",
-            "should be specified. ",
-            "Set ml_g = ml_l$clone()."),
-          call. = FALSE)
-          private$task_type[["ml_g"]] = NULL
-          ml_g = private$assert_learner(ml_l$clone(), "ml_g",
-            Regr = TRUE, Classif = FALSE)
-        } else {
-          private$task_type[["ml_g"]] = NULL
-          ml_g = private$assert_learner(ml_g, "ml_g",
-            Regr = TRUE, Classif = FALSE)
-        }
-        private$learner_[["ml_g"]] = ml_g
-      } else if (is.function(self$score) && !is.null(ml_g)) {
-        private$task_type[["ml_g"]] = NULL
-        ml_g = private$assert_learner(ml_g, "ml_g",
-          Regr = TRUE, Classif = FALSE)
-        private$learner_[["ml_g"]] = ml_g
       }
       return()
     }
