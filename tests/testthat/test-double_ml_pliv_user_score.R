@@ -29,6 +29,7 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = "regr.lm",
     dml_procedure = "dml2",
+    score = "partialling out",
     stringsAsFactors = FALSE)
 } else {
   test_cases = expand.grid(
