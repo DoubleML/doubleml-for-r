@@ -246,6 +246,63 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       names(private$params_) = valid_learner
       invisible(self)
     },
+    # To be removed in version 0.6.0
+    set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
+                                      set_fold_specific = FALSE) {
+      assert_character(learner, len = 1)
+      if (is.character(self$score) && (self$score == "partialling out") &&
+          (learner == "ml_g")) {
+        warning(paste0(
+          "Learner ml_g was renamed to ml_l. ",
+          "Please adapt the argument learner accordingly. ",
+          "The provided parameters are set for ml_l. ",
+          "The redirection will be removed in a future version."),
+          call. = FALSE)
+        learner = "ml_l"
+      }
+      super$set_ml_nuisance_params(
+        learner, treat_var, params,
+        set_fold_specific)
+    },
+    # To be removed in version 0.6.0
+    tune = function(param_set, tune_settings = list(
+      n_folds_tune = 5,
+      rsmp_tune = mlr3::rsmp("cv", folds = 5),
+      measure = NULL,
+      terminator = mlr3tuning::trm("evals", n_evals = 20),
+      algorithm = mlr3tuning::tnr("grid_search"),
+      resolution = 5),
+      tune_on_folds = FALSE) {
+      
+      assert_list(param_set)
+      if (is.character(self$score) && (self$score == "partialling out")) {
+        if (exists("ml_g", where = param_set) && !exists("ml_l", where = param_set)) {
+          warning(paste0(
+            "Learner ml_g was renamed to ml_l. ",
+            "Please adapt the name in param_set accordingly. ",
+            "The provided param_set for ml_g is used for ml_l. ",
+            "The redirection will be removed in a future version."),
+            call. = FALSE)
+          names(param_set)[names(param_set) == "ml_g"] = "ml_l"
+        }
+      }
+      
+      assert_list(tune_settings)
+      if (test_names(names(tune_settings), must.include = "measure") && !is.null(tune_settings$measure)) {
+        assert_list(tune_settings$measure)
+        if (exists("ml_g", where = tune_settings$measure) && !exists("ml_l", where = tune_settings$measure)) {
+          warning(paste0(
+            "Learner ml_g was renamed to ml_l. ",
+            "Please adapt the name in tune_settings$measure accordingly. ",
+            "The provided tune_settings$measure for ml_g is used for ml_l. ",
+            "The redirection will be removed in a future version."),
+            call. = FALSE)
+          names(tune_settings$measure)[names(tune_settings$measure) == "ml_g"] = "ml_l"
+        }
+      }
+      
+      super$tune(param_set, tune_settings, tune_on_folds)
+    },
     ml_nuisance_and_score_elements = function(smpls, ...) {
       if (self$partialX & !self$partialZ) {
         res = private$ml_nuisance_and_score_elements_partialX(smpls, ...)
