@@ -943,19 +943,19 @@ DoubleMLPLIV.partialX = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data,
-    ml_l,
-    ml_m,
-    ml_r,
+  obj = DoubleMLPLIV$new(data=data,
+    ml_l=ml_l,
+    ml_m=ml_m,
+    ml_r=ml_r,
     ml_g = ml_g,
     partialX = TRUE,
     partialZ = FALSE,
-    n_folds,
-    n_rep,
-    score,
-    dml_procedure,
-    draw_sample_splitting,
-    apply_cross_fitting)
+    n_folds=n_folds,
+    n_rep=n_rep,
+    score=score,
+    dml_procedure=dml_procedure,
+    draw_sample_splitting=draw_sample_splitting,
+    apply_cross_fitting=apply_cross_fitting)
 
   return(obj)
 }
@@ -970,19 +970,19 @@ DoubleMLPLIV.partialZ = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data,
+  obj = DoubleMLPLIV$new(data=data,
     ml_l = NULL,
     ml_m = NULL,
-    ml_r,
+    ml_r=ml_r,
     ml_g = NULL,
     partialX = FALSE,
     partialZ = TRUE,
-    n_folds,
-    n_rep,
-    score,
-    dml_procedure,
-    draw_sample_splitting,
-    apply_cross_fitting)
+    n_folds=n_folds,
+    n_rep=n_rep,
+    score=score,
+    dml_procedure=dml_procedure,
+    draw_sample_splitting=draw_sample_splitting,
+    apply_cross_fitting=apply_cross_fitting)
 
   return(obj)
 }
@@ -999,19 +999,19 @@ DoubleMLPLIV.partialXZ = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data,
-    ml_l,
-    ml_m,
-    ml_r,
+  obj = DoubleMLPLIV$new(data=data,
+    ml_l=ml_l,
+    ml_m=ml_m,
+    ml_r=ml_r,
     ml_g = NULL,
     partialX = TRUE,
     partialZ = TRUE,
-    n_folds,
-    n_rep,
-    score,
-    dml_procedure,
-    draw_sample_splitting,
-    apply_cross_fitting)
+    n_folds=n_folds,
+    n_rep=n_rep,
+    score=score,
+    dml_procedure=dml_procedure,
+    draw_sample_splitting=draw_sample_splitting,
+    apply_cross_fitting=apply_cross_fitting)
 
   return(obj)
 }
