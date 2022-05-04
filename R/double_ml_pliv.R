@@ -198,7 +198,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       dml_procedure = "dml2",
       draw_sample_splitting = TRUE,
       apply_cross_fitting = TRUE) {
-      
+
       if (missing(ml_l)) {
         if (!missing(ml_g)) {
           warning(paste0(
@@ -206,7 +206,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             "Please adapt the argument name accordingly. ",
             "ml_g is redirected to ml_l.\n",
             "The redirection will be removed in a future version."),
-            call. = FALSE)
+          call. = FALSE)
           ml_l = ml_g
           ml_g = NULL
         }
@@ -253,16 +253,16 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           "ml_l" = ml_l,
           "ml_m" = ml_m,
           "ml_r" = ml_r)
-        
+
         if (!is.null(ml_g)) {
           assert(
             check_character(ml_g, max.len = 1),
             check_class(ml_g, "Learner"))
           if ((is.character(self$score) && (self$score == "IV-type")) ||
-              is.function(self$score)) {
+            is.function(self$score)) {
             private$task_type[["ml_g"]] = NULL
             ml_g = private$assert_learner(ml_g, "ml_g",
-                                          Regr = TRUE, Classif = FALSE)
+              Regr = TRUE, Classif = FALSE)
             private$learner_[["ml_g"]] = ml_g
           }
           # Question: Add a warning when ml_g is set for partialling out score
@@ -272,28 +272,28 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             "For score = 'IV-type', learners ml_l and ml_g ",
             "should be specified. ",
             "Set ml_g = ml_l$clone()."),
-            call. = FALSE)
+          call. = FALSE)
           private$task_type[["ml_g"]] = NULL
           ml_g = private$assert_learner(ml_l$clone(), "ml_g",
-                                        Regr = TRUE, Classif = FALSE)
+            Regr = TRUE, Classif = FALSE)
           private$learner_[["ml_g"]] = ml_g
         }
       }
-      
+
       private$initialize_ml_nuisance_params()
     },
     # To be removed in version 0.6.0
     set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
-                                      set_fold_specific = FALSE) {
+      set_fold_specific = FALSE) {
       assert_character(learner, len = 1)
       if (is.character(self$score) && (self$score == "partialling out") &&
-          (learner == "ml_g")) {
+        (learner == "ml_g")) {
         warning(paste0(
           "Learner ml_g was renamed to ml_l. ",
           "Please adapt the argument learner accordingly. ",
           "The provided parameters are set for ml_l. ",
           "The redirection will be removed in a future version."),
-          call. = FALSE)
+        call. = FALSE)
         learner = "ml_l"
       }
       super$set_ml_nuisance_params(
@@ -308,8 +308,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       terminator = mlr3tuning::trm("evals", n_evals = 20),
       algorithm = mlr3tuning::tnr("grid_search"),
       resolution = 5),
-      tune_on_folds = FALSE) {
-      
+    tune_on_folds = FALSE) {
+
       assert_list(param_set)
       if (is.character(self$score) && (self$score == "partialling out")) {
         if (exists("ml_g", where = param_set) && !exists("ml_l", where = param_set)) {
@@ -318,11 +318,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             "Please adapt the name in param_set accordingly. ",
             "The provided param_set for ml_g is used for ml_l. ",
             "The redirection will be removed in a future version."),
-            call. = FALSE)
+          call. = FALSE)
           names(param_set)[names(param_set) == "ml_g"] = "ml_l"
         }
       }
-      
+
       assert_list(tune_settings)
       if (test_names(names(tune_settings), must.include = "measure") && !is.null(tune_settings$measure)) {
         assert_list(tune_settings$measure)
@@ -332,11 +332,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             "Please adapt the name in tune_settings$measure accordingly. ",
             "The provided tune_settings$measure for ml_g is used for ml_l. ",
             "The redirection will be removed in a future version."),
-            call. = FALSE)
+          call. = FALSE)
           names(tune_settings$measure)[names(tune_settings$measure) == "ml_g"] = "ml_l"
         }
       }
-      
+
       super$tune(param_set, tune_settings, tune_on_folds)
     }
   ),
@@ -398,6 +398,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         fold_specific_params = private$fold_specific_params)
 
       if (self$data$n_instr == 1) {
+        z = self$data$data_model[[self$data$z_cols]]
         m_hat = dml_cv_predict(self$learner$ml_m,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$z_cols,
@@ -409,6 +410,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           task_type = private$task_type$ml_m,
           fold_specific_params = private$fold_specific_params)
       } else {
+        z = self$data$data_model[, self$data$z_cols, with = FALSE]
         m_hat = do.call(
           cbind,
           lapply(
@@ -429,27 +431,27 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
-      
+
       g_hat = NULL
       if (exists("ml_g", where = private$learner_)) {
         # get an initial estimate for theta using the partialling out score
         psi_a = -(d - r_hat) * (z - m_hat)
         psi_b = (z - m_hat) * (y - l_hat)
         theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
-        
+
         data_aux = data.table(self$data$data_model,
-                              "y_minus_theta_d" = y - theta_initial * d)
-        
+          "y_minus_theta_d" = y - theta_initial * d)
+
         g_hat = dml_cv_predict(self$learner$ml_g,
-                               c(self$data$x_cols, self$data$other_treat_cols),
-                               "y_minus_theta_d",
-                               data_aux,
-                               nuisance_id = "nuis_g",
-                               smpls = smpls,
-                               est_params = self$get_params("ml_g"),
-                               return_train_preds = FALSE,
-                               task_type = private$task_type$ml_g,
-                               fold_specific_params = private$fold_specific_params)
+          c(self$data$x_cols, self$data$other_treat_cols),
+          "y_minus_theta_d",
+          data_aux,
+          nuisance_id = "nuis_g",
+          smpls = smpls,
+          est_params = self$get_params("ml_g"),
+          return_train_preds = FALSE,
+          task_type = private$task_type$ml_g,
+          fold_specific_params = private$fold_specific_params)
       }
 
       res = private$score_elements(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)
@@ -463,12 +465,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     score_elements = function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls) {
       u_hat = y - l_hat
       w_hat = d - r_hat
+      v_hat = z - m_hat
 
-      if (self$data$n_instr == 1) {
-        z = self$data$data_model[[self$data$z_cols]]
-        v_hat = z - m_hat
-      } else {
-        z = self$data$data_model[, self$data$z_cols, with = FALSE]
+      if (self$data$n_instr > 1) {
         v_hat = z - m_hat
 
         stopifnot(self$apply_cross_fitting)
@@ -682,7 +681,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           param_set$ml_m, tune_settings,
           tune_settings$measure$ml_m,
           private$task_type$ml_m)
-        
+
         if (exists("ml_g", where = private$learner_)) {
           if (tune_on_folds) {
             params_l = tuning_result_l$params
@@ -694,48 +693,49 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             params_m = tuning_result_m$params[[1]]
           }
           l_hat = dml_cv_predict(self$learner$ml_l,
-                                 c(self$data$x_cols, self$data$other_treat_cols),
-                                 self$data$y_col,
-                                 self$data$data_model,
-                                 nuisance_id = "nuis_l",
-                                 smpls = smpls,
-                                 est_params = params_l,
-                                 return_train_preds = FALSE,
-                                 task_type = private$task_type$ml_l,
-                                 fold_specific_params = private$fold_specific_params)
-          
+            c(self$data$x_cols, self$data$other_treat_cols),
+            self$data$y_col,
+            self$data$data_model,
+            nuisance_id = "nuis_l",
+            smpls = smpls,
+            est_params = params_l,
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_l,
+            fold_specific_params = private$fold_specific_params)
+
           r_hat = dml_cv_predict(self$learner$ml_r,
-                                 c(self$data$x_cols, self$data$other_treat_cols),
-                                 self$data$treat_col,
-                                 self$data$data_model,
-                                 nuisance_id = "nuis_r",
-                                 smpls = smpls,
-                                 est_params = params_r,
-                                 return_train_preds = FALSE,
-                                 task_type = private$task_type$ml_r,
-                                 fold_specific_params = private$fold_specific_params)
-          
+            c(self$data$x_cols, self$data$other_treat_cols),
+            self$data$treat_col,
+            self$data$data_model,
+            nuisance_id = "nuis_r",
+            smpls = smpls,
+            est_params = params_r,
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_r,
+            fold_specific_params = private$fold_specific_params)
+
           m_hat = dml_cv_predict(self$learner$ml_m,
-                                 c(self$data$x_cols, self$data$other_treat_cols),
-                                 self$data$treat_col,
-                                 self$data$data_model,
-                                 nuisance_id = "nuis_m",
-                                 smpls = smpls,
-                                 est_params = params_m,
-                                 return_train_preds = FALSE,
-                                 task_type = private$task_type$ml_m,
-                                 fold_specific_params = private$fold_specific_params)
-          
+            c(self$data$x_cols, self$data$other_treat_cols),
+            self$data$treat_col,
+            self$data$data_model,
+            nuisance_id = "nuis_m",
+            smpls = smpls,
+            est_params = params_m,
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_m,
+            fold_specific_params = private$fold_specific_params)
+
           d = self$data$data_model[[self$data$treat_col]]
           y = self$data$data_model[[self$data$y_col]]
-          
+          z = self$data$data_model[[self$data$z_cols]]
+
           psi_a = -(d - r_hat) * (z - m_hat)
           psi_b = (z - m_hat) * (y - l_hat)
           theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
-          
+
           data_aux = data.table(self$data$data_model,
-                                "y_minus_theta_d" = y - theta_initial * d)
-          
+            "y_minus_theta_d" = y - theta_initial * d)
+
           if (!tune_on_folds) {
             data_aux_tune_list = list(data_aux)
           } else {
@@ -743,33 +743,33 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
               extract_training_data(data_aux, x)
             })
           }
-          
+
           tuning_result_g = dml_tune(self$learner$ml_g,
-                                     c(self$data$x_cols, self$data$other_treat_cols),
-                                     "y_minus_theta_d", data_aux_tune_list,
-                                     nuisance_id = "nuis_g",
-                                     param_set$ml_g, tune_settings,
-                                     tune_settings$measure$ml_g,
-                                     private$task_type$ml_g)
+            c(self$data$x_cols, self$data$other_treat_cols),
+            "y_minus_theta_d", data_aux_tune_list,
+            nuisance_id = "nuis_g",
+            param_set$ml_g, tune_settings,
+            tune_settings$measure$ml_g,
+            private$task_type$ml_g)
           tuning_result = list(
             "ml_l" = list(tuning_result_l,
-                          params = tuning_result_l$params),
+              params = tuning_result_l$params),
             "ml_m" = list(tuning_result_m,
-                          params = tuning_result_m$params),
+              params = tuning_result_m$params),
             "ml_r" = list(tuning_result_r,
-                          params = tuning_result_r$params),
+              params = tuning_result_r$params),
             "ml_g" = list(tuning_result_g,
-                          params = tuning_result_g$params))
+              params = tuning_result_g$params))
         } else {
           tuning_result = list(
             "ml_l" = list(tuning_result_l,
-                          params = tuning_result_l$params),
+              params = tuning_result_l$params),
             "ml_m" = list(tuning_result_m,
-                          params = tuning_result_m$params),
+              params = tuning_result_m$params),
             "ml_r" = list(tuning_result_r,
-                          params = tuning_result_r$params))
+              params = tuning_result_r$params))
         }
-        
+
       } else {
         tuning_result = vector("list", length = self$data$n_instr + 2)
         names(tuning_result) = c(
@@ -943,19 +943,20 @@ DoubleMLPLIV.partialX = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data=data,
-    ml_l=ml_l,
-    ml_m=ml_m,
-    ml_r=ml_r,
+  obj = DoubleMLPLIV$new(
+    data = data,
+    ml_l = ml_l,
+    ml_m = ml_m,
+    ml_r = ml_r,
     ml_g = ml_g,
     partialX = TRUE,
     partialZ = FALSE,
-    n_folds=n_folds,
-    n_rep=n_rep,
-    score=score,
-    dml_procedure=dml_procedure,
-    draw_sample_splitting=draw_sample_splitting,
-    apply_cross_fitting=apply_cross_fitting)
+    n_folds = n_folds,
+    n_rep = n_rep,
+    score = score,
+    dml_procedure = dml_procedure,
+    draw_sample_splitting = draw_sample_splitting,
+    apply_cross_fitting = apply_cross_fitting)
 
   return(obj)
 }
@@ -970,19 +971,20 @@ DoubleMLPLIV.partialZ = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data=data,
+  obj = DoubleMLPLIV$new(
+    data = data,
     ml_l = NULL,
     ml_m = NULL,
-    ml_r=ml_r,
+    ml_r = ml_r,
     ml_g = NULL,
     partialX = FALSE,
     partialZ = TRUE,
-    n_folds=n_folds,
-    n_rep=n_rep,
-    score=score,
-    dml_procedure=dml_procedure,
-    draw_sample_splitting=draw_sample_splitting,
-    apply_cross_fitting=apply_cross_fitting)
+    n_folds = n_folds,
+    n_rep = n_rep,
+    score = score,
+    dml_procedure = dml_procedure,
+    draw_sample_splitting = draw_sample_splitting,
+    apply_cross_fitting = apply_cross_fitting)
 
   return(obj)
 }
@@ -999,19 +1001,20 @@ DoubleMLPLIV.partialXZ = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data=data,
-    ml_l=ml_l,
-    ml_m=ml_m,
-    ml_r=ml_r,
+  obj = DoubleMLPLIV$new(
+    data = data,
+    ml_l = ml_l,
+    ml_m = ml_m,
+    ml_r = ml_r,
     ml_g = NULL,
     partialX = TRUE,
     partialZ = TRUE,
-    n_folds=n_folds,
-    n_rep=n_rep,
-    score=score,
-    dml_procedure=dml_procedure,
-    draw_sample_splitting=draw_sample_splitting,
-    apply_cross_fitting=apply_cross_fitting)
+    n_folds = n_folds,
+    n_rep = n_rep,
+    score = score,
+    dml_procedure = dml_procedure,
+    draw_sample_splitting = draw_sample_splitting,
+    apply_cross_fitting = apply_cross_fitting)
 
   return(obj)
 }
