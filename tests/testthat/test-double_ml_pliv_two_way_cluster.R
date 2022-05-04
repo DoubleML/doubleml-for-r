@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     double_mlpliv_obj = DoubleMLPLIV$new(
       data = data_two_way,
       n_folds = 2,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
@@ -54,7 +54,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     pliv_hat = dml_pliv(df,
       y = "Y", d = "D", z = "Z",
       n_folds = 4,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure, score = score,

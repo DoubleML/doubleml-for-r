@@ -25,11 +25,11 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
-#' ml_m = ml_g$clone()
-#' ml_r = ml_g$clone()
+#' ml_l = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+#' ml_m = ml_l$clone()
+#' ml_r = ml_l$clone()
 #' obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
-#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
 #' }
@@ -41,15 +41,15 @@
 #' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.rpart")
-#' ml_m = ml_g$clone()
-#' ml_r = ml_g$clone()
+#' ml_l = lrn("regr.rpart")
+#' ml_m = ml_l$clone()
+#' ml_r = ml_l$clone()
 #' obj_dml_data = make_pliv_CHS2015(
 #'   alpha = 1, n_obs = 500, dim_x = 20,
 #'   dim_z = 1)
-#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 #' param_grid = list(
-#'   "ml_g" = paradox::ParamSet$new(list(
+#'   "ml_l" = paradox::ParamSet$new(list(
 #'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
 #'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
 #'   "ml_m" = paradox::ParamSet$new(list(
@@ -99,7 +99,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' The `DoubleMLData` object providing the data and specifying the variables
     #' of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' @param ml_l ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
     #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
     #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
@@ -110,7 +110,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
     #' be passed with specified parameters, for example
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`.  \cr
-    #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
+    #' `ml_l` refers to the nuisance function \eqn{l_0(X) = E[Y|X]}.
     #'
     #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
@@ -156,7 +156,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' A `character(1)` (`"partialling out"` is the only choice) or a
     #' `function()` specifying the score function.
     #' If a `function()` is provided, it must be of the form
-    #' `function(y, z, d, g_hat, m_hat, r_hat, smpls)` and
+    #' `function(y, z, d, l_hat, m_hat, r_hat, smpls)` and
     #' the returned output must be a named `list()` with elements
     #' `psi_a` and `psi_b`. Default is `"partialling out"`.
     #'
@@ -171,7 +171,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Indicates whether cross-fitting should be applied. Default is `TRUE`.
     initialize = function(data,
-      ml_g,
+      ml_l,
       ml_m,
       ml_r,
       partialX = TRUE,
@@ -205,7 +205,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           Classif = FALSE)
         private$learner_ = list("ml_r" = ml_r)
       } else {
-        ml_g = private$assert_learner(ml_g, "ml_g",
+        ml_l = private$assert_learner(ml_l, "ml_l",
           Regr = TRUE,
           Classif = FALSE)
         ml_m = private$assert_learner(ml_m, "ml_m",
@@ -215,7 +215,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           Regr = TRUE,
           Classif = FALSE)
         private$learner_ = list(
-          "ml_g" = ml_g,
+          "ml_l" = ml_l,
           "ml_m" = ml_m,
           "ml_r" = ml_r)
       }
@@ -230,12 +230,12 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     initialize_ml_nuisance_params = function() {
       if (self$partialX & !self$partialZ) {
         if (self$data$n_instr == 1) {
-          valid_learner = c("ml_g", "ml_m", "ml_r")
+          valid_learner = c("ml_l", "ml_m", "ml_r")
         } else {
-          valid_learner = c("ml_g", "ml_r", paste0("ml_m_", self$data$z_cols))
+          valid_learner = c("ml_l", "ml_r", paste0("ml_m_", self$data$z_cols))
         }
       } else if (self$partialX & self$partialZ) {
-        valid_learner = c("ml_g", "ml_m", "ml_r")
+        valid_learner = c("ml_l", "ml_m", "ml_r")
       } else if (!self$partialX & self$partialZ) {
         valid_learner = c("ml_r")
       }
@@ -263,15 +263,15 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
     ml_nuisance_and_score_elements_partialX = function(smpls, ...) {
 
-      g_hat = dml_cv_predict(self$learner$ml_g,
+      l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
-        nuisance_id = "nuis_g",
+        nuisance_id = "nuis_l",
         smpls = smpls,
-        est_params = self$get_params("ml_g"),
+        est_params = self$get_params("ml_l"),
         return_train_preds = FALSE,
-        task_type = private$task_type$ml_g,
+        task_type = private$task_type$ml_l,
         fold_specific_params = private$fold_specific_params)
 
       r_hat = dml_cv_predict(self$learner$ml_r,
@@ -318,15 +318,15 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      res = private$score_elements(y, z, d, g_hat, m_hat, r_hat, smpls)
+      res = private$score_elements(y, z, d, l_hat, m_hat, r_hat, smpls)
       res$preds = list(
-        "ml_g" = g_hat,
+        "ml_l" = l_hat,
         "ml_m" = m_hat,
         "ml_r" = r_hat)
       return(res)
     },
-    score_elements = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
-      u_hat = y - g_hat
+    score_elements = function(y, z, d, l_hat, m_hat, r_hat, smpls) {
+      u_hat = y - l_hat
       w_hat = d - r_hat
 
       if (self$data$n_instr == 1) {
@@ -371,21 +371,21 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             "Callable score not implemented for DoubleMLPLIV with",
             "partialX=TRUE and partialZ=FALSE with several instruments."))
         }
-        psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
+        psis = self$score(y, z, d, l_hat, m_hat, r_hat, smpls)
       }
       return(psis)
     },
     ml_nuisance_and_score_elements_partialXZ = function(smpls, ...) {
 
-      g_hat = dml_cv_predict(self$learner$ml_g,
+      l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
-        nuisance_id = "nuis_g",
+        nuisance_id = "nuis_l",
         smpls = smpls,
-        est_params = self$get_params("ml_g"),
+        est_params = self$get_params("ml_l"),
         return_train_preds = FALSE,
-        task_type = private$task_type$ml_g,
+        task_type = private$task_type$ml_l,
         fold_specific_params = private$fold_specific_params)
 
       m_hat_list = dml_cv_predict(self$learner$ml_m,
@@ -423,7 +423,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      u_hat = y - g_hat
+      u_hat = y - l_hat
       w_hat = d - m_hat_tilde
 
       if (is.character(self$score)) {
@@ -441,7 +441,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
       }
       res$preds = list(
-        "ml_g" = g_hat,
+        "ml_l" = l_hat,
         "ml_m" = m_hat,
         "ml_r" = m_hat_tilde)
       return(res)
@@ -520,13 +520,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           function(x) extract_training_data(self$data$data_model, x))
       }
 
-      tuning_result_g = dml_tune(self$learner$ml_g,
+      tuning_result_l = dml_tune(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list,
-        nuisance_id = "nuis_g",
-        param_set$ml_g, tune_settings,
-        tune_settings$measure$ml_g,
-        private$task_type$ml_g)
+        nuisance_id = "nuis_l",
+        param_set$ml_l, tune_settings,
+        tune_settings$measure$ml_l,
+        private$task_type$ml_l)
 
       tuning_result_r = dml_tune(self$learner$ml_r,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -546,8 +546,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           private$task_type$ml_m)
 
         tuning_result = list(
-          "ml_g" = list(tuning_result_g,
-            params = tuning_result_g$params),
+          "ml_l" = list(tuning_result_l,
+            params = tuning_result_l$params),
           "ml_m" = list(tuning_result_m,
             params = tuning_result_m$params),
           "ml_r" = list(tuning_result_r,
@@ -555,10 +555,10 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       } else {
         tuning_result = vector("list", length = self$data$n_instr + 2)
         names(tuning_result) = c(
-          "ml_g", "ml_r",
+          "ml_l", "ml_r",
           paste0("ml_m_", self$data$z_cols))
-        tuning_result[["ml_g"]] = list(tuning_result_g,
-          params = tuning_result_g$params)
+        tuning_result[["ml_l"]] = list(tuning_result_l,
+          params = tuning_result_l$params)
         tuning_result[["ml_r"]] = list(tuning_result_r,
           params = tuning_result_r$params)
 
@@ -595,20 +595,20 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           function(x) extract_training_data(self$data$data_model, x))
       }
 
-      tuning_result_g = dml_tune(self$learner$ml_g,
+      tuning_result_l = dml_tune(self$learner$ml_l,
         c(self$data$x_cols),
         self$data$y_col, data_tune_list,
-        nuisance_id = "nuis_g",
-        param_set$ml_g, tune_settings,
-        tune_settings$measure$ml_g,
-        private$task_type$ml_g)
+        nuisance_id = "nuis_l",
+        param_set$ml_l, tune_settings,
+        tune_settings$measure$ml_l,
+        private$task_type$ml_l)
 
       tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$z_cols),
         self$data$treat_col, data_tune_list,
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
-        tune_settings$measure$ml_g,
+        tune_settings$measure$ml_l,
         private$task_type$ml_m)
 
       m_params = tuning_result_m$params
@@ -651,8 +651,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         private$task_type$ml_r)
 
       tuning_result = list(
-        "ml_g" = list(tuning_result_g,
-          params = tuning_result_g$params),
+        "ml_l" = list(tuning_result_l,
+          params = tuning_result_l$params),
         "ml_m" = list(tuning_result_m,
           params = tuning_result_m$params),
         "ml_r" = list(tuning_result_r,
@@ -710,7 +710,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
 # Initializer for partialX
 DoubleMLPLIV.partialX = function(data,
-  ml_g,
+  ml_l,
   ml_m,
   ml_r,
   n_folds = 5,
@@ -721,7 +721,7 @@ DoubleMLPLIV.partialX = function(data,
   apply_cross_fitting = TRUE) {
 
   obj = DoubleMLPLIV$new(data,
-    ml_g,
+    ml_l,
     ml_m,
     ml_r,
     partialX = TRUE,
@@ -747,7 +747,7 @@ DoubleMLPLIV.partialZ = function(data,
   apply_cross_fitting = TRUE) {
 
   obj = DoubleMLPLIV$new(data,
-    ml_g = NULL,
+    ml_l = NULL,
     ml_m = NULL,
     ml_r,
     partialX = FALSE,
@@ -764,7 +764,7 @@ DoubleMLPLIV.partialZ = function(data,
 
 # Initializer for partialXZ
 DoubleMLPLIV.partialXZ = function(data,
-  ml_g,
+  ml_l,
   ml_m,
   ml_r,
   n_folds = 5,
@@ -775,7 +775,7 @@ DoubleMLPLIV.partialXZ = function(data,
   apply_cross_fitting = TRUE) {
 
   obj = DoubleMLPLIV$new(data,
-    ml_g,
+    ml_l,
     ml_m,
     ml_r,
     partialX = TRUE,

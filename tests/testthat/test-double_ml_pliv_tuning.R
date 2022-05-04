@@ -15,12 +15,12 @@ tune_settings = list(
   n_rep_tune = 1,
   rsmp_tune = "cv",
   measure = list(
-    "ml_g" = "regr.mse",
+    "ml_l" = "regr.mse",
     "ml_r" = "regr.mse",
     "ml_m" = "regr.mse"),
   terminator = mlr3tuning::trm("evals", n_evals = 2),
   algorithm = "grid_search",
-  tuning_instance_g = NULL,
+  tuning_instance_l = NULL,
   tuning_instance_m = NULL,
   tuner = "grid_search",
   resolution = 5)
@@ -77,7 +77,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
     double_mlpliv_obj_tuned = DoubleMLPLIV$new(data_ml,
       n_folds = n_folds,
-      ml_g = learner,
+      ml_l = learner,
       ml_m = learner,
       ml_r = learner,
       dml_procedure = dml_procedure,
@@ -85,7 +85,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
       n_rep = n_rep)
 
     param_grid = list(
-      "ml_g" = paradox::ParamSet$new(list(
+      "ml_l" = paradox::ParamSet$new(list(
         paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
         paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
       "ml_m" = paradox::ParamSet$new(list(
@@ -137,7 +137,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
 
       param_grid_r = list("ml_r" = param_grid[["ml_r"]])
       tune_settings_r = tune_settings
-      tune_settings_r$measure$ml_g = tune_settings_r$measure$ml_m = NULL
+      tune_settings_r$measure$ml_l = tune_settings_r$measure$ml_m = NULL
       double_mlpliv_obj_tuned_Z$tune(
         param_set = param_grid_r, tune_on_folds = tune_on_folds,
         tune_settings = tune_settings_r)
@@ -152,7 +152,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
       set.seed(3141)
       double_mlpliv_obj_tuned_XZ = DoubleMLPLIV.partialXZ(data_ml,
         n_folds = n_folds,
-        ml_g = learner,
+        ml_l = learner,
         ml_m = learner,
         ml_r = learner,
         dml_procedure = dml_procedure,

@@ -4,8 +4,8 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-score_fct = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
-  u_hat = y - g_hat
+score_fct = function(y, z, d, l_hat, m_hat, r_hat, smpls) {
+  u_hat = y - l_hat
   w_hat = d - r_hat
   v_hat = z - m_hat
   psi_a = -w_hat * v_hat
@@ -37,7 +37,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     double_mlpliv_obj = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = 5,
-      ml_g = lrn(learner),
+      ml_l = lrn(learner),
       ml_m = lrn(learner),
       ml_r = lrn(learner),
       dml_procedure = dml_procedure,
@@ -54,7 +54,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
     double_mlpliv_obj_score = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = 5,
-      ml_g = lrn(learner),
+      ml_l = lrn(learner),
       ml_m = lrn(learner),
       ml_r = lrn(learner),
       dml_procedure = dml_procedure,

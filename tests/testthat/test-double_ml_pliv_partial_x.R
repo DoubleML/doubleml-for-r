@@ -21,7 +21,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialX:",
     pliv_hat = dml_pliv_partial_x(data_pliv_partialX$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure, score = score)
@@ -38,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialX:",
 
     set.seed(3141)
     double_mlpliv_obj = DoubleMLPLIV.partialX(data_pliv_partialX$dml_data,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       n_folds = 5,
@@ -67,7 +67,7 @@ test_that("Unit tests for PLIV.partialX invalid score", {
     "partialX=TRUE and partialZ=FALSE with several instruments.")
   double_mlplr_obj <- DoubleMLPLIV.partialX(
     data_pliv_partialX$dml_data,
-    ml_g = mlr3::lrn("regr.rpart"),
+    ml_l = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("regr.rpart"),
     ml_r = mlr3::lrn("regr.rpart"),
     score = function(x) {

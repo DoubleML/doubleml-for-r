@@ -38,10 +38,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
     pliv_hat = dml_pliv(data_pliv$df,
       y = "y", d = "d", z = "z",
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      params_g = learner_pars$params$params_g,
+      params_l = learner_pars$params$params_l,
       params_m = learner_pars$params$params_m,
       params_r = learner_pars$params$params_r,
       dml_procedure = dml_procedure, score = score)
@@ -60,7 +60,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
     dml_pliv_obj = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
       dml_procedure = dml_procedure,
@@ -68,8 +68,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
 
     dml_pliv_obj$set_ml_nuisance_params(
       treat_var = "d",
-      learner = "ml_g",
-      params = learner_pars$params$params_g)
+      learner = "ml_l",
+      params = learner_pars$params$params_l)
     dml_pliv_obj$set_ml_nuisance_params(
       treat_var = "d",
       learner = "ml_m",
@@ -112,10 +112,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     pliv_hat = dml_pliv(data_pliv$df,
       y = "y", d = "d", z = "z",
       n_folds = 1,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      params_g = learner_pars$params$params_g,
+      params_l = learner_pars$params$params_l,
       params_m = learner_pars$params$params_m,
       params_r = learner_pars$params$params_r,
       dml_procedure = dml_procedure, score = score,
@@ -127,7 +127,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     dml_pliv_nocf = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = n_folds,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
       dml_procedure = dml_procedure,
@@ -136,8 +136,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
 
     dml_pliv_nocf$set_ml_nuisance_params(
       treat_var = "d",
-      learner = "ml_g",
-      params = learner_pars$params$params_g)
+      learner = "ml_l",
+      params = learner_pars$params$params_l)
     dml_pliv_nocf$set_ml_nuisance_params(
       treat_var = "d",
       learner = "ml_m",
@@ -166,7 +166,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
     set.seed(3141)
     dml_pliv_obj = DoubleMLPLIV$new(data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
       dml_procedure = dml_procedure,
@@ -174,8 +174,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
 
     dml_pliv_obj$set_ml_nuisance_params(
       treat_var = "d",
-      learner = "ml_g",
-      params = learner_pars$params$params_g)
+      learner = "ml_l",
+      params = learner_pars$params$params_l)
     dml_pliv_obj$set_ml_nuisance_params(
       treat_var = "d",
       learner = "ml_m",
@@ -189,14 +189,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
     theta = dml_pliv_obj$coef
     se = dml_pliv_obj$se
 
-    params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
+    params_l_fold_wise = rep(list(rep(list(learner_pars$params$params_l), n_folds)), n_rep)
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
     params_r_fold_wise = rep(list(rep(list(learner_pars$params$params_r), n_folds)), n_rep)
 
     set.seed(3141)
     dml_pliv_obj_fold_wise = DoubleMLPLIV$new(data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
       dml_procedure = dml_procedure,
@@ -204,8 +204,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
 
     dml_pliv_obj_fold_wise$set_ml_nuisance_params(
       treat_var = "d",
-      learner = "ml_g",
-      params = params_g_fold_wise,
+      learner = "ml_l",
+      params = params_l_fold_wise,
       set_fold_specific = TRUE)
     dml_pliv_obj_fold_wise$set_ml_nuisance_params(
       treat_var = "d",
@@ -232,14 +232,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
     n_folds = 2
     n_rep = 3
 
-    params_g = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_l = list(cp = 0.01, minsplit = 20) # this are defaults
     params_m = list(cp = 0.01, minsplit = 20) # this are defaults
     params_r = list(cp = 0.01, minsplit = 20) # this are defaults
 
     set.seed(3141)
     dml_pliv_default = DoubleMLPLIV$new(data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = lrn("regr.rpart"),
+      ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
       ml_r = lrn("regr.rpart"),
       dml_procedure = dml_procedure,
@@ -253,7 +253,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
     dml_pliv_obj = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = lrn("regr.rpart"),
+      ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
       ml_r = lrn("regr.rpart"),
       dml_procedure = dml_procedure,
@@ -261,8 +261,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
 
     dml_pliv_obj$set_ml_nuisance_params(
       treat_var = "d",
-      learner = "ml_g",
-      params = params_g)
+      learner = "ml_l",
+      params = params_l)
     dml_pliv_obj$set_ml_nuisance_params(
       treat_var = "d",
       learner = "ml_m",
