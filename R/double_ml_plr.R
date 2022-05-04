@@ -176,25 +176,26 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      
+
       private$task_type = list(
         "ml_l" = NULL,
         "ml_m" = NULL)
       ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
-      
+
       private$learner_ = list(
         "ml_l" = ml_l,
         "ml_m" = ml_m)
-      
+
       if (!is.null(ml_g)) {
-        assert(check_character(ml_g, max.len = 1),
-               check_class(ml_g, "Learner"))
+        assert(
+          check_character(ml_g, max.len = 1),
+          check_class(ml_g, "Learner"))
         if ((is.character(self$score) && (self$score == "IV-type")) ||
-            is.function(self$score)) {
+          is.function(self$score)) {
           private$task_type[["ml_g"]] = NULL
           ml_g = private$assert_learner(ml_g, "ml_g",
-                                        Regr = TRUE, Classif = FALSE)
+            Regr = TRUE, Classif = FALSE)
           private$learner_[["ml_g"]] = ml_g
         }
         # Question: Add a warning when ml_g is set for partialling out score
@@ -204,13 +205,13 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           "For score = 'IV-type', learners ml_l and ml_g ",
           "should be specified. ",
           "Set ml_g = ml_l$clone()."),
-          call. = FALSE)
+        call. = FALSE)
         private$task_type[["ml_g"]] = NULL
         ml_g = private$assert_learner(ml_l$clone(), "ml_g",
-                                      Regr = TRUE, Classif = FALSE)
+          Regr = TRUE, Classif = FALSE)
         private$learner_[["ml_g"]] = ml_g
       }
-      
+
       private$initialize_ml_nuisance_params()
     },
     # To be removed in version 0.6.0
