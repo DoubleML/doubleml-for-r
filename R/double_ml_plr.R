@@ -42,13 +42,13 @@
 #' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.rpart")
-#' ml_m = ml_g$clone()
+#' ml_l = lrn("regr.rpart")
+#' ml_m = ml_l$clone()
 #' obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
-#' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
+#' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_l, ml_m)
 #'
 #' param_grid = list(
-#'   "ml_g" = paradox::ParamSet$new(list(
+#'   "ml_l" = paradox::ParamSet$new(list(
 #'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
 #'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
 #'   "ml_m" = paradox::ParamSet$new(list(
@@ -398,7 +398,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           params_l = tuning_result_l$params[[1]]
           params_m = tuning_result_m$params[[1]]
         }
-        l_hat = dml_cv_predict(self$learner$ml_g,
+        l_hat = dml_cv_predict(self$learner$ml_l,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
           self$data$data_model,
@@ -406,7 +406,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           smpls = smpls,
           est_params = params_l,
           return_train_preds = FALSE,
-          task_type = private$task_type$ml_g,
+          task_type = private$task_type$ml_l,
           fold_specific_params = private$fold_specific_params)
 
         m_hat = dml_cv_predict(self$learner$ml_m,
