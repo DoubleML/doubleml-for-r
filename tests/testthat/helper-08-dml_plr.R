@@ -24,7 +24,7 @@ dml_plr = function(data, y, d,
       n_folds, ml_l, ml_m, ml_g,
       dml_procedure, score,
       this_smpl,
-      params_l, params_g, params_m)
+      params_l, params_m, params_g)
 
     all_preds[[i_rep]] = res_single_split$all_preds
     all_thetas[i_rep] = res_single_split$theta
@@ -56,7 +56,7 @@ dml_plr_multitreat = function(data, y, d,
   n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_l = NULL, params_g = NULL, params_m = NULL) {
+  params_l = NULL, params_m = NULL, params_g = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -91,7 +91,7 @@ dml_plr_multitreat = function(data, y, d,
         n_folds, ml_l, ml_m, ml_g,
         dml_procedure, score,
         this_smpl,
-        this_params_l, this_params_g, this_params_m)
+        this_params_l, this_params_m, this_params_g)
 
       all_preds_this_rep[[i_d]] = res_single_split$all_preds
       thetas_this_rep[i_d] = res_single_split$theta
@@ -132,7 +132,7 @@ dml_plr_multitreat = function(data, y, d,
 fit_plr_single_split = function(data, y, d,
   n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score, smpl,
-  params_l, params_g, params_m) {
+  params_l, params_m, params_g) {
 
   train_ids = smpl$train_ids
   test_ids = smpl$test_ids
@@ -142,7 +142,7 @@ fit_plr_single_split = function(data, y, d,
     data, y, d,
     ml_l, ml_m, ml_g,
     n_folds, smpl, fit_g,
-    params_l, params_g, params_m)
+    params_l, params_m, params_g)
 
   residuals = compute_plr_residuals(
     data, y, d, n_folds, smpl,
@@ -203,7 +203,7 @@ fit_plr_single_split = function(data, y, d,
 fit_nuisance_plr = function(data, y, d,
   ml_l, ml_m, ml_g,
   n_folds, smpls, fit_g,
-  params_l, params_g, params_m) {
+  params_l, params_m, params_g) {
 
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids

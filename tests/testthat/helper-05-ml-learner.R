@@ -113,7 +113,7 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
 
   return(list(
     mlmethod = mlmethod, params = params,
-    ml_l = ml_l, ml_g = ml_g, ml_m = ml_m
+    ml_l = ml_l, ml_m = ml_m, ml_g = ml_g
   ))
 }
 
