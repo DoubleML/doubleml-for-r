@@ -215,6 +215,40 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       private$initialize_ml_nuisance_params()
     },
     # To be removed in version 0.6.0
+    #
+    # Note: Ideally the following duplicate roxygen / docu parts should be taken
+    # from the base class DoubleML. However, this is an open issue in pkg
+    # roxygen2, see https://github.com/r-lib/roxygen2/issues/996 &
+    # https://github.com/r-lib/roxygen2/issues/1043
+    #
+    #' @description
+    #' Set hyperparameters for the nuisance models of DoubleML models.
+    #'
+    #' Note that in the current implementation, either all parameters have to
+    #' be set globally or all parameters have to be provided fold-specific.
+    #'
+    #' @param learner (`character(1)`) \cr
+    #' The nuisance model/learner (see method `params_names`).
+    #'
+    #' @param treat_var (`character(1)`) \cr
+    #' The treatment varaible (hyperparameters can be set treatment-variable
+    #' specific).
+    #'
+    #' @param params (named `list()`) \cr
+    #' A named `list()` with estimator parameters. Parameters are used for all
+    #' folds by default. Alternatively, parameters can be passed in a
+    #' fold-specific way if option  `fold_specific`is `TRUE`. In this case, the
+    #' outer list needs to be of length `n_rep` and the inner list of length
+    #' `n_folds`.
+    #'
+    #' @param set_fold_specific (`logical(1)`) \cr
+    #' Indicates if the parameters passed in `params` should be passed in
+    #' fold-specific way. Default is `FALSE`. If `TRUE`, the outer list needs
+    #' to be of length `n_rep` and the inner list of length `n_folds`.
+    #' Note that in the current implementation, either all parameters have to
+    #' be set globally or all parameters have to be provided fold-specific.
+    #'
+    #' @return self
     set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
       set_fold_specific = FALSE) {
       assert_character(learner, len = 1)
@@ -233,6 +267,67 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         set_fold_specific)
     },
     # To be removed in version 0.6.0
+    #
+    # Note: Ideally the following duplicate roxygen / docu parts should be taken
+    # from the base class DoubleML. However, this is an open issue in pkg
+    # roxygen2, see https://github.com/r-lib/roxygen2/issues/996 &
+    # https://github.com/r-lib/roxygen2/issues/1043
+    #
+    #' @description
+    #' Hyperparameter-tuning for DoubleML models.
+    #'
+    #' The hyperparameter-tuning is performed using the tuning methods provided
+    #' in the [mlr3tuning](https://mlr3tuning.mlr-org.com/) package. For more
+    #' information on tuning in [mlr3](https://mlr3.mlr-org.com/), we refer to
+    #' the section on parameter tuning in the
+    #' [mlr3 book](https://mlr3book.mlr-org.com/optimization.html#tuning).
+    #'
+    #' @param param_set (named `list()`) \cr
+    #' A named `list` with a parameter grid for each nuisance model/learner
+    #' (see method `learner_names()`). The parameter grid must be an object of
+    #' class [ParamSet][paradox::ParamSet].
+    #'
+    #' @param tune_settings (named `list()`) \cr
+    #' A named `list()` with arguments passed to the hyperparameter-tuning with
+    #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
+    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' `tune_settings` has entries
+    #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
+    #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`
+    #' is required to perform tuning.
+    #' * `algorithm` ([Tuner][mlr3tuning::Tuner] or `character(1)`) \cr
+    #' A [Tuner][mlr3tuning::Tuner] object (recommended) or key passed to the
+    #' respective dictionary to specify the tuning algorithm used in
+    #' [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to
+    #' [tnr()][mlr3tuning::tnr()]. If `algorithm` is not specified by the users,
+    #' default is set to `"grid_search"`. If set to `"grid_search"`, then
+    #' additional argument `"resolution"` is required.
+    #' * `rsmp_tune` ([Resampling][mlr3::Resampling] or `character(1)`)\cr
+    #' A [Resampling][mlr3::Resampling] object (recommended) or option passed
+    #' to [rsmp()][mlr3::mlr_sugar] to initialize a
+    #' [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`.
+    #' If not specified by the user, default is set to `"cv"`
+    #' (cross-validation).
+    #' * `n_folds_tune` (`integer(1)`, optional) \cr
+    #' If `rsmp_tune = "cv"`, number of folds used for cross-validation.
+    #' If not specified by the user, default is set to `5`.
+    #' * `measure` (`NULL`, named `list()`, optional) \cr
+    #' Named list containing the measures used for parameter tuning. Entries in
+    #' list must either be [Measure][mlr3::Measure] objects or keys to be
+    #' passed to passed to [msr()][mlr3::msr()]. The names of the entries must
+    #' match the learner names (see method `learner_names()`). If set to `NULL`,
+    #' default measures are used, i.e., `"regr.mse"` for continuous outcome
+    #' variables and `"classif.ce"` for binary outcomes.
+    #' * `resolution` (`character(1)`) \cr The key passed to the respective
+    #' dictionary to specify  the tuning algorithm used in
+    #' [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to
+    #' [tnr()][mlr3tuning::tnr()].
+    #'
+    #' @param tune_on_folds (`logical(1)`) \cr
+    #' Indicates whether the tuning should be done fold-specific or globally.
+    #' Default is `FALSE`.
+    #'
+    #' @return self
     tune = function(param_set, tune_settings = list(
       n_folds_tune = 5,
       rsmp_tune = mlr3::rsmp("cv", folds = 5),
@@ -447,8 +542,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           private$task_type$ml_g)
         tuning_result = list(
           "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
-          "ml_g" = list(tuning_result_g, params = tuning_result_g$params),
-          "ml_m" = list(tuning_result_m, params = tuning_result_m$params))
+          "ml_m" = list(tuning_result_m, params = tuning_result_m$params),
+          "ml_g" = list(tuning_result_g, params = tuning_result_g$params))
       } else {
         tuning_result = list(
           "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
