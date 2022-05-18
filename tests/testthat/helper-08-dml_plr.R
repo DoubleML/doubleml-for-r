@@ -24,7 +24,7 @@ dml_plr = function(data, y, d,
       n_folds, ml_l, ml_m, ml_g,
       dml_procedure, score,
       this_smpl,
-      params_l, params_g, params_m)
+      params_l, params_m, params_g)
 
     all_preds[[i_rep]] = res_single_split$all_preds
     all_thetas[i_rep] = res_single_split$theta
@@ -56,7 +56,7 @@ dml_plr_multitreat = function(data, y, d,
   n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_l = NULL, params_g = NULL, params_m = NULL) {
+  params_l = NULL, params_m = NULL, params_g = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -91,7 +91,7 @@ dml_plr_multitreat = function(data, y, d,
         n_folds, ml_l, ml_m, ml_g,
         dml_procedure, score,
         this_smpl,
-        this_params_l, this_params_g, this_params_m)
+        this_params_l, this_params_m, this_params_g)
 
       all_preds_this_rep[[i_d]] = res_single_split$all_preds
       thetas_this_rep[i_d] = res_single_split$theta
@@ -132,7 +132,7 @@ dml_plr_multitreat = function(data, y, d,
 fit_plr_single_split = function(data, y, d,
   n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score, smpl,
-  params_l, params_g, params_m) {
+  params_l, params_m, params_g) {
 
   train_ids = smpl$train_ids
   test_ids = smpl$test_ids
@@ -142,14 +142,14 @@ fit_plr_single_split = function(data, y, d,
     data, y, d,
     ml_l, ml_m, ml_g,
     n_folds, smpl, fit_g,
-    params_l, params_g, params_m)
+    params_l, params_m, params_g)
 
   residuals = compute_plr_residuals(
     data, y, d, n_folds, smpl,
     all_preds)
   y_minus_l_hat = residuals$y_minus_l_hat
-  y_minus_g_hat = residuals$y_minus_g_hat
   d_minus_m_hat = residuals$d_minus_m_hat
+  y_minus_g_hat = residuals$y_minus_g_hat
   D = data[, d]
   Y = data[, y]
 
@@ -161,8 +161,8 @@ fit_plr_single_split = function(data, y, d,
 
       orth_est = orth_plr_dml(
         y_minus_l_hat = y_minus_l_hat[test_index],
-        y_minus_g_hat = y_minus_g_hat[test_index],
         d_minus_m_hat = d_minus_m_hat[test_index],
+        y_minus_g_hat = y_minus_g_hat[test_index],
         d = D[test_index],
         score = score)
       thetas[i] = orth_est$theta
@@ -171,16 +171,16 @@ fit_plr_single_split = function(data, y, d,
     if (length(train_ids) == 1) {
       D = D[test_index]
       y_minus_l_hat = y_minus_l_hat[test_index]
-      y_minus_g_hat = y_minus_g_hat[test_index]
       d_minus_m_hat = d_minus_m_hat[test_index]
+      y_minus_g_hat = y_minus_g_hat[test_index]
     }
   }
 
   if (dml_procedure == "dml2") {
     orth_est = orth_plr_dml(
       y_minus_l_hat = y_minus_l_hat,
-      y_minus_g_hat = y_minus_g_hat,
       d_minus_m_hat = d_minus_m_hat,
+      y_minus_g_hat = y_minus_g_hat,
       d = D, score = score)
     theta = orth_est$theta
   }
@@ -188,8 +188,8 @@ fit_plr_single_split = function(data, y, d,
   se = sqrt(var_plr(
     theta = theta, d = D,
     y_minus_l_hat = y_minus_l_hat,
-    y_minus_g_hat = y_minus_g_hat,
     d_minus_m_hat = d_minus_m_hat,
+    y_minus_g_hat = y_minus_g_hat,
     score = score))
 
   res = list(
@@ -203,7 +203,7 @@ fit_plr_single_split = function(data, y, d,
 fit_nuisance_plr = function(data, y, d,
   ml_l, ml_m, ml_g,
   n_folds, smpls, fit_g,
-  params_l, params_g, params_m) {
+  params_l, params_m, params_g) {
 
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
@@ -293,8 +293,8 @@ fit_nuisance_plr = function(data, y, d,
 
   all_preds = list(
     l_hat_list = l_hat_list,
-    g_hat_list = g_hat_list,
-    m_hat_list = m_hat_list)
+    m_hat_list = m_hat_list,
+    g_hat_list = g_hat_list)
 
   return(all_preds)
 }
@@ -304,8 +304,8 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   test_ids = smpls$test_ids
 
   l_hat_list = all_preds$l_hat_list
-  g_hat_list = all_preds$g_hat_list
   m_hat_list = all_preds$m_hat_list
+  g_hat_list = all_preds$g_hat_list
 
   n = nrow(data)
   D = data[, d]
@@ -329,15 +329,15 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   }
   residuals = list(
     y_minus_l_hat = y_minus_l_hat,
-    y_minus_g_hat = y_minus_g_hat,
-    d_minus_m_hat = d_minus_m_hat)
+    d_minus_m_hat = d_minus_m_hat,
+    y_minus_g_hat = y_minus_g_hat)
 
   return(residuals)
 }
 
 
 # Orthogonalized Estimation of Coefficient in PLR
-orth_plr_dml = function(y_minus_l_hat, y_minus_g_hat, d_minus_m_hat, d, score) {
+orth_plr_dml = function(y_minus_l_hat, d_minus_m_hat, y_minus_g_hat, d, score) {
   theta = NA_real_
 
   if (score == "partialling out") {
@@ -359,7 +359,7 @@ orth_plr_dml = function(y_minus_l_hat, y_minus_g_hat, d_minus_m_hat, d, score) {
 
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_plr = function(theta, d, y_minus_l_hat, y_minus_g_hat, d_minus_m_hat, score) {
+var_plr = function(theta, d, y_minus_l_hat, d_minus_m_hat, y_minus_g_hat, score) {
   n = length(d)
   if (score == "partialling out") {
     var = 1 / n * 1 / (mean(d_minus_m_hat^2))^2 *

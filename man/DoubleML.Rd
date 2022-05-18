@@ -315,7 +315,7 @@ the section on parameter tuning in the
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
   param_set,
   tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5),
-    measure = NULL, terminator = mlr3tunin::trm("evals", n_evals = 20), algorithm =
+    measure = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
     mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
 )}\if{html}{\out{</div>}}
