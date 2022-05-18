@@ -3,7 +3,7 @@ dml_plr = function(data, y, d,
   n_folds, ml_l, ml_m, ml_g,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_l = NULL, params_g = NULL, params_m = NULL) {
+  params_l = NULL, params_m = NULL, params_g = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -311,7 +311,7 @@ compute_plr_residuals = function(data, y, d, n_folds, smpls, all_preds) {
   D = data[, d]
   Y = data[, y]
 
-  y_minus_l_hat = y_minus_g_hat = d_minus_m_hat = rep(NA_real_, n)
+  y_minus_l_hat = d_minus_m_hat = y_minus_g_hat = rep(NA_real_, n)
 
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
@@ -437,8 +437,8 @@ boot_plr_single_split = function(theta, se, data, y, d,
     data, y, d, n_folds,
     smpl, all_preds)
   y_minus_l_hat = residuals$y_minus_l_hat
-  y_minus_g_hat = residuals$y_minus_g_hat
   d_minus_m_hat = residuals$d_minus_m_hat
+  y_minus_g_hat = residuals$y_minus_g_hat
 
   D = data[, d]
 
