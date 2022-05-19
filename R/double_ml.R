@@ -1327,13 +1327,12 @@ DoubleML = R6Class("DoubleML",
             check_class(tune_settings$measure[[i_msr]], "Measure"))
         }
       } else {
-        tune_settings$measure = rep(list(NA), length(valid_learner))
+        tune_settings$measure = rep(list(NULL), length(valid_learner))
         names(tune_settings$measure) = valid_learner
       }
 
-      for (i_msr in seq_len(length(tune_settings$measure))) {
-        if (!test_class(tune_settings$measure[[i_msr]], "Measure")) {
-          this_learner = names(tune_settings$measure)[i_msr]
+      for (this_learner in valid_learner) {
+        if (!test_class(tune_settings$measure[[this_learner]], "Measure")) {
           tune_settings$measure[[this_learner]] = set_default_measure(
             tune_settings$measure[[this_learner]],
             private$task_type[[this_learner]])

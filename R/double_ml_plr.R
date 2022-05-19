@@ -176,7 +176,6 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-
       private$task_type = list(
         "ml_l" = NULL,
         "ml_m" = NULL)
