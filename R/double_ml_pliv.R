@@ -334,10 +334,10 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
       if (self$data$n_instr == 1) {
         if (is.character(self$score)) {
-            if (self$score == "partialling out") {
-              psi_a = -w_hat * v_hat
-              psi_b = v_hat * u_hat
-            }
+          if (self$score == "partialling out") {
+            psi_a = -w_hat * v_hat
+            psi_b = v_hat * u_hat
+          }
           psis = list(
             psi_a = psi_a,
             psi_b = psi_b)
@@ -358,20 +358,20 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
           store_models = TRUE)
         r_hat_tilde = as.data.table(r_r_tilde$prediction())$response
-        
-      if (is.character(self$score)) {
+
+        if (is.character(self$score)) {
           if (self$score == "partialling out") {
             psi_a = -w_hat * r_hat_tilde
             psi_b = r_hat_tilde * u_hat
           }
-        psis = list(
-          psi_a = psi_a,
-          psi_b = psi_b)
-      } else if (is.function(self$score)) {
-        stop(paste(
+          psis = list(
+            psi_a = psi_a,
+            psi_b = psi_b)
+        } else if (is.function(self$score)) {
+          stop(paste(
             "Callable score not implemented for DoubleMLPLIV with",
             "partialX=TRUE and partialZ=FALSE with several instruments."))
-      }
+        }
       }
       return(psis)
     },
