@@ -296,6 +296,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           return_train_preds = FALSE,
           task_type = private$task_type$ml_m,
           fold_specific_params = private$fold_specific_params)
+        z = self$data$data_model[[self$data$z_cols]]
       } else {
         m_hat = do.call(
           cbind,
@@ -313,6 +314,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 task_type = private$task_type$ml_m,
                 fold_specific_params = private$fold_specific_params)
             }))
+        z = self$data$data_model[, self$data$z_cols, with = FALSE]
       }
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -328,12 +330,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     score_elements = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
       u_hat = y - g_hat
       w_hat = d - r_hat
+      v_hat = z - m_hat
 
-      if (self$data$n_instr == 1) {
-        z = self$data$data_model[[self$data$z_cols]]
-        v_hat = z - m_hat
-      } else {
-        z = self$data$data_model[, self$data$z_cols, with = FALSE]
+      if (self$data$n_instr > 1) {
         v_hat = z - m_hat
 
         stopifnot(self$apply_cross_fitting)
