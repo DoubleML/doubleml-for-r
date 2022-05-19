@@ -297,7 +297,7 @@ set_default_measure = function(measure_in = NA, task_type) {
   valid_task_type = c("regr", "classif")
   assertChoice(task_type, valid_task_type)
 
-  if (is.na(measure_in)) {
+  if (is.null(measure_in)) {
     if (task_type == "regr") {
       measure = msr("regr.mse")
     } else if (task_type == "classif") {
