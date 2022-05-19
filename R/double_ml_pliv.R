@@ -608,7 +608,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         self$data$treat_col, data_tune_list,
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
-        tune_settings$measure$ml_g,
+        tune_settings$measure$ml_m,
         private$task_type$ml_m)
 
       m_params = tuning_result_m$params
