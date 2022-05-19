@@ -147,9 +147,6 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      private$task_type = list(
-        "ml_g" = NULL,
-        "ml_m" = NULL)
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
 
