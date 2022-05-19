@@ -5,7 +5,9 @@ dml_cv_predict = function(learner, X_cols, y_col,
   return_train_preds = FALSE, task_type = NULL,
   fold_specific_params = FALSE) {
 
-  # TODO: Asserts
+  valid_task_type = c("regr", "classif")
+  assertChoice(task_type, valid_task_type)
+  # TODO: extend asserts
 
   if (fold_specific_params) {
     stopifnot(length(smpls$train_ids) == length(smpls$test_ids))
@@ -122,6 +124,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
 
 dml_tune = function(learner, X_cols, y_col, data_tune_list,
   nuisance_id, param_set, tune_settings, measure, task_type) {
+
   task_tune = lapply(data_tune_list, function(x) {
     initiate_task(
       id = nuisance_id,
@@ -130,6 +133,9 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
       select_cols = X_cols,
       task_type = task_type)
   })
+  valid_task_type = c("regr", "classif")
+  assertChoice(task_type, valid_task_type)
+
   ml_learner = initiate_learner(learner, task_type, params = learner$param_set$values)
   tuning_instance = lapply(task_tune, function(x) {
     TuningInstanceSingleCrit$new(
@@ -154,6 +160,10 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
 
 extract_prediction = function(obj_resampling, task_type, n_obs,
   return_train_preds = FALSE) {
+
+  valid_task_type = c("regr", "classif")
+  assertChoice(task_type, valid_task_type)
+
   if (compareVersion(as.character(packageVersion("mlr3")), "0.11.0") < 0) {
     ind_name = "row_id"
   } else {
@@ -204,6 +214,10 @@ extract_prediction = function(obj_resampling, task_type, n_obs,
 }
 
 initiate_learner = function(learner, task_type, params, return_train_preds = FALSE) {
+
+  valid_task_type = c("regr", "classif")
+  assertChoice(task_type, valid_task_type)
+
   ml_learner = learner$clone()
 
   if (!is.null(params)) {
@@ -225,6 +239,9 @@ initiate_learner = function(learner, task_type, params, return_train_preds = FAL
 
 # Function to initialize task (regression or classification)
 initiate_task = function(id, data, target, select_cols, task_type) {
+  valid_task_type = c("regr", "classif")
+  assertChoice(task_type, valid_task_type)
+
   if (!is.null(select_cols)) {
     indx = (names(data) %in% c(select_cols, target))
     data = data[, indx, with = FALSE]
@@ -277,7 +294,10 @@ get_cond_samples = function(smpls, D) {
 }
 
 set_default_measure = function(measure_in = NA, task_type) {
-  if (is.na(measure_in)) {
+  valid_task_type = c("regr", "classif")
+  assertChoice(task_type, valid_task_type)
+
+  if (is.null(measure_in)) {
     if (task_type == "regr") {
       measure = msr("regr.mse")
     } else if (task_type == "classif") {

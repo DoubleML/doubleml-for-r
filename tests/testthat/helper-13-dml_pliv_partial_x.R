@@ -123,7 +123,7 @@ fit_nuisance_pliv_partial_x = function(data, y, d, z,
   data_r = data[, r_indx, drop = FALSE]
   task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", d), backend = data_r, target = d)
   if (!is.null(params_r)) {
-    ml_g$param_set$values = params_r
+    ml_r$param_set$values = params_r
   }
 
   resampling_r = mlr3::rsmp("custom")
