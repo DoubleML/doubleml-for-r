@@ -592,7 +592,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
           store_models = TRUE)
         r_hat_tilde = as.data.table(r_r_tilde$prediction())$response
-        
+
         if (is.character(self$score)) {
           if (self$score == "partialling out") {
             psi_a = -w_hat * r_hat_tilde
