@@ -262,7 +262,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           # where it is not required / used?
         } else if (is.character(self$score) && (self$score == "IV-type")) {
           stop(paste(
-            "For score = 'IV-type', learners ",
+            "For score = 'IV-type', learners",
             "ml_l, ml_m, ml_r and ml_g need to be specified."))
         }
       }
