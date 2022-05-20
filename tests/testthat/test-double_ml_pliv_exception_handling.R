@@ -45,5 +45,15 @@ test_that("Unit tests for deprecation warnings of PLIV", {
   msg = paste0("Learner ml_g was renamed to ml_l.")
   expect_warning(dml_obj$tune(par_grids),
     regexp = msg)
+
+  tune_settings = list(
+    n_folds_tune = 5,
+    rsmp_tune = mlr3::rsmp("cv", folds = 5),
+    measure = list(ml_g = "regr.mse", ml_m = "regr.mae"),
+    terminator = mlr3tuning::trm("evals", n_evals = 20),
+    algorithm = mlr3tuning::tnr("grid_search"),
+    resolution = 5)
+  expect_warning(dml_obj$tune(par_grids, tune_settings = tune_settings),
+    regexp = msg)
 }
 )

@@ -121,13 +121,19 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
 test_that("Unit tests for deprecation warnings of PLR", {
   set.seed(3141)
   dml_data = make_plr_CCDDHNR2018(n_obs = 101)
-  ml_g = lrn("regr.ranger")
-  ml_m = ml_g$clone()
+  ml_l = lrn("regr.ranger")
+  ml_m = ml_l$clone()
+  ml_g = ml_l$clone()
   msg = paste0("The argument ml_g was renamed to ml_l.")
   expect_warning(DoubleMLPLR$new(dml_data, ml_g = ml_g, ml_m = ml_m),
     regexp = msg)
 
-  dml_obj = DoubleMLPLR$new(dml_data, ml_l = ml_g, ml_m = ml_m)
+  msg = "learners ml_l and ml_g should be specified"
+  expect_warning(DoubleMLPLR$new(dml_data, ml_l, ml_m,
+    score = "IV-type"),
+  regexp = msg)
+
+  dml_obj = DoubleMLPLR$new(dml_data, ml_l = ml_l, ml_m = ml_m)
 
   msg = paste0("Learner ml_g was renamed to ml_l.")
   expect_warning(dml_obj$set_ml_nuisance_params(
@@ -142,6 +148,16 @@ test_that("Unit tests for deprecation warnings of PLR", {
 
   msg = paste0("Learner ml_g was renamed to ml_l.")
   expect_warning(dml_obj$tune(par_grids),
+    regexp = msg)
+
+  tune_settings = list(
+    n_folds_tune = 5,
+    rsmp_tune = mlr3::rsmp("cv", folds = 5),
+    measure = list(ml_g = "regr.mse", ml_m = "regr.mae"),
+    terminator = mlr3tuning::trm("evals", n_evals = 20),
+    algorithm = mlr3tuning::tnr("grid_search"),
+    resolution = 5)
+  expect_warning(dml_obj$tune(par_grids, tune_settings = tune_settings),
     regexp = msg)
 }
 )
