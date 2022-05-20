@@ -268,15 +268,9 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           # Question: Add a warning when ml_g is set for partialling out score
           # where it is not required / used?
         } else if (is.character(self$score) && (self$score == "IV-type")) {
-          warning(paste0(
-            "For score = 'IV-type', learners ml_l and ml_g ",
-            "should be specified. ",
-            "Set ml_g = ml_l$clone()."),
-          call. = FALSE)
-          private$task_type[["ml_g"]] = NULL
-          ml_g = private$assert_learner(ml_l$clone(), "ml_g",
-            Regr = TRUE, Classif = FALSE)
-          private$learner_[["ml_g"]] = ml_g
+          stop(paste(
+            "For score = 'IV-type', learners ",
+            "ml_l, ml_m, ml_r and ml_g need to be specified."))
         }
       }
 
