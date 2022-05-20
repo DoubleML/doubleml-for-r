@@ -229,17 +229,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       private$check_score(self$score)
 
       if (!self$partialX & self$partialZ) {
-        private$task_type = list(
-          "ml_r" = NULL)
         ml_r = private$assert_learner(ml_r, "ml_r",
           Regr = TRUE,
           Classif = FALSE)
         private$learner_ = list("ml_r" = ml_r)
       } else {
-        private$task_type = list(
-          "ml_l" = NULL,
-          "ml_m" = NULL,
-          "ml_r" = NULL)
         ml_l = private$assert_learner(ml_l, "ml_l",
           Regr = TRUE,
           Classif = FALSE)
@@ -260,7 +254,6 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             check_class(ml_g, "Learner"))
           if ((is.character(self$score) && (self$score == "IV-type")) ||
             is.function(self$score)) {
-            private$task_type[["ml_g"]] = NULL
             ml_g = private$assert_learner(ml_g, "ml_g",
               Regr = TRUE, Classif = FALSE)
             private$learner_[["ml_g"]] = ml_g

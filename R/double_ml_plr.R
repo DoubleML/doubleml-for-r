@@ -176,9 +176,6 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      private$task_type = list(
-        "ml_l" = NULL,
-        "ml_m" = NULL)
       ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
 
@@ -192,7 +189,6 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           check_class(ml_g, "Learner"))
         if ((is.character(self$score) && (self$score == "IV-type")) ||
           is.function(self$score)) {
-          private$task_type[["ml_g"]] = NULL
           ml_g = private$assert_learner(ml_g, "ml_g",
             Regr = TRUE, Classif = FALSE)
           private$learner_[["ml_g"]] = ml_g
@@ -205,7 +201,6 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           "should be specified. ",
           "Set ml_g = ml_l$clone()."),
         call. = FALSE)
-        private$task_type[["ml_g"]] = NULL
         ml_g = private$assert_learner(ml_l$clone(), "ml_g",
           Regr = TRUE, Classif = FALSE)
         private$learner_[["ml_g"]] = ml_g
