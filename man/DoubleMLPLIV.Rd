@@ -215,10 +215,10 @@ Number of folds. Default is \code{5}.}
 Number of repetitions for the sample splitting. Default is \code{1}.}
 
 \item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
-A \code{character(1)} (\code{"partialling out"} is the only choice) or a
-\verb{function()} specifying the score function.
+A \code{character(1)} (\code{"partialling out"} or \code{IV-type}) or a \verb{function()}
+specifying the score function.
 If a \verb{function()} is provided, it must be of the form
-\verb{function(y, z, d, l_hat, m_hat, r_hat, smpls)} and
+\verb{function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)} and
 the returned output must be a named \code{list()} with elements
 \code{psi_a} and \code{psi_b}. Default is \code{"partialling out"}.}
 
