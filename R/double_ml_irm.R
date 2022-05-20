@@ -296,7 +296,10 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         }
         psis = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        psis = self$score(y, d, g0_hat, g1_hat, m_hat, smpls)
+        psis = self$score(
+          y = y, d = d,
+          g0_hat = g0_hat, g1_hat = g1_hat, m_hat = m_hat,
+          smpls = smpls)
       }
       return(psis)
     },

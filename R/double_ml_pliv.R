@@ -576,7 +576,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             psi_a = psi_a,
             psi_b = psi_b)
         } else if (is.function(self$score)) {
-          psis = self$score(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)
+          psis = self$score(
+            y = y, z = z, d = d,
+            l_hat = l_hat, m_hat = m_hat,
+            r_hat = r_hat, g_hat = g_hat,
+            smpls = smpls)
         }
       } else {
         stopifnot(self$apply_cross_fitting)

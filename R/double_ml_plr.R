@@ -453,7 +453,10 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           psi_a = psi_a,
           psi_b = psi_b)
       } else if (is.function(self$score)) {
-        psis = self$score(y, d, l_hat, m_hat, g_hat, smpls)
+        psis = self$score(
+          y = y, d = d,
+          l_hat = l_hat, m_hat = m_hat, g_hat = g_hat,
+          smpls = smpls)
       }
       return(psis)
     },
