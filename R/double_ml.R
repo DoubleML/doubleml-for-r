@@ -771,7 +771,7 @@ DoubleML = R6Class("DoubleML",
       n_folds_tune = 5,
       rsmp_tune = mlr3::rsmp("cv", folds = 5),
       measure = NULL,
-      terminator = mlr3tunin::trm("evals", n_evals = 20),
+      terminator = mlr3tuning::trm("evals", n_evals = 20),
       algorithm = mlr3tuning::tnr("grid_search"),
       resolution = 5),
     tune_on_folds = FALSE) {
@@ -1311,7 +1311,7 @@ DoubleML = R6Class("DoubleML",
         tune_settings$rsmp_tune = rsmp("cv", folds = tune_settings$n_folds_tune)
       }
 
-      if (test_names(names(tune_settings), must.include = "measure")) {
+      if (test_names(names(tune_settings), must.include = "measure") && !is.null(tune_settings$measure)) {
         assert_list(tune_settings$measure)
         if (!test_names(names(tune_settings$measure),
           subset.of = valid_learner)) {
@@ -1327,13 +1327,12 @@ DoubleML = R6Class("DoubleML",
             check_class(tune_settings$measure[[i_msr]], "Measure"))
         }
       } else {
-        tune_settings$measure = rep(list(NA), length(valid_learner))
+        tune_settings$measure = rep(list(NULL), length(valid_learner))
         names(tune_settings$measure) = valid_learner
       }
 
-      for (i_msr in seq_len(length(tune_settings$measure))) {
-        if (!test_class(tune_settings$measure[[i_msr]], "Measure")) {
-          this_learner = names(tune_settings$measure)[i_msr]
+      for (this_learner in valid_learner) {
+        if (!test_class(tune_settings$measure[[this_learner]], "Measure")) {
           tune_settings$measure[[this_learner]] = set_default_measure(
             tune_settings$measure[[this_learner]],
             private$task_type[[this_learner]])

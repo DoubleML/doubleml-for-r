@@ -296,6 +296,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           return_train_preds = FALSE,
           task_type = private$task_type$ml_m,
           fold_specific_params = private$fold_specific_params)
+        z = self$data$data_model[[self$data$z_cols]]
       } else {
         m_hat = do.call(
           cbind,
@@ -313,6 +314,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 task_type = private$task_type$ml_m,
                 fold_specific_params = private$fold_specific_params)
             }))
+        z = self$data$data_model[, self$data$z_cols, with = FALSE]
       }
 
       d = self$data$data_model[[self$data$treat_col]]
@@ -328,14 +330,21 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     score_elements = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
       u_hat = y - g_hat
       w_hat = d - r_hat
+      v_hat = z - m_hat
 
       if (self$data$n_instr == 1) {
-        z = self$data$data_model[[self$data$z_cols]]
-        v_hat = z - m_hat
+        if (is.character(self$score)) {
+          if (self$score == "partialling out") {
+            psi_a = -w_hat * v_hat
+            psi_b = v_hat * u_hat
+          }
+          psis = list(
+            psi_a = psi_a,
+            psi_b = psi_b)
+        } else if (is.function(self$score)) {
+          psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
+        }
       } else {
-        z = self$data$data_model[, self$data$z_cols, with = FALSE]
-        v_hat = z - m_hat
-
         stopifnot(self$apply_cross_fitting)
 
         # Projection: r_hat from projection on m_hat
@@ -349,29 +358,20 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         r_r_tilde = resample(task_r_tilde, ml_r_tilde, resampling_r_tilde,
           store_models = TRUE)
         r_hat_tilde = as.data.table(r_r_tilde$prediction())$response
-      }
-      if (is.character(self$score)) {
-        if (self$data$n_instr == 1) {
-          if (self$score == "partialling out") {
-            psi_a = -w_hat * v_hat
-            psi_b = v_hat * u_hat
-          }
-        } else {
+
+        if (is.character(self$score)) {
           if (self$score == "partialling out") {
             psi_a = -w_hat * r_hat_tilde
             psi_b = r_hat_tilde * u_hat
           }
-        }
-        psis = list(
-          psi_a = psi_a,
-          psi_b = psi_b)
-      } else if (is.function(self$score)) {
-        if (self$data$n_instr > 1) {
+          psis = list(
+            psi_a = psi_a,
+            psi_b = psi_b)
+        } else if (is.function(self$score)) {
           stop(paste(
             "Callable score not implemented for DoubleMLPLIV with",
             "partialX=TRUE and partialZ=FALSE with several instruments."))
         }
-        psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
       }
       return(psis)
     },
@@ -608,7 +608,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         self$data$treat_col, data_tune_list,
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
-        tune_settings$measure$ml_g,
+        tune_settings$measure$ml_m,
         private$task_type$ml_m)
 
       m_params = tuning_result_m$params
