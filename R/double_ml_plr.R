@@ -195,10 +195,13 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      res = private$score_elements(y, d, g_hat, m_hat, smpls)
+      res = private$score_elements(y, d, g_hat$preds, m_hat$preds, smpls)
       res$preds = list(
-        "ml_g" = g_hat,
-        "ml_m" = m_hat)
+        "ml_g" = g_hat$preds,
+        "ml_m" = m_hat$preds)
+      res$models = list(
+        "ml_g" = g_hat$models,
+        "ml_m" = m_hat$models)
       return(res)
     },
     score_elements = function(y, d, g_hat, m_hat, smpls) {

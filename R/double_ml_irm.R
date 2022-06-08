@@ -242,7 +242,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         task_type = private$task_type$ml_g,
         fold_specific_params = private$fold_specific_params)
 
-      g1_hat = NULL
+      g1_hat = list(preds = NULL, models = NULL)
       if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
         g1_hat = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
@@ -259,11 +259,18 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      res = private$score_elements(y, d, g0_hat, g1_hat, m_hat, smpls)
+      res = private$score_elements(
+        y, d,
+        g0_hat$preds, g1_hat$preds, m_hat$preds,
+        smpls)
       res$preds = list(
-        "ml_g0" = g0_hat,
-        "ml_g1" = g1_hat,
-        "ml_m" = m_hat)
+        "ml_g0" = g0_hat$preds,
+        "ml_g1" = g1_hat$preds,
+        "ml_m" = m_hat$preds)
+      res$models = list(
+        "ml_g0" = g0_hat$models,
+        "ml_g1" = g1_hat$models,
+        "ml_m" = m_hat$models)
       return(res)
     },
     score_elements = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
