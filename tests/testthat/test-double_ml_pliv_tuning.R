@@ -62,13 +62,18 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
       d_cols = "d", x_cols = Xnames, z_cols = z_cols)
-
+    
+    if (score == "IV-type") {
+      ml_g = learner
+    } else {
+      ml_g = NULL
+    }
     double_mlpliv_obj_tuned = DoubleMLPLIV$new(data_ml,
       n_folds = n_folds,
       ml_l = learner,
       ml_m = learner,
       ml_r = learner,
-      ml_g = learner,
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)

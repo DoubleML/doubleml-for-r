@@ -51,11 +51,16 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
       } else {
         msg = "Assertion on 'i' failed: Element 1 is not <= 1."
       }
+      if (score == "IV-type") {
+        ml_g = learner_pars$mlmethod$mlmethod_g
+      } else {
+        ml_g = NULL
+      }
       expect_error(DoubleMLPLR$new(
         data = data_ml,
         ml_l = learner_pars$mlmethod$mlmethod_l,
         ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-        ml_g = learner_pars$mlmethod$mlmethod_g,
+        ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         n_rep = n_rep,
@@ -63,11 +68,16 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
         apply_cross_fitting = apply_cross_fitting),
       regexp = msg)
     } else {
+      if (score == "IV-type") {
+        ml_g = learner_pars$mlmethod$mlmethod_g
+      } else {
+        ml_g = NULL
+      }
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_ml,
         ml_l = learner_pars$mlmethod$mlmethod_l,
         ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-        ml_g = learner_pars$mlmethod$mlmethod_g,
+        ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         n_rep = n_rep,

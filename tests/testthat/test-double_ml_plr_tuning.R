@@ -56,11 +56,16 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
         y_col = "y",
         d_cols = c("d1", "d2"), x_cols = Xnames)
     }
+    if (score == "IV-type") {
+      ml_g = learner
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj_tuned = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = learner,
       ml_m = m_learner,
-      ml_g = learner,
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)

@@ -31,13 +31,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     learner_pars = get_default_mlmethod_pliv(learner)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlpliv_obj = DoubleMLPLIV$new(
       data = data_two_way,
       n_folds = 2,
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
-      ml_g = learner_pars$ml_g$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -52,13 +57,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     cluster_var2 = df$cluster_var_j
     # need to drop variables as x is not explicitly set
     df = df[, !(names(df) %in% c("cluster_var_i", "cluster_var_j"))]
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     pliv_hat = dml_pliv(df,
       y = "Y", d = "D", z = "Z",
       n_folds = 4,
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
-      ml_g = learner_pars$ml_g$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure, score = score,
       smpls = double_mlpliv_obj$smpls)
 

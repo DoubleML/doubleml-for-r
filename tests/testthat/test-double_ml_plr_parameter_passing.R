@@ -40,12 +40,17 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
     params_g = rep(list(learner_pars$params$params_g), 2)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     plr_hat = dml_plr_multitreat(data_plr_multi,
       y = "y", d = c("d1", "d2"),
       n_folds = n_folds, n_rep = n_rep,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       params_l = params_l,
       params_m = params_m,
       params_g = params_g,
@@ -68,11 +73,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
@@ -131,13 +141,18 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
     train_ids = list(my_sampling$train_set(1))
     test_ids = list(my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
-
+    
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     plr_hat = dml_plr_multitreat(data_plr_multi,
       y = "y", d = c("d1", "d2"),
       n_folds = 1,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       params_l = params_l,
       params_m = params_m,
       params_g = params_g,
@@ -152,11 +167,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj_nocf = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       apply_cross_fitting = FALSE)
@@ -206,11 +226,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
@@ -245,11 +270,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
     params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     dml_plr_fold_wise = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
@@ -306,11 +336,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = lrn("regr.rpart")
+    } else {
+      ml_g = NULL
+    }
     dml_plr_default = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
-      ml_g = lrn("regr.rpart"),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
@@ -320,11 +355,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
     se_default = dml_plr_default$se
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = lrn("regr.rpart")
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
-      ml_g = lrn("regr.rpart"),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)

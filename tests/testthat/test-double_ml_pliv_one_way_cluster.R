@@ -35,8 +35,12 @@ patrick::with_parameters_test_that("Unit tests for PLIV with one-way clustering:
 
     n_folds = 2
     n_rep = 2
-
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlpliv_obj = DoubleMLPLIV$new(
       data = data_one_way,
       n_folds = n_folds,
@@ -44,7 +48,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV with one-way clustering:
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
-      ml_g = learner_pars$ml_g$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -54,6 +58,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV with one-way clustering:
     se_obj = double_mlpliv_obj$se
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     df = as.data.frame(data_one_way$data)
     cluster_var = df$cluster_var_i
     # need to drop variables as x is not explicitly set
@@ -64,7 +73,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV with one-way clustering:
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
-      ml_g = learner_pars$ml_g$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure, score = score,
       smpls = double_mlpliv_obj$smpls,
       n_rep = n_rep)

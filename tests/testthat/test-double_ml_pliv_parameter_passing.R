@@ -35,13 +35,18 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
     learner_pars = get_default_mlmethod_pliv(learner)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     pliv_hat = dml_pliv(data_pliv$df,
       y = "y", d = "d", z = "z",
       n_folds = n_folds, n_rep = n_rep,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       params_l = learner_pars$params$params_l,
       params_m = learner_pars$params$params_m,
       params_r = learner_pars$params$params_r,
@@ -60,13 +65,18 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (oo
       score = score)$boot_coef
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     dml_pliv_obj = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -119,14 +129,19 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     train_ids = list(my_sampling$train_set(1))
     test_ids = list(my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
-
+    
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     pliv_hat = dml_pliv(data_pliv$df,
       y = "y", d = "d", z = "z",
       n_folds = 1,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       params_l = learner_pars$params$params_l,
       params_m = learner_pars$params$params_m,
       params_r = learner_pars$params$params_r,
@@ -137,13 +152,18 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     se = pliv_hat$se
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     dml_pliv_nocf = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = n_folds,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       apply_cross_fitting = FALSE)
@@ -184,12 +204,17 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
     learner_pars = get_default_mlmethod_pliv(learner)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     dml_pliv_obj = DoubleMLPLIV$new(data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -222,12 +247,17 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (fo
     params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     dml_pliv_obj_fold_wise = DoubleMLPLIV$new(data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
       ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r),
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -274,12 +304,17 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
     params_g = list(cp = 0.01, minsplit = 20) # this are defaults
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = lrn("regr.rpart")
+    } else {
+      ml_g = NULL
+    }
     dml_pliv_default = DoubleMLPLIV$new(data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
       ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
       ml_r = lrn("regr.rpart"),
-      ml_g = lrn("regr.rpart"),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -288,13 +323,18 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (de
     se_default = dml_pliv_default$se
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = lrn("regr.rpart")
+    } else {
+      ml_g = NULL
+    }
     dml_pliv_obj = DoubleMLPLIV$new(
       data = data_pliv$dml_data,
       n_folds = n_folds, n_rep = n_rep,
       ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
       ml_r = lrn("regr.rpart"),
-      ml_g = lrn("regr.rpart"),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 

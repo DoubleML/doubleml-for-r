@@ -36,12 +36,17 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     if (ml_l$task_type == "regr") {
 
       set.seed(3141)
+      if (score == "IV-type") {
+        ml_g = ml_g$clone()
+      } else {
+        ml_g = NULL
+      }
       plr_hat = dml_plr(data_irm$df,
         y = "y", d = "d",
         n_folds = n_folds,
         ml_l = ml_l$clone(),
         ml_m = ml_m$clone(),
-        ml_g = ml_g$clone(),
+        ml_g = ml_g,
         dml_procedure = dml_procedure, score = score)
       theta = plr_hat$coef
       se = plr_hat$se
@@ -58,11 +63,16 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       pval = plr_hat$pval
 
       set.seed(3141)
+      if (score == "IV-type") {
+        ml_g = ml_g$clone()
+      } else {
+        ml_g = NULL
+      }
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_irm$dml_data,
         ml_l = ml_l$clone(),
         ml_m = ml_m$clone(),
-        ml_g = ml_g$clone(),
+        ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score)
@@ -85,11 +95,16 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
 
     } else if (ml_l$task_type == "classif") {
       msg = "Invalid learner provided for ml_l: 'learner\\$task_type' must be 'regr'"
+      if (score == "IV-type") {
+        ml_g = ml_g$clone()
+      } else {
+        ml_g = NULL
+      }
       expect_error(DoubleMLPLR$new(
         data = data_irm$dml_data,
         ml_l = ml_l$clone(),
         ml_m = ml_m$clone(),
-        ml_g = ml_g$clone(),
+        ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score),
