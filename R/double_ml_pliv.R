@@ -168,7 +168,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' Number of repetitions for the sample splitting. Default is `1`.
     #'
     #' @param score (`character(1)`, `function()`) \cr
-    #' A `character(1)` (`"partialling out"` or `IV-type`) or a `function()`
+    #' A `character(1)` (`"partialling out"` or `"IV-type"`) or a `function()`
     #' specifying the score function.
     #' If a `function()` is provided, it must be of the form
     #' `function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)` and
