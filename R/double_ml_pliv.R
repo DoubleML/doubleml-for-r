@@ -492,7 +492,6 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           fold_specific_params = private$fold_specific_params)
         z = self$data$data_model[[self$data$z_cols]]
       } else {
-        
         m_hat = do.call(
           cbind,
           lapply(
