@@ -31,7 +31,7 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     set.seed(3141)
     df = data_plr$df
     dml_data = data_plr$dml_data
-    
+
     if (score == "IV-type") {
       ml_g = lrn(g_learner)
     } else {

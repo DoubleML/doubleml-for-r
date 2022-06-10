@@ -34,7 +34,7 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
     data_ml = double_ml_data_from_data_frame(data_plr$df,
       y_col = "y",
       d_cols = "d", x_cols = Xnames)
-    
+
     if (score == "IV-type") {
       ml_g = learner_pars$ml_g$clone()
     } else {

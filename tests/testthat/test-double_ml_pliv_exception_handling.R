@@ -65,14 +65,15 @@ test_that("Unit tests of exception handling for DoubleMLPLIV", {
   ml_m = lrn("regr.ranger")
   ml_r = lrn("regr.ranger")
   ml_g = lrn("regr.ranger")
-  
-  
-  msg = paste0("A learner ml_g has been provided for ",
-               "score = 'partialling out' but will be ignored.")
+
+
+  msg = paste0(
+    "A learner ml_g has been provided for ",
+    "score = 'partialling out' but will be ignored.")
   expect_warning(DoubleMLPLIV$new(dml_data_pliv,
-                                  ml_l = ml_l, ml_m = ml_m, ml_r = ml_r,
-                                  ml_g = ml_g,
-                                  score = "partialling out"),
-                 regexp = msg)
+    ml_l = ml_l, ml_m = ml_m, ml_r = ml_r,
+    ml_g = ml_g,
+    score = "partialling out"),
+  regexp = msg)
 }
 )

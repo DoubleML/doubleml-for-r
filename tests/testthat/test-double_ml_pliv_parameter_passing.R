@@ -129,7 +129,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLIV (no
     train_ids = list(my_sampling$train_set(1))
     test_ids = list(my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
-    
+
     if (score == "IV-type") {
       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
     } else {

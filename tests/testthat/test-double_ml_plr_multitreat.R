@@ -61,7 +61,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     data_ml = double_ml_data_from_data_frame(data_plr_multi,
       y_col = "y",
       d_cols = c("d1", "d2", "d3"), x_cols = Xnames)
-    
+
     if (score == "IV-type") {
       ml_g = learner_pars$ml_g$clone()
     } else {
