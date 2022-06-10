@@ -257,9 +257,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
             ml_g = private$assert_learner(ml_g, "ml_g",
               Regr = TRUE, Classif = FALSE)
             private$learner_[["ml_g"]] = ml_g
+          } else if (is.character(self$score) &&
+            (self$score == "partialling out")) {
+            warning(paste0(
+              "A learner ml_g has been provided for ",
+              "score = 'partialling out' but will be ignored. ",
+              "A learner ml_g is not required for estimation."))
           }
-          # Question: Add a warning when ml_g is set for partialling out score
-          # where it is not required / used?
         } else if (is.character(self$score) && (self$score == "IV-type")) {
           stop(paste(
             "For score = 'IV-type', learners",
