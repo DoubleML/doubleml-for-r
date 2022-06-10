@@ -38,7 +38,7 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       data = data_plr$dml_data,
       ml_l = learner_name,
       ml_m = learner_name,
-      ml_g = NULL,
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
