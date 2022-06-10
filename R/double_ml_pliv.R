@@ -480,7 +480,6 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         fold_specific_params = private$fold_specific_params)
 
       if (self$data$n_instr == 1) {
-        z = self$data$data_model[[self$data$z_cols]]
         m_hat = dml_cv_predict(self$learner$ml_m,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$z_cols,
@@ -493,7 +492,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           fold_specific_params = private$fold_specific_params)
         z = self$data$data_model[[self$data$z_cols]]
       } else {
-        z = self$data$data_model[, self$data$z_cols, with = FALSE]
+        
         m_hat = do.call(
           cbind,
           lapply(
