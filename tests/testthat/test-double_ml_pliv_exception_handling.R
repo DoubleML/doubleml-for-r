@@ -1,4 +1,4 @@
-context("Unit tests for deprecation warnings of PLIV")
+context("Unit tests for exception handling and deprecation warnings of PLIV")
 
 library("mlr3learners")
 
@@ -55,5 +55,24 @@ test_that("Unit tests for deprecation warnings of PLIV", {
     resolution = 5)
   expect_warning(dml_obj$tune(par_grids, tune_settings = tune_settings),
     regexp = msg)
+}
+)
+
+test_that("Unit tests of exception handling for DoubleMLPLIV", {
+  set.seed(3141)
+  dml_data_pliv = make_pliv_CHS2015(n_obs = 51, dim_z = 1)
+  ml_l = lrn("regr.ranger")
+  ml_m = lrn("regr.ranger")
+  ml_r = lrn("regr.ranger")
+  ml_g = lrn("regr.ranger")
+  
+  
+  msg = paste0("A learner ml_g has been provided for ",
+               "score = 'partialling out' but will be ignored.")
+  expect_warning(DoubleMLPLIV$new(dml_data_pliv,
+                                  ml_l = ml_l, ml_m = ml_m, ml_r = ml_r,
+                                  ml_g = ml_g,
+                                  score = "partialling out"),
+                 regexp = msg)
 }
 )

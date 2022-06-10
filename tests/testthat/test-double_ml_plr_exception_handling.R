@@ -124,6 +124,21 @@ patrick::with_parameters_test_that("Unit tests for exception handling of PLR:",
       msg = "Multiplier bootstrap has not yet been performed. First call bootstrap\\(\\) and then try confint\\(\\) again."
       expect_error(double_mlplr_obj$confint(joint = TRUE, level = 0.95),
         regexp = msg)
+      
+      set.seed(3141)
+      dml_data = make_plr_CCDDHNR2018(n_obs = 101)
+      ml_l = lrn("regr.ranger")
+      ml_m = ml_l$clone()
+      ml_g = ml_l$clone()
+      
+      if (score == "partialling out") {
+        msg = paste0("A learner ml_g has been provided for ",
+                     "score = 'partialling out' but will be ignored.")
+        expect_warning(DoubleMLPLR$new(dml_data,
+                                       ml_l = ml_l, ml_m = ml_m, ml_g=ml_g,
+                                       score = score),
+                       regexp = msg)
+      }
     }
   }
 )
