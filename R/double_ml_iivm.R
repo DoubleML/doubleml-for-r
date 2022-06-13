@@ -396,7 +396,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       }
       return(psis)
     },
-    ml_nuisance_tuning = function(smpls, param_set, tune_settings,
+    nuisance_tuning = function(smpls, param_set, tune_settings,
       tune_on_folds, ...) {
 
       if (!tune_on_folds) {

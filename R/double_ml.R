@@ -814,7 +814,7 @@ DoubleML = R6Class("DoubleML",
         if (tune_on_folds) {
           for (i_rep in 1:self$n_rep) {
             private$i_rep = i_rep
-            param_tuning = private$ml_nuisance_tuning(
+            param_tuning = private$nuisance_tuning(
               private$get__smpls(),
               param_set, tune_settings, tune_on_folds)
             private$tuning_res_[[i_treat]][[i_rep]] = param_tuning
@@ -833,7 +833,7 @@ DoubleML = R6Class("DoubleML",
           }
         } else {
           private$i_rep = 1
-          param_tuning = private$ml_nuisance_tuning(
+          param_tuning = private$nuisance_tuning(
             private$get__smpls(),
             param_set, tune_settings, tune_on_folds)
           private$tuning_res_[[i_treat]] = param_tuning
