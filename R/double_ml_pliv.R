@@ -444,22 +444,22 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       names(private$params_) = param_names
       invisible(self)
     },
-    ml_nuisance_and_score_elements = function(smpls, ...) {
+    nuisance_est = function(smpls, ...) {
       if (self$partialX & !self$partialZ) {
-        res = private$ml_nuisance_and_score_elements_partialX(smpls, ...)
+        res = private$nuisance_est_partialX(smpls, ...)
 
       } else if (!self$partialX & self$partialZ) {
-        res = private$ml_nuisance_and_score_elements_partialZ(smpls, ...)
+        res = private$nuisance_est_partialZ(smpls, ...)
 
       } else if (self$partialX & self$partialZ) {
-        res = private$ml_nuisance_and_score_elements_partialXZ(smpls, ...)
+        res = private$nuisance_est_partialXZ(smpls, ...)
 
       }
 
       return(res)
     },
 
-    ml_nuisance_and_score_elements_partialX = function(smpls, ...) {
+    nuisance_est_partialX = function(smpls, ...) {
 
       l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -602,7 +602,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       }
       return(psis)
     },
-    ml_nuisance_and_score_elements_partialXZ = function(smpls, ...) {
+    nuisance_est_partialXZ = function(smpls, ...) {
 
       l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -674,7 +674,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       return(res)
     },
 
-    ml_nuisance_and_score_elements_partialZ = function(smpls, ...) {
+    nuisance_est_partialZ = function(smpls, ...) {
 
       # nuisance r
 

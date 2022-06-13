@@ -378,7 +378,7 @@ DoubleML = R6Class("DoubleML",
           }
 
           # ml estimation of nuisance models and computation of psi elements
-          res = private$ml_nuisance_and_score_elements(private$get__smpls())
+          res = private$nuisance_est(private$get__smpls())
           private$psi_a_[, private$i_rep, private$i_treat] = res$psi_a
           private$psi_b_[, private$i_rep, private$i_treat] = res$psi_b
           if (store_predictions) {

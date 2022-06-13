@@ -276,7 +276,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "ml_r1" = nuisance)
       invisible(self)
     },
-    ml_nuisance_and_score_elements = function(smpls, ...) {
+    nuisance_est = function(smpls, ...) {
 
       if (self$subgroups$always_takers == FALSE &
         self$subgroups$never_takers == FALSE) {
