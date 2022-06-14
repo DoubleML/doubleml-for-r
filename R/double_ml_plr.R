@@ -379,7 +379,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       invisible(self)
     },
 
-    ml_nuisance_and_score_elements = function(smpls, ...) {
+    nuisance_est = function(smpls, ...) {
 
       l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -459,7 +459,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       }
       return(psis)
     },
-    ml_nuisance_tuning = function(smpls, param_set, tune_settings,
+    nuisance_tuning = function(smpls, param_set, tune_settings,
       tune_on_folds, ...) {
 
       if (!tune_on_folds) {

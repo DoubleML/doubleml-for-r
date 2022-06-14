@@ -214,7 +214,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         "ml_m" = nuisance)
       invisible(self)
     },
-    ml_nuisance_and_score_elements = function(smpls, ...) {
+    nuisance_est = function(smpls, ...) {
 
       cond_smpls = get_cond_samples(
         smpls,
@@ -303,7 +303,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       }
       return(psis)
     },
-    ml_nuisance_tuning = function(smpls, param_set, tune_settings,
+    nuisance_tuning = function(smpls, param_set, tune_settings,
       tune_on_folds, ...) {
 
       if (!tune_on_folds) {
