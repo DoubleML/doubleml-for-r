@@ -386,7 +386,7 @@ test_that("Unit tests for invalid data", {
     "DoubleMLPLIV instead of DoubleMLPLR.")
   expect_error(DoubleMLPLR$new(
     data = data_pliv$dml_data,
-    ml_g = mlr3::lrn("regr.rpart"),
+    ml_l = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("regr.rpart")),
   regexp = msg)
 
@@ -398,7 +398,7 @@ test_that("Unit tests for invalid data", {
     "variable\\(s\\) use DoubleMLPLR instead of DoubleMLPLIV.")
   expect_error(DoubleMLPLIV$new(
     data = data_plr$dml_data,
-    ml_g = mlr3::lrn("regr.rpart"),
+    ml_l = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("regr.rpart"),
     ml_r = mlr3::lrn("regr.rpart")),
   regexp = msg)

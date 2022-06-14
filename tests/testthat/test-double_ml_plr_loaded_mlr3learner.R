@@ -29,10 +29,16 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     params = list("cp" = 0.01, "minsplit" = 20)
 
     set.seed(123)
+    if (score == "IV-type") {
+      ml_g = learner_name
+    } else {
+      ml_g = NULL
+    }
     double_mlplr = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = learner_name,
+      ml_l = learner_name,
       ml_m = learner_name,
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -43,11 +49,19 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       treat_var = "d",
       params = params)
 
-    # set params for nuisance part g
+    # set params for nuisance part l
     double_mlplr$set_ml_nuisance_params(
-      learner = "ml_g",
+      learner = "ml_l",
       treat_var = "d",
       params = params)
+
+    if (score == "IV-type") {
+      # set params for nuisance part g
+      double_mlplr$set_ml_nuisance_params(
+        learner = "ml_g",
+        treat_var = "d",
+        params = params)
+    }
 
     double_mlplr$fit()
     theta = double_mlplr$coef
@@ -60,10 +74,16 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     set.seed(123)
     loaded_learner = mlr3::lrn("regr.rpart", "cp" = 0.01, "minsplit" = 20)
+    if (score == "IV-type") {
+      ml_g = loaded_learner
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_loaded = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = loaded_learner,
+      ml_l = loaded_learner,
       ml_m = loaded_learner,
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -79,10 +99,16 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     set.seed(123)
     semiloaded_learner = mlr3::lrn("regr.rpart")
+    if (score == "IV-type") {
+      ml_g = semiloaded_learner
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_semiloaded = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = semiloaded_learner,
+      ml_l = semiloaded_learner,
       ml_m = semiloaded_learner,
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -92,11 +118,19 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       treat_var = "d",
       params = params)
 
-    # set params for nuisance part g
+    # set params for nuisance part l
     double_mlplr_semiloaded$set_ml_nuisance_params(
-      learner = "ml_g",
+      learner = "ml_l",
       treat_var = "d",
       params = params)
+
+    if (score == "IV-type") {
+      # set params for nuisance part g
+      double_mlplr_semiloaded$set_ml_nuisance_params(
+        learner = "ml_g",
+        treat_var = "d",
+        params = params)
+    }
 
     double_mlplr_semiloaded$fit()
     theta_semiloaded = double_mlplr_semiloaded$coef

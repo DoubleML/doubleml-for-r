@@ -35,17 +35,25 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
     n_rep = 3
 
     learner_pars = get_default_mlmethod_plr(learner)
-    params_g = rep(list(learner_pars$params$params_g), 2)
+    params_l = rep(list(learner_pars$params$params_l), 2)
     params_m = rep(list(learner_pars$params$params_m), 2)
+    params_g = rep(list(learner_pars$params$params_g), 2)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     plr_hat = dml_plr_multitreat(data_plr_multi,
       y = "y", d = c("d1", "d2"),
       n_folds = n_folds, n_rep = n_rep,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      params_g = params_g,
+      ml_g = ml_g,
+      params_l = params_l,
       params_m = params_m,
+      params_g = params_g,
       dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
@@ -65,26 +73,40 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (oop
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
 
     double_mlplr_obj$set_ml_nuisance_params(
-      treat_var = "d1", learner = "ml_g",
-      params = learner_pars$params$params_g)
+      treat_var = "d1", learner = "ml_l",
+      params = learner_pars$params$params_l)
     double_mlplr_obj$set_ml_nuisance_params(
-      treat_var = "d2", learner = "ml_g",
-      params = learner_pars$params$params_g)
+      treat_var = "d2", learner = "ml_l",
+      params = learner_pars$params$params_l)
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d1", learner = "ml_m",
       params = learner_pars$params$params_m)
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = learner_pars$params$params_m)
+    if (score == "IV-type") {
+      double_mlplr_obj$set_ml_nuisance_params(
+        treat_var = "d1", learner = "ml_g",
+        params = learner_pars$params$params_g)
+      double_mlplr_obj$set_ml_nuisance_params(
+        treat_var = "d2", learner = "ml_g",
+        params = learner_pars$params$params_g)
+    }
 
 
     double_mlplr_obj$fit()
@@ -108,8 +130,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
     n_folds = 2
 
     learner_pars = get_default_mlmethod_plr(learner)
-    params_g = rep(list(learner_pars$params$params_g), 2)
+    params_l = rep(list(learner_pars$params$params_l), 2)
     params_m = rep(list(learner_pars$params$params_m), 2)
+    params_g = rep(list(learner_pars$params$params_g), 2)
 
     # Passing for non-cross-fitting case
     set.seed(3141)
@@ -119,13 +142,20 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
     test_ids = list(my_sampling$test_set(1))
     smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     plr_hat = dml_plr_multitreat(data_plr_multi,
       y = "y", d = c("d1", "d2"),
       n_folds = 1,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
-      params_g = params_g,
+      ml_g = ml_g,
+      params_l = params_l,
       params_m = params_m,
+      params_g = params_g,
       dml_procedure = dml_procedure, score = score,
       smpls = smpls)
     theta = plr_hat$coef
@@ -137,26 +167,40 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (no 
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj_nocf = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       apply_cross_fitting = FALSE)
 
     double_mlplr_obj_nocf$set_ml_nuisance_params(
-      treat_var = "d1", learner = "ml_g",
-      params = learner_pars$params$params_g)
+      treat_var = "d1", learner = "ml_l",
+      params = learner_pars$params$params_l)
     double_mlplr_obj_nocf$set_ml_nuisance_params(
-      treat_var = "d2", learner = "ml_g",
-      params = learner_pars$params$params_g)
+      treat_var = "d2", learner = "ml_l",
+      params = learner_pars$params$params_l)
     double_mlplr_obj_nocf$set_ml_nuisance_params(
       treat_var = "d1", learner = "ml_m",
       params = learner_pars$params$params_m)
     double_mlplr_obj_nocf$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = learner_pars$params$params_m)
+    if (score == "IV-type") {
+      double_mlplr_obj_nocf$set_ml_nuisance_params(
+        treat_var = "d1", learner = "ml_g",
+        params = learner_pars$params$params_g)
+      double_mlplr_obj_nocf$set_ml_nuisance_params(
+        treat_var = "d2", learner = "ml_g",
+        params = learner_pars$params$params_g)
+    }
 
 
     double_mlplr_obj_nocf$fit()
@@ -182,50 +226,71 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
 
     double_mlplr_obj$set_ml_nuisance_params(
-      treat_var = "d1", learner = "ml_g",
-      params = learner_pars$params$params_g)
+      treat_var = "d1", learner = "ml_l",
+      params = learner_pars$params$params_l)
     double_mlplr_obj$set_ml_nuisance_params(
-      treat_var = "d2", learner = "ml_g",
-      params = learner_pars$params$params_g)
+      treat_var = "d2", learner = "ml_l",
+      params = learner_pars$params$params_l)
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d1", learner = "ml_m",
       params = learner_pars$params$params_m)
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = learner_pars$params$params_m)
+    if (score == "IV-type") {
+      double_mlplr_obj$set_ml_nuisance_params(
+        treat_var = "d1", learner = "ml_g",
+        params = learner_pars$params$params_g)
+      double_mlplr_obj$set_ml_nuisance_params(
+        treat_var = "d2", learner = "ml_g",
+        params = learner_pars$params$params_g)
+    }
 
     double_mlplr_obj$fit()
     theta = double_mlplr_obj$coef
     se = double_mlplr_obj$se
 
-    params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
+    params_l_fold_wise = rep(list(rep(list(learner_pars$params$params_l), n_folds)), n_rep)
     params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
+    params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g)
+    } else {
+      ml_g = NULL
+    }
     dml_plr_fold_wise = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
-      ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
+      ml_l = mlr3::lrn(learner_pars$mlmethod$mlmethod_l),
       ml_m = mlr3::lrn(learner_pars$mlmethod$mlmethod_m),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
 
     dml_plr_fold_wise$set_ml_nuisance_params(
-      treat_var = "d1", learner = "ml_g",
-      params = params_g_fold_wise,
+      treat_var = "d1", learner = "ml_l",
+      params = params_l_fold_wise,
       set_fold_specific = TRUE)
     dml_plr_fold_wise$set_ml_nuisance_params(
-      treat_var = "d2", learner = "ml_g",
-      params = params_g_fold_wise,
+      treat_var = "d2", learner = "ml_l",
+      params = params_l_fold_wise,
       set_fold_specific = TRUE)
     dml_plr_fold_wise$set_ml_nuisance_params(
       treat_var = "d1", learner = "ml_m",
@@ -235,6 +300,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (fol
       treat_var = "d2", learner = "ml_m",
       params = params_m_fold_wise,
       set_fold_specific = TRUE)
+    if (score == "IV-type") {
+      dml_plr_fold_wise$set_ml_nuisance_params(
+        treat_var = "d1", learner = "ml_g",
+        params = params_g_fold_wise,
+        set_fold_specific = TRUE)
+      dml_plr_fold_wise$set_ml_nuisance_params(
+        treat_var = "d2", learner = "ml_g",
+        params = params_g_fold_wise,
+        set_fold_specific = TRUE)
+    }
 
     dml_plr_fold_wise$fit()
     theta_fold_wise = dml_plr_fold_wise$coef
@@ -251,8 +326,9 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
     n_folds = 2
     n_rep = 3
 
-    params_g = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_l = list(cp = 0.01, minsplit = 20) # this are defaults
     params_m = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_g = list(cp = 0.01, minsplit = 20) # this are defaults
 
     Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
     data_ml = double_ml_data_from_data_frame(data_plr_multi,
@@ -260,10 +336,16 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
       d_cols = c("d1", "d2"), x_cols = Xnames)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = lrn("regr.rpart")
+    } else {
+      ml_g = NULL
+    }
     dml_plr_default = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
-      ml_g = lrn("regr.rpart"),
+      ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
@@ -273,25 +355,39 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of PLR (def
     se_default = dml_plr_default$se
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = lrn("regr.rpart")
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
-      ml_g = lrn("regr.rpart"),
+      ml_l = lrn("regr.rpart"),
       ml_m = lrn("regr.rpart"),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
     double_mlplr_obj$set_ml_nuisance_params(
-      treat_var = "d1", learner = "ml_g",
-      params = params_g)
+      treat_var = "d1", learner = "ml_l",
+      params = params_l)
     double_mlplr_obj$set_ml_nuisance_params(
-      treat_var = "d2", learner = "ml_g",
-      params = params_g)
+      treat_var = "d2", learner = "ml_l",
+      params = params_l)
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d1", learner = "ml_m",
       params = params_m)
     double_mlplr_obj$set_ml_nuisance_params(
       treat_var = "d2", learner = "ml_m",
       params = params_m)
+    if (score == "IV-type") {
+      double_mlplr_obj$set_ml_nuisance_params(
+        treat_var = "d1", learner = "ml_g",
+        params = params_g)
+      double_mlplr_obj$set_ml_nuisance_params(
+        treat_var = "d2", learner = "ml_g",
+        params = params_g)
+    }
 
     double_mlplr_obj$fit()
     theta = double_mlplr_obj$coef

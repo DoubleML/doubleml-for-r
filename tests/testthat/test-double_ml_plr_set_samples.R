@@ -35,9 +35,15 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
       y_col = "y",
       d_cols = "d", x_cols = Xnames)
 
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
@@ -52,9 +58,15 @@ patrick::with_parameters_test_that("PLR with external sample provision:",
 
     # External sample provision
     SAMPLES = double_mlplr_obj$smpls
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj_external = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
       draw_sample_splitting = FALSE)

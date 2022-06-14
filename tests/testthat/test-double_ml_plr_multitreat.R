@@ -29,11 +29,17 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     n_folds = 5
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     plr_hat = dml_plr_multitreat(data_plr_multi,
       y = "y", d = c("d1", "d2", "d3"),
       n_folds = n_folds,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure, score = score)
     theta = plr_hat$coef
     se = plr_hat$se
@@ -56,9 +62,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       y_col = "y",
       d_cols = c("d1", "d2", "d3"), x_cols = Xnames)
 
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)

@@ -366,8 +366,10 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "ml_r1" = r1_hat)
       return(res)
     },
-    score_elements = function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
-      r1_hat, smpls) {
+    score_elements = function(y = y, z = z, d = d,
+      g0_hat = g0_hat, g1_hat = g1_hat, m_hat = m_hat,
+      r0_hat = r0_hat, r1_hat = r1_hat,
+      smpls = smpls) {
 
       u0_hat = y - g0_hat
       u1_hat = y - g1_hat

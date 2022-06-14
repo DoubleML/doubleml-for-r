@@ -15,7 +15,7 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
-    score = "partialling out",
+    score = c("partialling out", "IV-type"),
     stringsAsFactors = FALSE)
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -29,9 +29,10 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
     pliv_hat = dml_pliv(data_pliv$df,
       y = "y", d = "d", z = "z",
       n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
+      ml_g = learner_pars$ml_g$clone(),
       dml_procedure = dml_procedure, score = score)
     theta = pliv_hat$coef
     se = pliv_hat$se
@@ -41,19 +42,32 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
       y = "y", d = "d", z = "z",
       n_folds = 5, smpls = pliv_hat$smpls,
       all_preds = pliv_hat$all_preds,
-      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+      bootstrap = "normal", n_rep_boot = n_rep_boot,
+      score = score)$boot_coef
 
     set.seed(3141)
-    double_mlpliv_obj = DoubleMLPLIV$new(
-      data = data_pliv$dml_data,
-      n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
-      ml_m = learner_pars$ml_m$clone(),
-      ml_r = learner_pars$ml_r$clone(),
-      dml_procedure = dml_procedure,
-      score = score)
+    if (score == "partialling out") {
+      double_mlpliv_obj = DoubleMLPLIV$new(
+        data = data_pliv$dml_data,
+        n_folds = 5,
+        ml_l = learner_pars$ml_l$clone(),
+        ml_m = learner_pars$ml_m$clone(),
+        ml_r = learner_pars$ml_r$clone(),
+        dml_procedure = dml_procedure,
+        score = score)
+    } else {
+      double_mlpliv_obj = DoubleMLPLIV$new(
+        data = data_pliv$dml_data,
+        n_folds = 5,
+        ml_l = learner_pars$ml_l$clone(),
+        ml_m = learner_pars$ml_m$clone(),
+        ml_r = learner_pars$ml_r$clone(),
+        ml_g = learner_pars$ml_g$clone(),
+        dml_procedure = dml_procedure,
+        score = score)
+    }
 
-    double_mlpliv_obj$fit()
+    double_mlpliv_obj$fit(store_predictions = T)
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 

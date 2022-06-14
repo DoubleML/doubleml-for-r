@@ -25,11 +25,11 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
-#' ml_m = ml_g$clone()
-#' ml_r = ml_g$clone()
+#' ml_l = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+#' ml_m = ml_l$clone()
+#' ml_r = ml_l$clone()
 #' obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
-#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 #' dml_pliv_obj$fit()
 #' dml_pliv_obj$summary()
 #' }
@@ -41,15 +41,15 @@
 #' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.rpart")
-#' ml_m = ml_g$clone()
-#' ml_r = ml_g$clone()
+#' ml_l = lrn("regr.rpart")
+#' ml_m = ml_l$clone()
+#' ml_r = ml_l$clone()
 #' obj_dml_data = make_pliv_CHS2015(
 #'   alpha = 1, n_obs = 500, dim_x = 20,
 #'   dim_z = 1)
-#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 #' param_grid = list(
-#'   "ml_g" = paradox::ParamSet$new(list(
+#'   "ml_l" = paradox::ParamSet$new(list(
 #'     paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
 #'     paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
 #'   "ml_m" = paradox::ParamSet$new(list(
@@ -99,7 +99,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' The `DoubleMLData` object providing the data and specifying the variables
     #' of the causal model.
     #'
-    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' @param ml_l ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
     #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
     #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
@@ -110,7 +110,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
     #' be passed with specified parameters, for example
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`.  \cr
-    #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y|X]}.
+    #' `ml_l` refers to the nuisance function \eqn{l_0(X) = E[Y|X]}.
     #'
     #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
@@ -138,6 +138,21 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
     #' `ml_r` refers to the nuisance function \eqn{r_0(X) = E[D|X]}.
     #'
+    #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
+    #' [`Learner`][mlr3::Learner], `character(1)`) \cr
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
+    #' `ml_g` refers to the nuisance function \eqn{g_0(X) = E[Y - D\theta_0|X]}.
+    #' Note: The learner `ml_g` is only required for the score `'IV-type'`.
+    #' Optionally, it can be specified and estimated for callable scores.
+    #'
     #' @param partialX (`logical(1)`)  \cr
     #' Indicates whether covariates \eqn{X} should be partialled out.
     #' Default is `TRUE`.
@@ -153,10 +168,10 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' Number of repetitions for the sample splitting. Default is `1`.
     #'
     #' @param score (`character(1)`, `function()`) \cr
-    #' A `character(1)` (`"partialling out"` is the only choice) or a
-    #' `function()` specifying the score function.
+    #' A `character(1)` (`"partialling out"` or `"IV-type"`) or a `function()`
+    #' specifying the score function.
     #' If a `function()` is provided, it must be of the form
-    #' `function(y, z, d, g_hat, m_hat, r_hat, smpls)` and
+    #' `function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)` and
     #' the returned output must be a named `list()` with elements
     #' `psi_a` and `psi_b`. Default is `"partialling out"`.
     #'
@@ -171,9 +186,10 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Indicates whether cross-fitting should be applied. Default is `TRUE`.
     initialize = function(data,
-      ml_g,
+      ml_l,
       ml_m,
       ml_r,
+      ml_g = NULL,
       partialX = TRUE,
       partialZ = FALSE,
       n_folds = 5,
@@ -182,6 +198,19 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       dml_procedure = "dml2",
       draw_sample_splitting = TRUE,
       apply_cross_fitting = TRUE) {
+
+      if (missing(ml_l)) {
+        if (!missing(ml_g)) {
+          warning(paste0(
+            "The argument ml_g was renamed to ml_l. ",
+            "Please adapt the argument name accordingly. ",
+            "ml_g is redirected to ml_l.\n",
+            "The redirection will be removed in a future version."),
+          call. = FALSE)
+          ml_l = ml_g
+          ml_g = NULL
+        }
+      }
 
       super$initialize_double_ml(
         data,
@@ -193,11 +222,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         apply_cross_fitting)
 
       private$check_data(self$data)
-      private$check_score(self$score)
       assert_logical(partialX, len = 1)
       assert_logical(partialZ, len = 1)
       private$partialX_ = partialX
       private$partialZ_ = partialZ
+      private$check_score(self$score)
 
       if (!self$partialX & self$partialZ) {
         ml_r = private$assert_learner(ml_r, "ml_r",
@@ -205,7 +234,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           Classif = FALSE)
         private$learner_ = list("ml_r" = ml_r)
       } else {
-        ml_g = private$assert_learner(ml_g, "ml_g",
+        ml_l = private$assert_learner(ml_l, "ml_l",
           Regr = TRUE,
           Classif = FALSE)
         ml_m = private$assert_learner(ml_m, "ml_m",
@@ -215,11 +244,186 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           Regr = TRUE,
           Classif = FALSE)
         private$learner_ = list(
-          "ml_g" = ml_g,
+          "ml_l" = ml_l,
           "ml_m" = ml_m,
           "ml_r" = ml_r)
+
+        if (!is.null(ml_g)) {
+          assert(
+            check_character(ml_g, max.len = 1),
+            check_class(ml_g, "Learner"))
+          if ((is.character(self$score) && (self$score == "IV-type")) ||
+            is.function(self$score)) {
+            ml_g = private$assert_learner(ml_g, "ml_g",
+              Regr = TRUE, Classif = FALSE)
+            private$learner_[["ml_g"]] = ml_g
+          } else if (is.character(self$score) &&
+            (self$score == "partialling out")) {
+            warning(paste0(
+              "A learner ml_g has been provided for ",
+              "score = 'partialling out' but will be ignored. ",
+              "A learner ml_g is not required for estimation."))
+          }
+        } else if (is.character(self$score) && (self$score == "IV-type")) {
+          stop(paste(
+            "For score = 'IV-type', learners",
+            "ml_l, ml_m, ml_r and ml_g need to be specified."))
+        }
       }
+
       private$initialize_ml_nuisance_params()
+    },
+    # To be removed in version 0.6.0
+    #
+    # Note: Ideally the following duplicate roxygen / docu parts should be taken
+    # from the base class DoubleML. However, this is an open issue in pkg
+    # roxygen2, see https://github.com/r-lib/roxygen2/issues/996 &
+    # https://github.com/r-lib/roxygen2/issues/1043
+    #
+    #' @description
+    #' Set hyperparameters for the nuisance models of DoubleML models.
+    #'
+    #' Note that in the current implementation, either all parameters have to
+    #' be set globally or all parameters have to be provided fold-specific.
+    #'
+    #' @param learner (`character(1)`) \cr
+    #' The nuisance model/learner (see method `params_names`).
+    #'
+    #' @param treat_var (`character(1)`) \cr
+    #' The treatment varaible (hyperparameters can be set treatment-variable
+    #' specific).
+    #'
+    #' @param params (named `list()`) \cr
+    #' A named `list()` with estimator parameters. Parameters are used for all
+    #' folds by default. Alternatively, parameters can be passed in a
+    #' fold-specific way if option  `fold_specific`is `TRUE`. In this case, the
+    #' outer list needs to be of length `n_rep` and the inner list of length
+    #' `n_folds`.
+    #'
+    #' @param set_fold_specific (`logical(1)`) \cr
+    #' Indicates if the parameters passed in `params` should be passed in
+    #' fold-specific way. Default is `FALSE`. If `TRUE`, the outer list needs
+    #' to be of length `n_rep` and the inner list of length `n_folds`.
+    #' Note that in the current implementation, either all parameters have to
+    #' be set globally or all parameters have to be provided fold-specific.
+    #'
+    #' @return self
+    set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
+      set_fold_specific = FALSE) {
+      assert_character(learner, len = 1)
+      if (is.character(self$score) && (self$score == "partialling out") &&
+        (learner == "ml_g")) {
+        warning(paste0(
+          "Learner ml_g was renamed to ml_l. ",
+          "Please adapt the argument learner accordingly. ",
+          "The provided parameters are set for ml_l. ",
+          "The redirection will be removed in a future version."),
+        call. = FALSE)
+        learner = "ml_l"
+      }
+      super$set_ml_nuisance_params(
+        learner, treat_var, params,
+        set_fold_specific)
+    },
+    # To be removed in version 0.6.0
+    #
+    # Note: Ideally the following duplicate roxygen / docu parts should be taken
+    # from the base class DoubleML. However, this is an open issue in pkg
+    # roxygen2, see https://github.com/r-lib/roxygen2/issues/996 &
+    # https://github.com/r-lib/roxygen2/issues/1043
+    #
+    #' @description
+    #' Hyperparameter-tuning for DoubleML models.
+    #'
+    #' The hyperparameter-tuning is performed using the tuning methods provided
+    #' in the [mlr3tuning](https://mlr3tuning.mlr-org.com/) package. For more
+    #' information on tuning in [mlr3](https://mlr3.mlr-org.com/), we refer to
+    #' the section on parameter tuning in the
+    #' [mlr3 book](https://mlr3book.mlr-org.com/optimization.html#tuning).
+    #'
+    #' @param param_set (named `list()`) \cr
+    #' A named `list` with a parameter grid for each nuisance model/learner
+    #' (see method `learner_names()`). The parameter grid must be an object of
+    #' class [ParamSet][paradox::ParamSet].
+    #'
+    #' @param tune_settings (named `list()`) \cr
+    #' A named `list()` with arguments passed to the hyperparameter-tuning with
+    #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
+    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' `tune_settings` has entries
+    #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
+    #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`
+    #' is required to perform tuning.
+    #' * `algorithm` ([Tuner][mlr3tuning::Tuner] or `character(1)`) \cr
+    #' A [Tuner][mlr3tuning::Tuner] object (recommended) or key passed to the
+    #' respective dictionary to specify the tuning algorithm used in
+    #' [tnr()][mlr3tuning::tnr()]. `algorithm` is passed as an argument to
+    #' [tnr()][mlr3tuning::tnr()]. If `algorithm` is not specified by the users,
+    #' default is set to `"grid_search"`. If set to `"grid_search"`, then
+    #' additional argument `"resolution"` is required.
+    #' * `rsmp_tune` ([Resampling][mlr3::Resampling] or `character(1)`)\cr
+    #' A [Resampling][mlr3::Resampling] object (recommended) or option passed
+    #' to [rsmp()][mlr3::mlr_sugar] to initialize a
+    #' [Resampling][mlr3::Resampling] for parameter tuning in `mlr3`.
+    #' If not specified by the user, default is set to `"cv"`
+    #' (cross-validation).
+    #' * `n_folds_tune` (`integer(1)`, optional) \cr
+    #' If `rsmp_tune = "cv"`, number of folds used for cross-validation.
+    #' If not specified by the user, default is set to `5`.
+    #' * `measure` (`NULL`, named `list()`, optional) \cr
+    #' Named list containing the measures used for parameter tuning. Entries in
+    #' list must either be [Measure][mlr3::Measure] objects or keys to be
+    #' passed to passed to [msr()][mlr3::msr()]. The names of the entries must
+    #' match the learner names (see method `learner_names()`). If set to `NULL`,
+    #' default measures are used, i.e., `"regr.mse"` for continuous outcome
+    #' variables and `"classif.ce"` for binary outcomes.
+    #' * `resolution` (`character(1)`) \cr The key passed to the respective
+    #' dictionary to specify  the tuning algorithm used in
+    #' [tnr()][mlr3tuning::tnr()]. `resolution` is passed as an argument to
+    #' [tnr()][mlr3tuning::tnr()].
+    #'
+    #' @param tune_on_folds (`logical(1)`) \cr
+    #' Indicates whether the tuning should be done fold-specific or globally.
+    #' Default is `FALSE`.
+    #'
+    #' @return self
+    tune = function(param_set, tune_settings = list(
+      n_folds_tune = 5,
+      rsmp_tune = mlr3::rsmp("cv", folds = 5),
+      measure = NULL,
+      terminator = mlr3tuning::trm("evals", n_evals = 20),
+      algorithm = mlr3tuning::tnr("grid_search"),
+      resolution = 5),
+    tune_on_folds = FALSE) {
+
+      assert_list(param_set)
+      if (is.character(self$score) && (self$score == "partialling out")) {
+        if (exists("ml_g", where = param_set) && !exists("ml_l", where = param_set)) {
+          warning(paste0(
+            "Learner ml_g was renamed to ml_l. ",
+            "Please adapt the name in param_set accordingly. ",
+            "The provided param_set for ml_g is used for ml_l. ",
+            "The redirection will be removed in a future version."),
+          call. = FALSE)
+          names(param_set)[names(param_set) == "ml_g"] = "ml_l"
+        }
+      }
+
+      assert_list(tune_settings)
+      if (test_names(names(tune_settings), must.include = "measure") && !is.null(tune_settings$measure)) {
+        assert_list(tune_settings$measure)
+        if (exists("ml_g", where = tune_settings$measure) && !exists("ml_l", where = tune_settings$measure)) {
+          warning(paste0(
+            "Learner ml_g was renamed to ml_l. ",
+            "Please adapt the name in tune_settings$measure accordingly. ",
+            "The provided tune_settings$measure for ml_g is used for ml_l. ",
+            "The redirection will be removed in a future version."),
+          call. = FALSE)
+          names(tune_settings$measure)[names(tune_settings$measure) == "ml_g"] = "ml_l"
+        }
+      }
+
+      super$tune(param_set, tune_settings, tune_on_folds)
     }
   ),
   private = list(
@@ -228,22 +432,16 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     n_nuisance = 3,
     i_instr = NULL,
     initialize_ml_nuisance_params = function() {
-      if (self$partialX & !self$partialZ) {
-        if (self$data$n_instr == 1) {
-          valid_learner = c("ml_g", "ml_m", "ml_r")
-        } else {
-          valid_learner = c("ml_g", "ml_r", paste0("ml_m_", self$data$z_cols))
-        }
-      } else if (self$partialX & self$partialZ) {
-        valid_learner = c("ml_g", "ml_m", "ml_r")
-      } else if (!self$partialX & self$partialZ) {
-        valid_learner = c("ml_r")
+      if ((self$partialX && !self$partialZ) && (self$data$n_instr > 1)) {
+        param_names = c("ml_l", "ml_r", paste0("ml_m_", self$data$z_cols))
+      } else {
+        param_names = names(private$learner_)
       }
       nuisance = vector("list", self$data$n_treat)
       names(nuisance) = self$data$d_cols
 
-      private$params_ = rep(list(nuisance), length(valid_learner))
-      names(private$params_) = valid_learner
+      private$params_ = rep(list(nuisance), length(param_names))
+      names(private$params_) = param_names
       invisible(self)
     },
     ml_nuisance_and_score_elements = function(smpls, ...) {
@@ -263,15 +461,15 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
     ml_nuisance_and_score_elements_partialX = function(smpls, ...) {
 
-      g_hat = dml_cv_predict(self$learner$ml_g,
+      l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
-        nuisance_id = "nuis_g",
+        nuisance_id = "nuis_l",
         smpls = smpls,
-        est_params = self$get_params("ml_g"),
+        est_params = self$get_params("ml_l"),
         return_train_preds = FALSE,
-        task_type = private$task_type$ml_g,
+        task_type = private$task_type$ml_l,
         fold_specific_params = private$fold_specific_params)
 
       r_hat = dml_cv_predict(self$learner$ml_r,
@@ -320,29 +518,58 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      res = private$score_elements(y, z, d, g_hat, m_hat, r_hat, smpls)
+      g_hat = NULL
+      if (exists("ml_g", where = private$learner_)) {
+        # get an initial estimate for theta using the partialling out score
+        psi_a = -(d - r_hat) * (z - m_hat)
+        psi_b = (z - m_hat) * (y - l_hat)
+        theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+
+        data_aux = data.table(self$data$data_model,
+          "y_minus_theta_d" = y - theta_initial * d)
+
+        g_hat = dml_cv_predict(self$learner$ml_g,
+          c(self$data$x_cols, self$data$other_treat_cols),
+          "y_minus_theta_d",
+          data_aux,
+          nuisance_id = "nuis_g",
+          smpls = smpls,
+          est_params = self$get_params("ml_g"),
+          return_train_preds = FALSE,
+          task_type = private$task_type$ml_g,
+          fold_specific_params = private$fold_specific_params)
+      }
+
+      res = private$score_elements(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)
       res$preds = list(
-        "ml_g" = g_hat,
+        "ml_l" = l_hat,
         "ml_m" = m_hat,
-        "ml_r" = r_hat)
+        "ml_r" = r_hat,
+        "ml_g" = g_hat)
       return(res)
     },
-    score_elements = function(y, z, d, g_hat, m_hat, r_hat, smpls) {
-      u_hat = y - g_hat
+    score_elements = function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls) {
+      u_hat = y - l_hat
       w_hat = d - r_hat
       v_hat = z - m_hat
-
       if (self$data$n_instr == 1) {
         if (is.character(self$score)) {
           if (self$score == "partialling out") {
             psi_a = -w_hat * v_hat
             psi_b = v_hat * u_hat
+          } else if (self$score == "IV-type") {
+            psi_a = -d * v_hat
+            psi_b = v_hat * (y - g_hat)
           }
           psis = list(
             psi_a = psi_a,
             psi_b = psi_b)
         } else if (is.function(self$score)) {
-          psis = self$score(y, z, d, g_hat, m_hat, r_hat, smpls)
+          psis = self$score(
+            y = y, z = z, d = d,
+            l_hat = l_hat, m_hat = m_hat,
+            r_hat = r_hat, g_hat = g_hat,
+            smpls = smpls)
         }
       } else {
         stopifnot(self$apply_cross_fitting)
@@ -377,15 +604,15 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     },
     ml_nuisance_and_score_elements_partialXZ = function(smpls, ...) {
 
-      g_hat = dml_cv_predict(self$learner$ml_g,
+      l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
-        nuisance_id = "nuis_g",
+        nuisance_id = "nuis_l",
         smpls = smpls,
-        est_params = self$get_params("ml_g"),
+        est_params = self$get_params("ml_l"),
         return_train_preds = FALSE,
-        task_type = private$task_type$ml_g,
+        task_type = private$task_type$ml_l,
         fold_specific_params = private$fold_specific_params)
 
       m_hat_list = dml_cv_predict(self$learner$ml_m,
@@ -423,7 +650,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      u_hat = y - g_hat
+      u_hat = y - l_hat
       w_hat = d - m_hat_tilde
 
       if (is.character(self$score)) {
@@ -441,7 +668,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
       }
       res$preds = list(
-        "ml_g" = g_hat,
+        "ml_l" = l_hat,
         "ml_m" = m_hat,
         "ml_r" = m_hat_tilde)
       return(res)
@@ -520,13 +747,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           function(x) extract_training_data(self$data$data_model, x))
       }
 
-      tuning_result_g = dml_tune(self$learner$ml_g,
+      tuning_result_l = dml_tune(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list,
-        nuisance_id = "nuis_g",
-        param_set$ml_g, tune_settings,
-        tune_settings$measure$ml_g,
-        private$task_type$ml_g)
+        nuisance_id = "nuis_l",
+        param_set$ml_l, tune_settings,
+        tune_settings$measure$ml_l,
+        private$task_type$ml_l)
 
       tuning_result_r = dml_tune(self$learner$ml_r,
         c(self$data$x_cols, self$data$other_treat_cols),
@@ -545,20 +772,101 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           tune_settings$measure$ml_m,
           private$task_type$ml_m)
 
-        tuning_result = list(
-          "ml_g" = list(tuning_result_g,
-            params = tuning_result_g$params),
-          "ml_m" = list(tuning_result_m,
-            params = tuning_result_m$params),
-          "ml_r" = list(tuning_result_r,
-            params = tuning_result_r$params))
+        if (exists("ml_g", where = private$learner_)) {
+          if (tune_on_folds) {
+            params_l = tuning_result_l$params
+            params_r = tuning_result_r$params
+            params_m = tuning_result_m$params
+          } else {
+            params_l = tuning_result_l$params[[1]]
+            params_r = tuning_result_r$params[[1]]
+            params_m = tuning_result_m$params[[1]]
+          }
+          l_hat = dml_cv_predict(self$learner$ml_l,
+            c(self$data$x_cols, self$data$other_treat_cols),
+            self$data$y_col,
+            self$data$data_model,
+            nuisance_id = "nuis_l",
+            smpls = smpls,
+            est_params = params_l,
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_l,
+            fold_specific_params = private$fold_specific_params)
+
+          r_hat = dml_cv_predict(self$learner$ml_r,
+            c(self$data$x_cols, self$data$other_treat_cols),
+            self$data$treat_col,
+            self$data$data_model,
+            nuisance_id = "nuis_r",
+            smpls = smpls,
+            est_params = params_r,
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_r,
+            fold_specific_params = private$fold_specific_params)
+
+          m_hat = dml_cv_predict(self$learner$ml_m,
+            c(self$data$x_cols, self$data$other_treat_cols),
+            self$data$treat_col,
+            self$data$data_model,
+            nuisance_id = "nuis_m",
+            smpls = smpls,
+            est_params = params_m,
+            return_train_preds = FALSE,
+            task_type = private$task_type$ml_m,
+            fold_specific_params = private$fold_specific_params)
+
+          d = self$data$data_model[[self$data$treat_col]]
+          y = self$data$data_model[[self$data$y_col]]
+          z = self$data$data_model[[self$data$z_cols]]
+
+          psi_a = -(d - r_hat) * (z - m_hat)
+          psi_b = (z - m_hat) * (y - l_hat)
+          theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+
+          data_aux = data.table(self$data$data_model,
+            "y_minus_theta_d" = y - theta_initial * d)
+
+          if (!tune_on_folds) {
+            data_aux_tune_list = list(data_aux)
+          } else {
+            data_aux_tune_list = lapply(smpls$train_ids, function(x) {
+              extract_training_data(data_aux, x)
+            })
+          }
+
+          tuning_result_g = dml_tune(self$learner$ml_g,
+            c(self$data$x_cols, self$data$other_treat_cols),
+            "y_minus_theta_d", data_aux_tune_list,
+            nuisance_id = "nuis_g",
+            param_set$ml_g, tune_settings,
+            tune_settings$measure$ml_g,
+            private$task_type$ml_g)
+          tuning_result = list(
+            "ml_l" = list(tuning_result_l,
+              params = tuning_result_l$params),
+            "ml_m" = list(tuning_result_m,
+              params = tuning_result_m$params),
+            "ml_r" = list(tuning_result_r,
+              params = tuning_result_r$params),
+            "ml_g" = list(tuning_result_g,
+              params = tuning_result_g$params))
+        } else {
+          tuning_result = list(
+            "ml_l" = list(tuning_result_l,
+              params = tuning_result_l$params),
+            "ml_m" = list(tuning_result_m,
+              params = tuning_result_m$params),
+            "ml_r" = list(tuning_result_r,
+              params = tuning_result_r$params))
+        }
+
       } else {
         tuning_result = vector("list", length = self$data$n_instr + 2)
         names(tuning_result) = c(
-          "ml_g", "ml_r",
+          "ml_l", "ml_r",
           paste0("ml_m_", self$data$z_cols))
-        tuning_result[["ml_g"]] = list(tuning_result_g,
-          params = tuning_result_g$params)
+        tuning_result[["ml_l"]] = list(tuning_result_l,
+          params = tuning_result_l$params)
         tuning_result[["ml_r"]] = list(tuning_result_r,
           params = tuning_result_r$params)
 
@@ -595,13 +903,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           function(x) extract_training_data(self$data$data_model, x))
       }
 
-      tuning_result_g = dml_tune(self$learner$ml_g,
+      tuning_result_l = dml_tune(self$learner$ml_l,
         c(self$data$x_cols),
         self$data$y_col, data_tune_list,
-        nuisance_id = "nuis_g",
-        param_set$ml_g, tune_settings,
-        tune_settings$measure$ml_g,
-        private$task_type$ml_g)
+        nuisance_id = "nuis_l",
+        param_set$ml_l, tune_settings,
+        tune_settings$measure$ml_l,
+        private$task_type$ml_l)
 
       tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$z_cols),
@@ -651,8 +959,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         private$task_type$ml_r)
 
       tuning_result = list(
-        "ml_g" = list(tuning_result_g,
-          params = tuning_result_g$params),
+        "ml_l" = list(tuning_result_l,
+          params = tuning_result_l$params),
         "ml_m" = list(tuning_result_m,
           params = tuning_result_m$params),
         "ml_r" = list(tuning_result_r,
@@ -690,7 +998,11 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         check_character(score),
         check_class(score, "function"))
       if (is.character(score)) {
-        valid_score = c("partialling out")
+        if ((self$partialX && !self$partialZ) && (self$data$n_instr == 1)) {
+          valid_score = c("partialling out", "IV-type")
+        } else {
+          valid_score = c("partialling out")
+        }
         assertChoice(score, valid_score)
       }
       return()
@@ -710,9 +1022,10 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
 # Initializer for partialX
 DoubleMLPLIV.partialX = function(data,
-  ml_g,
+  ml_l,
   ml_m,
   ml_r,
+  ml_g = NULL,
   n_folds = 5,
   n_rep = 1,
   score = "partialling out",
@@ -720,18 +1033,20 @@ DoubleMLPLIV.partialX = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data,
-    ml_g,
-    ml_m,
-    ml_r,
+  obj = DoubleMLPLIV$new(
+    data = data,
+    ml_l = ml_l,
+    ml_m = ml_m,
+    ml_r = ml_r,
+    ml_g = ml_g,
     partialX = TRUE,
     partialZ = FALSE,
-    n_folds,
-    n_rep,
-    score,
-    dml_procedure,
-    draw_sample_splitting,
-    apply_cross_fitting)
+    n_folds = n_folds,
+    n_rep = n_rep,
+    score = score,
+    dml_procedure = dml_procedure,
+    draw_sample_splitting = draw_sample_splitting,
+    apply_cross_fitting = apply_cross_fitting)
 
   return(obj)
 }
@@ -746,25 +1061,27 @@ DoubleMLPLIV.partialZ = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data,
-    ml_g = NULL,
+  obj = DoubleMLPLIV$new(
+    data = data,
+    ml_l = NULL,
     ml_m = NULL,
-    ml_r,
+    ml_r = ml_r,
+    ml_g = NULL,
     partialX = FALSE,
     partialZ = TRUE,
-    n_folds,
-    n_rep,
-    score,
-    dml_procedure,
-    draw_sample_splitting,
-    apply_cross_fitting)
+    n_folds = n_folds,
+    n_rep = n_rep,
+    score = score,
+    dml_procedure = dml_procedure,
+    draw_sample_splitting = draw_sample_splitting,
+    apply_cross_fitting = apply_cross_fitting)
 
   return(obj)
 }
 
 # Initializer for partialXZ
 DoubleMLPLIV.partialXZ = function(data,
-  ml_g,
+  ml_l,
   ml_m,
   ml_r,
   n_folds = 5,
@@ -774,18 +1091,20 @@ DoubleMLPLIV.partialXZ = function(data,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE) {
 
-  obj = DoubleMLPLIV$new(data,
-    ml_g,
-    ml_m,
-    ml_r,
+  obj = DoubleMLPLIV$new(
+    data = data,
+    ml_l = ml_l,
+    ml_m = ml_m,
+    ml_r = ml_r,
+    ml_g = NULL,
     partialX = TRUE,
     partialZ = TRUE,
-    n_folds,
-    n_rep,
-    score,
-    dml_procedure,
-    draw_sample_splitting,
-    apply_cross_fitting)
+    n_folds = n_folds,
+    n_rep = n_rep,
+    score = score,
+    dml_procedure = dml_procedure,
+    draw_sample_splitting = draw_sample_splitting,
+    apply_cross_fitting = apply_cross_fitting)
 
   return(obj)
 }

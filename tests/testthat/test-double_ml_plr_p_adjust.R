@@ -53,9 +53,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       x_cols = colnames(X)[(k + 1):p],
       y_col = "y",
       d_cols = colnames(X)[1:k])
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(data_ml,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
