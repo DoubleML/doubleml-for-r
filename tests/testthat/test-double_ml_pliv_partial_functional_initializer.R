@@ -31,7 +31,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialX functional ini
     set.seed(3141)
     double_mlpliv_obj = DoubleMLPLIV$new(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
@@ -45,7 +45,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialX functional ini
     set.seed(3141)
     double_mlpliv_partX = DoubleMLPLIV.partialX(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
@@ -72,7 +72,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialZ functional ini
     set.seed(3141)
     double_mlpliv_partZ = DoubleMLPLIV$new(data_ml,
       n_folds = 5,
-      ml_g = NULL,
+      ml_l = NULL,
       ml_m = NULL,
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
@@ -111,7 +111,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialXZ functional in
     set.seed(3141)
     double_mlpliv_partXZ = DoubleMLPLIV$new(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
@@ -125,7 +125,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialXZ functional in
     set.seed(3141)
     double_mlpliv_partXZ_fun = DoubleMLPLIV.partialXZ(data_ml,
       n_folds = 5,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,

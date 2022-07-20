@@ -15,7 +15,7 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
-    score = "partialling out",
+    score = c("partialling out", "IV-type"),
     stringsAsFactors = FALSE)
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
@@ -31,12 +31,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     learner_pars = get_default_mlmethod_pliv(learner)
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlpliv_obj = DoubleMLPLIV$new(
       data = data_two_way,
       n_folds = 2,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score)
 
@@ -51,12 +57,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     cluster_var2 = df$cluster_var_j
     # need to drop variables as x is not explicitly set
     df = df[, !(names(df) %in% c("cluster_var_i", "cluster_var_j"))]
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     pliv_hat = dml_pliv(df,
       y = "Y", d = "D", z = "Z",
       n_folds = 4,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure, score = score,
       smpls = double_mlpliv_obj$smpls)
 
@@ -65,15 +77,19 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     residuals = compute_pliv_residuals(df,
       y = "Y", d = "D", z = "Z",
       n_folds = 4,
-      this_smpl,
-      pliv_hat$all_preds[[1]])
-    u_hat = residuals$u_hat
-    v_hat = residuals$v_hat
-    w_hat = residuals$w_hat
+      smpls = this_smpl,
+      all_preds = pliv_hat$all_preds[[1]])
+    y_minus_l_hat = residuals$y_minus_l_hat
+    d_minus_r_hat = residuals$d_minus_r_hat
+    z_minus_m_hat = residuals$z_minus_m_hat
+    y_minus_g_hat = residuals$y_minus_g_hat
+    D = df[, "D"]
 
-    psi_a = -w_hat * v_hat
+    if (score == "partialling out") psi_a = -z_minus_m_hat * d_minus_r_hat
+    if (score == "IV-type") psi_a = -D * z_minus_m_hat
     if (dml_procedure == "dml2") {
-      psi_b = w_hat * u_hat
+      if (score == "partialling out") psi_b = z_minus_m_hat * y_minus_l_hat
+      if (score == "IV-type") psi_b = z_minus_m_hat * y_minus_g_hat
       theta = est_two_way_cluster_dml2(
         psi_a, psi_b,
         cluster_var1,
@@ -82,7 +98,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
     } else {
       theta = pliv_hat$coef
     }
-    psi = (u_hat - v_hat * theta) * w_hat
+    if (score == "partialling out") psi = (y_minus_l_hat - d_minus_r_hat * theta) * z_minus_m_hat
+    if (score == "IV-type") psi = (y_minus_g_hat - D * theta) * z_minus_m_hat
     var = var_two_way_cluster(
       psi, psi_a,
       cluster_var1,

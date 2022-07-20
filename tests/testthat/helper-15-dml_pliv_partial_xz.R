@@ -1,9 +1,9 @@
 dml_pliv_partial_xz = function(data, y, d, z,
   n_folds,
-  ml_g, ml_m, ml_r,
+  ml_l, ml_m, ml_r,
   params, dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_g = NULL, params_m = NULL, params_r = NULL) {
+  params_l = NULL, params_m = NULL, params_r = NULL) {
 
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
@@ -17,9 +17,9 @@ dml_pliv_partial_xz = function(data, y, d, z,
 
     all_preds[[i_rep]] = fit_nuisance_pliv_partial_xz(
       data, y, d, z,
-      ml_g, ml_m, ml_r,
+      ml_l, ml_m, ml_r,
       this_smpl,
-      params_g, params_m, params_r)
+      params_l, params_m, params_r)
 
     residuals = compute_pliv_partial_xz_residuals(
       data, y, d, z, n_folds,
@@ -81,27 +81,27 @@ dml_pliv_partial_xz = function(data, y, d, z,
 }
 
 fit_nuisance_pliv_partial_xz = function(data, y, d, z,
-  ml_g, ml_m, ml_r,
+  ml_l, ml_m, ml_r,
   smpls,
-  params_g, params_m, params_r) {
+  params_l, params_m, params_r) {
 
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
-  # nuisance g: E[Y|X]
-  g_indx = names(data) != d & (names(data) %in% z == FALSE)
-  data_g = data[, g_indx, drop = FALSE]
-  task_g = mlr3::TaskRegr$new(id = paste0("nuis_g_", d), backend = data_g, target = y)
+  # nuisance l: E[Y|X]
+  l_indx = names(data) != d & (names(data) %in% z == FALSE)
+  data_l = data[, l_indx, drop = FALSE]
+  task_l = mlr3::TaskRegr$new(id = paste0("nuis_l_", d), backend = data_l, target = y)
 
-  resampling_g = mlr3::rsmp("custom")
-  resampling_g$instantiate(task_g, train_ids, test_ids)
+  resampling_l = mlr3::rsmp("custom")
+  resampling_l$instantiate(task_l, train_ids, test_ids)
 
-  if (!is.null(params_g)) {
-    ml_g$param_set$values = params_g
+  if (!is.null(params_l)) {
+    ml_l$param_set$values = params_l
   }
 
-  r_g = mlr3::resample(task_g, ml_g, resampling_g, store_models = TRUE)
-  g_hat_list = lapply(r_g$predictions(), function(x) x$response)
+  r_l = mlr3::resample(task_l, ml_l, resampling_l, store_models = TRUE)
+  l_hat_list = lapply(r_l$predictions(), function(x) x$response)
 
   # nuisance m: E[D|XZ]
   m_indx = (names(data) != y)
@@ -141,7 +141,7 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   }
 
   all_preds = list(
-    g_hat_list = g_hat_list,
+    l_hat_list = l_hat_list,
     m_hat_list = m_hat_list,
     r_hat_list = r_hat_list)
 
@@ -153,7 +153,7 @@ compute_pliv_partial_xz_residuals = function(data, y, d, z, n_folds, smpls,
 
   test_ids = smpls$test_ids
 
-  g_hat_list = all_preds$g_hat_list
+  l_hat_list = all_preds$l_hat_list
   m_hat_list = all_preds$m_hat_list
   r_hat_list = all_preds$r_hat_list
 
@@ -166,11 +166,11 @@ compute_pliv_partial_xz_residuals = function(data, y, d, z, n_folds, smpls,
   for (i in 1:n_folds) {
     test_index = test_ids[[i]]
 
-    g_hat = g_hat_list[[i]]
+    l_hat = l_hat_list[[i]]
     m_hat = m_hat_list[[i]]
     r_hat = r_hat_list[[i]]
 
-    u_hat[test_index] = Y[test_index] - g_hat
+    u_hat[test_index] = Y[test_index] - l_hat
     v_hat[test_index] = m_hat - r_hat
     w_hat[test_index] = D[test_index] - r_hat
   }

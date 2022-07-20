@@ -2,9 +2,9 @@ context("Unit tests for the method set_sample_splitting of class DoubleML")
 
 set.seed(3141)
 dml_data = make_plr_CCDDHNR2018(n_obs = 10)
-ml_g = lrn("regr.ranger")
-ml_m = ml_g$clone()
-dml_plr = DoubleMLPLR$new(dml_data, ml_g, ml_m, n_folds = 7, n_rep = 8)
+ml_l = lrn("regr.ranger")
+ml_m = ml_l$clone()
+dml_plr = DoubleMLPLR$new(dml_data, ml_l, ml_m, n_folds = 7, n_rep = 8)
 
 test_that("Unit tests for the method set_sample_splitting of class DoubleML", {
 
@@ -165,37 +165,37 @@ assert_resampling_pars = function(dml_obj0, dml_obj1) {
 
 test_that("Unit tests for the method set_sample_splitting of class DoubleML (draw vs set)", {
   set.seed(3141)
-  dml_plr_set = DoubleMLPLR$new(dml_data, ml_g, ml_m, n_folds = 7, n_rep = 8)
+  dml_plr_set = DoubleMLPLR$new(dml_data, ml_l, ml_m, n_folds = 7, n_rep = 8)
 
-  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_g, ml_m,
+  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_l, ml_m,
     n_folds = 1, n_rep = 1, apply_cross_fitting = FALSE)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls)
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls[[1]])
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
 
-  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_g, ml_m,
+  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_l, ml_m,
     n_folds = 2, n_rep = 1, apply_cross_fitting = FALSE)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls)
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls[[1]])
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
 
-  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_g, ml_m,
+  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_l, ml_m,
     n_folds = 2, n_rep = 1, apply_cross_fitting = TRUE)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls)
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls[[1]])
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
 
-  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_g, ml_m,
+  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_l, ml_m,
     n_folds = 5, n_rep = 1, apply_cross_fitting = TRUE)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls)
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls[[1]])
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
 
-  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_g, ml_m,
+  dml_plr_drawn = DoubleMLPLR$new(dml_data, ml_l, ml_m,
     n_folds = 5, n_rep = 3, apply_cross_fitting = TRUE)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls)
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)

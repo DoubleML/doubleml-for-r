@@ -43,11 +43,17 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
         train_ids = list(seq(nrow(df))),
         test_ids = list(seq(nrow(df)))))
     }
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     plr_hat = dml_plr(df,
       y = "y", d = "d",
       n_folds = 1,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure, score = score,
       smpls = smpls)
     theta = plr_hat$coef
@@ -56,10 +62,16 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     pval = plr_hat$pval
 
     set.seed(3141)
+    if (score == "IV-type") {
+      ml_g = learner_pars$ml_g$clone()
+    } else {
+      ml_g = NULL
+    }
     double_mlplr_obj = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
@@ -74,10 +86,16 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
 
     if (n_folds == 2) {
+      if (score == "IV-type") {
+        ml_g = learner_pars$ml_g$clone()
+      } else {
+        ml_g = NULL
+      }
       dml_plr_obj_external = DoubleMLPLR$new(
         data = data_plr$dml_data,
-        ml_g = learner_pars$ml_g$clone(),
+        ml_l = learner_pars$ml_l$clone(),
         ml_m = learner_pars$ml_m$clone(),
+        ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score,

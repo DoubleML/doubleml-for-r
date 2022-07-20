@@ -276,7 +276,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "ml_r1" = nuisance)
       invisible(self)
     },
-    ml_nuisance_and_score_elements = function(smpls, ...) {
+    nuisance_est = function(smpls, ...) {
 
       if (self$subgroups$always_takers == FALSE &
         self$subgroups$never_takers == FALSE) {
@@ -374,8 +374,10 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         "ml_r1" = r1_hat$models)
       return(res)
     },
-    score_elements = function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
-      r1_hat, smpls) {
+    score_elements = function(y = y, z = z, d = d,
+      g0_hat = g0_hat, g1_hat = g1_hat, m_hat = m_hat,
+      r0_hat = r0_hat, r1_hat = r1_hat,
+      smpls = smpls) {
 
       u0_hat = y - g0_hat
       u1_hat = y - g1_hat
@@ -402,7 +404,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       }
       return(psis)
     },
-    ml_nuisance_tuning = function(smpls, param_set, tune_settings,
+    nuisance_tuning = function(smpls, param_set, tune_settings,
       tune_on_folds, ...) {
 
       if (!tune_on_folds) {

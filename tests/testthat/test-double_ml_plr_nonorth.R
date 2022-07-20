@@ -4,7 +4,21 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-non_orth_score = function(y, d, g_hat, m_hat, smpls) {
+non_orth_score_w_g = function(y, d, l_hat, m_hat, g_hat, smpls) {
+  u_hat = y - g_hat
+  psi_a = -1 * d * d
+  psi_b = d * u_hat
+  psis = list(psi_a = psi_a, psi_b = psi_b)
+  return(psis)
+}
+
+non_orth_score_w_l = function(y, d, l_hat, m_hat, g_hat, smpls) {
+
+  p_a = -(d - m_hat) * (d - m_hat)
+  p_b = (d - m_hat) * (y - l_hat)
+  theta_initial = -mean(p_b, na.rm = TRUE) / mean(p_a, na.rm = TRUE)
+  g_hat = l_hat - theta_initial * m_hat
+
   u_hat = y - g_hat
   psi_a = -1 * d * d
   psi_b = d * u_hat
@@ -17,7 +31,7 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = "regr.lm",
     dml_procedure = "dml1",
-    score = c(non_orth_score),
+    which_score = c("non_orth_score_w_g"),
     n_folds = c(3),
     n_rep = c(2),
     stringsAsFactors = FALSE)
@@ -25,7 +39,9 @@ if (on_cran) {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
-    score = c(non_orth_score),
+    which_score = c(
+      "non_orth_score_w_g",
+      "non_orth_score_w_l"),
     n_folds = c(2, 3),
     n_rep = c(1, 2),
     stringsAsFactors = FALSE)
@@ -35,12 +51,22 @@ test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases, {
     learner_pars = get_default_mlmethod_plr(learner)
+
+    if (which_score == "non_orth_score_w_g") {
+      score = non_orth_score_w_g
+      ml_g = learner_pars$ml_g$clone()
+    } else if (which_score == "non_orth_score_w_l") {
+      score = non_orth_score_w_l
+      ml_g = NULL
+    }
+
     n_rep_boot = 498
     set.seed(3141)
     double_mlplr_obj = DoubleMLPLR$new(
       data = data_plr$dml_data,
-      ml_g = learner_pars$ml_g$clone(),
+      ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
+      ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score)
@@ -63,8 +89,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     if (n_folds == 2 & n_rep == 1) {
       double_mlplr_nocf = DoubleMLPLR$new(
         data = data_plr$dml_data,
-        ml_g = learner_pars$ml_g$clone(),
+        ml_l = learner_pars$ml_l$clone(),
         ml_m = learner_pars$ml_m$clone(),
+        ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score,
