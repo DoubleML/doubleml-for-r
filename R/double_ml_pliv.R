@@ -542,7 +542,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           fold_specific_params = private$fold_specific_params)
       }
 
-      res = private$score_elements(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)
+      res = private$score_elements(y, z, d, l_hat$preds, m_hat$preds,
+                                   r_hat$preds, g_hat$preds, smpls)
       res$preds = list(
         "ml_l" = l_hat$preds,
         "ml_m" = m_hat$preds,
