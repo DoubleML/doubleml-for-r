@@ -524,8 +524,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         d = self$data$data_model[[self$data$treat_col]]
         y = self$data$data_model[[self$data$y_col]]
 
-        psi_a = -(d - m_hat) * (d - m_hat)
-        psi_b = (d - m_hat) * (y - l_hat)
+        psi_a = -(d - m_hat$preds) * (d - m_hat$preds)
+        psi_b = (d - m_hat$preds) * (y - l_hat$preds)
         theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
         data_aux = data.table(self$data$data_model,
