@@ -523,8 +523,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       g_hat = list(preds = NULL, models = NULL)
       if (exists("ml_g", where = private$learner_)) {
         # get an initial estimate for theta using the partialling out score
-        psi_a = -(d - r_hat) * (z - m_hat)
-        psi_b = (z - m_hat) * (y - l_hat)
+        psi_a = -(d - r_hat$preds) * (z - m_hat$preds)
+        psi_b = (z - m_hat$preds) * (y - l_hat$preds)
         theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
         data_aux = data.table(self$data$data_model,
@@ -831,8 +831,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           y = self$data$data_model[[self$data$y_col]]
           z = self$data$data_model[[self$data$z_cols]]
 
-          psi_a = -(d - r_hat) * (z - m_hat)
-          psi_b = (z - m_hat) * (y - l_hat)
+          psi_a = -(d - r_hat$preds) * (z - m_hat$preds)
+          psi_b = (z - m_hat$preds) * (y - l_hat$preds)
           theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
           data_aux = data.table(self$data$data_model,
