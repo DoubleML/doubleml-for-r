@@ -124,32 +124,32 @@ The threshold used for timming.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{DoubleMLIIVM$new()}}
-\item \href{#method-clone}{\code{DoubleMLIIVM$clone()}}
+\item \href{#method-DoubleMLIIVM-new}{\code{DoubleMLIIVM$new()}}
+\item \href{#method-DoubleMLIIVM-clone}{\code{DoubleMLIIVM$clone()}}
 }
 }
-\if{html}{
-\out{<details ><summary>Inherited methods</summary>}
-\itemize{
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap">}\href{../../DoubleML/html/DoubleML.html#method-bootstrap}{\code{DoubleML::DoubleML$bootstrap()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint">}\href{../../DoubleML/html/DoubleML.html#method-confint}{\code{DoubleML::DoubleML$confint()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit">}\href{../../DoubleML/html/DoubleML.html#method-fit}{\code{DoubleML::DoubleML$fit()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params">}\href{../../DoubleML/html/DoubleML.html#method-get_params}{\code{DoubleML::DoubleML$get_params()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names">}\href{../../DoubleML/html/DoubleML.html#method-learner_names}{\code{DoubleML::DoubleML$learner_names()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust">}\href{../../DoubleML/html/DoubleML.html#method-p_adjust}{\code{DoubleML::DoubleML$p_adjust()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names">}\href{../../DoubleML/html/DoubleML.html#method-params_names}{\code{DoubleML::DoubleML$params_names()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print">}\href{../../DoubleML/html/DoubleML.html#method-print}{\code{DoubleML::DoubleML$print()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params">}\href{../../DoubleML/html/DoubleML.html#method-set_ml_nuisance_params}{\code{DoubleML::DoubleML$set_ml_nuisance_params()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting">}\href{../../DoubleML/html/DoubleML.html#method-set_sample_splitting}{\code{DoubleML::DoubleML$set_sample_splitting()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples">}\href{../../DoubleML/html/DoubleML.html#method-split_samples}{\code{DoubleML::DoubleML$split_samples()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary">}\href{../../DoubleML/html/DoubleML.html#method-summary}{\code{DoubleML::DoubleML$summary()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune">}\href{../../DoubleML/html/DoubleML.html#method-tune}{\code{DoubleML::DoubleML$tune()}}\out{</span>}
-}
-\out{</details>}
-}
+\if{html}{\out{
+<details><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML::DoubleML$bootstrap()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML::DoubleML$confint()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-fit'><code>DoubleML::DoubleML$fit()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML::DoubleML$get_params()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML::DoubleML$learner_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML::DoubleML$p_adjust()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML::DoubleML$params_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML::DoubleML$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_ml_nuisance_params'><code>DoubleML::DoubleML$set_ml_nuisance_params()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML::DoubleML$set_sample_splitting()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML::DoubleML$split_samples()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML::DoubleML$summary()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-tune'><code>DoubleML::DoubleML$tune()</code></a></span></li>
+</ul>
+</details>
+}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-DoubleMLIIVM-new"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLIIVM-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this R6 class.
 \subsection{Usage}{
@@ -263,8 +263,8 @@ Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-DoubleMLIIVM-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLIIVM-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
