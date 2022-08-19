@@ -1,7 +1,7 @@
 Package: DoubleML
 Type: Package
 Title: Double Machine Learning in R
-Version: 0.5.0
+Version: 0.5.0.9000
 Authors@R: c(
     person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role="aut"),
     person("Victor", "Chernozhukov", role="aut"),
@@ -36,7 +36,7 @@ Imports:
     mlr3learners (>= 0.3.0),
     mlr3misc
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
 Suggests: 
     knitr,
     rmarkdown,
