@@ -80,15 +80,15 @@ The instrumental variables. Default is \code{NULL}.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{DoubleMLData$new()}}
-\item \href{#method-print}{\code{DoubleMLData$print()}}
-\item \href{#method-set_data_model}{\code{DoubleMLData$set_data_model()}}
-\item \href{#method-clone}{\code{DoubleMLData$clone()}}
+\item \href{#method-DoubleMLData-new}{\code{DoubleMLData$new()}}
+\item \href{#method-DoubleMLData-print}{\code{DoubleMLData$print()}}
+\item \href{#method-DoubleMLData-set_data_model}{\code{DoubleMLData$set_data_model()}}
+\item \href{#method-DoubleMLData-clone}{\code{DoubleMLData$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-DoubleMLData-new"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLData-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
@@ -131,8 +131,8 @@ variables should be added as covariates. Default is \code{TRUE}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-DoubleMLData-print"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLData-print}{}}}
 \subsection{Method \code{print()}}{
 Print DoubleMLData objects.
 \subsection{Usage}{
@@ -141,8 +141,8 @@ Print DoubleMLData objects.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_data_model"></a>}}
-\if{latex}{\out{\hypertarget{method-set_data_model}{}}}
+\if{html}{\out{<a id="method-DoubleMLData-set_data_model"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLData-set_data_model}{}}}
 \subsection{Method \code{set_data_model()}}{
 Setter function for \code{data_model}. The function implements the causal
 model as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols} and
@@ -162,8 +162,8 @@ Active treatment variable that will be set to \code{treat_col}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-DoubleMLData-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLData-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -142,26 +142,26 @@ Results from hyperparameter tuning.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{DoubleML$new()}}
-\item \href{#method-print}{\code{DoubleML$print()}}
-\item \href{#method-fit}{\code{DoubleML$fit()}}
-\item \href{#method-bootstrap}{\code{DoubleML$bootstrap()}}
-\item \href{#method-split_samples}{\code{DoubleML$split_samples()}}
-\item \href{#method-set_sample_splitting}{\code{DoubleML$set_sample_splitting()}}
-\item \href{#method-tune}{\code{DoubleML$tune()}}
-\item \href{#method-summary}{\code{DoubleML$summary()}}
-\item \href{#method-confint}{\code{DoubleML$confint()}}
-\item \href{#method-learner_names}{\code{DoubleML$learner_names()}}
-\item \href{#method-params_names}{\code{DoubleML$params_names()}}
-\item \href{#method-set_ml_nuisance_params}{\code{DoubleML$set_ml_nuisance_params()}}
-\item \href{#method-p_adjust}{\code{DoubleML$p_adjust()}}
-\item \href{#method-get_params}{\code{DoubleML$get_params()}}
-\item \href{#method-clone}{\code{DoubleML$clone()}}
+\item \href{#method-DoubleML-new}{\code{DoubleML$new()}}
+\item \href{#method-DoubleML-print}{\code{DoubleML$print()}}
+\item \href{#method-DoubleML-fit}{\code{DoubleML$fit()}}
+\item \href{#method-DoubleML-bootstrap}{\code{DoubleML$bootstrap()}}
+\item \href{#method-DoubleML-split_samples}{\code{DoubleML$split_samples()}}
+\item \href{#method-DoubleML-set_sample_splitting}{\code{DoubleML$set_sample_splitting()}}
+\item \href{#method-DoubleML-tune}{\code{DoubleML$tune()}}
+\item \href{#method-DoubleML-summary}{\code{DoubleML$summary()}}
+\item \href{#method-DoubleML-confint}{\code{DoubleML$confint()}}
+\item \href{#method-DoubleML-learner_names}{\code{DoubleML$learner_names()}}
+\item \href{#method-DoubleML-params_names}{\code{DoubleML$params_names()}}
+\item \href{#method-DoubleML-set_ml_nuisance_params}{\code{DoubleML$set_ml_nuisance_params()}}
+\item \href{#method-DoubleML-p_adjust}{\code{DoubleML$p_adjust()}}
+\item \href{#method-DoubleML-get_params}{\code{DoubleML$get_params()}}
+\item \href{#method-DoubleML-clone}{\code{DoubleML$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-DoubleML-new"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-new}{}}}
 \subsection{Method \code{new()}}{
 DoubleML is an abstract class that can't be initialized.
 \subsection{Usage}{
@@ -170,8 +170,8 @@ DoubleML is an abstract class that can't be initialized.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-DoubleML-print"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-print}{}}}
 \subsection{Method \code{print()}}{
 Print DoubleML objects.
 \subsection{Usage}{
@@ -180,8 +180,8 @@ Print DoubleML objects.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-fit"></a>}}
-\if{latex}{\out{\hypertarget{method-fit}{}}}
+\if{html}{\out{<a id="method-DoubleML-fit"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-fit}{}}}
 \subsection{Method \code{fit()}}{
 Estimate DoubleML models.
 \subsection{Usage}{
@@ -202,8 +202,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bootstrap"></a>}}
-\if{latex}{\out{\hypertarget{method-bootstrap}{}}}
+\if{html}{\out{<a id="method-DoubleML-bootstrap"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-bootstrap}{}}}
 \subsection{Method \code{bootstrap()}}{
 Multiplier bootstrap for DoubleML models.
 \subsection{Usage}{
@@ -227,8 +227,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-split_samples"></a>}}
-\if{latex}{\out{\hypertarget{method-split_samples}{}}}
+\if{html}{\out{<a id="method-DoubleML-split_samples"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-split_samples}{}}}
 \subsection{Method \code{split_samples()}}{
 Draw sample splitting for DoubleML models.
 
@@ -243,8 +243,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_sample_splitting"></a>}}
-\if{latex}{\out{\hypertarget{method-set_sample_splitting}{}}}
+\if{html}{\out{<a id="method-DoubleML-set_sample_splitting"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-set_sample_splitting}{}}}
 \subsection{Method \code{set_sample_splitting()}}{
 Set the sample splitting for DoubleML models.
 
@@ -301,8 +301,8 @@ dml_plr_obj$set_sample_splitting(smpls)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-tune"></a>}}
-\if{latex}{\out{\hypertarget{method-tune}{}}}
+\if{html}{\out{<a id="method-DoubleML-tune"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-tune}{}}}
 \subsection{Method \code{tune()}}{
 Hyperparameter-tuning for DoubleML models.
 
@@ -314,8 +314,8 @@ the section on parameter tuning in the
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
   param_set,
-  tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5),
-    measure = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
+  tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5), measure
+    = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
     mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
 )}\if{html}{\out{</div>}}
@@ -378,8 +378,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-summary"></a>}}
-\if{latex}{\out{\hypertarget{method-summary}{}}}
+\if{html}{\out{<a id="method-DoubleML-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-summary}{}}}
 \subsection{Method \code{summary()}}{
 Summary for DoubleML models after calling \code{fit()}.
 \subsection{Usage}{
@@ -396,8 +396,8 @@ The number of significant digits to use when printing.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-confint"></a>}}
-\if{latex}{\out{\hypertarget{method-confint}{}}}
+\if{html}{\out{<a id="method-DoubleML-confint"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-confint}{}}}
 \subsection{Method \code{confint()}}{
 Confidence intervals for DoubleML models.
 \subsection{Usage}{
@@ -427,8 +427,8 @@ A \code{matrix()} with the confidence interval(s).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-learner_names"></a>}}
-\if{latex}{\out{\hypertarget{method-learner_names}{}}}
+\if{html}{\out{<a id="method-DoubleML-learner_names"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-learner_names}{}}}
 \subsection{Method \code{learner_names()}}{
 Returns the names of the learners.
 \subsection{Usage}{
@@ -440,8 +440,8 @@ Returns the names of the learners.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-params_names"></a>}}
-\if{latex}{\out{\hypertarget{method-params_names}{}}}
+\if{html}{\out{<a id="method-DoubleML-params_names"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-params_names}{}}}
 \subsection{Method \code{params_names()}}{
 Returns the names of the nuisance models with hyperparameters.
 \subsection{Usage}{
@@ -453,8 +453,8 @@ Returns the names of the nuisance models with hyperparameters.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_ml_nuisance_params"></a>}}
-\if{latex}{\out{\hypertarget{method-set_ml_nuisance_params}{}}}
+\if{html}{\out{<a id="method-DoubleML-set_ml_nuisance_params"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-set_ml_nuisance_params}{}}}
 \subsection{Method \code{set_ml_nuisance_params()}}{
 Set hyperparameters for the nuisance models of DoubleML models.
 
@@ -500,8 +500,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-p_adjust"></a>}}
-\if{latex}{\out{\hypertarget{method-p_adjust}{}}}
+\if{html}{\out{<a id="method-DoubleML-p_adjust"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-p_adjust}{}}}
 \subsection{Method \code{p_adjust()}}{
 Multiple testing adjustment for DoubleML models.
 \subsection{Usage}{
@@ -529,8 +529,8 @@ a \code{matrix()} with adjusted p_values.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_params"></a>}}
-\if{latex}{\out{\hypertarget{method-get_params}{}}}
+\if{html}{\out{<a id="method-DoubleML-get_params"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-get_params}{}}}
 \subsection{Method \code{get_params()}}{
 Get hyperparameters for the nuisance model of DoubleML models.
 \subsection{Usage}{
@@ -550,8 +550,8 @@ named \code{list()}with paramers for the nuisance model/learner.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-DoubleML-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
