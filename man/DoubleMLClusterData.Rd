@@ -50,21 +50,15 @@ The number of cluster variables.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{DoubleMLClusterData$new()}}
-\item \href{#method-print}{\code{DoubleMLClusterData$print()}}
-\item \href{#method-set_data_model}{\code{DoubleMLClusterData$set_data_model()}}
-\item \href{#method-clone}{\code{DoubleMLClusterData$clone()}}
+\item \href{#method-DoubleMLClusterData-new}{\code{DoubleMLClusterData$new()}}
+\item \href{#method-DoubleMLClusterData-print}{\code{DoubleMLClusterData$print()}}
+\item \href{#method-DoubleMLClusterData-set_data_model}{\code{DoubleMLClusterData$set_data_model()}}
+\item \href{#method-DoubleMLClusterData-clone}{\code{DoubleMLClusterData$clone()}}
 }
-}
-\if{html}{
-\out{<details open ><summary>Inherited methods</summary>}
-\itemize{
-}
-\out{</details>}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-DoubleMLClusterData-new"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLClusterData-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
@@ -111,8 +105,8 @@ variables should be added as covariates. Default is \code{TRUE}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-DoubleMLClusterData-print"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLClusterData-print}{}}}
 \subsection{Method \code{print()}}{
 Print DoubleMLClusterData objects.
 \subsection{Usage}{
@@ -121,8 +115,8 @@ Print DoubleMLClusterData objects.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_data_model"></a>}}
-\if{latex}{\out{\hypertarget{method-set_data_model}{}}}
+\if{html}{\out{<a id="method-DoubleMLClusterData-set_data_model"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLClusterData-set_data_model}{}}}
 \subsection{Method \code{set_data_model()}}{
 Setter function for \code{data_model}. The function implements the causal model
 as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols}, \code{z_cols} and
@@ -142,8 +136,8 @@ Active treatment variable that will be set to \code{treat_col}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-DoubleMLClusterData-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLClusterData-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

@@ -79,32 +79,32 @@ Other DoubleML:
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{DoubleMLPLR$new()}}
-\item \href{#method-set_ml_nuisance_params}{\code{DoubleMLPLR$set_ml_nuisance_params()}}
-\item \href{#method-tune}{\code{DoubleMLPLR$tune()}}
-\item \href{#method-clone}{\code{DoubleMLPLR$clone()}}
+\item \href{#method-DoubleMLPLR-new}{\code{DoubleMLPLR$new()}}
+\item \href{#method-DoubleMLPLR-set_ml_nuisance_params}{\code{DoubleMLPLR$set_ml_nuisance_params()}}
+\item \href{#method-DoubleMLPLR-tune}{\code{DoubleMLPLR$tune()}}
+\item \href{#method-DoubleMLPLR-clone}{\code{DoubleMLPLR$clone()}}
 }
 }
-\if{html}{
-\out{<details ><summary>Inherited methods</summary>}
-\itemize{
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap">}\href{../../DoubleML/html/DoubleML.html#method-bootstrap}{\code{DoubleML::DoubleML$bootstrap()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint">}\href{../../DoubleML/html/DoubleML.html#method-confint}{\code{DoubleML::DoubleML$confint()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit">}\href{../../DoubleML/html/DoubleML.html#method-fit}{\code{DoubleML::DoubleML$fit()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params">}\href{../../DoubleML/html/DoubleML.html#method-get_params}{\code{DoubleML::DoubleML$get_params()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names">}\href{../../DoubleML/html/DoubleML.html#method-learner_names}{\code{DoubleML::DoubleML$learner_names()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust">}\href{../../DoubleML/html/DoubleML.html#method-p_adjust}{\code{DoubleML::DoubleML$p_adjust()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names">}\href{../../DoubleML/html/DoubleML.html#method-params_names}{\code{DoubleML::DoubleML$params_names()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print">}\href{../../DoubleML/html/DoubleML.html#method-print}{\code{DoubleML::DoubleML$print()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting">}\href{../../DoubleML/html/DoubleML.html#method-set_sample_splitting}{\code{DoubleML::DoubleML$set_sample_splitting()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples">}\href{../../DoubleML/html/DoubleML.html#method-split_samples}{\code{DoubleML::DoubleML$split_samples()}}\out{</span>}
-\item \out{<span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary">}\href{../../DoubleML/html/DoubleML.html#method-summary}{\code{DoubleML::DoubleML$summary()}}\out{</span>}
-}
-\out{</details>}
-}
+\if{html}{\out{
+<details><summary>Inherited methods</summary>
+<ul>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML::DoubleML$bootstrap()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML::DoubleML$confint()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-fit'><code>DoubleML::DoubleML$fit()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML::DoubleML$get_params()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML::DoubleML$learner_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML::DoubleML$p_adjust()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML::DoubleML$params_names()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML::DoubleML$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML::DoubleML$set_sample_splitting()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML::DoubleML$split_samples()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML::DoubleML$summary()</code></a></span></li>
+</ul>
+</details>
+}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-DoubleMLPLR-new"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLPLR-new}{}}}
 \subsection{Method \code{new()}}{
 Creates a new instance of this R6 class.
 \subsection{Usage}{
@@ -202,8 +202,8 @@ Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-set_ml_nuisance_params"></a>}}
-\if{latex}{\out{\hypertarget{method-set_ml_nuisance_params}{}}}
+\if{html}{\out{<a id="method-DoubleMLPLR-set_ml_nuisance_params"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLPLR-set_ml_nuisance_params}{}}}
 \subsection{Method \code{set_ml_nuisance_params()}}{
 Set hyperparameters for the nuisance models of DoubleML models.
 
@@ -249,8 +249,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-tune"></a>}}
-\if{latex}{\out{\hypertarget{method-tune}{}}}
+\if{html}{\out{<a id="method-DoubleMLPLR-tune"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLPLR-tune}{}}}
 \subsection{Method \code{tune()}}{
 Hyperparameter-tuning for DoubleML models.
 
@@ -262,8 +262,8 @@ the section on parameter tuning in the
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLR$tune(
   param_set,
-  tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5),
-    measure = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
+  tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5), measure
+    = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
     mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
 )}\if{html}{\out{</div>}}
@@ -326,8 +326,8 @@ self
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-DoubleMLPLR-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLPLR-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
