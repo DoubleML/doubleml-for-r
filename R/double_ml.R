@@ -1440,9 +1440,9 @@ DoubleML = R6Class("DoubleML",
         simplify = F)
     },
     initialize_models = function() {
-      private$models_ = sapply(self$data$d_cols,
+      private$models_ = sapply(self$params_names(),
         function(x) {
-          sapply(self$params_names(),
+          sapply(self$data$d_cols,
             function(x) {
               lapply(
                 seq(self$n_rep),
@@ -1464,7 +1464,7 @@ DoubleML = R6Class("DoubleML",
     store_models = function(models) {
       for (learner in self$params_names()) {
         if (!is.null(models[[learner]])) {
-          private$models_[[self$data$treat_col]][[learner]][[
+          private$models_[[learner]][[self$data$treat_col]][[
           private$i_rep]] = models[[learner]]
         }
       }
