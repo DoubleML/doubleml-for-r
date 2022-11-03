@@ -88,14 +88,14 @@ remotes::install_github("DoubleML/doubleml-for-r")
 
 **DoubleML** requires
 
--   R (&gt;= 3.5.0)
--   R6 (&gt;= 2.4.1)
--   data.table (&gt;= 1.12.8)
+-   R (\>= 3.5.0)
+-   R6 (\>= 2.4.1)
+-   data.table (\>= 1.12.8)
 -   stats
 -   checkmate
--   mlr3 (&gt;= 0.5.0)
--   mlr3tuning (&gt;= 0.3.0)
--   mlr3learners (&gt;= 0.3.0)
+-   mlr3 (\>= 0.5.0)
+-   mlr3tuning (\>= 0.3.0)
+-   mlr3learners (\>= 0.3.0)
 -   mvtnorm
 -   utils
 -   clusterGeneration
@@ -130,7 +130,16 @@ Bibtex-entry:
           note={arXiv:\href{https://arxiv.org/abs/2103.09603}{2103.09603} [stat.ML]}
     }
 
+## Acknowledgements
+
+Funding by the Deutsche Forschungsgemeinschaft (DFG, German Research
+Foundation) is acknowledged – Project Number 431701914.
+
 ## References
+
+-   Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2021),
+    DoubleML - An Object-Oriented Implementation of Double Machine
+    Learning in R, arXiv:[2103.09603](https://arxiv.org/abs/2103.09603).
 
 -   Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen,
     C., Newey, W. and Robins, J. (2018), Double/debiased machine
