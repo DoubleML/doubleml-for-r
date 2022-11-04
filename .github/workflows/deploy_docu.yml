@@ -5,7 +5,7 @@ name: CI deploy documentation
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
   release:
     types:
@@ -80,7 +80,7 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
         REPOSITORY_NAME: DoubleML/doubleml.github.io
-        BRANCH: master
+        BRANCH: main
         FOLDER: docs/dev
         TARGET_FOLDER: r/dev
         GIT_CONFIG_NAME: DoubleML Deploy Bot
@@ -96,7 +96,7 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
         REPOSITORY_NAME: DoubleML/doubleml.github.io
-        BRANCH: master
+        BRANCH: main
         FOLDER: docs/dev
         TARGET_FOLDER: r/${{env.RELEASE_VERSION}}
         GIT_CONFIG_NAME: DoubleML Deploy Bot
@@ -109,7 +109,7 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
         REPOSITORY_NAME: DoubleML/doubleml.github.io
-        BRANCH: master
+        BRANCH: main
         FOLDER: docs/dev
         TARGET_FOLDER: r/stable
         GIT_CONFIG_NAME: DoubleML Deploy Bot

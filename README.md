@@ -4,7 +4,7 @@
 # DoubleML - Double Machine Learning in R <a href="https://docs.doubleml.org"><img src="man/figures/logo.png" align="right" width = "120" /></a>
 
 [![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
-[![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/master/graph/badge.svg?token=C5aiyo2MVL)](https://app.codecov.io/gh/DoubleML/doubleml-for-r/)
+[![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/main/graph/badge.svg?token=C5aiyo2MVL)](https://app.codecov.io/gh/DoubleML/doubleml-for-r/)
 [![CodeFactor](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r/badge)](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r)
 [![CRAN
 Version](https://www.r-pkg.org/badges/version/DoubleML)](https://cran.r-project.org/package=DoubleML)
@@ -106,9 +106,9 @@ remotes::install_github("DoubleML/doubleml-for-r")
 DoubleML is a community effort. Everyone is welcome to contribute. To
 get started for your first contribution we recommend reading our
 [contributing
-guidelines](https://github.com/DoubleML/doubleml-for-r/blob/master/CONTRIBUTING.md)
+guidelines](https://github.com/DoubleML/doubleml-for-r/blob/main/CONTRIBUTING.md)
 and our [code of
-conduct](https://github.com/DoubleML/doubleml-for-r/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/DoubleML/doubleml-for-r/blob/main/CODE_OF_CONDUCT.md).
 
 ## Citation
 
