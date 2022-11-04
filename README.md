@@ -4,7 +4,7 @@
 # DoubleML - Double Machine Learning in R <a href="https://docs.doubleml.org"><img src="man/figures/logo.png" align="right" width = "120" /></a>
 
 [![build](https://github.com/DoubleML/doubleml-for-r/workflows/build/badge.svg)](https://github.com/DoubleML/doubleml-for-r/actions?query=workflow%3Abuild)
-[![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/master/graph/badge.svg?token=C5aiyo2MVL)](https://app.codecov.io/gh/DoubleML/doubleml-for-r/)
+[![codecov](https://codecov.io/gh/DoubleML/doubleml-for-r/branch/main/graph/badge.svg?token=C5aiyo2MVL)](https://app.codecov.io/gh/DoubleML/doubleml-for-r/)
 [![CodeFactor](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r/badge)](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r)
 [![CRAN
 Version](https://www.r-pkg.org/badges/version/DoubleML)](https://cran.r-project.org/package=DoubleML)
@@ -88,14 +88,14 @@ remotes::install_github("DoubleML/doubleml-for-r")
 
 **DoubleML** requires
 
--   R (&gt;= 3.5.0)
--   R6 (&gt;= 2.4.1)
--   data.table (&gt;= 1.12.8)
+-   R (\>= 3.5.0)
+-   R6 (\>= 2.4.1)
+-   data.table (\>= 1.12.8)
 -   stats
 -   checkmate
--   mlr3 (&gt;= 0.5.0)
--   mlr3tuning (&gt;= 0.3.0)
--   mlr3learners (&gt;= 0.3.0)
+-   mlr3 (\>= 0.5.0)
+-   mlr3tuning (\>= 0.3.0)
+-   mlr3learners (\>= 0.3.0)
 -   mvtnorm
 -   utils
 -   clusterGeneration
@@ -106,9 +106,9 @@ remotes::install_github("DoubleML/doubleml-for-r")
 DoubleML is a community effort. Everyone is welcome to contribute. To
 get started for your first contribution we recommend reading our
 [contributing
-guidelines](https://github.com/DoubleML/doubleml-for-r/blob/master/CONTRIBUTING.md)
+guidelines](https://github.com/DoubleML/doubleml-for-r/blob/main/CONTRIBUTING.md)
 and our [code of
-conduct](https://github.com/DoubleML/doubleml-for-r/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/DoubleML/doubleml-for-r/blob/main/CODE_OF_CONDUCT.md).
 
 ## Citation
 
@@ -130,7 +130,16 @@ Bibtex-entry:
           note={arXiv:\href{https://arxiv.org/abs/2103.09603}{2103.09603} [stat.ML]}
     }
 
+## Acknowledgements
+
+Funding by the Deutsche Forschungsgemeinschaft (DFG, German Research
+Foundation) is acknowledged – Project Number 431701914.
+
 ## References
+
+-   Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2021),
+    DoubleML - An Object-Oriented Implementation of Double Machine
+    Learning in R, arXiv:[2103.09603](https://arxiv.org/abs/2103.09603).
 
 -   Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen,
     C., Newey, W. and Robins, J. (2018), Double/debiased machine

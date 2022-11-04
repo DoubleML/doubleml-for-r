@@ -3,7 +3,7 @@
 DoubleML is a community effort.
 Everyone is welcome to contribute.
 All contributors should adhere to this contributing guidelines
-and our [code of conduct](https://github.com/DoubleML/doubleml-for-r/blob/master/CODE_OF_CONDUCT.md).
+and our [code of conduct](https://github.com/DoubleML/doubleml-for-r/blob/main/CODE_OF_CONDUCT.md).
 The contributing guidelines are particularly helpful to get started for your first contribution.
 
 ## Submit a Bug Report :bug:
@@ -75,7 +75,7 @@ $ git remote add upstream https://github.com/DoubleML/doubleml-for-r.git
 This allows you to easily keep your repository in synch via
 ```bash
 $ git fetch upstream
-$ git merge upstream/master
+$ git merge upstream/main
 ```
 
 5. **Develop** your code changes. A helpful resource for package development in R
@@ -162,7 +162,7 @@ Furthermore, the **score components for the Neyman orthogonal score function nee
 All other functionality is automatically available via inheritance from the abstract base class.
 <!---TODO: Add a model template for the R package DoubleML
 A **template for new model classes** is available
-[here](https://github.com/DoubleML/doubleml-docs/blob/master/model_templates/double_ml_model_template.py).--->
+[here](https://github.com/DoubleML/doubleml-docs/blob/main/model_templates/double_ml_model_template.py).--->
 
 ## Contribute Documentation :books:
 
