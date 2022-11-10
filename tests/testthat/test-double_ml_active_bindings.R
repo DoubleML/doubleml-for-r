@@ -40,6 +40,9 @@ test_that("Not setable fields", {
   msg = "can't set field learner"
   expect_error(dml_plr$learner <- "abc",
     regexp = msg)
+  msg = "can't set field models"
+  expect_error(dml_plr$models <- 5,
+    regexp = msg)
   msg = "can't set field n_folds"
   expect_error(dml_plr$n_folds <- 5,
     regexp = msg)
