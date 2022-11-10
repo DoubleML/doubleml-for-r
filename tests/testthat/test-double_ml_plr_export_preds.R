@@ -48,7 +48,6 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     set.seed(3141)
     double_mlplr_obj$fit(store_predictions = TRUE, store_models = TRUE)
 
-    browser()
     set.seed(3141)
     Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
     indx = (names(df) %in% c(Xnames, "y"))
