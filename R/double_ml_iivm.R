@@ -321,7 +321,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
         fold_specific_params = private$fold_specific_params)
 
       if (self$subgroups$always_takers == FALSE) {
-        r0_hat = rep(0, self$data$n_obs)
+        r0_hat = list(preds = rep(0, self$data$n_obs), models = NULL)
       } else {
         r0_hat = dml_cv_predict(self$learner$ml_r,
           c(self$data$x_cols, self$data$other_treat_cols),
@@ -336,7 +336,7 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       }
 
       if (self$subgroups$never_takers == FALSE) {
-        r1_hat = rep(1, self$data$n_obs)
+        r1_hat = list(preds = rep(1, self$data$n_obs), models = NULL)
       } else {
         r1_hat = dml_cv_predict(self$learner$ml_r,
           c(self$data$x_cols, self$data$other_treat_cols),
@@ -356,14 +356,22 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       y = self$data$data_model[[self$data$y_col]]
 
       res = private$score_elements(
-        y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
-        r1_hat, smpls)
+        y, z, d,
+        g0_hat$preds, g1_hat$preds, m_hat$preds,
+        r0_hat$preds, r1_hat$preds,
+        smpls)
       res$preds = list(
-        "ml_g0" = g0_hat,
-        "ml_g1" = g1_hat,
-        "ml_m" = m_hat,
-        "ml_r0" = r0_hat,
-        "ml_r1" = r1_hat)
+        "ml_g0" = g0_hat$preds,
+        "ml_g1" = g1_hat$preds,
+        "ml_m" = m_hat$preds,
+        "ml_r0" = r0_hat$preds,
+        "ml_r1" = r1_hat$preds)
+      res$models = list(
+        "ml_g0" = g0_hat$models,
+        "ml_g1" = g1_hat$models,
+        "ml_m" = m_hat$models,
+        "ml_r0" = r0_hat$models,
+        "ml_r1" = r1_hat$models)
       return(res)
     },
     score_elements = function(y = y, z = z, d = d,

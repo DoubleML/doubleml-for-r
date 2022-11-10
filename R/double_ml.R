@@ -201,6 +201,17 @@ DoubleML = R6Class("DoubleML",
       }
     },
 
+    #' @field models (`array()`) \cr
+    #' The fitted nuisance models after calling
+    #' `fit(store_models=TRUE)`.
+    models = function(value) {
+      if (missing(value)) {
+        return(private$models_)
+      } else {
+        stop("can't set field models")
+      }
+    },
+
     #' @field pval (`numeric()`) \cr
     #' p-values for the causal parameter(s) after calling `fit()`.
     pval = function(value) {
@@ -359,11 +370,20 @@ DoubleML = R6Class("DoubleML",
     #' Indicates whether the predictions for the nuisance functions should be
     #' stored in field `predictions`. Default is `FALSE`.
     #'
+    #'
+    #' @param store_models (`logical(1)`) \cr
+    #' Indicates whether the fitted models for the nuisance functions should be
+    #' stored in field `models` if you want to analyze the models or extract
+    #' information like variable importance. Default is `FALSE`.
+    #'
     #' @return self
-    fit = function(store_predictions = FALSE) {
+    fit = function(store_predictions = FALSE, store_models = FALSE) {
 
       if (store_predictions) {
         private$initialize_predictions()
+      }
+      if (store_models) {
+        private$initialize_models()
       }
 
       # TODO: insert check for tuned params
@@ -383,6 +403,9 @@ DoubleML = R6Class("DoubleML",
           private$psi_b_[, private$i_rep, private$i_treat] = res$psi_b
           if (store_predictions) {
             private$store_predictions(res$preds)
+          }
+          if (store_models) {
+            private$store_models(res$models)
           }
 
           # estimate the causal parameter
@@ -1139,6 +1162,7 @@ DoubleML = R6Class("DoubleML",
     psi_a_ = NULL,
     psi_b_ = NULL,
     predictions_ = NULL,
+    models_ = NULL,
     pval_ = NULL,
     score_ = NULL,
     se_ = NULL,
@@ -1415,12 +1439,33 @@ DoubleML = R6Class("DoubleML",
         },
         simplify = F)
     },
+    initialize_models = function() {
+      private$models_ = sapply(self$params_names(),
+        function(x) {
+          sapply(self$data$d_cols,
+            function(x) {
+              lapply(
+                seq(self$n_rep),
+                function(x) vector("list", length = self$n_folds))
+            },
+            simplify = F)
+        },
+        simplify = F)
+    },
     store_predictions = function(preds) {
       for (learner in self$params_names()) {
         if (!is.null(preds[[learner]])) {
           private$predictions_[[learner]][
             , private$i_rep,
             private$i_treat] = preds[[learner]]
+        }
+      }
+    },
+    store_models = function(models) {
+      for (learner in self$params_names()) {
+        if (!is.null(models[[learner]])) {
+          private$models_[[learner]][[self$data$treat_col]][[
+          private$i_rep]] = models[[learner]]
         }
       }
     },
