@@ -496,7 +496,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           fold_specific_params = private$fold_specific_params)
         z = self$data$data_model[[self$data$z_cols]]
       } else {
-        m_hat = do.call(
+        xx = do.call(
           cbind,
           lapply(
             self$data$z_cols,
@@ -510,19 +510,21 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 est_params = self$get_params(paste0("ml_m_", x)),
                 return_train_preds = FALSE,
                 task_type = private$task_type$ml_m,
-                fold_specific_params = private$fold_specific_params)
+                fold_specific_params = private$fold_specific_params)$preds
             }))
+        # TODO: Export of fitted models not implemented for this case
+        m_hat = list(preds = xx, models = NULL)
         z = self$data$data_model[, self$data$z_cols, with = FALSE]
       }
 
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      g_hat = NULL
+      g_hat = list(preds = NULL, models = NULL)
       if (exists("ml_g", where = private$learner_)) {
         # get an initial estimate for theta using the partialling out score
-        psi_a = -(d - r_hat) * (z - m_hat)
-        psi_b = (z - m_hat) * (y - l_hat)
+        psi_a = -(d - r_hat$preds) * (z - m_hat$preds)
+        psi_b = (z - m_hat$preds) * (y - l_hat$preds)
         theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
         data_aux = data.table(self$data$data_model,
@@ -540,12 +542,19 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           fold_specific_params = private$fold_specific_params)
       }
 
-      res = private$score_elements(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)
+      res = private$score_elements(
+        y, z, d, l_hat$preds, m_hat$preds,
+        r_hat$preds, g_hat$preds, smpls)
       res$preds = list(
-        "ml_l" = l_hat,
-        "ml_m" = m_hat,
-        "ml_r" = r_hat,
-        "ml_g" = g_hat)
+        "ml_l" = l_hat$preds,
+        "ml_m" = m_hat$preds,
+        "ml_r" = r_hat$preds,
+        "ml_g" = g_hat$preds)
+      res$models = list(
+        "ml_l" = l_hat$models,
+        "ml_m" = m_hat$models,
+        "ml_r" = r_hat$models,
+        "ml_g" = g_hat$models)
       return(res)
     },
     score_elements = function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls) {
@@ -615,7 +624,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         task_type = private$task_type$ml_l,
         fold_specific_params = private$fold_specific_params)
 
-      m_hat_list = dml_cv_predict(self$learner$ml_m,
+      m_hat = dml_cv_predict(self$learner$ml_m,
         c(
           self$data$x_cols,
           self$data$other_treat_cols,
@@ -628,8 +637,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         return_train_preds = TRUE,
         task_type = private$task_type$ml_m,
         fold_specific_params = private$fold_specific_params)
-      m_hat = m_hat_list$preds
-      data_aux_list = lapply(m_hat_list$train_preds, function(x) {
+      data_aux_list = lapply(m_hat$train_preds, function(x) {
         setnafill(data.table(self$data$data_model, "m_hat_on_train" = x),
           fill = -9999.99) # mlr3 does not allow NA's (values are not used)
       })
@@ -650,13 +658,13 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      u_hat = y - l_hat
-      w_hat = d - m_hat_tilde
+      u_hat = y - l_hat$preds
+      w_hat = d - m_hat_tilde$preds
 
       if (is.character(self$score)) {
         if (self$score == "partialling out") {
-          psi_a = -w_hat * (m_hat - m_hat_tilde)
-          psi_b = (m_hat - m_hat_tilde) * u_hat
+          psi_a = -w_hat * (m_hat$preds - m_hat_tilde$preds)
+          psi_b = (m_hat$preds - m_hat_tilde$preds) * u_hat
         }
         res = list(
           psi_a = psi_a,
@@ -665,12 +673,16 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         stop(paste(
           "Callable score not implemented for DoubleMLPLIV",
           "with partialX=TRUE and partialZ=TRUE."))
-        # res = self$score(y, d, g_hat, m_hat, m_hat_tilde)
+        # res = self$score(y, d, g_hat$preds, m_hat$preds, m_hat_tilde$preds)
       }
       res$preds = list(
-        "ml_l" = l_hat,
-        "ml_m" = m_hat,
-        "ml_r" = m_hat_tilde)
+        "ml_l" = l_hat$preds,
+        "ml_m" = m_hat$preds,
+        "ml_r" = m_hat_tilde$preds)
+      res$models = list(
+        "ml_l" = l_hat$models,
+        "ml_m" = m_hat$models,
+        "ml_r" = m_hat_tilde$models)
       return(res)
     },
 
@@ -697,17 +709,18 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
 
       if (is.character(self$score)) {
         if (self$score == "partialling out") {
-          psi_a = -r_hat * d
-          psi_b = r_hat * y
+          psi_a = -r_hat$preds * d
+          psi_b = r_hat$preds * y
         }
         res = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
         stop(paste(
           "Callable score not implemented for DoubleMLPLIV",
           "with partialX=FALSE and partialZ=TRUE."))
-        # res = self$score(y, z, d, r_hat)
+        # res = self$score(y, z, d, r_hat$preds)
       }
-      res$preds = list("ml_r" = r_hat)
+      res$preds = list("ml_r" = r_hat$preds)
+      res$models = list("ml_r" = r_hat$models)
       return(res)
     },
 
@@ -819,8 +832,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           y = self$data$data_model[[self$data$y_col]]
           z = self$data$data_model[[self$data$z_cols]]
 
-          psi_a = -(d - r_hat) * (z - m_hat)
-          psi_b = (z - m_hat) * (y - l_hat)
+          psi_a = -(d - r_hat$preds) * (z - m_hat$preds)
+          psi_b = (z - m_hat$preds) * (y - l_hat$preds)
           theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
           data_aux = data.table(self$data$data_model,

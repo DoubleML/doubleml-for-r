@@ -406,11 +406,11 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
 
-      g_hat = NULL
+      g_hat = list(preds = NULL, models = NULL)
       if (exists("ml_g", where = private$learner_)) {
         # get an initial estimate for theta using the partialling out score
-        psi_a = -(d - m_hat) * (d - m_hat)
-        psi_b = (d - m_hat) * (y - l_hat)
+        psi_a = -(d - m_hat$preds) * (d - m_hat$preds)
+        psi_b = (d - m_hat$preds) * (y - l_hat$preds)
         theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
         data_aux = data.table(self$data$data_model,
@@ -428,11 +428,17 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
           fold_specific_params = private$fold_specific_params)
       }
 
-      res = private$score_elements(y, d, l_hat, m_hat, g_hat, smpls)
+      res = private$score_elements(
+        y, d, l_hat$preds, m_hat$preds, g_hat$preds,
+        smpls)
       res$preds = list(
-        "ml_l" = l_hat,
-        "ml_m" = m_hat,
-        "ml_g" = g_hat)
+        "ml_l" = l_hat$preds,
+        "ml_m" = m_hat$preds,
+        "ml_g" = g_hat$preds)
+      res$models = list(
+        "ml_l" = l_hat$models,
+        "ml_m" = m_hat$models,
+        "ml_g" = g_hat$models)
       return(res)
     },
     score_elements = function(y, d, l_hat, m_hat, g_hat, smpls) {
@@ -519,8 +525,8 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
         d = self$data$data_model[[self$data$treat_col]]
         y = self$data$data_model[[self$data$y_col]]
 
-        psi_a = -(d - m_hat) * (d - m_hat)
-        psi_b = (d - m_hat) * (y - l_hat)
+        psi_a = -(d - m_hat$preds) * (d - m_hat$preds)
+        psi_b = (d - m_hat$preds) * (y - l_hat$preds)
         theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
         data_aux = data.table(self$data$data_model,

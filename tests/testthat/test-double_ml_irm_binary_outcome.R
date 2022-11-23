@@ -13,7 +13,7 @@ if (on_cran) {
     trimming_threshold = 0,
     stringsAsFactors = FALSE
   )
-  test_cases["test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
     learner = "cv_glmnet",

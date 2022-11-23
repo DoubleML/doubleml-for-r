@@ -46,7 +46,7 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
       n_folds = n_folds,
       score = score)
     set.seed(3141)
-    double_mlplr_obj$fit(store_predictions = TRUE)
+    double_mlplr_obj$fit(store_predictions = TRUE, store_models = TRUE)
 
     set.seed(3141)
     Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
@@ -99,14 +99,23 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
       expect_equal(as.vector(double_mlplr_obj$predictions$ml_g),
         as.vector(preds_g$response),
         tolerance = 1e-8)
+      expect_class(
+        double_mlplr_obj$models$ml_g$d[[1]][[1]],
+        "LearnerRegr")
     }
 
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_l),
       as.vector(preds_l$response),
       tolerance = 1e-8)
+    expect_class(
+      double_mlplr_obj$models$ml_l$d[[1]][[1]],
+      "LearnerRegr")
 
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_m),
       as.vector(preds_m$response),
       tolerance = 1e-8)
+    expect_class(
+      double_mlplr_obj$models$ml_m$d[[1]][[1]],
+      "LearnerRegr")
   }
 )

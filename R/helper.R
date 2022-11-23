@@ -33,6 +33,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
       resampling_pred = resample(task_pred, ml_learner, resampling_smpls,
         store_models = TRUE)
       preds = extract_prediction(resampling_pred, task_type, n_obs)
+      models = extract_models(resampling_pred)
       if (return_train_preds) {
         train_preds = extract_prediction(resampling_pred, task_type, n_obs,
           return_train_preds = TRUE)
@@ -62,6 +63,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
       })
 
       preds = extract_prediction(resampling_pred, task_type, n_obs)
+      models = extract_models(resampling_pred)
       if (return_train_preds) {
         train_preds = extract_prediction(resampling_pred, task_type,
           n_obs,
@@ -97,6 +99,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
             store_models = TRUE)
         })
       preds = extract_prediction(resampling_pred, task_type, n_obs)
+      models = extract_models(resampling_pred)
     } else {
       # learners initiated according to fold-specific learners, proceed foldwise
       ml_learners = lapply(
@@ -113,12 +116,18 @@ dml_cv_predict = function(learner, X_cols, y_col,
           store_models = TRUE)
       })
       preds = extract_prediction(resampling_pred, task_type, n_obs)
+      models = extract_models(resampling_pred)
     }
   }
   if (return_train_preds) {
-    return(list("preds" = preds, "train_preds" = train_preds))
+    return(list(
+      "preds" = preds,
+      "train_preds" = train_preds,
+      "models" = models))
   } else {
-    return(preds)
+    return(list(
+      "preds" = preds,
+      "models" = models))
   }
 }
 
@@ -211,6 +220,21 @@ extract_prediction = function(obj_resampling, task_type, n_obs,
   }
 
   return(preds)
+}
+
+extract_from_list = function(x) {
+  learner = x$score()$learner
+  stopifnot(length(learner) == 1)
+  return(learner[[1]])
+}
+
+extract_models = function(obj_resampling) {
+  if (testR6(obj_resampling, classes = "ResampleResult")) {
+    models = obj_resampling$score()$learner
+  } else {
+    models = lapply(obj_resampling, extract_from_list)
+  }
+  return(models)
 }
 
 initiate_learner = function(learner, task_type, params, return_train_preds = FALSE) {
