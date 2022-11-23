@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         persist-credentials: false
     - name: Install SSH Client
@@ -79,14 +79,14 @@ jobs:
       if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
-        REPOSITORY_NAME: DoubleML/doubleml.github.io
-        BRANCH: main
-        FOLDER: docs/dev
-        TARGET_FOLDER: r/dev
-        GIT_CONFIG_NAME: DoubleML Deploy Bot
-        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
-        CLEAN: true
-        SSH: true
+        repository-name: DoubleML/doubleml.github.io
+        branch: main
+        folder: docs/dev
+        target-folder: r/dev
+        git-config-name: DoubleML Deploy Bot
+        git-config-email: DoubleML@users.noreply.github.com
+        clean: true
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
 
     - name: Get tag
       run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
@@ -95,24 +95,24 @@ jobs:
       if: ${{ github.event_name == 'release' }}
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
-        REPOSITORY_NAME: DoubleML/doubleml.github.io
-        BRANCH: main
-        FOLDER: docs/dev
-        TARGET_FOLDER: r/${{env.RELEASE_VERSION}}
-        GIT_CONFIG_NAME: DoubleML Deploy Bot
-        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
-        CLEAN: true
-        SSH: true
+        repository-name: DoubleML/doubleml.github.io
+        branch: main
+        folder: docs/dev
+        target-folder: r/${{env.RELEASE_VERSION}}
+        git-config-name: DoubleML Deploy Bot
+        git-config-email: DoubleML@users.noreply.github.com
+        clean: true
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
 
     - name: Deploy to stable
       if: ${{ github.event_name == 'release' }}
       uses: JamesIves/github-pages-deploy-action@3.7.1
       with:
-        REPOSITORY_NAME: DoubleML/doubleml.github.io
-        BRANCH: main
-        FOLDER: docs/dev
-        TARGET_FOLDER: r/stable
-        GIT_CONFIG_NAME: DoubleML Deploy Bot
-        GIT_CONFIG_EMAIL: DoubleML@users.noreply.github.com
-        CLEAN: true
-        SSH: true
+        repository-name: DoubleML/doubleml.github.io
+        branch: main
+        folder: docs/dev
+        target-folder: r/stable
+        git-config-name: DoubleML Deploy Bot
+        git-config-email: DoubleML@users.noreply.github.com
+        clean: true
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
