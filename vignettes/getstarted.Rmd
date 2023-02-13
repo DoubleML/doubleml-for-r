@@ -79,7 +79,7 @@ dml_data_bonus = DoubleMLData$new(df_bonus,
 print(dml_data_bonus)
 
 # matrix interface to DoubleMLData
-dml_data_sim = double_ml_data_from_matrix(X=X, y=y, d=d)
+dml_data_sim = double_ml_data_from_matrix(X = X, y = y, d = d)
 dml_data_sim
 ```
 
@@ -94,12 +94,12 @@ library(mlr3learners)
 # surpress messages from mlr3 package during fitting
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-learner = lrn("regr.ranger", num.trees=500, mtry=floor(sqrt(n_vars)), max.depth=5, min.node.size=2)
-ml_g_bonus = learner$clone()
+learner = lrn("regr.ranger", num.trees = 500, max.depth = 5, min.node.size = 2)
+ml_l_bonus = learner$clone()
 ml_m_bonus = learner$clone()
 
 learner = lrn("regr.glmnet", lambda = sqrt(log(n_vars)/(n_obs)))
-ml_g_sim = learner$clone()
+ml_l_sim = learner$clone()
 ml_m_sim = learner$clone()
 ```
 
@@ -111,9 +111,10 @@ When initializing the object for PLR models `DoubleMLPLR`, we can further set pa
 * The number of folds used for cross-fitting `n_folds` (defaults to `n_folds = 5`) as well as 
 * the number of repetitions when applying repeated cross-fitting `n_rep` (defaults to `n_rep = 1`). 
 
-Additionally, one can choose between the algorithms `"dml1"` and `"dml2"` via `dml_procedure` (defaults to `"dml2"`). Depending on the causal model, one can further choose between different Neyman-orthogonal score / moment functions. For the PLR model the default score is `"partialling out"`.
+Additionally, one can choose between the algorithms `"dml1"` and `"dml2"` via `dml_procedure` (defaults to `"dml2"`). Depending on the causal model, one can further choose between different Neyman-orthogonal score / moment functions. For the PLR model the default score is `"partialling out"`, i.e., 
+\begin{align}\begin{aligned}\psi(W; \theta, \eta) &:= [Y - \ell(X) - \theta (D - m(X))] [D - m(X)].\end{aligned}\end{align} 
 
-The user guide provides details about the Sample-splitting, cross-fitting and repeated cross-fitting, the Double machine learning algorithms and the Score functions
+Note that with this score, we do not estimate $g_0(X)$ directly, but the conditional expectation of $Y$ given $X$, $\ell_0(X) = E[Y|X]$. The user guide provides details about the Sample-splitting, cross-fitting and repeated cross-fitting, the Double machine learning algorithms and the Score functions
 
 
 ## Estimate double/debiased machine learning models
@@ -122,11 +123,11 @@ We now initialize `DoubleMLPLR` objects for our examples using default parameter
 
 ```{r}
 set.seed(3141)
-obj_dml_plr_bonus = DoubleMLPLR$new(dml_data_bonus, ml_g=ml_g_bonus, ml_m=ml_m_bonus)
+obj_dml_plr_bonus = DoubleMLPLR$new(dml_data_bonus, ml_l = ml_l_bonus, ml_m = ml_m_bonus)
 obj_dml_plr_bonus$fit()
 print(obj_dml_plr_bonus)
 
-obj_dml_plr_sim = DoubleMLPLR$new(dml_data_sim, ml_g=ml_g_sim, ml_m=ml_m_sim)
+obj_dml_plr_sim = DoubleMLPLR$new(dml_data_sim, ml_l = ml_l_sim, ml_m = ml_m_sim)
 obj_dml_plr_sim$fit()
 print(obj_dml_plr_sim)
 ```
