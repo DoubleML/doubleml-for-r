@@ -116,6 +116,10 @@ calling \code{fit()}.}
 Predictions of the nuisance models after calling
 \code{fit(store_predictions=TRUE)}.}
 
+\item{\code{models}}{(\code{array()}) \cr
+The fitted nuisance models after calling
+\code{fit(store_models=TRUE)}.}
+
 \item{\code{pval}}{(\code{numeric()}) \cr
 p-values for the causal parameter(s) after calling \code{fit()}.}
 
@@ -185,7 +189,7 @@ Print DoubleML objects.
 \subsection{Method \code{fit()}}{
 Estimate DoubleML models.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit(store_predictions = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit(store_predictions = FALSE, store_models = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -194,6 +198,11 @@ Estimate DoubleML models.
 \item{\code{store_predictions}}{(\code{logical(1)}) \cr
 Indicates whether the predictions for the nuisance functions should be
 stored in field \code{predictions}. Default is \code{FALSE}.}
+
+\item{\code{store_models}}{(\code{logical(1)}) \cr
+Indicates whether the fitted models for the nuisance functions should be
+stored in field \code{models} if you want to analyze the models or extract
+information like variable importance. Default is \code{FALSE}.}
 }
 \if{html}{\out{</div>}}
 }
