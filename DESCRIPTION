@@ -6,7 +6,8 @@ Authors@R: c(
     person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role=c("aut", "cre")),
     person("Victor", "Chernozhukov", role="aut"),
     person("Malte S.", "Kurz", email = "mkurz-software@gmx.de", role="aut"),
-    person("Martin", "Spindler", email="martin.spindler@gmx.de", role="aut"))
+    person("Martin", "Spindler", email="martin.spindler@gmx.de", role="aut"),
+    person("Klaassen", "Sven", email="sven.klaassen@uni-hamburg.de", role="aut"))
 Description: Implementation of the double/debiased machine learning framework of
     Chernozhukov et al. (2018) <doi:10.1111/ectj.12097> for partially linear
     regression models, partially linear instrumental variable regression models,
@@ -36,7 +37,7 @@ Imports:
     mlr3learners (>= 0.3.0),
     mlr3misc
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Suggests: 
     knitr,
     rmarkdown,
