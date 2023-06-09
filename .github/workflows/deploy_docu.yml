@@ -30,7 +30,7 @@ jobs:
       with:
         r-version: 'release'
 
-    - uses: r-lib/actions/setup-pandoc@v1
+    - uses: r-lib/actions/setup-pandoc@v2
 
     - name: Query dependencies
       run: |
