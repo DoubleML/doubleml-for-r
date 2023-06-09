@@ -22,7 +22,7 @@ Documentation of functions in R: [https://docs.doubleml.org/r/stable/reference/i
 
 User guide: [https://docs.doubleml.org](https://docs.doubleml.org)
 
-**DoubleML** is currently maintained by [`@MalteKurz`](https://github.com/MalteKurz) and [`@PhilippBach`](https://github.com/PhilippBach). 
+**DoubleML** is currently maintained by [`@PhilippBach`](https://github.com/PhilippBach) and [`@SvenKlaassen`](https://github.com/SvenKlaassen). 
 
 ## Main Features
 
