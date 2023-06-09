@@ -3,13 +3,7 @@
 name: CI deploy documentation to dev
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
-  release:
-    types:
-      - published
 
 jobs:
   build:
