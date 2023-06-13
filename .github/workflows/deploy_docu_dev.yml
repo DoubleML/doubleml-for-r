@@ -1,6 +1,6 @@
 # Workflow based on https://github.com/r-lib/actions/blob/master/examples/pkgdown.yaml
 
-name: CI deploy documentation (stable)
+name: CI deploy documentation (dev)
 
 on:
   push:
@@ -13,7 +13,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-20.04
 
     steps:
@@ -75,14 +74,14 @@ jobs:
     - name: Build docu with pkgdown
       run: Rscript -e 'pkgdown::build_site(new_process = FALSE)'
 
-    - name: Deploy to stable
-      if: ${{ github.event_name == 'workflow_dispatch' }}
+    - name: Deploy to dev
+      if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' }}
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         repository-name: DoubleML/doubleml.github.io
         branch: main
         folder: docs/dev
-        target-folder: r/stable
+        target-folder: r/dev
         git-config-name: DoubleML Deploy Bot
         git-config-email: DoubleML@users.noreply.github.com
         clean: true
@@ -91,14 +90,14 @@ jobs:
     - name: Get tag
       run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
 
-    - name: Deploy to stable (release)
+    - name: Deploy to version
       if: ${{ github.event_name == 'release' }}
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         repository-name: DoubleML/doubleml.github.io
         branch: main
         folder: docs/dev
-        target-folder: r/stable
+        target-folder: r/${{env.RELEASE_VERSION}}
         git-config-name: DoubleML Deploy Bot
         git-config-email: DoubleML@users.noreply.github.com
         clean: true
