@@ -12,6 +12,9 @@ development:
 toc:
   depth: 3
 
+template:
+  bootstrap: 5
+
 navbar:
   structure:
     left:  [home, userguide, getstarted, reference, articles]
