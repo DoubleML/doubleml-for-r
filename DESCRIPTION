@@ -1,7 +1,7 @@
 Package: DoubleML
 Type: Package
 Title: Double Machine Learning in R
-Version: 0.5.0.9000
+Version: 1.0.0
 Authors@R: c(
     person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role=c("aut", "cre")),
     person("Victor", "Chernozhukov", role="aut"),
@@ -16,7 +16,8 @@ Description: Implementation of the double/debiased machine learning framework of
     these models by machine learning methods and computation of the Neyman
     orthogonal score functions. 'DoubleML' is built on top of 'mlr3' and the
     'mlr3' ecosystem. The object-oriented implementation of 'DoubleML' based on
-    the 'R6' package is very flexible. 
+    the 'R6' package is very flexible. More information available in the
+    publication in the Journal of Statistical Software: <10.18637/jss.v108.i03>.
 License: MIT + file LICENSE
 URL: https://docs.doubleml.org/stable/index.html, https://github.com/DoubleML/doubleml-for-r/
 BugReports: https://github.com/DoubleML/doubleml-for-r/issues
@@ -37,7 +38,7 @@ Imports:
     mlr3learners (>= 0.3.0),
     mlr3misc
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     knitr,
     rmarkdown,
