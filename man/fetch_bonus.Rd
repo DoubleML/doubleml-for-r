@@ -76,7 +76,7 @@ The supplementary data of the study by Chernozhukov et al. (2018) is
 available at \url{https://academic.oup.com/ectj/article/21/1/C1/5056401#supplementary-data}.
 
 The supplementary data of the study by Bilias (2000) is available at
-\url{http://qed.econ.queensu.ca/jae/2000-v15.6/bilias/}.
+\url{https://www.journaldata.zbw.eu/dataset/sequential-testing-of-duration-data-the-case-of-the-pennsylvania-reemployment-bonus-experiment}.
 }
 \examples{
 library(DoubleML)

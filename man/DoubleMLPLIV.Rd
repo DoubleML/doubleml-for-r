@@ -70,10 +70,10 @@ dml_pliv_obj$summary()
 }
 \seealso{
 Other DoubleML: 
+\code{\link{DoubleML}},
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
-\code{\link{DoubleMLPLR}},
-\code{\link{DoubleML}}
+\code{\link{DoubleMLPLR}}
 }
 \concept{DoubleML}
 \section{Super class}{

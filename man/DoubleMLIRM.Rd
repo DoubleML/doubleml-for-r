@@ -78,10 +78,10 @@ dml_irm_obj$summary()
 }
 \seealso{
 Other DoubleML: 
+\code{\link{DoubleML}},
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}},
-\code{\link{DoubleML}}
+\code{\link{DoubleMLPLR}}
 }
 \concept{DoubleML}
 \section{Super class}{
