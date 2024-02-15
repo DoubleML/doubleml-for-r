@@ -94,10 +94,10 @@ dml_iivm_obj$summary()
 }
 \seealso{
 Other DoubleML: 
+\code{\link{DoubleML}},
 \code{\link{DoubleMLIRM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}},
-\code{\link{DoubleML}}
+\code{\link{DoubleMLPLR}}
 }
 \concept{DoubleML}
 \section{Super class}{

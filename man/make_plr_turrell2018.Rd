@@ -63,5 +63,5 @@ is a random symmetric, positive-definite matrix generated with
 Turrell, A. (2018), Econometrics in Python part I - Double
 machine learning, Markov Wanderer: A blog on economics, science, coding and
 data.
-\url{http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/}.
+\url{https://aeturrell.com/blog/posts/econometrics-in-python-parti-ml/}.
 }

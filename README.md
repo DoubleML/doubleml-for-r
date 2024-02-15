@@ -70,7 +70,12 @@ It further can be readily extended with regards to
 - … alternative resampling schemes,
 - …
 
-![OOP structure of the DoubleML package](man/figures/oop.svg?raw=true)
+<figure>
+<img src="man/figures/oop.svg?raw=true"
+alt="OOP structure of the DoubleML package" />
+<figcaption aria-hidden="true">OOP structure of the DoubleML
+package</figcaption>
+</figure>
 
 ## Installation
 
@@ -122,11 +127,13 @@ Bibtex-entry:
 
     @misc{DoubleML2020,
           title={{DoubleML} -- {A}n Object-Oriented Implementation of Double Machine Learning in {R}}, 
-          author={P. Bach and V. Chernozhukov and M. S. Kurz and M. Spindler},
-          year={2021},
-          eprint={2103.09603},
-          archivePrefix={arXiv},
-          primaryClass={stat.ML},
+          author={P. Bach and V. Chernozhukov and M. S. Kurz and M. Spindler and Sven Klaassen},
+          year={2024},
+          journal={Journal of Statistical Software},
+          volume={108},
+          number={3},
+          pages= {1-56},
+          doi={10.18637/jss.v108.i03},
           note={arXiv:\href{https://arxiv.org/abs/2103.09603}{2103.09603} [stat.ML]}
     }
 
@@ -137,9 +144,11 @@ Foundation) is acknowledged – Project Number 431701914.
 
 ## References
 
-- Bach, P., Chernozhukov, V., Kurz, M. S., and Spindler, M. (2021),
-  DoubleML - An Object-Oriented Implementation of Double Machine
-  Learning in R, arXiv:[2103.09603](https://arxiv.org/abs/2103.09603).
+- Bach, P., Chernozhukov, V., Kurz, M. S., Spindler, M. and Klaassen, S.
+  (2024), DoubleML - An Object-Oriented Implementation of Double Machine
+  Learning in R, Journal of Statistical Software, 108(3): 1-56,
+  <doi:10.18637/jss.v108.i03>,
+  arXiv:[2103.09603](https://arxiv.org/abs/2103.09603).
 
 - Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C.,
   Newey, W. and Robins, J. (2018), Double/debiased machine learning for
