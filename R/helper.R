@@ -425,7 +425,7 @@ check_smpl_split = function(smpl, n_obs, check_intersect = FALSE) {
     assert_subset(test_ids, seq(n_obs))
   })
   if (check_intersect) {
-    for (i_fold in seq(length(length(smpl$train_ids))))
+    for (i_fold in seq_along(length(length(smpl$train_ids))))
     {
       assert_disjunct(smpl$train_ids[[i_fold]], smpl$test_ids[[i_fold]])
     }
