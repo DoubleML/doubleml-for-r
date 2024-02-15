@@ -334,7 +334,7 @@ set_default_measure = function(measure_in = NA, task_type) {
 }
 
 
-format.perc = function(probs, digits) {
+format_perc = function(probs, digits) {
   paste(
     format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
     "%")
