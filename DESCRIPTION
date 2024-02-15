@@ -17,7 +17,7 @@ Description: Implementation of the double/debiased machine learning framework of
     orthogonal score functions. 'DoubleML' is built on top of 'mlr3' and the
     'mlr3' ecosystem. The object-oriented implementation of 'DoubleML' based on
     the 'R6' package is very flexible. More information available in the
-    publication in the Journal of Statistical Software: <10.18637/jss.v108.i03>.
+    publication in the Journal of Statistical Software: <doi:10.18637/jss.v108.i03>.
 License: MIT + file LICENSE
 URL: https://docs.doubleml.org/stable/index.html, https://github.com/DoubleML/doubleml-for-r/
 BugReports: https://github.com/DoubleML/doubleml-for-r/issues
