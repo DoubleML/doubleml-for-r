@@ -319,7 +319,7 @@ The hyperparameter-tuning is performed using the tuning methods provided
 in the \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} package. For more
 information on tuning in \href{https://mlr3.mlr-org.com/}{mlr3}, we refer to
 the section on parameter tuning in the
-\href{https://mlr3book.mlr-org.com/optimization.html#tuning}{mlr3 book}.
+\href{https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html}{mlr3 book}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
   param_set,
