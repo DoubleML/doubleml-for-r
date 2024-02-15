@@ -170,7 +170,7 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #' available at [https://academic.oup.com/ectj/article/21/1/C1/5056401#supplementary-data](https://academic.oup.com/ectj/article/21/1/C1/5056401#supplementary-data).
 #'
 #' The supplementary data of the study by Bilias (2000) is available at
-#' [http://qed.econ.queensu.ca/jae/2000-v15.6/bilias/](http://qed.econ.queensu.ca/jae/2000-v15.6/bilias/).
+#' [https://www.journaldata.zbw.eu/dataset/sequential-testing-of-duration-data-the-case-of-the-pennsylvania-reemployment-bonus-experiment](https://www.journaldata.zbw.eu/dataset/sequential-testing-of-duration-data-the-case-of-the-pennsylvania-reemployment-bonus-experiment).
 #'
 #'
 #' @references Bilias Y. (2000), Sequential Testing of Duration Data:
@@ -386,7 +386,7 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @references Turrell, A. (2018), Econometrics in Python part I - Double
 #' machine learning, Markov Wanderer: A blog on economics, science, coding and
 #' data.
-#' [http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/](http://aeturrell.com/2018/02/10/econometrics-in-python-partI-ML/).
+#' [https://aeturrell.com/blog/posts/econometrics-in-python-parti-ml/](https://aeturrell.com/blog/posts/econometrics-in-python-parti-ml/).
 #'
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate.
