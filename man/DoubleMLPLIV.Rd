@@ -49,15 +49,15 @@ obj_dml_data = make_pliv_CHS2015(
   dim_z = 1)
 dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 param_grid = list(
-  "ml_l" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-  "ml_m" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-  "ml_r" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+  "ml_l" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_m" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_r" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)))
 
 # minimum requirements for tune_settings
 tune_settings = list(
