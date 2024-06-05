@@ -79,19 +79,19 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
       n_rep = n_rep)
 
     param_grid = list(
-      "ml_l" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-      "ml_m" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-      "ml_r" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+      "ml_l" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)),
+      "ml_m" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)),
+      "ml_r" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)))
     if (score == "IV-type") {
-      param_grid[["ml_g"]] = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2)))
+      param_grid[["ml_g"]] = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2))
       tune_settings[["measure"]][["ml_g"]] = "regr.mse"
     }
 
@@ -175,15 +175,15 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV (multiple Z)",
       n_rep = n_rep)
 
     param_grid = list(
-      "ml_l" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-      "ml_m" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-      "ml_r" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+      "ml_l" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)),
+      "ml_m" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)),
+      "ml_r" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)))
 
     double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds)
     double_mlpliv_obj_tuned$fit()

@@ -73,15 +73,15 @@ obj_dml_data = make_iivm_data(
   alpha_x = 1, dim_x = 20)
 dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 param_grid = list(
-  "ml_g" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-  "ml_m" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-  "ml_r" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+  "ml_g" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_m" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_r" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)))
 # minimum requirements for tune_settings
 tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
