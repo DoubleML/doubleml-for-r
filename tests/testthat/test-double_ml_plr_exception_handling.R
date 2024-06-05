@@ -167,10 +167,10 @@ test_that("Unit tests for deprecation warnings of PLR", {
   regexp = msg)
 
   par_grids = list(
-    "ml_g" = paradox::ParamSet$new(list(
-      paradox::ParamInt$new("num.trees", lower = 9, upper = 10))),
-    "ml_m" = paradox::ParamSet$new(list(
-      paradox::ParamInt$new("num.trees", lower = 10, upper = 11))))
+    "ml_g" = paradox::ps(
+      num.trees = paradox::p_int(lower = 9, upper = 10)),
+    "ml_m" = paradox::ps(
+      num.trees = paradox::p_int(lower = 10, upper = 11)))
 
   msg = paste0("Learner ml_g was renamed to ml_l.")
   expect_warning(dml_obj$tune(par_grids),

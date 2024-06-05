@@ -78,6 +78,7 @@ jobs:
         if: matrix.config.mlr3 == 'dev'
         run: |
           remotes::install_github("mlr-org/mlr3")
+          remotes::install_github("mlr-org/paradox")
         shell: Rscript {0}
 
       - name: Check
