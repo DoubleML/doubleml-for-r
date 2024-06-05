@@ -63,15 +63,15 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
       n_rep = n_rep)
 
     param_grid = list(
-      "ml_m" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-      "ml_g" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-      "ml_r" = paradox::ParamSet$new(list(
-        paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-        paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+      "ml_m" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)),
+      "ml_g" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)),
+      "ml_r" = paradox::ps(
+        cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+        minsplit = paradox::p_int(lower = 1, upper = 2)))
 
     double_mliivm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_settings)
     double_mliivm_obj_tuned$fit()

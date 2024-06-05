@@ -49,12 +49,12 @@ obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
 dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_l, ml_m)
 
 param_grid = list(
-  "ml_l" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))),
-  "ml_m" = paradox::ParamSet$new(list(
-    paradox::ParamDbl$new("cp", lower = 0.01, upper = 0.02),
-    paradox::ParamInt$new("minsplit", lower = 1, upper = 2))))
+  "ml_l" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_m" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)))
 
 # minimum requirements for tune_settings
 tune_settings = list(
