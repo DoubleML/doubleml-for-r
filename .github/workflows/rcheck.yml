@@ -84,6 +84,7 @@ jobs:
       - name: Install fixed version of mlr3learers
         run: |
           remotes::install_version("mlr3learners", version = "0.3.0")
+          print(sessionInfo())
         shell: Rscript {0}
 
       - name: Check
