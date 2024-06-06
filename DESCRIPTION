@@ -35,7 +35,7 @@ Imports:
     utils,
     clusterGeneration,
     readstata13,
-    mlr3learners (>= 0.3.0),
+    mlr3learners (>= 0.6.0),
     mlr3misc
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.3.1
