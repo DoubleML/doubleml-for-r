@@ -81,7 +81,7 @@ jobs:
           remotes::install_github("mlr-org/paradox")
         shell: Rscript {0}
       
-       - name: Install fixed version of mlr3learers
+      - name: Install fixed version of mlr3learers
         run: |
           remotes::install_version("mlr3learners", version = "0.3.0")
         shell: Rscript {0}
