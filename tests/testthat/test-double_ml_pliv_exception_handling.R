@@ -42,6 +42,7 @@ test_that("Unit tests for deprecation warnings of PLIV", {
     "ml_r" = paradox::ps(
       num.trees = paradox::p_int(lower = 10, upper = 11)))
 
+  skip_if_not_installed("ranger")
   msg = paste0("Learner ml_g was renamed to ml_l.")
   expect_warning(dml_obj$tune(par_grids),
     regexp = msg)

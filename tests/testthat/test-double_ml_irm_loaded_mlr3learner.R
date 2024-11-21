@@ -20,6 +20,7 @@ if (on_cran) {
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
+skip_if_not_installed("ranger")
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases, {
     set.seed(3141)
