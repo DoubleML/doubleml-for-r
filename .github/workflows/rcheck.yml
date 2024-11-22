@@ -25,6 +25,7 @@ jobs:
           - {os: windows-latest, r: 'release', mlr3: 'release', cran_no_glmnet: 'false'}
           - {os: macOS-latest, r: 'release', mlr3: 'release', cran_no_glmnet: 'false'}
           - {os: ubuntu-20.04, r: 'release', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
+          - {os: ubuntu-20.04, r: 'release', mlr3: 'dev', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
           - {os: ubuntu-20.04, r: 'devel', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
           - {os: ubuntu-20.04, r: 'devel', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'true'}
           - {os: ubuntu-20.04, r: 'devel', mlr3: 'dev', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
