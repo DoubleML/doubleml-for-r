@@ -311,6 +311,7 @@ DoubleML = R6Class("DoubleML",
         "\n",
         "Covariates: ", paste0(self$data$x_cols, collapse = ", "), "\n",
         "Instrument(s): ", paste0(self$data$z_cols, collapse = ", "), "\n",
+        "Selection variable: ", paste0(self$data$s_col, collapse = ", "), "\n",
         cluster_info,
         "No. Observations: ", self$data$n_obs, "\n")
 
