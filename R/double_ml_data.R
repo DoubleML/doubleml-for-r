@@ -162,12 +162,17 @@ DoubleMLData = R6Class("DoubleMLData",
           assert_subset(x_cols, self$all_variables)
           private$x_cols_ = x_cols
         } else {
-          if (!is.null(self$z_cols)) {
+          if (!is.null(self$z_cols) && is.null(self$s_col)) {
             y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
             private$x_cols_ = setdiff(self$all_variables, y_d_z)
           } else {
-            y_d = union(self$y_col, self$d_cols)
-            private$x_cols_ = setdiff(self$all_variables, y_d)
+            if (!is.null(self$s_col)) {
+              y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols, self$s_col))
+              private$x_cols_ = setdiff(self$all_variables, y_d_z_s)
+            } else {
+              y_d = union(self$y_col, self$d_cols)
+              private$x_cols_ = setdiff(self$all_variables, y_d)
+            }
           }
         }
         if (reset_value) {
@@ -213,6 +218,25 @@ DoubleMLData = R6Class("DoubleMLData",
           self$set_data_model(self$d_cols[1])
         }
       }
+    },
+    
+    s_col = function(value) {
+      if (missing(value)) {
+        return(private$s_col_)
+      } else {
+        s_col = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
+        
+        if (!is.null(s_col)) {
+          assert_character(s_col, len = 1)
+        }
+        assert_subset(s_col, self$all_variables)
+        private$s_col_ = s_col
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
     }),
 
   public = list(
@@ -245,6 +269,7 @@ DoubleMLData = R6Class("DoubleMLData",
       y_col = NULL,
       d_cols = NULL,
       z_cols = NULL,
+      s_col = NULL,
       use_other_treat_as_covariate = TRUE) {
 
       if (all(class(data) == "data.frame")) {
@@ -258,6 +283,7 @@ DoubleMLData = R6Class("DoubleMLData",
       self$y_col = y_col
       self$d_cols = d_cols
       self$z_cols = z_cols
+      self$s_col = s_col
       self$x_cols = x_cols
       private$check_disjoint_sets()
 
@@ -279,6 +305,7 @@ DoubleMLData = R6Class("DoubleMLData",
         "\n",
         "Covariates: ", paste0(self$x_cols, collapse = ", "), "\n",
         "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
+        "Selection variable: ", paste0(self$s_col, collapse = ", "), "\n",
         "No. Observations: ", self$n_obs, "\n")
       cat(header, "\n",
         "\n------------------ Data summary      ------------------\n",
@@ -312,7 +339,7 @@ DoubleMLData = R6Class("DoubleMLData",
       }
       col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
-        self$z_cols)
+        self$z_cols, self$s_col)
       private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
 
@@ -333,6 +360,7 @@ DoubleMLData = R6Class("DoubleMLData",
     x_cols_ = NULL,
     y_col_ = NULL,
     z_cols_ = NULL,
+    s_col_ = NULL,
     check_disjoint_sets = function() {
       y_col = self$y_col
       x_cols = self$x_cols
@@ -375,6 +403,27 @@ DoubleMLData = R6Class("DoubleMLData",
           stop(paste(
             "At least one variable/column is set as covariate ('x_cols')",
             "and instrumental variable in 'z_cols'."))
+        }
+      }
+      
+      if (!is.null(self$s_col)) {
+        s_col = self$s_col
+        
+        if (y_col %in% s_col) {
+          stop(paste(
+            y_col,
+            "cannot be set as outcome variable 'y_col' and",
+            "selection variable in 's_col'."))
+        }
+        if (any(s_col %in% d_cols)) {
+          stop(paste(
+            "At least one variable/column is set as treatment",
+            "variable ('d_cols') and selection variable in 's_col'."))
+        }
+        if (any(s_col %in% x_cols)) {
+          stop(paste(
+            "At least one variable/column is set as covariate ('x_cols')",
+            "and selection variable in 's_col'."))
         }
       }
     }
