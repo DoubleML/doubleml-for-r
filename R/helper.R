@@ -317,6 +317,34 @@ get_cond_samples = function(smpls, D) {
       "test_ids" = smpls$test_ids)))
 }
 
+get_cond_samples_2d = function(smpls, var1, var2) {
+  train_ids_00 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+    smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 0 & var2[smpls$train_ids[[x]]] ==  0]
+  })
+  train_ids_01 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+    smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 0 & var2[smpls$train_ids[[x]]] ==  1]
+  })
+  train_ids_10 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+    smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 1 & var2[smpls$train_ids[[x]]] ==  0]
+  })
+  train_ids_11 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+    smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 1 & var2[smpls$train_ids[[x]]] ==  1]
+  })
+  return(list(
+    smpls_00 = list(
+      "train_ids" = train_ids_00,
+      "test_ids" = smpls$test_ids),
+    smpls_01 = list(
+      "train_ids" = train_ids_01,
+      "test_ids" = smpls$test_ids),
+    smpls_10 = list(
+      "train_ids" = train_ids_10,
+      "test_ids" = smpls$test_ids),
+    smpls_11 = list(
+      "train_ids" = train_ids_11,
+      "test_ids" = smpls$test_ids)))
+}
+
 set_default_measure = function(measure_in = NA, task_type) {
   valid_task_type = c("regr", "classif")
   assertChoice(task_type, valid_task_type)
