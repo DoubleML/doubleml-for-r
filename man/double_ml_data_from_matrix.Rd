@@ -29,6 +29,9 @@ Matrix of treatment variables.}
 \item{z}{(\code{matrix()}) \cr
 Matrix of instruments.}
 
+\item{s}{(\code{numeric()}) \cr
+Vector of the score or selection variable (only relevant for SSM models).}
+
 \item{cluster_vars}{(\code{matrix()}) \cr
 Matrix of cluster variables.}
 
