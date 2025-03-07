@@ -59,6 +59,7 @@ VignetteBuilder: knitr
 Collate:
     'double_ml.R'
     'double_ml_data.R'
+    'double_ml_ssm.R'
     'double_ml_iivm.R'
     'double_ml_irm.R'
     'double_ml_pliv.R'

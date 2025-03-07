@@ -958,3 +958,77 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
     }
   }
 }
+
+
+make_ssm_data = function(n_obs=8000, dim_x=100, theta=1, mar=TRUE, return_type="DoubleMLData"){
+  
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+  
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+  
+  if(mar == TRUE){
+    sigma = matrix(c(1, 0, 0, 1), 2, 2)
+    gamma = 0
+  }else{
+    sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2)
+    gamma = 1
+  }
+  
+  e = t(rmvnorm(n_obs, rep(0, 2), sigma))
+  cov_mat = toeplitz(0.5^( 0:(dim_x-1) ))
+  x = rmvnorm(n_obs, rep(0, dim_x), cov_mat)
+  beta = 0.4 / ((1:dim_x)^2)
+  d = ifelse(x %*% beta + rnorm(n_obs) > 0, 1, 0)
+  z = as.matrix(rnorm(n_obs))
+  s = ifelse(x %*% beta + d + gamma * z + e[1,] > 0, 1, 0)
+  y = x %*% beta + theta * d + e[2,]
+  y[s==0] = 0
+  
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  colnames(z) = "z"
+  colnames(s) = "s"
+  
+  if (return_type == "matrix") {
+    if (mar == TRUE){
+      return(list("X" = x, "y" = y, "d" = d, "s" = s))
+    }else{
+      return(list("X" = x, "y" = y, "d" = d, "z" = z,"s" = s))
+    }
+  }
+  if (return_type == "data.frame") {
+    if (mar == TRUE){
+      data = data.frame(x, y, d, s)
+      return(data)
+    }else{
+      data = data.frame(x, y, d, z, s)
+      return(data)
+    }
+  } 
+  if (return_type == "data.table") {
+    if (mar == TRUE){
+      data = data.table(x, y, d, s)
+      return(data)
+    }else{
+      data = data.table(x, y, d, z, s)
+      return(data)
+    }
+  } 
+  if (return_type == "DoubleMLData") {
+    if (mar == TRUE){
+      dt = data.table(x, y, d, s)
+      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", s_col = "s")
+      return(data)
+    }else{
+      dt = data.table(x, y, d, z, s)
+      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", z_cols = "z", s_col = "s")
+      return(data)
+    }
+  } 
+}  
