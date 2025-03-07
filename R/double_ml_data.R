@@ -759,6 +759,9 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #' @param z (`matrix()`) \cr
 #' Matrix of instruments.
 #'
+#' @param s (`numeric()`) \cr
+#' Vector of the score or selection variable (only relevant for SSM models).
+#'
 #' @param cluster_vars (`matrix()`) \cr
 #' Matrix of cluster variables.
 #'
