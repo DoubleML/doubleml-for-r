@@ -219,7 +219,8 @@ DoubleMLData = R6Class("DoubleMLData",
         }
       }
     },
-    
+    #' @field s_col (`NULL`, `character()`) \cr
+    #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
     s_col = function(value) {
       if (missing(value)) {
         return(private$s_col_)
@@ -260,6 +261,9 @@ DoubleMLData = R6Class("DoubleMLData",
     #'
     #' @param z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
+    #' 
+    #' @param s_col (`NULL`, `character()`) \cr
+    #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
     #'
     #' @param use_other_treat_as_covariate (`logical(1)`) \cr
     #' Indicates whether in the multiple-treatment case the other treatment
@@ -541,6 +545,9 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     #'
     #' @param z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
+    #' 
+    #' @param s_col (`NULL`, `character()`) \cr
+    #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
     #'
     #' @param use_other_treat_as_covariate (`logical(1)`) \cr
     #' Indicates whether in the multiple-treatment case the other treatment
@@ -694,6 +701,9 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
 #'
 #' @param z_cols (`NULL`, `character()`) \cr
 #' The instrumental variables. Default is `NULL`.
+#'
+#' @param s_col (`NULL`, `character()`) \cr
+#' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
 #'
 #' @param cluster_cols (`NULL`, `character()`) \cr
 #' The cluster variables. Default is `NULL`.

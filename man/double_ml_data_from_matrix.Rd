@@ -10,6 +10,7 @@ double_ml_data_from_matrix(
   y,
   d,
   z = NULL,
+  s = NULL,
   cluster_vars = NULL,
   data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE
