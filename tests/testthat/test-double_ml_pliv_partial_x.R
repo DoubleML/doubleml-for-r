@@ -65,15 +65,15 @@ test_that("Unit tests for PLIV.partialX invalid score", {
   msg = paste(
     "Callable score not implemented for DoubleMLPLIV with",
     "partialX=TRUE and partialZ=FALSE with several instruments.")
-  double_mlplr_obj <- DoubleMLPLIV.partialX(
+  double_mlplr_obj = DoubleMLPLIV.partialX(
     data_pliv_partialX$dml_data,
     ml_l = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("regr.rpart"),
     ml_r = mlr3::lrn("regr.rpart"),
     score = function(x) {
       return(mean(x))
-    })
+    }
+  )
   expect_error(double_mlplr_obj$fit(),
     regexp = msg)
-}
-)
+})

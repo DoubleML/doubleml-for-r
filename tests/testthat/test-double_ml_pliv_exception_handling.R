@@ -55,8 +55,7 @@ test_that("Unit tests for deprecation warnings of PLIV", {
     resolution = 5)
   expect_warning(dml_obj$tune(par_grids, tune_settings = tune_settings),
     regexp = msg)
-}
-)
+})
 
 test_that("Unit tests of exception handling for DoubleMLPLIV", {
   set.seed(3141)
@@ -75,5 +74,4 @@ test_that("Unit tests of exception handling for DoubleMLPLIV", {
     ml_g = ml_g,
     score = "partialling out"),
   regexp = msg)
-}
-)
+})

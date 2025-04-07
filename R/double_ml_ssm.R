@@ -1,7 +1,6 @@
-
 DoubleMLSSM = R6Class("DoubleMLSSM",
-  inherit = DoubleML, 
-  
+  inherit = DoubleML,
+
   active = list(
     trimming_rule = function(value) {
       if (missing(value)) {
@@ -10,18 +9,19 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         stop("can't set field trimming_rule")
       }
     },
-    
+
     trimming_threshold = function(value) {
       if (missing(value)) {
         return(private$trimming_threshold_)
       } else {
         stop("can't set field trimming_threshold")
       }
-    }),
-  
-  
+    }
+  ),
+
+
   public = list(
-    
+
     initialize = function(data,
       ml_g,
       ml_pi,
@@ -44,7 +44,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         dml_procedure,
         draw_sample_splitting,
         apply_cross_fitting)
-      
+
       private$normalize_ipw = normalize_ipw
 
       private$check_data(self$data)
@@ -59,11 +59,11 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         "ml_m" = ml_m)
 
       private$initialize_ml_nuisance_params()
-      
+
       private$trimming_rule_ = trimming_rule
       private$trimming_threshold_ = trimming_threshold
     },
-    
+
     set_ml_nuisance_params = function(learner = NULL, treat_var = NULL, params,
       set_fold_specific = FALSE) {
       assert_character(learner, len = 1)
@@ -73,7 +73,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         set_fold_specific)
     },
 
-    
+
     tune = function(param_set, tune_settings = list(
       n_folds_tune = 5,
       rsmp_tune = mlr3::rsmp("cv", folds = 5),
@@ -92,8 +92,8 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
       super$tune(param_set, tune_settings, tune_on_folds)
     }
   ),
-  
-  
+
+
   private = list(
     n_nuisance = 4,
     normalize_ipw = FALSE,
@@ -111,14 +111,14 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
     },
 
     nuisance_est = function(smpls, ...) {
-      
-      if(self$score == "missing-at-random") {
-        
-        smpls_d_s = get_cond_samples_2d(smpls, self$data$data_model[[self$data$treat_col]], 
-                                        self$data$data_model[[self$data$s_col]])
+
+      if (self$score == "missing-at-random") {
+
+        smpls_d_s = get_cond_samples_2d(smpls, self$data$data_model[[self$data$treat_col]],
+          self$data$data_model[[self$data$s_col]])
         smpls_d0_s1 = smpls_d_s$smpls_01
         smpls_d1_s1 = smpls_d_s$smpls_11
-        
+
         pi_hat = dml_cv_predict(self$learner$ml_pi,
           c(self$data$x_cols, self$data$other_treat_cols, self$data$d_cols),
           self$data$s_col,
@@ -129,7 +129,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           return_train_preds = FALSE,
           task_type = private$task_type$ml_pi,
           fold_specific_params = private$fold_specific_params)
-      
+
         m_hat = dml_cv_predict(self$learner$ml_m,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$d_cols,
@@ -140,7 +140,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           return_train_preds = FALSE,
           task_type = private$task_type$ml_m,
           fold_specific_params = private$fold_specific_params)
-  
+
         g_hat_d0 = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
@@ -151,7 +151,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           return_train_preds = FALSE,
           task_type = private$task_type$ml_g,
           fold_specific_params = private$fold_specific_params)
-              
+
         g_hat_d1 = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
@@ -162,157 +162,157 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           return_train_preds = FALSE,
           task_type = private$task_type$ml_g,
           fold_specific_params = private$fold_specific_params)
-        
-      } else { #nonignorable
-        
+
+      } else { # nonignorable
+
         pi_hat = list(preds = NULL, models = NULL)
         m_hat = list(preds = NULL, models = NULL)
         g_hat_d0 = list(preds = NULL, models = NULL)
         g_hat_d1 = list(preds = NULL, models = NULL)
-        
+
         preds_pi_hat = numeric(nrow(self$data$data))
         preds_m_hat = numeric(nrow(self$data$data))
         preds_g_hat_d0 = numeric(nrow(self$data$data))
         preds_g_hat_d1 = numeric(nrow(self$data$data))
-        
+
         strata = self$data$data$d + 2 * self$data$data$s
-        self$data$data[,strata := strata]
-        
-        
-        for(i_fold in 1:(self$n_folds)){
-          
+        self$data$data[, strata := strata]
+
+
+        for (i_fold in 1:(self$n_folds)) {
+
           train_inds = smpls$train_ids[[i_fold]]
-          test_inds =  smpls$test_ids[[i_fold]]
-          
-          
+          test_inds = smpls$test_ids[[i_fold]]
+
+
           # split train_inds into 2 sets
           dummy_train_task = Task$new("dummy", "regr", self$data$data)
           dummy_train_task$set_col_roles("strata", c("target", "stratum"))
           dummy_train_resampling = rsmp("holdout", ratio = 0.5)$instantiate(dummy_train_task$filter(train_inds))
           train1 = dummy_train_resampling$train_set(1)
           train2 = dummy_train_resampling$test_set(1)
-          
+
           # pi_hat_prelim and pi_hat
           task_pred_pi_hat = initiate_task(
-            id = "nuis_pi", 
+            id = "nuis_pi",
             data = self$data$data_model,
             target = self$data$s_col,
             select_cols = c(self$data$x_cols, self$data$other_treat_cols, self$data$d_cols, self$data$z_cols),
             task_type = private$task_type$ml_pi)
-          
+
           ml_learner_pi_hat = initiate_learner(
-            learner = self$learner$ml_pi, 
+            learner = self$learner$ml_pi,
             task_type = private$task_type$ml_pi,
-            params = self$get_params("ml_pi"), 
+            params = self$get_params("ml_pi"),
             return_train_preds = FALSE)
-          
+
           resampling_smpls_pi_hat = rsmp("custom")$instantiate(
             task_pred_pi_hat, list(train1), list(1:nrow(self$data$data)))
-          
+
           resampling_pred_pi_hat = resample(task_pred_pi_hat, ml_learner_pi_hat, resampling_smpls_pi_hat, store_models = TRUE)
-          
+
           pi_hat$models[[i_fold]] = resampling_pred_pi_hat$score()$learner
-          
-          preds_pi_hat_prelim = extract_prediction(resampling_pred_pi_hat, private$task_type$ml_pi, n_obs=nrow(self$data$data))
-          
+
+          preds_pi_hat_prelim = extract_prediction(resampling_pred_pi_hat, private$task_type$ml_pi, n_obs = nrow(self$data$data))
+
           preds_pi_hat[test_inds] = preds_pi_hat_prelim[test_inds]
-          
+
           # add pi_hat_prelim
-          self$data$data_model[,pi_hat_prelim := preds_pi_hat_prelim]
-          
+          self$data$data_model[, pi_hat_prelim := preds_pi_hat_prelim]
+
           # m_hat
           task_pred_m_hat = initiate_task(
-            id = "nuis_m", 
+            id = "nuis_m",
             data = self$data$data_model,
             target = self$data$d_cols,
             select_cols = c(self$data$x_cols, self$data$other_treat_cols, "pi_hat_prelim"),
             task_type = private$task_type$ml_m)
-          
+
           ml_learner_m_hat = initiate_learner(
-            learner = self$learner$ml_m, 
+            learner = self$learner$ml_m,
             task_type = private$task_type$ml_pi,
-            params = self$get_params("ml_m"), 
+            params = self$get_params("ml_m"),
             return_train_preds = FALSE)
-          
+
           resampling_smpls_m_hat = rsmp("custom")$instantiate(
             task_pred_m_hat, list(train2), list(test_inds))
-          
+
           resampling_pred_m_hat = resample(task_pred_m_hat, ml_learner_m_hat, resampling_smpls_m_hat, store_models = TRUE)
-          
+
           m_hat$models[[i_fold]] = resampling_pred_m_hat$score()$learner
-          
-          preds_m_hat[test_inds] = extract_prediction(resampling_pred_m_hat, private$task_type$ml_m, n_obs=nrow(self$data$data))[test_inds]
-          
-          
+
+          preds_m_hat[test_inds] = extract_prediction(resampling_pred_m_hat, private$task_type$ml_m, n_obs = nrow(self$data$data))[test_inds]
+
+
           # g_hat_d0
           d = self$data$data_model[[self$data$treat_col]]
           s = self$data$data_model[[self$data$s_col]]
           train2_d0_s1 = train2[d[train2] == 0 & s[train2] == 1]
-          
+
           task_pred_g_hat_d0 = initiate_task(
-            id = "nuis_g_d0", 
+            id = "nuis_g_d0",
             data = self$data$data_model,
             target = self$data$y_col,
             select_cols = c(self$data$x_cols, self$data$other_treat_cols, "pi_hat_prelim"),
             task_type = private$task_type$ml_g)
-          
+
           ml_learner_g_hat_d0 = initiate_learner(
-            learner = self$learner$ml_g, 
+            learner = self$learner$ml_g,
             task_type = private$task_type$ml_g,
-            params = self$get_params("ml_g_d0"), 
+            params = self$get_params("ml_g_d0"),
             return_train_preds = FALSE)
-          
+
           resampling_smpls_g_hat_d0 = rsmp("custom")$instantiate(
             task_pred_g_hat_d0, list(train2_d0_s1), list(test_inds))
-          
+
           resampling_pred_g_hat_d0 = resample(task_pred_g_hat_d0, ml_learner_g_hat_d0, resampling_smpls_g_hat_d0, store_models = TRUE)
-          
+
           g_hat_d0$models[[i_fold]] = resampling_pred_g_hat_d0$score()$learner
-          
-          preds_g_hat_d0[test_inds] = extract_prediction(resampling_pred_g_hat_d0, private$task_type$ml_g, n_obs=nrow(self$data$data))[test_inds]
-          
+
+          preds_g_hat_d0[test_inds] = extract_prediction(resampling_pred_g_hat_d0, private$task_type$ml_g, n_obs = nrow(self$data$data))[test_inds]
+
           # g_hat_d1
           train2_d1_s1 = train2[d[train2] == 1 & s[train2] == 1]
-          
+
           task_pred_g_hat_d1 = initiate_task(
-            id = "nuis_g_d1", 
+            id = "nuis_g_d1",
             data = self$data$data_model,
             target = self$data$y_col,
             select_cols = c(self$data$x_cols, self$data$other_treat_cols, "pi_hat_prelim"),
             task_type = private$task_type$ml_g)
-          
+
           ml_learner_g_hat_d1 = initiate_learner(
-            learner = self$learner$ml_g, 
+            learner = self$learner$ml_g,
             task_type = private$task_type$ml_g,
-            params = self$get_params("ml_g_d1"), 
+            params = self$get_params("ml_g_d1"),
             return_train_preds = FALSE)
-          
+
           resampling_smpls_g_hat_d1 = rsmp("custom")$instantiate(
             task_pred_g_hat_d1, list(train2_d1_s1), list(test_inds))
-          
+
           resampling_pred_g_hat_d1 = resample(task_pred_g_hat_d1, ml_learner_g_hat_d1, resampling_smpls_g_hat_d1, store_models = TRUE)
-          
+
           g_hat_d1$models[[i_fold]] = resampling_pred_g_hat_d1$score()$learner
-          
-          preds_g_hat_d1[test_inds] = extract_prediction(resampling_pred_g_hat_d1, private$task_type$ml_g, n_obs=nrow(self$data$data))[test_inds]
-          
+
+          preds_g_hat_d1[test_inds] = extract_prediction(resampling_pred_g_hat_d1, private$task_type$ml_g, n_obs = nrow(self$data$data))[test_inds]
+
         }
-        
+
         pi_hat$preds = preds_pi_hat
         m_hat$preds = preds_m_hat
         g_hat_d0$preds = preds_g_hat_d0
         g_hat_d1$preds = preds_g_hat_d1
-        
-        self$data$data[,strata := NULL]
-        self$data$data_model[,pi_hat_prelim := NULL]
-        
+
+        self$data$data[, strata := NULL]
+        self$data$data_model[, pi_hat_prelim := NULL]
+
       }
-      
-      
+
+
       d = self$data$data_model[[self$data$treat_col]]
       y = self$data$data_model[[self$data$y_col]]
       s = self$data$data_model[[self$data$s_col]]
-      
+
       res = private$score_elements(
         y, d, s, pi_hat$preds, m_hat$preds, g_hat_d0$preds, g_hat_d1$preds,
         smpls)
@@ -329,39 +329,38 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
       return(res)
     },
 
-    
+
     score_elements = function(y, d, s, pi_hat, m_hat, g_hat_d0, g_hat_d1, smpls) {
-      
+
       dtreat = (d == 1)
       dcontrol = (d == 0)
-      
+
       if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
         m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
         m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
       }
-      
+
       psi_a = -1
-      
+
       if (private$normalize_ipw == TRUE) {
         weight_treat = sum(dtreat) / sum((dtreat * s) / (pi_hat * m_hat))
         weight_control = sum(dcontrol) / sum((dcontrol * s) / (pi_hat * (1 - m_hat)))
-        
+
         psi_b1 = weight_treat * ((dtreat * s * (y - g_hat_d1)) / (m_hat * pi_hat)) + g_hat_d1
         psi_b0 = weight_control * ((dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat)) + g_hat_d0
-        
+
       } else {
         psi_b1 = (dtreat * s * (y - g_hat_d1)) / (m_hat * pi_hat) + g_hat_d1
         psi_b0 = (dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat) + g_hat_d0
-        
 
       }
-      
+
       psi_b = psi_b1 - psi_b0
-      
+
       psis = list(
         psi_a = psi_a,
         psi_b = psi_b)
-      
+
       return(psis)
     },
 
@@ -375,7 +374,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           extract_training_data(self$data$data_model, x)
         })
       }
-      
+
       indx_d0_s1 = lapply(data_tune_list, function(x) x[[self$data$d_cols]] == 0 & x[[self$data$s_col]] == 1)
       indx_d1_s1 = lapply(data_tune_list, function(x) x[[self$data$d_cols]] == 1 & x[[self$data$s_col]] == 1)
       data_tune_list_d0_s1 = lapply(
@@ -384,9 +383,9 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
       data_tune_list_d1_s1 = lapply(
         seq_len(length(data_tune_list)),
         function(x) data_tune_list[[x]][indx_d1_s1[[x]], ])
-      
+
       tuning_result_pi = dml_tune(self$learner$ml_pi,
-       c(self$data$x_cols, self$data$other_treat_cols, self$data$d_cols, self$data$z_cols),
+        c(self$data$x_cols, self$data$other_treat_cols, self$data$d_cols, self$data$z_cols),
         self$data$s_col, data_tune_list,
         nuisance_id = "nuis_pi",
         param_set$ml_pi, tune_settings,
@@ -400,7 +399,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
         private$task_type$ml_m)
-      
+
       tuning_result_g_d0 = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list_d0_s1,
@@ -408,7 +407,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
         private$task_type$ml_g)
-      
+
       tuning_result_g_d1 = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list_d1_s1,
@@ -417,12 +416,12 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
         tune_settings$measure$ml_g,
         private$task_type$ml_g)
 
-      
+
       tuning_result = list(
-          "ml_pi" = list(tuning_result_pi, params = tuning_result_pi$params),
-          "ml_m" = list(tuning_result_m, params = tuning_result_m$params),
-          "ml_g_d0" = list(tuning_result_g_d0, params = tuning_result_g_d0$params),
-          "ml_g_d1" = list(tuning_result_g_d1, params = tuning_result_g_d1$params))
+        "ml_pi" = list(tuning_result_pi, params = tuning_result_pi$params),
+        "ml_m" = list(tuning_result_m, params = tuning_result_m$params),
+        "ml_g_d0" = list(tuning_result_g_d0, params = tuning_result_g_d0$params),
+        "ml_g_d1" = list(tuning_result_g_d1, params = tuning_result_g_d1$params))
 
       return(tuning_result)
     },
@@ -455,7 +454,5 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
       }
       return()
     }
-
   )
 )
-

@@ -97,7 +97,8 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       } else {
         stop("can't set field trimming_threshold")
       }
-    }),
+    }
+  ),
 
   public = list(
     #' @description

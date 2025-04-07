@@ -520,22 +520,22 @@ get_default_mlmethod_ssm = function(learner) {
       mlmethod_g = paste0("regr.", learner)
     )
     slambda = "lambda.min"
-    
+
     params = list(
       params_pi = list(s = slambda),
       params_m = list(s = slambda),
       params_g = list(s = slambda)
     )
   }
-  
+
   if (learner == "graph_learner") {
     # pipeline learner
     pipe_learner_classif = mlr3pipelines::po("learner",
-       lrn("classif.cv_glmnet", predict_type = "prob"),
-       s = "lambda.min")
+      lrn("classif.cv_glmnet", predict_type = "prob"),
+      s = "lambda.min")
     pipe_learner = mlr3pipelines::po("learner",
-       lrn("regr.cv_glmnet"),
-       s = "lambda.min")
+      lrn("regr.cv_glmnet"),
+      s = "lambda.min")
     mlmethod = list(
       mlmethod_pi = "graph_learner",
       mlmethod_m = "graph_learner",
@@ -544,7 +544,7 @@ get_default_mlmethod_ssm = function(learner) {
       params_pi = list(),
       params_m = list(),
       params_g = list())
-    ml_pi = mlr3::as_learner(pipe_learner_classif) 
+    ml_pi = mlr3::as_learner(pipe_learner_classif)
     ml_m = mlr3::as_learner(pipe_learner_classif)
     ml_g = mlr3::as_learner(pipe_learner)
   } else {
@@ -555,7 +555,7 @@ get_default_mlmethod_ssm = function(learner) {
     ml_g = mlr3::lrn(mlmethod$mlmethod_g)
     ml_g$param_set$values = params$params_g
   }
-  
+
   return(list(
     mlmethod = mlmethod, params = params,
     ml_pi = ml_pi, ml_m = ml_m, ml_g = ml_g

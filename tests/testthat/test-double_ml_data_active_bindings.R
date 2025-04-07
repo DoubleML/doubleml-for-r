@@ -33,8 +33,7 @@ test_that("x_cols setter", {
   # check setting None brings us back to orig_x_cols
   dml_data$x_cols = NULL
   expect_equal(dml_data$x_cols, orig_x_cols)
-}
-)
+})
 
 test_that("d_cols setter", {
   set.seed(3141)
@@ -72,8 +71,7 @@ test_that("d_cols setter", {
   dml_data$d_cols = "d2"
   expect_equal(dml_data$d_cols, "d2")
   expect_equal(dml_data$n_treat, 1)
-}
-)
+})
 
 test_that("z_cols setter", {
   set.seed(3141)
@@ -119,8 +117,7 @@ test_that("z_cols setter", {
   dml_data$z_cols = NULL
   expect_equal(dml_data$z_cols, NULL)
   expect_equal(dml_data$n_instr, 0)
-}
-)
+})
 
 test_that("y_col setter", {
   set.seed(3141)
@@ -153,8 +150,7 @@ test_that("y_col setter", {
   msg = "Assertion on 'y_col' failed: Must be of type 'character', not 'double'."
   expect_error(dml_data$y_col <- 5,
     regexp = msg)
-}
-)
+})
 
 test_that("cluster_cols setter", {
   set.seed(3141)
@@ -193,8 +189,7 @@ test_that("cluster_cols setter", {
   dml_data$cluster_cols = "c2"
   expect_equal(dml_data$cluster_cols, "c2")
   expect_equal(dml_data$n_cluster_vars, 1)
-}
-)
+})
 
 test_that("Tests for use_other_treat_as_covariate", {
   set.seed(3141)
@@ -238,8 +233,7 @@ test_that("Tests for use_other_treat_as_covariate", {
   msg = "Assertion on 'treatment_var' failed: Must have length <= 1, but has length 2."
   expect_error(dml_data$set_data_model(c("d1", "d2")),
     regexp = msg)
-}
-)
+})
 
 test_that("Disjoint sets", {
   set.seed(3141)
@@ -326,8 +320,7 @@ test_that("Disjoint sets", {
     z_cols = "xx2",
     cluster_cols = "xx2"),
   regexp = msg)
-}
-)
+})
 
 test_that("Test duplicates", {
   set.seed(3141)
@@ -392,8 +385,7 @@ test_that("Test duplicates", {
     x_cols = c("X3"),
     cluster_cols = "X2"),
   regexp = msg)
-}
-)
+})
 
 test_that("Not setable fields", {
   set.seed(3141)
@@ -448,5 +440,4 @@ test_that("Not setable fields", {
     regexp = msg)
   expect_error(dml_cluster_data$treat_col <- "abc",
     regexp = msg)
-}
-)
+})

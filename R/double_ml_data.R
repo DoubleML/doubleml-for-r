@@ -227,7 +227,7 @@ DoubleMLData = R6Class("DoubleMLData",
       } else {
         s_col = value # to get more meaningful assert error messages
         reset_value = !is.null(self$data_model)
-        
+
         if (!is.null(s_col)) {
           assert_character(s_col, len = 1)
         }
@@ -238,7 +238,8 @@ DoubleMLData = R6Class("DoubleMLData",
           self$set_data_model(self$d_cols[1])
         }
       }
-    }),
+    }
+  ),
 
   public = list(
     #' @description
@@ -261,7 +262,7 @@ DoubleMLData = R6Class("DoubleMLData",
     #'
     #' @param z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
-    #' 
+    #'
     #' @param s_col (`NULL`, `character()`) \cr
     #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
     #'
@@ -409,10 +410,10 @@ DoubleMLData = R6Class("DoubleMLData",
             "and instrumental variable in 'z_cols'."))
         }
       }
-      
+
       if (!is.null(self$s_col)) {
         s_col = self$s_col
-        
+
         if (y_col %in% s_col) {
           stop(paste(
             y_col,
@@ -498,7 +499,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
             x_cols = setdiff(self$all_variables, y_d_z)
           } else {
             if (!is.null(self$s_col)) {
-              y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols, 
+              y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols,
                 self$s_col, self$cluster_cols))
               x_cols_ = setdiff(self$all_variables, y_d_z_s)
             } else {
@@ -545,7 +546,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     #'
     #' @param z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
-    #' 
+    #'
     #' @param s_col (`NULL`, `character()`) \cr
     #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
     #'
@@ -664,10 +665,10 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
             "('z_cols') and as a cluster variable ('cluster_cols')."))
         }
       }
-      
+
       if (!is.null(self$s_col)) {
         s_col = self$s_col
-        
+
         if (any(s_col %in% cluster_cols)) {
           stop(paste(
             "At least one variable/column is set as selection variable",

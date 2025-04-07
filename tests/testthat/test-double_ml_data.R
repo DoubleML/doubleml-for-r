@@ -374,8 +374,7 @@ test_that("Unit tests for DoubleMLData", {
   msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}"
   expect_error(D11$set_data_model(X_cols1[1]),
     regexp = msg12)
-}
-)
+})
 
 test_that("Unit tests for invalid data", {
   # PLR with IV
@@ -527,5 +526,4 @@ test_that("Unit tests for invalid data", {
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart", predict_type = "prob")),
   regexp = msg)
-}
-)
+})

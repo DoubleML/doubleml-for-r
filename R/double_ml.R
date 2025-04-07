@@ -280,7 +280,8 @@ DoubleML = R6Class("DoubleML",
       } else {
         stop("can't set field tuning_res")
       }
-    }),
+    }
+  ),
 
   public = list(
     #' @description
@@ -675,7 +676,8 @@ DoubleML = R6Class("DoubleML",
               function(x) {
                 check_smpl_split(x, self$data$n_obs,
                   check_intersect = TRUE)
-              })
+              }
+            )
             private$smpls_ = smpls
           }
         } else {
@@ -698,7 +700,8 @@ DoubleML = R6Class("DoubleML",
             function(x) {
               check_smpl_split(x, self$data$n_obs,
                 check_intersect = TRUE)
-            })
+            }
+          )
           private$smpls_ = smpls
         }
       } else {
@@ -1466,7 +1469,7 @@ DoubleML = R6Class("DoubleML",
       for (learner in self$params_names()) {
         if (!is.null(models[[learner]])) {
           private$models_[[learner]][[self$data$treat_col]][[
-          private$i_rep]] = models[[learner]]
+            private$i_rep]] = models[[learner]]
         }
       }
     },

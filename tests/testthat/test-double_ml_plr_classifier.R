@@ -141,5 +141,4 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
     "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
   expect_error(double_mlplr_obj$fit(),
     regexp = msg)
-}
-)
+})
