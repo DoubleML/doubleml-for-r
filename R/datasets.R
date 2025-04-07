@@ -959,7 +959,46 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
   }
 }
 
-
+#' Generates data from a sample selection model (SSM).
+#'
+#' The data generating process is defined as:
+#' 
+#' \deqn{
+#' y_i = \theta d_i + x_i' \beta  + u_i,}
+#' 
+#' \deqn{s_i = 1\lbrace d_i + \gamma z_i + x_i' \beta  + v_i > 0 \rbrace,}
+#' 
+#' \deqn{d_i = 1\lbrace x_i' \beta  + w_i > 0 \rbrace,}
+#'
+#' with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
+#' \eqn{\Sigma^2_x} is a matrix with entries
+#' \eqn{\Sigma_{kj} = 0.5^{|j-k|}}.
+#' \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{0.4}{j^2}}
+#' \eqn{z_i \sim \mathcal{N}(0, 1)},
+#' \eqn{(u_i,v_i) \sim \mathcal{N}(0, \Sigma^2_{u,v})},
+#' \eqn{w_i \sim \mathcal{N}(0, 1)}.
+#'
+#' The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
+#' Huber and Lafférs (2023).
+#'
+#' @param n_obs (`integer(1)`) \cr
+#' The number of observations to simulate.
+#' @param dim_x (`integer(1)`) \cr
+#' The number of covariates.
+#' @param theta (`numeric(1)`) \cr
+#' The value of the causal parameter.
+#' @param mar (`logical(1)`) \cr
+#' Indicates whether missingness at random holds.
+#' @param return_type (`character(1)`) \cr
+#' If `"DoubleMLData"`, returns a `DoubleMLData` object.
+#' If `"data.frame"` returns a `data.frame()`.
+#' If `"data.table"` returns a `data.table()`.
+#' Default is `"DoubleMLData"`.
+#' 
+#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
+#' Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
+#'
+#' @return Depending on the `return_type`, returns an object or set of objects as specified.
 make_ssm_data = function(n_obs=8000, dim_x=100, theta=1, mar=TRUE, return_type="DoubleMLData"){
   
   assert_choice(
