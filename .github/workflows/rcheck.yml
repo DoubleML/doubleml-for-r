@@ -132,6 +132,7 @@ jobs:
         shell: Rscript {0}
   
       - uses: codecov/codecov-action@v4
+        if: runner.os == 'macOS'
         with:
           # Fail if error if not on PR, or if on PR and token is given
           fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
@@ -141,14 +142,14 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Show testthat output
-        if: always()
+        if: runner.os == 'macOS'
         run: |
           ## --------------------------------------------------------------------
           find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
         shell: bash
 
       - name: Upload test results
-        if: failure()
+        if: failure() && runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-test-failures
