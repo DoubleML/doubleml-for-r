@@ -123,6 +123,8 @@ jobs:
       - name: Install covr
         if: runner.os == 'macOS'
         run: |
+          remotes::install_cran("covr")
+          remotes::install_cran("xml2")
           cov <- covr::package_coverage(
             quiet = FALSE,
             clean = FALSE,
