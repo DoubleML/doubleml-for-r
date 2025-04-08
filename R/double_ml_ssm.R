@@ -439,18 +439,20 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
 
     check_data = function(obj_dml_data) {
       if (!is.null(obj_dml_data$z_cols) && self$score == "missing-at-random") {
-        warning(paste(
-          paste(obj_dml_data$z_cols, collapse = ", "), "has been set as instrumental variable(s).\n",
-          "You are estimating the effect under the assumption of data missing at random.\n",
+        warn_msg = paste(
+          "A variable has been set as instrumental variable(s).\n",
+          "You are estimating the effect under the assumption of data missing at random.",
           "Instrumental variables will not be used in estimation."
-        ))
+        )
+        warning(warn_msg)
       }
       if (is.null(obj_dml_data$z_cols) && self$score == "nonignorable") {
-        stop(paste(
-          "Sample selection by nonignorable nonresponse was set but instrumental variable \n",
-          "is NULL. To estimate treatment effect under nonignorable nonresponse, \n",
+        err_msg = paste(
+          "Sample selection by nonignorable nonresponse was set but instrumental variable is NULL.\n",
+          "To estimate treatment effect under nonignorable nonresponse,",
           "specify an instrument for the selection variable."
-        ))
+        )
+        stop(err_msg)
       }
       return()
     }

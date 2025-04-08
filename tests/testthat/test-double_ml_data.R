@@ -567,4 +567,44 @@ test_that("Unit tests for invalid data", {
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart", predict_type = "prob")),
   regexp = msg)
+
+  # z_col for SSM missing at random
+  df = data_ssm_nonignorable$df
+  dml_data = double_ml_data_from_data_frame(df,
+    y_col = "y",
+    d_cols = "d",
+    z_cols = "z",
+    s_col = "s")
+  # TODO: Fix test for warning
+  # msg = paste(
+  #  "A variable has been set as instrumental variable(s).\\n",
+  #  "You are estimating the effect under the assumption of data missing at random.",
+  #  "Instrumental variables will not be used in estimation.")
+  expect_warning(DoubleMLSSM$new(
+    data = dml_data,
+    ml_pi = mlr3::lrn("classif.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"),
+    ml_g = mlr3::lrn("regr.rpart"),
+    dml_procedure = "dml1",
+    score = "missing-at-random")) # ,
+  # regexp = NA)
+
+  # No z_col for SSM nonignorable
+  df = data_ssm_nonignorable$df
+  dml_data = double_ml_data_from_data_frame(df,
+    y_col = "y",
+    d_cols = "d",
+    s_col = "s")
+  msg = paste(
+    "Sample selection by nonignorable nonresponse was set but instrumental variable is NULL.\n",
+    "To estimate treatment effect under nonignorable nonresponse,",
+    "specify an instrument for the selection variable.")
+  expect_error(DoubleMLSSM$new(
+    data = dml_data,
+    ml_pi = mlr3::lrn("classif.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"),
+    ml_g = mlr3::lrn("regr.rpart"),
+    dml_procedure = "dml1",
+    score = "nonignorable"),
+  regexp = msg)
 })

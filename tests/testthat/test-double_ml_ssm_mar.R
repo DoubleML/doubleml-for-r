@@ -33,7 +33,13 @@ patrick::with_parameters_test_that("Unit tests for SSM, missing-at-random:",
       y = "y", d = "d", s = "s",
       n_folds = 5,
       ml_pi = learner_pars$ml_pi$clone(), ml_m = learner_pars$ml_m$clone(), ml_g = learner_pars$ml_g$clone(),
-      dml_procedure = dml_procedure, score = score)
+      dml_procedure = dml_pexpect_warning(DoubleMLSSM$new(
+    data = dml_data,
+    ml_pi = mlr3::lrn("classif.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"),
+    ml_g = mlr3::lrn("regr.rpart"),
+    dml_procedure = "dml1",
+    score = "missing-at-random")rocedure, score = score)
     theta = ssm_hat$coef
     se = ssm_hat$se
 
