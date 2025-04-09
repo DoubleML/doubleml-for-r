@@ -1,6 +1,7 @@
 context("Unit tests for DoubleMLCluster (Additional tests)")
 
 test_that("Unit tests for DoubleMLData", {
+
   set.seed(1234)
   N = 25 # number of observations (first dimension)
   M = 25 # number of observations (second dimension)
@@ -10,8 +11,6 @@ test_that("Unit tests for DoubleMLData", {
     omega_epsilon = c(0.25, 0),
     omega_v = c(0.25, 0),
     omega_V = c(0.25, 0))
-
-
   data_one_way$cluster_cols = "cluster_var_i"
 
   data_model = data_one_way$data_model
@@ -28,5 +27,9 @@ test_that("Unit tests for DoubleMLData", {
     s_col = "S",
     cluster_cols = "S"),
   regexp = msg)
+  
+  # TODO: Check z_cols but no s_col (L. 495)
+  # TODO: Check z_cols but no cluster_cols (L. 502)
+  
 
 })
