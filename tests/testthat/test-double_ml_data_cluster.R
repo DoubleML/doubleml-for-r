@@ -27,9 +27,8 @@ test_that("Unit tests for DoubleMLData", {
     s_col = "S",
     cluster_cols = "S"),
   regexp = msg)
-  
+
   # TODO: Check z_cols but no s_col (L. 495)
   # TODO: Check z_cols but no cluster_cols (L. 502)
-  
 
 })

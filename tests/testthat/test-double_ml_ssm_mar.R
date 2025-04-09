@@ -34,6 +34,8 @@ patrick::with_parameters_test_that("Unit tests for SSM, missing-at-random:",
       n_folds = 5,
       ml_pi = learner_pars$ml_pi$clone(), ml_m = learner_pars$ml_m$clone(), ml_g = learner_pars$ml_g$clone(),
       dml_procedure = dml_procedure, score = score)
+    theta = ssm_hat$coef
+    se = ssm_hat$se
 
     boot_theta = bootstrap_ssm(ssm_hat$thetas, ssm_hat$ses,
       data_ssm_mar$df,
