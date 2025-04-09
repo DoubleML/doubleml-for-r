@@ -45,6 +45,7 @@ jobs:
           install.packages('remotes')
           remotes::install_github("mlr-org/styler.mlr", dependencies=TRUE)
           install.packages("styler")
+          install.packages("roxygen2")
         shell: Rscript {0}
 
       - name: Install system dependencies
