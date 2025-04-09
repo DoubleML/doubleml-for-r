@@ -501,7 +501,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
             if (!is.null(self$s_col)) {
               y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols,
                 self$s_col, self$cluster_cols))
-              x_cols_ = setdiff(self$all_variables, y_d_z_s)
+              x_cols = setdiff(self$all_variables, y_d_z_s)
             } else {
               y_d = unique(c(self$y_col, self$d_cols, self$cluster_cols))
               x_cols = setdiff(self$all_variables, y_d)
