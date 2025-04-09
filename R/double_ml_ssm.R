@@ -6,20 +6,24 @@
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #'
 #' @family DoubleML
-#' 
+#'
 #' @usage NULL
 #' @examples
 #' \donttest{
+#'
 #' library(DoubleML)
 #' library(mlr3)
-#' set.seed(1234)
+#' library(data.table)
+#' set.seed(3141)
 #' n_obs = 2000
 #' df = make_ssm_data(n_obs=n_obs, mar=TRUE, return_type="data.table")
 #' dml_data = DoubleMLData$new(df, y_col="y", d_cols="d", s_col="s")
-#' # TODO Add example
+#' dml_ssm = DoubleMLSSM$new(dml_data, ml_g, ml_m, ml_pi, score="missing-at-random")
+#' dml_ssm$fit()
+#' print(dml_ssm)
 #' }
 #' \dontrun{
-#' # TODO Add example
+#' # TODO Add example with tuning
 #' }
 #' @export
 DoubleMLSSM = R6Class("DoubleMLSSM",
@@ -56,15 +60,44 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
     #'
     #' @param ml_g ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
-    #' TODO
+    #' A learner of the class [`LearnerRegr`][mlr3::LearnerRegr], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "regr"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("regr.cv_glmnet", s = "lambda.min")`. \cr
+    #' `ml_g` refers to the nuisance function \eqn{g_0(S,D,X) = E[Y|S,D,X]}.
+    #'
     #' @param ml_m ([`LearnerRegr`][mlr3::LearnerRegr],
     #' [`LearnerClassif`][mlr3::LearnerClassif], [`Learner`][mlr3::Learner],
     #' `character(1)`) \cr
-    #' TODO
+    #'  A learner of the class [`LearnerClassif`][mlr3::LearnerClassif], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "classif"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("classif.cv_glmnet", s = "lambda.min")`. \cr
+    #' `ml_m` refers to the nuisance function \eqn{m_0(X) = Pr[D=1|X]}.
+    #'
     #' @param ml_pi ([`LearnerClassif`][mlr3::LearnerClassif],
     #' [`Learner`][mlr3::Learner], `character(1)`) \cr
-    #' TODO
-    #' 
+    #' A learner of the class [`LearnerClassif`][mlr3::LearnerClassif], which is
+    #' available from [mlr3](https://mlr3.mlr-org.com/index.html) or its
+    #' extension packages [mlr3learners](https://mlr3learners.mlr-org.com/) or
+    #' [mlr3extralearners](https://mlr3extralearners.mlr-org.com/).
+    #' Alternatively, a [`Learner`][mlr3::Learner] object with public field
+    #' `task_type = "classif"` can be passed, for example of class
+    #' [`GraphLearner`][mlr3pipelines::GraphLearner]. The learner can possibly
+    #' be passed with specified parameters, for example
+    #' `lrn("classif.cv_glmnet", s = "lambda.min")`. \cr
+    #' `ml_pi` refers to the nuisance function \eqn{pi_0(D,X) = Pr[S=1|D,X]}.
+    #'
     #' @param n_folds (`integer(1)`)\cr
     #' Number of folds. Default is `5`.
     #'
@@ -72,18 +105,19 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
     #' Number of repetitions for the sample splitting. Default is `1`.
     #'
     #' @param score (`character(1)`, `function()`) \cr
-    #' TODO
-    #' 
+    #' A `character(1)` (`"missing-at-random"` or `"nonignorable"`) specifying
+    #' the score function. Default is `"missing-at-random"`.
+    #'
     #' @param normalize_ipw (`logical(1)`) \cr
     #' Indicates whether the inverse probability weights are normalized. Default is `FALSE`.
-    #' 
+    #'
     #' @param trimming_rule (`character(1)`) \cr
     #' A `character(1)` (`"truncate"` is the only choice) specifying the
     #' trimming approach. Default is `"truncate"`.
-    #' 
+    #'
     #' @param trimming_threshold (`numeric(1)`) \cr
     #' The threshold used for timming. Default is `1e-12`.
-    #' 
+    #'
     #' @param dml_procedure (`character(1)`) \cr
     #' A `character(1)` (`"dml1"` or `"dml2"`) specifying the double machine
     #' learning algorithm. Default is `"dml2"`.
