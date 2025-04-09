@@ -999,6 +999,7 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
 #'
 #' @return Depending on the `return_type`, returns an object or set of objects as specified.
+#' @export
 make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE, return_type = "DoubleMLData") {
 
   assert_choice(
