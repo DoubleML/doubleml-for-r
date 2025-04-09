@@ -70,7 +70,8 @@ Other DoubleML:
 \code{\link{DoubleML}},
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
-\code{\link{DoubleMLPLIV}}
+\code{\link{DoubleMLPLIV}},
+\code{\link{DoubleMLSSM}}
 }
 \concept{DoubleML}
 \section{Super class}{

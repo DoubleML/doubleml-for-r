@@ -81,7 +81,8 @@ Other DoubleML:
 \code{\link{DoubleML}},
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}}
+\code{\link{DoubleMLPLR}},
+\code{\link{DoubleMLSSM}}
 }
 \concept{DoubleML}
 \section{Super class}{

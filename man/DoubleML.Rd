@@ -44,7 +44,8 @@ Other DoubleML:
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}}
+\code{\link{DoubleMLPLR}},
+\code{\link{DoubleMLSSM}}
 }
 \concept{DoubleML}
 \section{Active bindings}{
