@@ -14,6 +14,10 @@
 #' library(DoubleML)
 #' library(mlr3)
 #' library(data.table)
+#' ml_g = lrn("regr.cv_glmnet", nfolds = 5, s = "lambda.min")
+#' ml_m = lrn("classif.cv_glmnet", nfolds = 5, s = "lambda.min")
+#' ml_pi = lrn("classif.cv_glmnet", nfolds = 5, s = "lambda.min")
+#' 
 #' set.seed(3141)
 #' n_obs = 2000
 #' df = make_ssm_data(n_obs=n_obs, mar=TRUE, return_type="data.table")

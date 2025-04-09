@@ -37,7 +37,6 @@ if (on_cran) {
     stringsAsFactors = FALSE)
 }
 
-
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for tuning of SSM:",
@@ -55,9 +54,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of SSM:",
     double_mlssm_obj_tuned = DoubleMLSSM$new(
       data = dml_data,
       n_folds = n_folds,
-      ml_g = "regr.rpart",
-      ml_m = "classif.rpart",
-      ml_pi = "classif.rpart",
+      ml_g = lrn("regr.rpart"),
+      ml_m = lrn("classif.rpart"),
+      ml_pi = lrn("classif.rpart"),
       dml_procedure = dml_procedure,
       score = score,
       n_rep = n_rep)
