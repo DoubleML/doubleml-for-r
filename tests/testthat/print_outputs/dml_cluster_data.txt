@@ -8,5 +8,6 @@ Treatment variable(s): D
 Cluster variable(s): cluster_var_i, cluster_var_j
 Covariates: X1, X2, X3, X4, X5
 Instrument(s): Z
+Selection variable: 
 No. Observations: 100
 

@@ -43,7 +43,8 @@ jobs:
       - name: Install dependencies
         run: |
           install.packages('remotes')
-          remotes::install_github("pat-s/styler@mlr-style", dependencies=TRUE)
+          remotes::install_github("mlr-org/styler.mlr", dependencies=TRUE)
+          install.packages("styler")
         shell: Rscript {0}
 
       - name: Install system dependencies
@@ -55,6 +56,6 @@ jobs:
 
       - name: Check styler
         run: |
-          res = styler::style_pkg(style = styler::mlr_style)
+          res = styler::style_pkg(style = styler.mlr::mlr_style, include_roxygen_examples = FALSE)
           if (!all(res$changed==FALSE)) stop("Code is not in line with the style guidelines (see https://github.com/DoubleML/doubleml-for-r/wiki/Style-Guidelines#use-styler-mlr-style)")
         shell: Rscript {0}

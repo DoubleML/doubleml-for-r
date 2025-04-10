@@ -89,7 +89,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
       } else {
         stop("can't set field partialZ")
       }
-    }),
+    }
+  ),
 
   public = list(
     #' @description
@@ -349,7 +350,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
     #' @param tune_settings (named `list()`) \cr
     #' A named `list()` with arguments passed to the hyperparameter-tuning with
     #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
-    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' [TuningInstance][mlr3tuning::TuningInstanceBatchSingleCrit] objects.
     #' `tune_settings` has entries
     #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
     #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`
@@ -511,7 +512,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
                 return_train_preds = FALSE,
                 task_type = private$task_type$ml_m,
                 fold_specific_params = private$fold_specific_params)$preds
-            }))
+            }
+        ))
         # TODO: Export of fitted models not implemented for this case
         m_hat = list(preds = xx, models = NULL)
         z = self$data$data_model[, self$data$z_cols, with = FALSE]
@@ -954,7 +956,8 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
           resample(task_m[[x]], ml_m[[x]],
             resampling_m_on_train[[x]],
             store_models = TRUE)
-        })
+        }
+      )
       m_hat_on_train = extract_prediction(r_m_on_train,
         private$task_type$ml_m,
         self$data$n_obs,

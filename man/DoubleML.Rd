@@ -44,7 +44,8 @@ Other DoubleML:
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}}
+\code{\link{DoubleMLPLR}},
+\code{\link{DoubleMLSSM}}
 }
 \concept{DoubleML}
 \section{Active bindings}{
@@ -341,7 +342,7 @@ class \link[paradox:ParamSet]{ParamSet}.}
 \item{\code{tune_settings}}{(named \code{list()}) \cr
 A named \code{list()} with arguments passed to the hyperparameter-tuning with
 \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up
-\link[mlr3tuning:TuningInstanceSingleCrit]{TuningInstance} objects.
+\link[mlr3tuning:TuningInstanceBatchSingleCrit]{TuningInstance} objects.
 \code{tune_settings} has entries
 \itemize{
 \item \code{terminator} (\link[bbotk:Terminator]{Terminator}) \cr

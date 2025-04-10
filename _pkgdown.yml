@@ -58,6 +58,7 @@ reference:
       - DoubleMLPLIV
       - DoubleMLIRM
       - DoubleMLIIVM
+      - DoubleMLSSM
   - title: Datasets module
     contents:
       - fetch_401k
@@ -70,3 +71,4 @@ reference:
       - make_iivm_data
       - make_plr_turrell2018
       - make_pliv_multiway_cluster_CKMS2021
+      - make_ssm_data

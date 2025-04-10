@@ -50,7 +50,7 @@ dml_irm_obj$summary()
 library(DoubleML)
 library(mlr3)
 library(mlr3learners)
-library(mlr3uning)
+library(mlr3tuning)
 library(data.table)
 set.seed(2)
 ml_g = lrn("regr.rpart")
@@ -81,7 +81,8 @@ Other DoubleML:
 \code{\link{DoubleML}},
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}}
+\code{\link{DoubleMLPLR}},
+\code{\link{DoubleMLSSM}}
 }
 \concept{DoubleML}
 \section{Super class}{

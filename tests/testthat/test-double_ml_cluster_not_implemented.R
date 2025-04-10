@@ -51,5 +51,4 @@ test_that("Not yet implemented cluster features", {
     ml_g, ml_m, ml_r,
     apply_cross_fitting = FALSE, n_folds = 2),
   regexp = msg)
-}
-)
+})

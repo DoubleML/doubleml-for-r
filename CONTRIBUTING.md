@@ -115,10 +115,11 @@ devtools::test()
 - [x] Check whether your changes adhere to the **"mlr-style" standards**.
 For the check you can use the following code
 ```R
-require(styler)
-remotes::install_github("pat-s/styler@mlr-style")
-styler::style_pkg(style = styler::mlr_style) # entire package
-styler::style_file(<file>, style = styler::mlr_style) # specific file
+install.packages('remotes')
+remotes::install_github("mlr-org/styler.mlr", dependencies=TRUE)
+install.packages("styler")
+styler::style_pkg(style = styler.mlr::mlr_style) # entire package
+styler::style_file(<file>, style = styler.mlr::mlr_style) # specific file
 ```
 
 If your PR is still **work in progress**, please consider marking it a **draft PR**

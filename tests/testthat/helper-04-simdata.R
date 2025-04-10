@@ -1,4 +1,3 @@
-
 # simulate data sets
 setting = list(theta = 0.5, n = 1000, p = 20)
 
@@ -162,6 +161,38 @@ dml_data = double_ml_data_from_data_frame(df,
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
 data_pliv_partialZ = list(
+  df = df,
+  dml_data = dml_data
+)
+
+set.seed(1282)
+df = make_data_ssm(
+  setting$n,
+  setting$p,
+  setting$theta,
+  mar = TRUE)
+Xnames = names(df)[names(df) %in% c("y", "d", "s") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
+  y_col = "y",
+  d_cols = "d", s_col = "s", x_cols = Xnames
+)
+data_ssm_mar = list(
+  df = df,
+  dml_data = dml_data
+)
+
+set.seed(1282)
+df = make_data_ssm(
+  setting$n,
+  setting$p,
+  setting$theta,
+  mar = FALSE)
+Xnames = names(df)[names(df) %in% c("y", "d", "z", "s") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
+  y_col = "y",
+  d_cols = "d", z_cols = "z", s_col = "s", x_cols = Xnames
+)
+data_ssm_nonignorable = list(
   df = df,
   dml_data = dml_data
 )

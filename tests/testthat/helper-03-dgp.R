@@ -1,4 +1,3 @@
-
 # dgps
 
 g = function(x) {
@@ -221,5 +220,39 @@ make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150) {
   colnames(d) = "d"
 
   data = data.frame(x, y, d, z)
+  return(data)
+}
+
+make_data_ssm = function(n_obs, dim_x, theta, mar = TRUE) {
+
+  if (mar == TRUE) {
+    sigma = matrix(c(1, 0, 0, 1), 2, 2)
+    gamma = 0
+  } else {
+    sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2)
+    gamma = 1
+  }
+
+  e = t(mvtnorm::rmvnorm(n_obs, rep(0, 2), sigma))
+  cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
+  x = mvtnorm::rmvnorm(n_obs, rep(0, dim_x), cov_mat)
+  beta = 0.4 / ((1:dim_x)^2)
+  d = ifelse(x %*% beta + rnorm(n_obs) > 0, 1, 0)
+  z = as.matrix(rnorm(n_obs))
+  s = ifelse(x %*% beta + d + gamma * z + e[1, ] > 0, 1, 0)
+  y = x %*% beta + theta * d + e[2, ]
+  y[s == 0] = 0
+
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  colnames(z) = "z"
+  colnames(s) = "s"
+
+  if (mar == TRUE) {
+    data = data.frame(x, y, d, s)
+  } else {
+    data = data.frame(x, y, d, z, s)
+  }
   return(data)
 }

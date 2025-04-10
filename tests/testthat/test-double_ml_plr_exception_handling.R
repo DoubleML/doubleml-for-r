@@ -185,5 +185,4 @@ test_that("Unit tests for deprecation warnings of PLR", {
     resolution = 5)
   expect_warning(dml_obj$tune(par_grids, tune_settings = tune_settings),
     regexp = msg)
-}
-)
+})

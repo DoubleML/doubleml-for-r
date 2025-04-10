@@ -7,47 +7,51 @@ test_that("Unit tests for DoubleMLData", {
   y = data[, "y"] # input: numeric
   d = data[, "d"] # input: integer
   z = data[, "z"] # input: integer
+  # For ssm models
+  s = abs(1 - data[, "z"]) # input: integer
+  data = data.frame(data, s)
+
   d2 = as.matrix(cbind(d, d * 2), ncol = 2)
   colnames(d2) = c("d1", "d2")
 
-  X_indx1 = names(data) %in% c("y", "d", "z") == FALSE
+  X_indx1 = names(data) %in% c("y", "d", "z", "s") == FALSE
 
-  check_indx1 = c(names(data)[X_indx1], "y", "d", "z")
+  check_indx1 = c(names(data)[X_indx1], "y", "d", "z", "s")
   X_dt1 = as.data.table(data)[, check_indx1, with = FALSE]
   X = as.matrix(data[, X_indx1])
 
-  # With z and X
-  D1 = double_ml_data_from_matrix(X, y, d, z)
+  # With z, X and s
+  D1 = double_ml_data_from_matrix(X, y, d, z, s)
   expect_equal(D1$data, X_dt1)
   expect_identical(D1$data_model, X_dt1)
 
   # No X
-  D1b = double_ml_data_from_matrix(X = NULL, y, d, z)
-  X_dt1b = as.data.table(data)[, c("y", "d", "z")]
+  D1b = double_ml_data_from_matrix(X = NULL, y, d, z, s)
+  X_dt1b = as.data.table(data)[, c("y", "d", "z", "s")]
   expect_equal(D1b$data, X_dt1b)
   expect_identical(D1b$data_model, X_dt1b)
 
   # with multiple z
   z_mult = cbind(z, d2[, 2])
   # with X
-  D1_multZ = double_ml_data_from_matrix(X, y, d, z_mult)
+  D1_multZ = double_ml_data_from_matrix(X, y, d, z_mult, s)
   multZ_dt1 = as.data.table(
-    data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c(
+    data.frame(data, "z1" = z, "z2" = d2[, 2], "s" = s))[, c(
     names(data)[X_indx1],
-    "y", "d", "z1", "z2"),
+    "y", "d", "z1", "z2", "s"),
   with = FALSE]
   expect_equal(D1_multZ$data, multZ_dt1)
   expect_equal(D1_multZ$data_model, multZ_dt1)
 
   # No X
-  D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult)
+  D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult, s)
   multZ_dt1b = as.data.table(
-    data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
+    data.frame(data, "z1" = z, "z2" = d2[, 2], "s" = s))[, c("y", "d", "z1", "z2", "s"),
     with = FALSE]
   expect_equal(D1_multZ$data, multZ_dt1)
   expect_equal(D1_multZ$data_model, multZ_dt1)
 
-  # No X
+  # No X, no s
   D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult)
   multZ_dt1b = as.data.table(
     data.frame(data, "z1" = z, "z2" = d2[, 2]))[, c("y", "d", "z1", "z2"),
@@ -55,14 +59,14 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D1b_multZ$data, multZ_dt1b)
   expect_equal(D1b_multZ$data_model, multZ_dt1b)
 
-  # No z, with X
-  D2 = double_ml_data_from_matrix(X, y, d)
+  # No z, with X and s
+  D2 = double_ml_data_from_matrix(X, y, d, z = NULL, s = NULL)
   check_indx2 = c(names(data)[X_indx1], "y", "d")
   X_dt2 = as.data.table(data)[, check_indx2, with = FALSE]
   expect_equal(D2$data, X_dt2)
   expect_equal(D2$data_model, X_dt2)
 
-  # No z, no X
+  # No z, no X, no s
   D2b = double_ml_data_from_matrix(X = NULL, y, d)
   X_dt2b = as.data.table(data)[, c("y", "d"), with = FALSE]
   expect_equal(D2b$data, X_dt2b)
@@ -76,7 +80,7 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D2_1X$data_model, X_dt21X)
 
   # Two d variables
-  X_indx2 = names(data) %in% c("y", "d", "z", "d1", "d2") == FALSE
+  X_indx2 = names(data) %in% c("y", "d", "z", "s", "d1", "d2") == FALSE
   X2 = as.matrix(data[, X_indx2])
   D3 = double_ml_data_from_matrix(X2, y, d2)
 
@@ -117,29 +121,34 @@ test_that("Unit tests for DoubleMLData", {
   y_indx = "y"
   z_null = NULL
   z_indx = "z"
+  s_indx = "s"
+  s_null = NULL
   X_cols1 = names(data[, X_indx1])
 
   D4 = double_ml_data_from_data_frame(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
-    z_cols = z_indx)
+    z_cols = z_indx,
+    s_col = s_indx)
 
   D4b = double_ml_data_from_data_frame(data,
     x_cols = NULL,
     y_col = y_indx,
     d_cols = d_indx,
-    z_cols = z_indx)
+    z_cols = z_indx,
+    s_col = s_indx)
 
   # with renamed variables
   data_renamed = data
-  names(data_renamed) = c("outc", "exposure", "instr", paste0("Explr", 1:(ncol(data_renamed) - 3)))
+  names(data_renamed) = c("outc", "exposure", "instr", paste0("Explr", 1:(ncol(data_renamed) - 4)), "selection")
   Expl_cols1 = names(data_renamed[, X_indx1])
   D4_renamed = double_ml_data_from_data_frame(data_renamed,
     x_cols = Expl_cols1,
     y_col = "outc",
     d_cols = "exposure",
-    z_cols = "instr")
+    z_cols = "instr",
+    s_col = "selection")
 
   D5 = double_ml_data_from_data_frame(data,
     x_cols = X_cols1,
@@ -151,7 +160,7 @@ test_that("Unit tests for DoubleMLData", {
     y_col = y_indx,
     d_cols = d_indx)
 
-  # test with only 1 d, 1 X, 1 Z
+  # test with only 1 d, 1 X
   D5_1X = double_ml_data_from_data_frame(data,
     x_cols = X_cols1[1],
     y_col = y_indx,
@@ -161,7 +170,8 @@ test_that("Unit tests for DoubleMLData", {
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
-    z_cols = z_null)
+    z_cols = z_null,
+    s_col = s_null)
 
   # Two d Variables
   data2 = data.frame(data, d2)
@@ -171,7 +181,8 @@ test_that("Unit tests for DoubleMLData", {
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d2_indx,
-    z_cols = z_null)
+    z_cols = z_null,
+    s_col = s_null)
   D7_setd_multd = D7$clone()$set_data_model("d2")
 
   D7_1d = double_ml_data_from_data_frame(data2,
@@ -199,7 +210,7 @@ test_that("Unit tests for DoubleMLData", {
   expect_equivalent(D4$data_model, D4_renamed$data_model)
 
   # NULL input for x_cols
-  expect_identical(D1$data[, c("y", "d", "z")], D1b$data)
+  expect_identical(D1$data[, c("y", "d", "z", "s")], D1b$data)
   expect_identical(D4$data, D4b$data)
   expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
 
@@ -210,24 +221,28 @@ test_that("Unit tests for DoubleMLData", {
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
-    z_cols = z_indx)
+    z_cols = z_indx,
+    s_col = s_indx)
 
   D8_noXcols = DoubleMLData$new(data,
     y_col = y_indx,
     d_cols = d_indx,
-    z_cols = z_indx)
+    z_cols = z_indx,
+    s_col = s_indx)
+
   # with renamed variables
   data_renamed = data.table::copy(data)
   data_renamed = data.table::setnames(data_renamed, c(
     "outc", "exposure", "instr",
-    paste0("Explr", 1:(ncol(data_renamed) - 3))))
+    paste0("Explr", 1:(ncol(data_renamed) - 4)), "selection"))
 
   Expl_cols1 = names(data_renamed[, X_indx1, with = FALSE])
   D8_renamed = DoubleMLData$new(data_renamed,
     x_cols = Expl_cols1,
     y_col = "outc",
     d_cols = "exposure",
-    z_cols = "instr")
+    z_cols = "instr",
+    s_col = "selection")
 
   D9 = DoubleMLData$new(data,
     x_cols = X_cols1,
@@ -235,7 +250,8 @@ test_that("Unit tests for DoubleMLData", {
     d_cols = d_indx)
 
   # skip z if not X indx specified
-  data_noz = data[, which(names(data) != "z"), with = FALSE]
+  noxz_indx = which(!names(data) %in% c("z", "s"))
+  data_noz = data[, noxz_indx, with = FALSE]
   D9_noXcols = DoubleMLData$new(data_noz,
     y_col = y_indx,
     d_cols = d_indx)
@@ -279,6 +295,14 @@ test_that("Unit tests for DoubleMLData", {
     z_cols = c(z_indx, X_cols1[1])),
   regexp = msg2)
 
+  msg2s = "At least one variable/column is set as covariate \\('x_cols'\\) and selection variable in 's_col'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    s_col = X_cols1[1]),
+  regexp = msg2s)
+
   msg3 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
   expect_error(double_ml_data_from_data_frame(data,
     x_cols = c(y_indx, X_cols1),
@@ -295,6 +319,14 @@ test_that("Unit tests for DoubleMLData", {
     z_cols = z_indx),
   regexp = msg4)
 
+  msg4s = "At least one variable/column is set as treatment variable \\('d_cols'\\) and selection variable in 's_col'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = c(s_indx, d_indx),
+    s_col = d_indx),
+  regexp = msg4s)
+
   msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
   expect_error(double_ml_data_from_data_frame(data,
     x_cols = X_cols1,
@@ -310,6 +342,15 @@ test_that("Unit tests for DoubleMLData", {
     d_cols = d_indx,
     z_cols = c(z_indx, y_indx)),
   regexp = msg6)
+
+  msg6s = "y cannot be set as outcome variable 'y_col' and selection variable in 's_col'."
+  expect_error(double_ml_data_from_data_frame(data,
+    x_cols = X_cols1,
+    y_col = y_indx,
+    d_cols = d_indx,
+    z_cols = z_null,
+    s_col = y_indx),
+  regexp = msg6s)
 
   msg7 = "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
   expect_error(double_ml_data_from_data_frame(data,
@@ -374,8 +415,7 @@ test_that("Unit tests for DoubleMLData", {
   msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}"
   expect_error(D11$set_data_model(X_cols1[1]),
     regexp = msg12)
-}
-)
+})
 
 test_that("Unit tests for invalid data", {
   # PLR with IV
@@ -527,5 +567,44 @@ test_that("Unit tests for invalid data", {
     ml_g = mlr3::lrn("regr.rpart"),
     ml_m = mlr3::lrn("classif.rpart", predict_type = "prob")),
   regexp = msg)
-}
-)
+
+  # z_col for SSM missing at random
+  df = data_ssm_nonignorable$df
+  dml_data = double_ml_data_from_data_frame(df,
+    y_col = "y",
+    d_cols = "d",
+    z_cols = "z",
+    s_col = "s")
+  # TODO: Fix test for warning
+  # msg = paste(
+  #  "A variable has been set as instrumental variable(s).\\n",
+  #  "You are estimating the effect under the assumption of data missing at random.",
+  #  "Instrumental variables will not be used in estimation.")
+  expect_warning(DoubleMLSSM$new(
+    data = dml_data,
+    ml_pi = mlr3::lrn("classif.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"),
+    ml_g = mlr3::lrn("regr.rpart"),
+    dml_procedure = "dml1",
+    score = "missing-at-random")) # ,
+  # regexp = NA)
+
+  # No z_col for SSM nonignorable
+  df = data_ssm_nonignorable$df
+  dml_data = double_ml_data_from_data_frame(df,
+    y_col = "y",
+    d_cols = "d",
+    s_col = "s")
+  msg = paste(
+    "Sample selection by nonignorable nonresponse was set but instrumental variable is NULL.\n",
+    "To estimate treatment effect under nonignorable nonresponse,",
+    "specify an instrument for the selection variable.")
+  expect_error(DoubleMLSSM$new(
+    data = dml_data,
+    ml_pi = mlr3::lrn("classif.rpart"),
+    ml_m = mlr3::lrn("classif.rpart"),
+    ml_g = mlr3::lrn("regr.rpart"),
+    dml_procedure = "dml1",
+    score = "nonignorable"),
+  regexp = msg)
+})

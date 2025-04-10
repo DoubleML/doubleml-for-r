@@ -280,7 +280,8 @@ DoubleML = R6Class("DoubleML",
       } else {
         stop("can't set field tuning_res")
       }
-    }),
+    }
+  ),
 
   public = list(
     #' @description
@@ -311,6 +312,7 @@ DoubleML = R6Class("DoubleML",
         "\n",
         "Covariates: ", paste0(self$data$x_cols, collapse = ", "), "\n",
         "Instrument(s): ", paste0(self$data$z_cols, collapse = ", "), "\n",
+        "Selection variable: ", paste0(self$data$s_col, collapse = ", "), "\n",
         cluster_info,
         "No. Observations: ", self$data$n_obs, "\n")
 
@@ -674,7 +676,8 @@ DoubleML = R6Class("DoubleML",
               function(x) {
                 check_smpl_split(x, self$data$n_obs,
                   check_intersect = TRUE)
-              })
+              }
+            )
             private$smpls_ = smpls
           }
         } else {
@@ -697,7 +700,8 @@ DoubleML = R6Class("DoubleML",
             function(x) {
               check_smpl_split(x, self$data$n_obs,
                 check_intersect = TRUE)
-            })
+            }
+          )
           private$smpls_ = smpls
         }
       } else {
@@ -752,7 +756,7 @@ DoubleML = R6Class("DoubleML",
     #' @param tune_settings (named `list()`) \cr
     #' A named `list()` with arguments passed to the hyperparameter-tuning with
     #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
-    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' [TuningInstance][mlr3tuning::TuningInstanceBatchSingleCrit] objects.
     #' `tune_settings` has entries
     #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
     #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`
@@ -1465,7 +1469,7 @@ DoubleML = R6Class("DoubleML",
       for (learner in self$params_names()) {
         if (!is.null(models[[learner]])) {
           private$models_[[learner]][[self$data$treat_col]][[
-          private$i_rep]] = models[[learner]]
+            private$i_rep]] = models[[learner]]
         }
       }
     },

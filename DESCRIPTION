@@ -38,7 +38,7 @@ Imports:
     mlr3learners (>= 0.3.0),
     mlr3misc
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown,
@@ -59,6 +59,7 @@ VignetteBuilder: knitr
 Collate:
     'double_ml.R'
     'double_ml_data.R'
+    'double_ml_ssm.R'
     'double_ml_iivm.R'
     'double_ml_irm.R'
     'double_ml_pliv.R'

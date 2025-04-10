@@ -162,12 +162,17 @@ DoubleMLData = R6Class("DoubleMLData",
           assert_subset(x_cols, self$all_variables)
           private$x_cols_ = x_cols
         } else {
-          if (!is.null(self$z_cols)) {
+          if (!is.null(self$z_cols) && is.null(self$s_col)) {
             y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
             private$x_cols_ = setdiff(self$all_variables, y_d_z)
           } else {
-            y_d = union(self$y_col, self$d_cols)
-            private$x_cols_ = setdiff(self$all_variables, y_d)
+            if (!is.null(self$s_col)) {
+              y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols, self$s_col))
+              private$x_cols_ = setdiff(self$all_variables, y_d_z_s)
+            } else {
+              y_d = union(self$y_col, self$d_cols)
+              private$x_cols_ = setdiff(self$all_variables, y_d)
+            }
           }
         }
         if (reset_value) {
@@ -213,7 +218,28 @@ DoubleMLData = R6Class("DoubleMLData",
           self$set_data_model(self$d_cols[1])
         }
       }
-    }),
+    },
+    #' @field s_col (`NULL`, `character()`) \cr
+    #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
+    s_col = function(value) {
+      if (missing(value)) {
+        return(private$s_col_)
+      } else {
+        s_col = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
+
+        if (!is.null(s_col)) {
+          assert_character(s_col, len = 1)
+        }
+        assert_subset(s_col, self$all_variables)
+        private$s_col_ = s_col
+        if (reset_value) {
+          private$check_disjoint_sets()
+          self$set_data_model(self$d_cols[1])
+        }
+      }
+    }
+  ),
 
   public = list(
     #' @description
@@ -237,6 +263,9 @@ DoubleMLData = R6Class("DoubleMLData",
     #' @param z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
     #'
+    #' @param s_col (`NULL`, `character()`) \cr
+    #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
+    #'
     #' @param use_other_treat_as_covariate (`logical(1)`) \cr
     #' Indicates whether in the multiple-treatment case the other treatment
     #' variables should be added as covariates. Default is `TRUE`.
@@ -245,6 +274,7 @@ DoubleMLData = R6Class("DoubleMLData",
       y_col = NULL,
       d_cols = NULL,
       z_cols = NULL,
+      s_col = NULL,
       use_other_treat_as_covariate = TRUE) {
 
       if (all(class(data) == "data.frame")) {
@@ -258,6 +288,7 @@ DoubleMLData = R6Class("DoubleMLData",
       self$y_col = y_col
       self$d_cols = d_cols
       self$z_cols = z_cols
+      self$s_col = s_col
       self$x_cols = x_cols
       private$check_disjoint_sets()
 
@@ -279,6 +310,7 @@ DoubleMLData = R6Class("DoubleMLData",
         "\n",
         "Covariates: ", paste0(self$x_cols, collapse = ", "), "\n",
         "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
+        "Selection variable: ", paste0(self$s_col, collapse = ", "), "\n",
         "No. Observations: ", self$n_obs, "\n")
       cat(header, "\n",
         "\n------------------ Data summary      ------------------\n",
@@ -312,7 +344,7 @@ DoubleMLData = R6Class("DoubleMLData",
       }
       col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
-        self$z_cols)
+        self$z_cols, self$s_col)
       private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
 
@@ -333,6 +365,7 @@ DoubleMLData = R6Class("DoubleMLData",
     x_cols_ = NULL,
     y_col_ = NULL,
     z_cols_ = NULL,
+    s_col_ = NULL,
     check_disjoint_sets = function() {
       y_col = self$y_col
       x_cols = self$x_cols
@@ -375,6 +408,27 @@ DoubleMLData = R6Class("DoubleMLData",
           stop(paste(
             "At least one variable/column is set as covariate ('x_cols')",
             "and instrumental variable in 'z_cols'."))
+        }
+      }
+
+      if (!is.null(self$s_col)) {
+        s_col = self$s_col
+
+        if (y_col %in% s_col) {
+          stop(paste(
+            y_col,
+            "cannot be set as outcome variable 'y_col' and",
+            "selection variable in 's_col'."))
+        }
+        if (any(s_col %in% d_cols)) {
+          stop(paste(
+            "At least one variable/column is set as treatment",
+            "variable ('d_cols') and selection variable in 's_col'."))
+        }
+        if (any(s_col %in% x_cols)) {
+          stop(paste(
+            "At least one variable/column is set as covariate ('x_cols')",
+            "and selection variable in 's_col'."))
         }
       }
     }
@@ -438,14 +492,20 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         if (!is.null(value)) {
           super$x_cols = value
         } else {
-          if (!is.null(self$z_cols)) {
+          if (!is.null(self$z_cols) && is.null(self$s_col)) {
             y_d_z = unique(c(
               self$y_col, self$d_cols, self$z_cols,
               self$cluster_cols))
             x_cols = setdiff(self$all_variables, y_d_z)
           } else {
-            y_d = unique(c(self$y_col, self$d_cols, self$cluster_cols))
-            x_cols = setdiff(self$all_variables, y_d)
+            if (!is.null(self$s_col)) {
+              y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols,
+                self$s_col, self$cluster_cols))
+              x_cols = setdiff(self$all_variables, y_d_z_s)
+            } else {
+              y_d = unique(c(self$y_col, self$d_cols, self$cluster_cols))
+              x_cols = setdiff(self$all_variables, y_d)
+            }
           }
           super$x_cols = x_cols
         }
@@ -487,6 +547,9 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
     #' @param z_cols (`NULL`, `character()`) \cr
     #' The instrumental variables. Default is `NULL`.
     #'
+    #' @param s_col (`NULL`, `character()`) \cr
+    #' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
+    #'
     #' @param use_other_treat_as_covariate (`logical(1)`) \cr
     #' Indicates whether in the multiple-treatment case the other treatment
     #' variables should be added as covariates. Default is `TRUE`.
@@ -496,6 +559,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
       d_cols = NULL,
       cluster_cols = NULL,
       z_cols = NULL,
+      s_col = NULL,
       use_other_treat_as_covariate = TRUE) {
 
       # we need to set cluster_cols (needs _data) before call to the super class
@@ -517,6 +581,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         y_col,
         d_cols,
         z_cols,
+        s_col,
         use_other_treat_as_covariate)
       invisible(self)
     },
@@ -532,6 +597,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
         "\n",
         "Covariates: ", paste0(self$x_cols, collapse = ", "), "\n",
         "Instrument(s): ", paste0(self$z_cols, collapse = ", "), "\n",
+        "Selection variable: ", paste0(self$s_col, collapse = ", "), "\n",
         "No. Observations: ", self$n_obs, "\n")
       cat(header, "\n",
         "\n------------------ Data summary      ------------------\n",
@@ -554,7 +620,7 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
       # add the cluster_cols to the data_model_
       col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
-        self$z_cols, self$cluster_cols)
+        self$z_cols, self$s_col, self$cluster_cols)
       private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
 
@@ -599,6 +665,16 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
             "('z_cols') and as a cluster variable ('cluster_cols')."))
         }
       }
+
+      if (!is.null(self$s_col)) {
+        s_col = self$s_col
+
+        if (any(s_col %in% cluster_cols)) {
+          stop(paste(
+            "At least one variable/column is set as selection variable",
+            "('s_col') and as a cluster variable ('cluster_cols')."))
+        }
+      }
     }
   )
 )
@@ -627,6 +703,9 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
 #' @param z_cols (`NULL`, `character()`) \cr
 #' The instrumental variables. Default is `NULL`.
 #'
+#' @param s_col (`NULL`, `character()`) \cr
+#' The score or selection variable (only relevant/used for SSM Estimators). Default is `NULL`.
+#'
 #' @param cluster_cols (`NULL`, `character()`) \cr
 #' The cluster variables. Default is `NULL`.
 #'
@@ -645,18 +724,18 @@ DoubleMLClusterData = R6Class("DoubleMLClusterData",
 #' # Input: Data frame, Output: DoubleMLData object
 #' @export
 double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
-  d_cols = NULL, z_cols = NULL, cluster_cols = NULL,
+  d_cols = NULL, z_cols = NULL, s_col = NULL, cluster_cols = NULL,
   use_other_treat_as_covariate = TRUE) {
   if (is.null(cluster_cols)) {
     data = DoubleMLData$new(df,
       x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-      z_cols = z_cols,
+      z_cols = z_cols, s_col = s_col,
       use_other_treat_as_covariate = use_other_treat_as_covariate)
   } else {
     data = DoubleMLClusterData$new(df,
       x_cols = x_cols, y_col = y_col,
       d_cols = d_cols, z_cols = z_cols,
-      cluster_cols = cluster_cols,
+      s_col = s_col, cluster_cols = cluster_cols,
       use_other_treat_as_covariate = use_other_treat_as_covariate)
   }
   return(data)
@@ -681,6 +760,9 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #' @param z (`matrix()`) \cr
 #' Matrix of instruments.
 #'
+#' @param s (`numeric()`) \cr
+#' Vector of the score or selection variable (only relevant for SSM models).
+#'
 #' @param cluster_vars (`matrix()`) \cr
 #' Matrix of cluster variables.
 #'
@@ -703,7 +785,7 @@ double_ml_data_from_data_frame = function(df, x_cols = NULL, y_col = NULL,
 #'   d = matrix_list$d)
 #' @export
 double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
-  cluster_vars = NULL,
+  s = NULL, cluster_vars = NULL,
   data_class = "DoubleMLData",
   use_other_treat_as_covariate = TRUE) {
 
@@ -724,13 +806,17 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
     z = assure_matrix(z)
     mat_list[[length(mat_list) + 1]] = z
   }
+  if (!is.null(s)) {
+    s = assure_matrix(s)
+    mat_list[[length(mat_list) + 1]] = s
+  }
   if (!is.null(cluster_vars)) {
     cluster_vars = assure_matrix(cluster_vars)
     mat_list[[length(mat_list) + 1]] = cluster_vars
   }
 
   check_matrix_row(mat_list)
-  data = data.table(X, y, d, z, cluster_vars)
+  data = data.table(X, y, d, z, s, cluster_vars)
 
   if (!is.null(z)) {
     if (ncol(z) == 1) {
@@ -752,6 +838,11 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
   } else {
     x_cols = NULL
   }
+  if (!is.null(s)) {
+    s_col = "s"
+  } else {
+    s_col = NULL
+  }
   if (!is.null(cluster_vars)) {
     if (ncol(cluster_vars) == 1) {
       cluster_cols = "cluster_var"
@@ -761,7 +852,7 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
   } else {
     cluster_cols = NULL
   }
-  names(data) = c(x_cols, y_col, d_cols, z_cols, cluster_cols)
+  names(data) = c(x_cols, y_col, d_cols, z_cols, s_col, cluster_cols)
 
   if (data_class %in% c("DoubleMLData", "DoubleMLClusterData")) {
     if (is.null(cluster_vars)) {
@@ -772,12 +863,12 @@ double_ml_data_from_matrix = function(X = NULL, y, d, z = NULL,
       }
       data = DoubleMLData$new(data,
         x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-        z_cols = z_cols,
+        z_cols = z_cols, s_col = s_col,
         use_other_treat_as_covariate = use_other_treat_as_covariate)
     } else {
       data = DoubleMLClusterData$new(data,
         x_cols = x_cols, y_col = y_col, d_cols = d_cols,
-        z_cols = z_cols, cluster_cols = cluster_cols,
+        z_cols = z_cols, s_col = s_col, cluster_cols = cluster_cols,
         use_other_treat_as_covariate = use_other_treat_as_covariate)
     }
   }

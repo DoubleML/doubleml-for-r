@@ -511,3 +511,53 @@ get_default_mlmethod_iivm_binary = function(learner) {
     ml_g = ml_g, ml_m = ml_m, ml_r = ml_r
   ))
 }
+
+get_default_mlmethod_ssm = function(learner) {
+  if (learner == "cv_glmnet") {
+    mlmethod = list(
+      mlmethod_pi = paste0("classif.", learner),
+      mlmethod_m = paste0("classif.", learner),
+      mlmethod_g = paste0("regr.", learner)
+    )
+    slambda = "lambda.min"
+
+    params = list(
+      params_pi = list(s = slambda),
+      params_m = list(s = slambda),
+      params_g = list(s = slambda)
+    )
+  }
+
+  if (learner == "graph_learner") {
+    # pipeline learner
+    pipe_learner_classif = mlr3pipelines::po("learner",
+      lrn("classif.cv_glmnet", predict_type = "prob"),
+      s = "lambda.min")
+    pipe_learner = mlr3pipelines::po("learner",
+      lrn("regr.cv_glmnet"),
+      s = "lambda.min")
+    mlmethod = list(
+      mlmethod_pi = "graph_learner",
+      mlmethod_m = "graph_learner",
+      mlmethod_g = "graph_learner")
+    params = list(
+      params_pi = list(),
+      params_m = list(),
+      params_g = list())
+    ml_pi = mlr3::as_learner(pipe_learner_classif)
+    ml_m = mlr3::as_learner(pipe_learner_classif)
+    ml_g = mlr3::as_learner(pipe_learner)
+  } else {
+    ml_pi = mlr3::lrn(mlmethod$mlmethod_pi, predict_type = "prob")
+    ml_pi$param_set$values = params$params_pi
+    ml_m = mlr3::lrn(mlmethod$mlmethod_m, predict_type = "prob")
+    ml_m$param_set$values = params$params_m
+    ml_g = mlr3::lrn(mlmethod$mlmethod_g)
+    ml_g$param_set$values = params$params_g
+  }
+
+  return(list(
+    mlmethod = mlmethod, params = params,
+    ml_pi = ml_pi, ml_m = ml_m, ml_g = ml_g
+  ))
+}
