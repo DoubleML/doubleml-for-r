@@ -11,7 +11,6 @@ Double machine learning for sample selection models.
 }
 \examples{
 \donttest{
-
 library(DoubleML)
 library(mlr3)
 library(mlr3learners)
@@ -26,7 +25,7 @@ ml_m = lrn("classif.ranger",
 ml_pi = lrn("classif.ranger",
   num.trees = 100, mtry = 20,
   min.node.size = 2, max.depth = 5)
-  
+
 n_obs = 2000
 df = make_ssm_data(n_obs = n_obs, mar = TRUE, return_type = "data.table")
 dml_data = DoubleMLData$new(df, y_col = "y", d_cols = "d", s_col = "s")
