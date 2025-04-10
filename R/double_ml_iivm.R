@@ -128,7 +128,8 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       } else {
         stop("can't set field trimming_threshold")
       }
-    }),
+    }
+  ),
 
   public = list(
     #' @description

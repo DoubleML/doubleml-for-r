@@ -33,8 +33,7 @@ test_that("x_cols setter", {
   # check setting None brings us back to orig_x_cols
   dml_data$x_cols = NULL
   expect_equal(dml_data$x_cols, orig_x_cols)
-}
-)
+})
 
 test_that("d_cols setter", {
   set.seed(3141)
@@ -72,8 +71,7 @@ test_that("d_cols setter", {
   dml_data$d_cols = "d2"
   expect_equal(dml_data$d_cols, "d2")
   expect_equal(dml_data$n_treat, 1)
-}
-)
+})
 
 test_that("z_cols setter", {
   set.seed(3141)
@@ -119,8 +117,7 @@ test_that("z_cols setter", {
   dml_data$z_cols = NULL
   expect_equal(dml_data$z_cols, NULL)
   expect_equal(dml_data$n_instr, 0)
-}
-)
+})
 
 test_that("y_col setter", {
   set.seed(3141)
@@ -153,8 +150,41 @@ test_that("y_col setter", {
   msg = "Assertion on 'y_col' failed: Must be of type 'character', not 'double'."
   expect_error(dml_data$y_col <- 5,
     regexp = msg)
-}
-)
+})
+
+test_that("s_col setter", {
+  set.seed(3141)
+  dml_data = make_plr_CCDDHNR2018(n_obs = 101, return_type = "data.frame")
+  df = dml_data[, 1:12]
+  names(df) = c(paste0("X", 1:4), paste0("z", 1:3), c("s1", "s2"), c("y", "d1", "d2"))
+  dml_data = double_ml_data_from_data_frame(df,
+    y_col = "y",
+    d_cols = c("d1", "d2"),
+    x_cols = paste0("X", 1:4),
+    z_cols = paste0("z", 1:3),
+    s_col = "s1")
+  expect_equal(dml_data$n_obs, 101)
+  expect_equal(dml_data$n_treat, 2)
+  expect_equal(dml_data$n_instr, 3)
+
+  # check that z_cols gets updated
+  dml_data$s_col = c("s2")
+  expect_equal(dml_data$s_col, c("s2"))
+
+  msg = paste0(
+    "Assertion on 's_col' failed: Must be a subset of",
+    " \\{'X1','X2','X3','X4','z1','z2','z3','s1','s2','y','d1','d2'\\}")
+  expect_error(dml_data$s_col <- c("s3"),
+    regexp = msg)
+
+  msg = "Assertion on 's_col' failed: Must be of type 'character', not 'double'."
+  expect_error(dml_data$s_col <- 5,
+    regexp = msg)
+
+  # check NULL
+  dml_data$s_col = NULL
+  expect_equal(dml_data$z_col, NULL)
+})
 
 test_that("cluster_cols setter", {
   set.seed(3141)
@@ -193,8 +223,7 @@ test_that("cluster_cols setter", {
   dml_data$cluster_cols = "c2"
   expect_equal(dml_data$cluster_cols, "c2")
   expect_equal(dml_data$n_cluster_vars, 1)
-}
-)
+})
 
 test_that("Tests for use_other_treat_as_covariate", {
   set.seed(3141)
@@ -238,8 +267,7 @@ test_that("Tests for use_other_treat_as_covariate", {
   msg = "Assertion on 'treatment_var' failed: Must have length <= 1, but has length 2."
   expect_error(dml_data$set_data_model(c("d1", "d2")),
     regexp = msg)
-}
-)
+})
 
 test_that("Disjoint sets", {
   set.seed(3141)
@@ -326,8 +354,15 @@ test_that("Disjoint sets", {
     z_cols = "xx2",
     cluster_cols = "xx2"),
   regexp = msg)
-}
-)
+
+  msg = "At least one variable/column is set as covariate \\('x_cols'\\) and selection variable in 's_col'."
+  expect_error(DoubleMLData$new(dt,
+    y_col = "yy",
+    d_cols = "dd1",
+    x_cols = c("xx1", "xx2"),
+    s_col = "xx2"),
+  regexp = msg)
+})
 
 test_that("Test duplicates", {
   set.seed(3141)
@@ -392,8 +427,7 @@ test_that("Test duplicates", {
     x_cols = c("X3"),
     cluster_cols = "X2"),
   regexp = msg)
-}
-)
+})
 
 test_that("Not setable fields", {
   set.seed(3141)
@@ -448,5 +482,4 @@ test_that("Not setable fields", {
     regexp = msg)
   expect_error(dml_cluster_data$treat_col <- "abc",
     regexp = msg)
-}
-)
+})

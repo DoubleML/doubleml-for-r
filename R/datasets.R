@@ -958,3 +958,117 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
     }
   }
 }
+
+#' Generates data from a sample selection model (SSM).
+#'
+#' The data generating process is defined as:
+#'
+#' \deqn{
+#' y_i = \theta d_i + x_i' \beta  + u_i,}
+#'
+#' \deqn{s_i = 1\lbrace d_i + \gamma z_i + x_i' \beta  + v_i > 0 \rbrace,}
+#'
+#' \deqn{d_i = 1\lbrace x_i' \beta  + w_i > 0 \rbrace,}
+#'
+#' with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
+#' \eqn{\Sigma^2_x} is a matrix with entries
+#' \eqn{\Sigma_{kj} = 0.5^{|j-k|}}.
+#' \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{0.4}{j^2}}
+#' \eqn{z_i \sim \mathcal{N}(0, 1)},
+#' \eqn{(u_i,v_i) \sim \mathcal{N}(0, \Sigma^2_{u,v})},
+#' \eqn{w_i \sim \mathcal{N}(0, 1)}.
+#'
+#' The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
+#' Huber and Lafférs (2023).
+#'
+#' @param n_obs (`integer(1)`) \cr
+#' The number of observations to simulate.
+#' @param dim_x (`integer(1)`) \cr
+#' The number of covariates.
+#' @param theta (`numeric(1)`) \cr
+#' The value of the causal parameter.
+#' @param mar (`logical(1)`) \cr
+#' Indicates whether missingness at random holds.
+#' @param return_type (`character(1)`) \cr
+#' If `"DoubleMLData"`, returns a `DoubleMLData` object.
+#' If `"data.frame"` returns a `data.frame()`.
+#' If `"data.table"` returns a `data.table()`.
+#' Default is `"DoubleMLData"`.
+#'
+#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
+#' Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
+#'
+#' @return Depending on the `return_type`, returns an object or set of objects as specified.
+#' @export
+make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE, return_type = "DoubleMLData") {
+
+  assert_choice(
+    return_type,
+    c("data.table", "matrix", "data.frame", "DoubleMLData")
+  )
+
+  assert_count(n_obs)
+  assert_count(dim_x)
+  assert_numeric(theta, len = 1)
+
+  if (mar == TRUE) {
+    sigma = matrix(c(1, 0, 0, 1), 2, 2)
+    gamma = 0
+  } else {
+    sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2)
+    gamma = 1
+  }
+
+  e = t(rmvnorm(n_obs, rep(0, 2), sigma))
+  cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
+  x = rmvnorm(n_obs, rep(0, dim_x), cov_mat)
+  beta = 0.4 / ((1:dim_x)^2)
+  d = ifelse(x %*% beta + rnorm(n_obs) > 0, 1, 0)
+  z = as.matrix(rnorm(n_obs))
+  s = ifelse(x %*% beta + d + gamma * z + e[1, ] > 0, 1, 0)
+  y = x %*% beta + theta * d + e[2, ]
+  y[s == 0] = 0
+
+  colnames(x) = paste0("X", 1:dim_x)
+  colnames(y) = "y"
+  colnames(d) = "d"
+  colnames(z) = "z"
+  colnames(s) = "s"
+
+  if (return_type == "matrix") {
+    if (mar == TRUE) {
+      return(list("X" = x, "y" = y, "d" = d, "s" = s))
+    } else {
+      return(list("X" = x, "y" = y, "d" = d, "z" = z, "s" = s))
+    }
+  }
+  if (return_type == "data.frame") {
+    if (mar == TRUE) {
+      data = data.frame(x, y, d, s)
+      return(data)
+    } else {
+      data = data.frame(x, y, d, z, s)
+      return(data)
+    }
+  }
+  if (return_type == "data.table") {
+    if (mar == TRUE) {
+      data = data.table(x, y, d, s)
+      return(data)
+    } else {
+      data = data.table(x, y, d, z, s)
+      return(data)
+    }
+  }
+  if (return_type == "DoubleMLData") {
+    if (mar == TRUE) {
+      dt = data.table(x, y, d, s)
+      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", s_col = "s")
+      return(data)
+    } else {
+      dt = data.table(x, y, d, z, s)
+      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", z_cols = "z", s_col = "s")
+      return(data)
+    }
+  }
+}

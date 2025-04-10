@@ -126,5 +126,4 @@ test_that("Not setable fields", {
   msg = "can't set field trimming_threshold"
   expect_error(dml_iivm$trimming_threshold <- 0.1,
     regexp = msg)
-}
-)
+})

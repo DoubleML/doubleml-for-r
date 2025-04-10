@@ -11,6 +11,7 @@ double_ml_data_from_data_frame(
   y_col = NULL,
   d_cols = NULL,
   z_cols = NULL,
+  s_col = NULL,
   cluster_cols = NULL,
   use_other_treat_as_covariate = TRUE
 )
@@ -33,6 +34,9 @@ The treatment variable(s).}
 
 \item{z_cols}{(\code{NULL}, \code{character()}) \cr
 The instrumental variables. Default is \code{NULL}.}
+
+\item{s_col}{(\code{NULL}, \code{character()}) \cr
+The score or selection variable (only relevant/used for SSM Estimators). Default is \code{NULL}.}
 
 \item{cluster_cols}{(\code{NULL}, \code{character()}) \cr
 The cluster variables. Default is \code{NULL}.}

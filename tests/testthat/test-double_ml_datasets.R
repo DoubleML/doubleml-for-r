@@ -113,5 +113,34 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
       df = fetch_bonus(return_type = return_type, polynomial_features = polynomial_features)
       expect_is(df, paste0(return_type))
     }
+
+    # Test ssm, mar=TRUE
+    mar = TRUE
+    if (return_type != "matrix") {
+      df = make_ssm_data(mar = mar, return_type = return_type)
+      expect_is(df, paste0(return_type))
+    } else {
+      df = make_ssm_data(mar = mar, return_type = return_type)
+      expect_is(df, "list")
+      expect_is(df$X, "matrix")
+      expect_is(df$y, "matrix")
+      expect_is(df$d, "matrix")
+      expect_is(df$s, "matrix")
+    }
+
+    # Test ssm, mar=FALSE
+    mar = FALSE
+    if (return_type != "matrix") {
+      df = make_ssm_data(mar = mar, return_type = return_type)
+      expect_is(df, paste0(return_type))
+    } else {
+      df = make_ssm_data(mar = mar, return_type = return_type)
+      expect_is(df, "list")
+      expect_is(df$X, "matrix")
+      expect_is(df$y, "matrix")
+      expect_is(df$d, "matrix")
+      expect_is(df$z, "matrix")
+      expect_is(df$s, "matrix")
+    }
   }
 )

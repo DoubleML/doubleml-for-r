@@ -74,6 +74,9 @@ The outcome variable.}
 
 \item{\code{z_cols}}{(\code{NULL}, \code{character()}) \cr
 The instrumental variables. Default is \code{NULL}.}
+
+\item{\code{s_col}}{(\code{NULL}, \code{character()}) \cr
+The score or selection variable (only relevant/used for SSM Estimators). Default is \code{NULL}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -98,6 +101,7 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   y_col = NULL,
   d_cols = NULL,
   z_cols = NULL,
+  s_col = NULL,
   use_other_treat_as_covariate = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -122,6 +126,9 @@ The treatment variable(s).}
 
 \item{\code{z_cols}}{(\code{NULL}, \code{character()}) \cr
 The instrumental variables. Default is \code{NULL}.}
+
+\item{\code{s_col}}{(\code{NULL}, \code{character()}) \cr
+The score or selection variable (only relevant/used for SSM Estimators). Default is \code{NULL}.}
 
 \item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
 Indicates whether in the multiple-treatment case the other treatment

@@ -24,10 +24,11 @@ jobs:
         config:
           - {os: windows-latest, r: 'release', mlr3: 'release', cran_no_glmnet: 'false'}
           - {os: macOS-latest, r: 'release', mlr3: 'release', cran_no_glmnet: 'false'}
-          - {os: ubuntu-20.04, r: 'release', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
-          - {os: ubuntu-20.04, r: 'devel', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
-          - {os: ubuntu-20.04, r: 'devel', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'true'}
-          - {os: ubuntu-20.04, r: 'devel', mlr3: 'dev', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
+          - {os: ubuntu-22.04, r: 'release', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
+          - {os: ubuntu-22.04, r: 'release', mlr3: 'dev', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
+          - {os: ubuntu-22.04, r: 'devel', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
+          - {os: ubuntu-22.04, r: 'devel', mlr3: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'true'}
+          - {os: ubuntu-22.04, r: 'devel', mlr3: 'dev', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest", cran_no_glmnet: 'false'}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -79,6 +80,7 @@ jobs:
         run: |
           remotes::install_github("mlr-org/mlr3")
           remotes::install_github("mlr-org/paradox")
+          remotes::install_github("mlr-org/mlr3learners")
         shell: Rscript {0}
 
       - name: Check
@@ -122,9 +124,35 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           remotes::install_cran("covr")
+          remotes::install_cran("xml2")
+          cov <- covr::package_coverage(
+            quiet = FALSE,
+            clean = FALSE,
+            install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
+          )
+          covr::to_cobertura(cov)
         shell: Rscript {0}
-
-      - name: Test coverage
+  
+      - uses: codecov/codecov-action@v4
         if: runner.os == 'macOS'
-        run: covr::codecov()
-        shell: Rscript {0}
+        with:
+          # Fail if error if not on PR, or if on PR and token is given
+          fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
+          file: ./cobertura.xml
+          plugin: noop
+          disable_search: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Show testthat output
+        if: runner.os == 'macOS'
+        run: |
+          ## --------------------------------------------------------------------
+          find '${{ runner.temp }}/package' -name 'testthat.Rout*' -exec cat '{}' \; || true
+        shell: bash
+
+      - name: Upload test results
+        if: failure() && runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-test-failures
+          path: ${{ runner.temp }}/package

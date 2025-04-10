@@ -153,8 +153,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML", {
   expect_equal(dml_plr$n_rep, 1)
   expect_equal(dml_plr$apply_cross_fitting, FALSE)
   expect_equal(smpls, dml_plr$smpls)
-}
-)
+})
 
 assert_resampling_pars = function(dml_obj0, dml_obj1) {
   expect_equal(dml_obj0$n_folds, dml_obj1$n_folds)
@@ -199,8 +198,7 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (dra
     n_folds = 5, n_rep = 3, apply_cross_fitting = TRUE)
   dml_plr_set$set_sample_splitting(dml_plr_drawn$smpls)
   assert_resampling_pars(dml_plr_drawn, dml_plr_set)
-}
-)
+})
 
 test_that("Unit tests for the method set_sample_splitting of class DoubleML (invalid sets)", {
   smpls = list(
@@ -292,5 +290,4 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
     "\\{'1','2','3','4','5','6','7','8','9','10'\\}")
   expect_error(dml_plr$set_sample_splitting(smpls),
     regexp = msg)
-}
-)
+})
