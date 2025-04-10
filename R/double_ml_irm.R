@@ -50,7 +50,7 @@
 #' library(DoubleML)
 #' library(mlr3)
 #' library(mlr3learners)
-#' library(mlr3uning)
+#' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
 #' ml_g = lrn("regr.rpart")

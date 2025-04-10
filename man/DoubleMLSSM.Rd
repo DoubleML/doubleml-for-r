@@ -34,7 +34,38 @@ dml_ssm$fit()
 print(dml_ssm)
 }
 \dontrun{
-# TODO Add example with tuning
+library(DoubleML)
+library(mlr3)
+library(mlr3learners)
+library(mlr3tuning)
+library(data.table)
+set.seed(2)
+ml_g = lrn("regr.rpart")
+ml_m = lrn("classif.rpart")
+ml_pi = lrn("classif.rpart")
+dml_data = make_ssm_data(n_obs = n_obs, mar = TRUE)
+dml_ssm = DoubleMLSSM$new(dml_data, ml_g = ml_g, ml_m = ml_m, ml_pi = ml_pi,
+  score = "missing-at-random")
+
+param_grid = list(
+ "ml_g" = paradox::ps(
+   cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+   minsplit = paradox::p_int(lower = 1, upper = 2)),
+"ml_m" = paradox::ps(
+  cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+  minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_pi" = paradox::ps(
+  cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+  minsplit = paradox::p_int(lower = 1, upper = 2)))
+
+# minimum requirements for tune_settings
+tune_settings = list(
+  terminator = mlr3tuning::trm("evals", n_evals = 5),
+  algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+
+dml_ssm$tune(param_set = param_grid, tune_settings = tune_settings)
+dml_ssm$fit()
+dml_ssm$summary()
 }
 }
 \seealso{
