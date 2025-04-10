@@ -17,12 +17,12 @@
 #' ml_g = lrn("regr.cv_glmnet", nfolds = 5, s = "lambda.min")
 #' ml_m = lrn("classif.cv_glmnet", nfolds = 5, s = "lambda.min")
 #' ml_pi = lrn("classif.cv_glmnet", nfolds = 5, s = "lambda.min")
-#' 
+#'
 #' set.seed(3141)
 #' n_obs = 2000
-#' df = make_ssm_data(n_obs=n_obs, mar=TRUE, return_type="data.table")
-#' dml_data = DoubleMLData$new(df, y_col="y", d_cols="d", s_col="s")
-#' dml_ssm = DoubleMLSSM$new(dml_data, ml_g, ml_m, ml_pi, score="missing-at-random")
+#' df = make_ssm_data(n_obs = n_obs, mar = TRUE, return_type = "data.table")
+#' dml_data = DoubleMLData$new(df, y_col = "y", d_cols = "d", s_col = "s")
+#' dml_ssm = DoubleMLSSM$new(dml_data, ml_g, ml_m, ml_pi, score = "missing-at-random")
 #' dml_ssm$fit()
 #' print(dml_ssm)
 #' }
@@ -240,7 +240,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
     #' @param tune_settings (named `list()`) \cr
     #' A named `list()` with arguments passed to the hyperparameter-tuning with
     #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
-    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' [TuningInstance][mlr3tuning::TuningInstanceBatchSingleCrit] objects.
     #' `tune_settings` has entries
     #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
     #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`

@@ -288,7 +288,7 @@ DoubleMLPLR = R6Class("DoubleMLPLR",
     #' @param tune_settings (named `list()`) \cr
     #' A named `list()` with arguments passed to the hyperparameter-tuning with
     #' [mlr3tuning](https://mlr3tuning.mlr-org.com/) to set up
-    #' [TuningInstance][mlr3tuning::TuningInstanceSingleCrit] objects.
+    #' [TuningInstance][mlr3tuning::TuningInstanceBatchSingleCrit] objects.
     #' `tune_settings` has entries
     #' * `terminator` ([Terminator][bbotk::Terminator]) \cr
     #' A [Terminator][bbotk::Terminator] object. Specification of `terminator`
