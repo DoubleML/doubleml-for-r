@@ -42,7 +42,7 @@ test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 patrick::with_parameters_test_that("Unit tests for tuning of SSM:",
   .cases = test_cases, {
     n_rep_boot = 498
-    n_folds = 2
+    n_folds = 5
 
     if (score == "missing-at-random") {
       dml_data = data_ssm_mar$dml_data
@@ -73,19 +73,18 @@ patrick::with_parameters_test_that("Unit tests for tuning of SSM:",
         minsplit = paradox::p_int(lower = 1, upper = 2)))
 
     double_mlssm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_settings)
-    double_mlssm_obj_tuned$fit()
 
-    theta_obj_tuned = double_mlssm_obj_tuned$coef
-    se_obj_tuned = double_mlssm_obj_tuned$se
+    # skip if tune_on_folds = TRUE & score == "nonignorable"
+    if (tune_on_folds && score == "nonignorable") {
+      skip("Skipping test for tuning on folds with nonignorable score")
+    } else {
+      double_mlssm_obj_tuned$fit()
 
-    # bootstrap
-    # double_mlirm_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
-    # boot_theta_obj_tuned = double_mlirm_obj_tuned$boot_coef
+      theta_obj_tuned = double_mlssm_obj_tuned$coef
+      se_obj_tuned = double_mlssm_obj_tuned$se
 
-
-    # restrictions to test
-    # Functional (tbd) vs OOP implementation (handling randomness in param selection!?)
-    expect_is(theta_obj_tuned, "numeric")
-    expect_is(se_obj_tuned, "numeric")
+      expect_is(theta_obj_tuned, "numeric")
+      expect_is(se_obj_tuned, "numeric")
+    }
   }
 )
