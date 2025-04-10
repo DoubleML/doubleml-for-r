@@ -10,15 +10,21 @@
 #' @usage NULL
 #' @examples
 #' \donttest{
-#'
 #' library(DoubleML)
 #' library(mlr3)
+#' library(mlr3learners)
 #' library(data.table)
-#' ml_g = lrn("regr.cv_glmnet", nfolds = 5, s = "lambda.min")
-#' ml_m = lrn("classif.cv_glmnet", nfolds = 5, s = "lambda.min")
-#' ml_pi = lrn("classif.cv_glmnet", nfolds = 5, s = "lambda.min")
+#' set.seed(2)
+#' ml_g = lrn("regr.ranger",
+#'   num.trees = 100, mtry = 20,
+#'   min.node.size = 2, max.depth = 5)
+#' ml_m = lrn("classif.ranger",
+#'   num.trees = 100, mtry = 20,
+#'   min.node.size = 2, max.depth = 5)
+#' ml_pi = lrn("classif.ranger",
+#'   num.trees = 100, mtry = 20,
+#'   min.node.size = 2, max.depth = 5)
 #'
-#' set.seed(3141)
 #' n_obs = 2000
 #' df = make_ssm_data(n_obs = n_obs, mar = TRUE, return_type = "data.table")
 #' dml_data = DoubleMLData$new(df, y_col = "y", d_cols = "d", s_col = "s")
