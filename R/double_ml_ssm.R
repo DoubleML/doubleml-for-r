@@ -619,10 +619,10 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
       indx_d0_s1 = lapply(data_tune_list, function(x) x[[self$data$d_cols]] == 0 & x[[self$data$s_col]] == 1)
       indx_d1_s1 = lapply(data_tune_list, function(x) x[[self$data$d_cols]] == 1 & x[[self$data$s_col]] == 1)
       data_tune_list_d0_s1 = lapply(
-        seq_along(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_d0_s1[[x]], ])
       data_tune_list_d1_s1 = lapply(
-        seq_along(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_d1_s1[[x]], ])
 
       tuning_result_pi = dml_tune(self$learner$ml_pi,

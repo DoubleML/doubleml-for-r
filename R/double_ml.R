@@ -1349,7 +1349,7 @@ DoubleML = R6Class("DoubleML",
             "\n measure must be a named list with elements named",
             paste0(valid_learner, collapse = ", ")))
         }
-        for (i_msr in (i_fold in seq_along(tune_settings$measure)) {
+        for (i_msr in seq_along(tune_settings$measure)) {
           assert(
             check_character(tune_settings$measure[[i_msr]]),
             check_class(tune_settings$measure[[i_msr]], "Measure"))

@@ -329,10 +329,10 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         data_tune_list,
         function(x) x[[self$data$treat_col]] == 1)
       data_tune_list_d0 = lapply(
-        seq_along(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_g0[[x]], ])
       data_tune_list_d1 = lapply(
-        seq_along(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_g1[[x]], ])
 
       tuning_result_m = dml_tune(self$learner$ml_m,
