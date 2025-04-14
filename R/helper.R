@@ -49,7 +49,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
         }
       )
       resampling_smpls = lapply(
-        seq_len(length(smpls$train_ids)),
+        seq_along(smpls$train_ids),
         function(x) {
           rsmp("custom")$instantiate(
             task_pred, list(smpls$train_ids[[x]]),
@@ -57,7 +57,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
         }
       )
 
-      resampling_pred = lapply(seq_len(length(ml_learners)), function(x) {
+      resampling_pred = lapply(seq_along(ml_learners), function(x) {
         resample(task_pred, ml_learners[[x]],
           resampling_smpls[[x]],
           store_models = TRUE)
@@ -108,12 +108,12 @@ dml_cv_predict = function(learner, X_cols, y_col,
       ml_learners = lapply(
         est_params,
         function(x) initiate_learner(learner, task_type, x))
-      resampling_smpls = lapply(seq_len(length(smpls$train_ids)), function(x) {
+      resampling_smpls = lapply(seq_along(smpls$train_ids), function(x) {
         rsmp("custom")$instantiate(
           task_pred[[x]], list(smpls$train_ids[[x]]),
           list(smpls$test_ids[[x]]))
       })
-      resampling_pred = lapply(seq_len(length(ml_learners)), function(x) {
+      resampling_pred = lapply(seq_along(ml_learners), function(x) {
         resample(task_pred[[x]], ml_learners[[x]],
           resampling_smpls[[x]],
           store_models = TRUE)
@@ -305,10 +305,10 @@ draw_weights = function(method, n_rep_boot, n_obs) {
 }
 
 get_cond_samples = function(smpls, D) {
-  train_ids_0 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+  train_ids_0 = lapply(seq_along(smpls$train_ids), function(x) {
     smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 0]
   })
-  train_ids_1 = lapply(seq_len(length(smpls$test_ids)), function(x) {
+  train_ids_1 = lapply(seq_along(smpls$test_ids), function(x) {
     smpls$train_ids[[x]][D[smpls$train_ids[[x]]] == 1]
   })
   return(list(
@@ -321,16 +321,16 @@ get_cond_samples = function(smpls, D) {
 }
 
 get_cond_samples_2d = function(smpls, var1, var2) {
-  train_ids_00 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+  train_ids_00 = lapply(seq_along(smpls$train_ids), function(x) {
     smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 0 & var2[smpls$train_ids[[x]]] == 0]
   })
-  train_ids_01 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+  train_ids_01 = lapply(seq_along(smpls$train_ids), function(x) {
     smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 0 & var2[smpls$train_ids[[x]]] == 1]
   })
-  train_ids_10 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+  train_ids_10 = lapply(seq_along(smpls$train_ids), function(x) {
     smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 1 & var2[smpls$train_ids[[x]]] == 0]
   })
-  train_ids_11 = lapply(seq_len(length(smpls$train_ids)), function(x) {
+  train_ids_11 = lapply(seq_along(smpls$train_ids), function(x) {
     smpls$train_ids[[x]][var1[smpls$train_ids[[x]]] == 1 & var2[smpls$train_ids[[x]]] == 1]
   })
   return(list(

@@ -278,7 +278,7 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       if (is.character(self$score) && self$score == "ATTE") {
         # fraction of treated for ATTE
         p_hat = vector("numeric", length = self$data$n_obs)
-        for (i_fold in seq_len(length(smpls$test_ids))) {
+        for (i_fold in seq_along(smpls$test_ids)) {
           p_hat[smpls$test_ids[[i_fold]]] = mean(
             self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
         }
@@ -329,10 +329,10 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         data_tune_list,
         function(x) x[[self$data$treat_col]] == 1)
       data_tune_list_d0 = lapply(
-        seq_len(length(data_tune_list)),
+        seq_along(data_tune_list)),
         function(x) data_tune_list[[x]][indx_g0[[x]], ])
       data_tune_list_d1 = lapply(
-        seq_len(length(data_tune_list)),
+        seq_along(data_tune_list)),
         function(x) data_tune_list[[x]][indx_g1[[x]], ])
 
       tuning_result_m = dml_tune(self$learner$ml_m,
