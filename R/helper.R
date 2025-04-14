@@ -85,7 +85,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
       ml_learner = initiate_learner(learner, task_type, est_params)
 
       resampling_smpls = lapply(
-        seq_len(length(data_model)),
+        seq_along(data_model),
         function(x) {
           rsmp("custom")$instantiate(
             task_pred[[x]],
@@ -94,7 +94,7 @@ dml_cv_predict = function(learner, X_cols, y_col,
         }
       )
       resampling_pred = lapply(
-        seq_len(length(data_model)),
+        seq_along(data_model),
         function(x) {
           resample(task_pred[[x]], ml_learner,
             resampling_smpls[[x]],
