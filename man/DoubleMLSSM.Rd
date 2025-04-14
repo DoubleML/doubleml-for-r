@@ -7,7 +7,10 @@
 \link[R6:R6Class]{R6::R6Class} object inheriting from \link{DoubleML}.
 }
 \description{
-Double machine learning for sample selection models.
+Double machine learning for sample selection models. Binary or multiple
+treatment effect evaluation with double machine learning under sample
+selection/outcome attrition. Potential outcomes \eqn{Y(0)} and \eqn{Y(1)}
+are estimated and ATE is returned as \eqn{E[Y(1) - Y(0)]}.
 }
 \examples{
 \donttest{
@@ -48,15 +51,15 @@ dml_ssm = DoubleMLSSM$new(dml_data, ml_g = ml_g, ml_m = ml_m, ml_pi = ml_pi,
   score = "missing-at-random")
 
 param_grid = list(
- "ml_g" = paradox::ps(
-   cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-   minsplit = paradox::p_int(lower = 1, upper = 2)),
-"ml_m" = paradox::ps(
-  cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-  minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_g" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
+  "ml_m" = paradox::ps(
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)),
   "ml_pi" = paradox::ps(
-  cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-  minsplit = paradox::p_int(lower = 1, upper = 2)))
+    cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
+    minsplit = paradox::p_int(lower = 1, upper = 2)))
 
 # minimum requirements for tune_settings
 tune_settings = list(
