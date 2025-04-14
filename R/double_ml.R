@@ -811,7 +811,7 @@ DoubleML = R6Class("DoubleML",
           "\n param_grids must be a named list with elements named",
           paste0(valid_learner, collapse = ", ")))
       }
-      for (i_fold in seq_along(param_set)) {
+      for (i_grid in seq_along(param_set)) {
         assert_class(param_set[[i_grid]], "ParamSet")
       }
       assert_logical(tune_on_folds, len = 1)
