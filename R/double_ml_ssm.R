@@ -1,7 +1,10 @@
 #' @title Double machine learning for sample selection models
 #'
 #' @description
-#' Double machine learning for sample selection models.
+#' Double machine learning for sample selection models. Binary or multiple
+#' treatment effect evaluation with double machine learning under sample
+#' selection/outcome attrition. Potential outcomes \eqn{Y(0)} and \eqn{Y(1)}
+#' are estimated and ATE is returned as \eqn{E[Y(1) - Y(0)]}.
 #'
 #' @format [R6::R6Class] object inheriting from [DoubleML].
 #'
