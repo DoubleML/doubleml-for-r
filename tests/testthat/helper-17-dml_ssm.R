@@ -165,10 +165,10 @@ fit_nuisance_ssm = function(data, y, d, z, s,
     m_hat_list = lapply(r_m$predictions(), function(x) x$prob[, "1"])
 
     # nuisance g_d0
-    train_ids_d0_s1 = lapply(seq_len(length(train_ids)), function(x) {
+    train_ids_d0_s1 = lapply(seq_along(train_ids), function(x) {
       train_ids[[x]][data$d[train_ids[[x]]] == 0 & data$s[train_ids[[x]]] == 1]
     })
-    train_ids_d1_s1 = lapply(seq_len(length(train_ids)), function(x) {
+    train_ids_d1_s1 = lapply(seq_along(train_ids), function(x) {
       train_ids[[x]][data$d[train_ids[[x]]] == 1 & data$s[train_ids[[x]]] == 1]
     })
 

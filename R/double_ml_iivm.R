@@ -419,10 +419,10 @@ DoubleMLIIVM = R6Class("DoubleMLIIVM",
       indx_g0 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 0)
       indx_g1 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 1)
       data_tune_list_z0 = lapply(
-        seq_len(length(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_g0[[x]], ])
       data_tune_list_z1 = lapply(
-        seq_len(length(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_g1[[x]], ])
 
       tuning_result_m = dml_tune(self$learner$ml_m,

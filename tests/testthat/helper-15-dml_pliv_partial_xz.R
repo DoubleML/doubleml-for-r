@@ -122,7 +122,7 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   n = nrow(data)
   # nuisance r
   r_hat_list = list()
-  for (i in seq_len(length(train_ids))) {
+  for (i in seq_along(train_ids)) {
     m_hat_train = rep(NA_real_, n)
     train_index = train_ids[[i]]
     m_hat_train[train_index] = m_hat_list_train[[i]]

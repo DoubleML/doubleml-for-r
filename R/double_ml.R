@@ -811,7 +811,7 @@ DoubleML = R6Class("DoubleML",
           "\n param_grids must be a named list with elements named",
           paste0(valid_learner, collapse = ", ")))
       }
-      for (i_grid in seq_len(length(param_set))) {
+      for (i_grid in seq_along(param_set)) {
         assert_class(param_set[[i_grid]], "ParamSet")
       }
       assert_logical(tune_on_folds, len = 1)
@@ -1349,7 +1349,7 @@ DoubleML = R6Class("DoubleML",
             "\n measure must be a named list with elements named",
             paste0(valid_learner, collapse = ", ")))
         }
-        for (i_msr in seq_len(length(tune_settings$measure))) {
+        for (i_msr in seq_along(tune_settings$measure)) {
           assert(
             check_character(tune_settings$measure[[i_msr]]),
             check_class(tune_settings$measure[[i_msr]], "Measure"))
@@ -1495,7 +1495,7 @@ DoubleML = R6Class("DoubleML",
           # Note that length(test_ids) is only not equal to self.n_folds
           # if self$apply_cross_fitting ==False
           thetas = rep(NA_real_, length(test_ids))
-          for (i_fold in seq_len(length(test_ids))) {
+          for (i_fold in seq_along(test_ids)) {
             test_index = test_ids[[i_fold]]
             thetas[i_fold] = private$orth_est(inds = test_index)
           }
@@ -1672,7 +1672,7 @@ DoubleML = R6Class("DoubleML",
         # note that in the dml1 case we could also simply apply the standard
         # function without cluster adjustment
         thetas = rep(NA_real_, length(test_ids))
-        for (i_fold in seq_len(length(test_ids))) {
+        for (i_fold in seq_along(test_ids)) {
           test_index = test_ids[[i_fold]]
           test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
           xx = sapply(
@@ -1690,7 +1690,7 @@ DoubleML = R6Class("DoubleML",
         psi_b = private$get__psi_b()
         psi_a_subsample_mean = 0.
         psi_b_subsample_mean = 0.
-        for (i_fold in seq_len(length(test_ids))) {
+        for (i_fold in seq_along(test_ids)) {
           test_index = test_ids[[i_fold]]
           test_cluster_inds = smpls_cluster$test_ids[[i_fold]]
           xx = sapply(

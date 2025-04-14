@@ -951,7 +951,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         task_m,
         function(x) rsmp("insample")$instantiate(x))
       r_m_on_train = lapply(
-        seq_len(length(data_tune_list)),
+        seq_along(data_tune_list),
         function(x) {
           resample(task_m[[x]], ml_m[[x]],
             resampling_m_on_train[[x]],
@@ -962,7 +962,7 @@ DoubleMLPLIV = R6Class("DoubleMLPLIV",
         private$task_type$ml_m,
         self$data$n_obs,
         return_train_preds = TRUE)
-      data_aux_list = lapply(seq_len(length(data_tune_list)), function(x) {
+      data_aux_list = lapply(seq_along(data_tune_list), function(x) {
         data.table(data_tune_list[[x]], "m_hat_on_train" = m_hat_on_train[[x]])
       })
 
