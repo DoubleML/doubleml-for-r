@@ -174,7 +174,7 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #'
 #'
 #' @references Bilias Y. (2000), Sequential Testing of Duration Data:
-#' The Case of Pennsylvania ‘Reemployment Bonus’ Experiment. Journal of Applied
+#' The Case of Pennsylvania <U+2018>Reemployment Bonus<U+2019> Experiment. Journal of Applied
 #' Econometrics, 15(6): 575-594.
 #'
 #' @references Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E.,
@@ -602,7 +602,7 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
 #' The data generating process is inspired by a process used in the simulation
 #' experiment (see Appendix P) of Belloni et al. (2017).
 #'
-#' @references Belloni, A., Chernozhukov, V., Fernández-Val, I. and
+#' @references Belloni, A., Chernozhukov, V., Fern<U+00E1>ndez-Val, I. and
 #' Hansen, C. (2017). Program Evaluation and Causal Inference With
 #' High-Dimensional Data. Econometrica, 85: 233-298.
 #'
@@ -702,9 +702,9 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
 #' entries \eqn{\beta_j=\frac{1}{j^2}}.
 #'
 #' The data generating process is inspired by a process used in the
-#' simulation experiment of Farbmacher, Gruber and Klaaßen (2020).
+#' simulation experiment of Farbmacher, Gruber and Klaa<U+00DF>en (2020).
 #'
-#' @references Farbmacher, H., Guber, R. and Klaaßen, S. (2020).
+#' @references Farbmacher, H., Guber, R. and Klaa<U+00DF>en, S. (2020).
 #' Instrument Validity Tests with Causal Forests.
 #' MEA Discussion Paper No. 13-2020.
 #' Available at SSRN:\doi{10.2139/ssrn.3619201}.
@@ -979,7 +979,7 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' \eqn{w_i \sim \mathcal{N}(0, 1)}.
 #'
 #' The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
-#' Huber and Lafférs (2023).
+#' Huber and Laff<U+00E9>rs (2023).
 #'
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate.
@@ -995,7 +995,7 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' If `"data.table"` returns a `data.table()`.
 #' Default is `"DoubleMLData"`.
 #'
-#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
+#' @references Michela Bia, Martin Huber & Luk<U+00E1><U+0161> Laff<U+00E9>rs (2023) Double Machine Learning for Sample Selection Models,
 #' Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
 #'
 #' @return Depending on the `return_type`, returns an object or set of objects as specified.
