@@ -36,7 +36,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
@@ -55,7 +55,7 @@ jobs:
 
       - name: Cache R packages
         if: runner.os != 'Windows'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.R_LIBS_USER }}
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-${{ matrix.config.mlr3 }}-1-${{ hashFiles('.github/depends.Rds') }}
@@ -115,7 +115,7 @@ jobs:
 
       - name: Upload check results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-${{ matrix.config.mlr3 }}-results
           path: check
@@ -133,13 +133,13 @@ jobs:
           covr::to_cobertura(cov)
         shell: Rscript {0}
   
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         if: runner.os == 'macOS'
         with:
           # Fail if error if not on PR, or if on PR and token is given
           fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
-          file: ./cobertura.xml
-          plugin: noop
+          files: ./cobertura.xml
+          plugins: noop
           disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -152,7 +152,7 @@ jobs:
 
       - name: Upload test results
         if: failure() && runner.os == 'macOS'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-test-failures
           path: ${{ runner.temp }}/package
