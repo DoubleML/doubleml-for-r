@@ -29,11 +29,11 @@ library(mlr3)
 library(mlr3learners)
 library(data.table)
 set.seed(2)
-ml_l <- lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
-ml_m <- ml_l$clone()
-ml_r <- ml_l$clone()
-obj_dml_data <- make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
-dml_pliv_obj <- DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
+ml_l = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+ml_m = ml_l$clone()
+ml_r = ml_l$clone()
+obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
+dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 dml_pliv_obj$fit()
 dml_pliv_obj$summary()
 }
@@ -45,15 +45,15 @@ library(mlr3learners)
 library(mlr3tuning)
 library(data.table)
 set.seed(2)
-ml_l <- lrn("regr.rpart")
-ml_m <- ml_l$clone()
-ml_r <- ml_l$clone()
-obj_dml_data <- make_pliv_CHS2015(
+ml_l = lrn("regr.rpart")
+ml_m = ml_l$clone()
+ml_r = ml_l$clone()
+obj_dml_data = make_pliv_CHS2015(
   alpha = 1, n_obs = 500, dim_x = 20,
   dim_z = 1
 )
-dml_pliv_obj <- DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
-param_grid <- list(
+dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
+param_grid = list(
   "ml_l" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
     minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -69,7 +69,7 @@ param_grid <- list(
 )
 
 # minimum requirements for tune_settings
-tune_settings <- list(
+tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
 )

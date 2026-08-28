@@ -2,11 +2,11 @@ context("Unit tests for tuning of IIVM")
 
 requireNamespace("lgr")
 
-logger <- lgr::get_logger("bbotk")
+logger = lgr::get_logger("bbotk")
 logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-tune_settings <- list(
+tune_settings = list(
   rsmp_tune = rsmp("cv", folds = 3),
   measure = list(
     "ml_m" = "classif.ce",
@@ -17,11 +17,11 @@ tune_settings <- list(
   algorithm = tnr("random_search")
 )
 
-learner <- "rpart"
+learner = "rpart"
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner_list = learner,
     dml_procedure = "dml2",
     score = "LATE",
@@ -32,7 +32,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner_list = learner,
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
@@ -45,16 +45,16 @@ if (on_cran) {
 }
 
 
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
   .cases = test_cases,
   {
-    n_rep_boot <- 498
-    n_folds <- 2
+    n_rep_boot = 498
+    n_folds = 2
 
     set.seed(3141)
-    double_mliivm_obj_tuned <- DoubleMLIIVM$new(
+    double_mliivm_obj_tuned = DoubleMLIIVM$new(
       data = data_iivm$dml_data,
       n_folds = n_folds,
       ml_g = "regr.rpart",
@@ -69,7 +69,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
       n_rep = n_rep
     )
 
-    param_grid <- list(
+    param_grid = list(
       "ml_m" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
         minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -89,8 +89,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
     )
     double_mliivm_obj_tuned$fit()
 
-    theta_obj_tuned <- double_mliivm_obj_tuned$coef
-    se_obj_tuned <- double_mliivm_obj_tuned$se
+    theta_obj_tuned = double_mliivm_obj_tuned$coef
+    se_obj_tuned = double_mliivm_obj_tuned$se
 
     # bootstrap
     # double_mlirm_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)

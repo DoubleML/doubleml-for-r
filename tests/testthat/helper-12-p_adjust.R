@@ -33,7 +33,7 @@
 #'
 #' @export
 
-p_adjust <- function(x, ...) {
+p_adjust = function(x, ...) {
   UseMethod("p_adjust")
 }
 
@@ -41,7 +41,7 @@ p_adjust <- function(x, ...) {
 #' @describeIn p_adjust
 #' @export
 #'
-p_adjust.DML <- function(x, method = "RW", ...) {
+p_adjust.DML = function(x, method = "RW", ...) {
   checkmate::checkClass(x, "DML")
   checkmate::checkChoice(method, c("RW", stats::p.adjust.methods))
 
@@ -51,16 +51,16 @@ p_adjust.DML <- function(x, method = "RW", ...) {
   }
 
   # n = x$samplesize
-  B <- ncol(x$boot_theta)
-  k <- length(x$coefficients)
-  cf <- x$coefficients
-  se <- x$se
-  n <- x$samplesize
+  B = ncol(x$boot_theta)
+  k = length(x$coefficients)
+  cf = x$coefficients
+  se = x$se
+  n = x$samplesize
 
-  pinit <- corr.padj <- pval <- vector(mode = "numeric", length = k)
+  pinit = corr.padj = pval = vector(mode = "numeric", length = k)
 
   if (is.element(method, stats::p.adjust.methods)) {
-    pval <- stats::p.adjust(x$pval, method = method, n = k)
+    pval = stats::p.adjust(x$pval, method = method, n = k)
   }
 
   if (method == "RW") {
@@ -81,37 +81,37 @@ p_adjust.DML <- function(x, method = "RW", ...) {
     #   Beta_i[i, ] = MASS::mvrnorm(mu = rep(0, k), Sigma = Omegahat/n)
     # }
 
-    tstats <- cf / se
-    stepdown.index <- order(abs(tstats), decreasing = TRUE)
-    ro <- order(stepdown.index)
-    Beta_i <- x$boot_theta
+    tstats = cf / se
+    stepdown.index = order(abs(tstats), decreasing = TRUE)
+    ro = order(stepdown.index)
+    Beta_i = x$boot_theta
 
     for (s in 1:k) {
       if (s == 1) {
-        sim <- apply(abs(Beta_i), 2, max)
-        pinit[s] <- pmin(1, (sum(sim >= abs(tstats[stepdown.index][s]))) / B)
+        sim = apply(abs(Beta_i), 2, max)
+        pinit[s] = pmin(1, (sum(sim >= abs(tstats[stepdown.index][s]))) / B)
       }
       if (s > 1) {
-        sim <- apply(abs(Beta_i[-stepdown.index[1:(s - 1)], , drop = FALSE]), 2, max)
+        sim = apply(abs(Beta_i[-stepdown.index[1:(s - 1)], , drop = FALSE]), 2, max)
 
-        pinit[s] <- pmin(1, (sum(sim >= abs(tstats[stepdown.index][s]))) / B)
+        pinit[s] = pmin(1, (sum(sim >= abs(tstats[stepdown.index][s]))) / B)
       }
 
       for (j in 1:k) {
         if (j == 1) {
-          corr.padj[j] <- pinit[j]
+          corr.padj[j] = pinit[j]
         }
 
         if (j > 1) {
-          corr.padj[j] <- max(pinit[j], corr.padj[j - 1])
+          corr.padj[j] = max(pinit[j], corr.padj[j - 1])
         }
       }
-      pval <- corr.padj[ro]
+      pval = corr.padj[ro]
     }
   }
 
-  res <- as.matrix(cbind(cf, pval))
-  colnames(res) <- c("Estimate.", "pval")
+  res = as.matrix(cbind(cf, pval))
+  colnames(res) = c("Estimate.", "pval")
 
   return(res)
 }

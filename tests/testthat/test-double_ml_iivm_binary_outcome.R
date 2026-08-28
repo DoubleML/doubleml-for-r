@@ -4,9 +4,9 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "log_reg",
     dml_procedure = "dml2",
     score = "LATE",
@@ -14,7 +14,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
@@ -23,16 +23,16 @@ if (on_cran) {
   )
 }
 
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IIVM:",
   .cases = test_cases,
   {
-    learner_pars <- get_default_mlmethod_iivm_bin(learner)
-    n_rep_boot <- 498
+    learner_pars = get_default_mlmethod_iivm_bin(learner)
+    n_rep_boot = 498
 
     set.seed(3141)
-    iivm_hat <- dml_irmiv(data_iivm_binary$df,
+    iivm_hat = dml_irmiv(data_iivm_binary$df,
       y = "y", d = "d", z = "z",
       n_folds = 5,
       ml_g = learner_pars$ml_g$clone(),
@@ -42,10 +42,10 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       trimming_threshold = trimming_threshold,
       score = score
     )
-    theta <- iivm_hat$coef
-    se <- iivm_hat$se
+    theta = iivm_hat$coef
+    se = iivm_hat$se
 
-    boot_theta <- bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
+    boot_theta = bootstrap_irmiv(iivm_hat$thetas, iivm_hat$ses,
       data_iivm_binary$df,
       y = "y", d = "d", z = "z",
       n_folds = 5, smpls = iivm_hat$smpls,
@@ -56,7 +56,7 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
     )$boot_coef
 
     set.seed(3141)
-    double_mliivm_obj <- DoubleMLIIVM$new(
+    double_mliivm_obj = DoubleMLIIVM$new(
       data = data_iivm_binary$dml_data,
       n_folds = 5,
       ml_g = learner_pars$ml_g$clone(),
@@ -67,12 +67,12 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       score = score
     )
     double_mliivm_obj$fit()
-    theta_obj <- double_mliivm_obj$coef
-    se_obj <- double_mliivm_obj$se
+    theta_obj = double_mliivm_obj$coef
+    se_obj = double_mliivm_obj$se
 
     # bootstrap
     double_mliivm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta_obj <- double_mliivm_obj$boot_coef
+    boot_theta_obj = double_mliivm_obj$boot_coef
 
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)

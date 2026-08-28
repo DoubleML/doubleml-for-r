@@ -4,41 +4,41 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "regr.lm",
     dml_procedure = "dml1",
     score = "partialling out",
     n_rep = c(5),
     stringsAsFactors = FALSE
   )
-  test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
     n_rep = c(2, 5),
     stringsAsFactors = FALSE
   )
-  test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+  test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases,
   {
-    learner_pars <- get_default_mlmethod_plr(learner)
-    n_rep_boot <- 498
+    learner_pars = get_default_mlmethod_plr(learner)
+    n_rep_boot = 498
 
     set.seed(3141)
-    n_folds <- 5
+    n_folds = 5
     if (score == "IV-type") {
-      ml_g <- learner_pars$ml_g$clone()
+      ml_g = learner_pars$ml_g$clone()
     } else {
-      ml_g <- NULL
+      ml_g = NULL
     }
-    plr_hat <- dml_plr(data_plr$df,
+    plr_hat = dml_plr(data_plr$df,
       y = "y", d = "d",
       n_folds = n_folds, n_rep = n_rep,
       ml_l = learner_pars$ml_l$clone(),
@@ -46,13 +46,13 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_g = ml_g,
       dml_procedure = dml_procedure, score = score
     )
-    theta <- plr_hat$coef
-    se <- plr_hat$se
-    t <- plr_hat$t
-    pval <- plr_hat$pval
+    theta = plr_hat$coef
+    se = plr_hat$se
+    t = plr_hat$t
+    pval = plr_hat$pval
     # ci = confint(plr_hat, level = 0.95, joint = FALSE)
 
-    boot_theta <- bootstrap_plr(plr_hat$thetas, plr_hat$ses,
+    boot_theta = bootstrap_plr(plr_hat$thetas, plr_hat$ses,
       data_plr$df,
       y = "y", d = "d",
       n_folds = n_folds, n_rep = n_rep,
@@ -64,11 +64,11 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
 
     set.seed(3141)
     if (score == "IV-type") {
-      ml_g <- learner_pars$ml_g$clone()
+      ml_g = learner_pars$ml_g$clone()
     } else {
-      ml_g <- NULL
+      ml_g = NULL
     }
-    double_mlplr_obj <- DoubleMLPLR$new(
+    double_mlplr_obj = DoubleMLPLR$new(
       data = data_plr$dml_data,
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
@@ -80,15 +80,15 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     )
 
     double_mlplr_obj$fit()
-    theta_obj <- double_mlplr_obj$coef
-    se_obj <- double_mlplr_obj$se
-    t_obj <- double_mlplr_obj$t_stat
-    pval_obj <- double_mlplr_obj$pval
+    theta_obj = double_mlplr_obj$coef
+    se_obj = double_mlplr_obj$se
+    t_obj = double_mlplr_obj$t_stat
+    pval_obj = double_mlplr_obj$pval
     # ci_obj = double_mlplr_obj$confint(level = 0.95, joint = FALSE)
 
     # bootstrap
     double_mlplr_obj$bootstrap(method = "normal", n_rep_boot = n_rep_boot)
-    boot_theta_obj <- double_mlplr_obj$boot_coef
+    boot_theta_obj = double_mlplr_obj$boot_coef
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)

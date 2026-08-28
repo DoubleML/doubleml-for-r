@@ -27,10 +27,10 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g <- lrn("regr.ranger", num.trees = 10, max.depth = 2)
-#' ml_m <- ml_g$clone()
-#' obj_dml_data <- make_plr_CCDDHNR2018(alpha = 0.5)
-#' dml_plr_obj <- DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
+#' ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+#' ml_m = ml_g$clone()
+#' obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
+#' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 #' dml_plr_obj$fit()
 #' dml_plr_obj$summary()
 #' }
@@ -42,12 +42,12 @@
 #' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
-#' ml_l <- lrn("regr.rpart")
-#' ml_m <- ml_l$clone()
-#' obj_dml_data <- make_plr_CCDDHNR2018(alpha = 0.5)
-#' dml_plr_obj <- DoubleMLPLR$new(obj_dml_data, ml_l, ml_m)
+#' ml_l = lrn("regr.rpart")
+#' ml_m = ml_l$clone()
+#' obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
+#' dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_l, ml_m)
 #'
-#' param_grid <- list(
+#' param_grid = list(
 #'   "ml_l" = paradox::ps(
 #'     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
 #'     minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -59,7 +59,7 @@
 #' )
 #'
 #' # minimum requirements for tune_settings
-#' tune_settings <- list(
+#' tune_settings = list(
 #'   terminator = mlr3tuning::trm("evals", n_evals = 5),
 #'   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
 #' )
@@ -68,7 +68,7 @@
 #' dml_plr_obj$summary()
 #' }
 #' @export
-DoubleMLPLR <- R6Class("DoubleMLPLR",
+DoubleMLPLR = R6Class("DoubleMLPLR",
   inherit = DoubleML, public = list(
     #' @description
     #' Creates a new instance of this R6 class.
@@ -166,8 +166,8 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
             ),
             call. = FALSE
           )
-          ml_l <- ml_g
-          ml_g <- NULL
+          ml_l = ml_g
+          ml_g = NULL
         }
       }
 
@@ -183,10 +183,10 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      ml_l <- private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
-      ml_m <- private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
+      ml_l = private$assert_learner(ml_l, "ml_l", Regr = TRUE, Classif = FALSE)
+      ml_m = private$assert_learner(ml_m, "ml_m", Regr = TRUE, Classif = TRUE)
 
-      private$learner_ <- list(
+      private$learner_ = list(
         "ml_l" = ml_l,
         "ml_m" = ml_m
       )
@@ -198,10 +198,10 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
         )
         if ((is.character(self$score) && (self$score == "IV-type")) ||
           is.function(self$score)) {
-          ml_g <- private$assert_learner(ml_g, "ml_g",
+          ml_g = private$assert_learner(ml_g, "ml_g",
             Regr = TRUE, Classif = FALSE
           )
-          private$learner_[["ml_g"]] <- ml_g
+          private$learner_[["ml_g"]] = ml_g
         } else if (is.character(self$score) &&
           (self$score == "partialling out")) {
           warning(paste0(
@@ -219,10 +219,10 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
           ),
           call. = FALSE
         )
-        ml_g <- private$assert_learner(ml_l$clone(), "ml_g",
+        ml_g = private$assert_learner(ml_l$clone(), "ml_g",
           Regr = TRUE, Classif = FALSE
         )
-        private$learner_[["ml_g"]] <- ml_g
+        private$learner_[["ml_g"]] = ml_g
       }
 
       private$initialize_ml_nuisance_params()
@@ -276,7 +276,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
           ),
           call. = FALSE
         )
-        learner <- "ml_l"
+        learner = "ml_l"
       }
       super$set_ml_nuisance_params(
         learner, treat_var, params,
@@ -366,7 +366,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
             ),
             call. = FALSE
           )
-          names(param_set)[names(param_set) == "ml_g"] <- "ml_l"
+          names(param_set)[names(param_set) == "ml_g"] = "ml_l"
         }
       }
 
@@ -385,7 +385,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
             ),
             call. = FALSE
           )
-          names(tune_settings$measure)[names(tune_settings$measure) == "ml_g"] <- "ml_l"
+          names(tune_settings$measure)[names(tune_settings$measure) == "ml_g"] = "ml_l"
         }
       }
 
@@ -395,19 +395,19 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
   private = list(
     n_nuisance = 2,
     initialize_ml_nuisance_params = function() {
-      nuisance <- vector("list", self$data$n_treat)
-      names(nuisance) <- self$data$d_cols
-      private$params_ <- list(
+      nuisance = vector("list", self$data$n_treat)
+      names(nuisance) = self$data$d_cols
+      private$params_ = list(
         "ml_l" = nuisance,
         "ml_m" = nuisance
       )
       if (exists("ml_g", where = private$learner_)) {
-        private$params_[["ml_g"]] <- nuisance
+        private$params_[["ml_g"]] = nuisance
       }
       invisible(self)
     },
     nuisance_est = function(smpls, ...) {
-      l_hat <- dml_cv_predict(self$learner$ml_l,
+      l_hat = dml_cv_predict(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
@@ -419,7 +419,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
         fold_specific_params = private$fold_specific_params
       )
 
-      m_hat <- dml_cv_predict(self$learner$ml_m,
+      m_hat = dml_cv_predict(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$treat_col,
         self$data$data_model,
@@ -431,21 +431,21 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
         fold_specific_params = private$fold_specific_params
       )
 
-      d <- self$data$data_model[[self$data$treat_col]]
-      y <- self$data$data_model[[self$data$y_col]]
+      d = self$data$data_model[[self$data$treat_col]]
+      y = self$data$data_model[[self$data$y_col]]
 
-      g_hat <- list(preds = NULL, models = NULL)
+      g_hat = list(preds = NULL, models = NULL)
       if (exists("ml_g", where = private$learner_)) {
         # get an initial estimate for theta using the partialling out score
-        psi_a <- -(d - m_hat$preds) * (d - m_hat$preds)
-        psi_b <- (d - m_hat$preds) * (y - l_hat$preds)
-        theta_initial <- -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+        psi_a = -(d - m_hat$preds) * (d - m_hat$preds)
+        psi_b = (d - m_hat$preds) * (y - l_hat$preds)
+        theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
-        data_aux <- data.table(self$data$data_model,
+        data_aux = data.table(self$data$data_model,
           "y_minus_theta_d" = y - theta_initial * d
         )
 
-        g_hat <- dml_cv_predict(self$learner$ml_g,
+        g_hat = dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           "y_minus_theta_d",
           data_aux,
@@ -458,16 +458,16 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
         )
       }
 
-      res <- private$score_elements(
+      res = private$score_elements(
         y, d, l_hat$preds, m_hat$preds, g_hat$preds,
         smpls
       )
-      res$preds <- list(
+      res$preds = list(
         "ml_l" = l_hat$preds,
         "ml_m" = m_hat$preds,
         "ml_g" = g_hat$preds
       )
-      res$models <- list(
+      res$models = list(
         "ml_l" = l_hat$models,
         "ml_m" = m_hat$models,
         "ml_g" = g_hat$models
@@ -475,24 +475,24 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
       return(res)
     },
     score_elements = function(y, d, l_hat, m_hat, g_hat, smpls) {
-      v_hat <- d - m_hat
-      u_hat <- y - l_hat
-      v_hatd <- v_hat * d
+      v_hat = d - m_hat
+      u_hat = y - l_hat
+      v_hatd = v_hat * d
 
       if (is.character(self$score)) {
         if (self$score == "IV-type") {
-          psi_a <- -v_hatd
-          psi_b <- v_hat * (y - g_hat)
+          psi_a = -v_hatd
+          psi_b = v_hat * (y - g_hat)
         } else if (self$score == "partialling out") {
-          psi_a <- -v_hat * v_hat
-          psi_b <- v_hat * u_hat
+          psi_a = -v_hat * v_hat
+          psi_b = v_hat * u_hat
         }
-        psis <- list(
+        psis = list(
           psi_a = psi_a,
           psi_b = psi_b
         )
       } else if (is.function(self$score)) {
-        psis <- self$score(
+        psis = self$score(
           y = y, d = d,
           l_hat = l_hat, m_hat = m_hat, g_hat = g_hat,
           smpls = smpls
@@ -503,14 +503,14 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
     nuisance_tuning = function(smpls, param_set, tune_settings,
                                tune_on_folds, ...) {
       if (!tune_on_folds) {
-        data_tune_list <- list(self$data$data_model)
+        data_tune_list = list(self$data$data_model)
       } else {
-        data_tune_list <- lapply(smpls$train_ids, function(x) {
+        data_tune_list = lapply(smpls$train_ids, function(x) {
           extract_training_data(self$data$data_model, x)
         })
       }
 
-      tuning_result_l <- dml_tune(self$learner$ml_l,
+      tuning_result_l = dml_tune(self$learner$ml_l,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col, data_tune_list,
         nuisance_id = "nuis_l",
@@ -519,7 +519,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
         private$task_type$ml_l
       )
 
-      tuning_result_m <- dml_tune(self$learner$ml_m,
+      tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$treat_col, data_tune_list,
         nuisance_id = "nuis_m",
@@ -530,13 +530,13 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
 
       if (exists("ml_g", where = private$learner_)) {
         if (tune_on_folds) {
-          params_l <- tuning_result_l$params
-          params_m <- tuning_result_m$params
+          params_l = tuning_result_l$params
+          params_m = tuning_result_m$params
         } else {
-          params_l <- tuning_result_l$params[[1]]
-          params_m <- tuning_result_m$params[[1]]
+          params_l = tuning_result_l$params[[1]]
+          params_m = tuning_result_m$params[[1]]
         }
-        l_hat <- dml_cv_predict(self$learner$ml_l,
+        l_hat = dml_cv_predict(self$learner$ml_l,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
           self$data$data_model,
@@ -548,7 +548,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
           fold_specific_params = private$fold_specific_params
         )
 
-        m_hat <- dml_cv_predict(self$learner$ml_m,
+        m_hat = dml_cv_predict(self$learner$ml_m,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$treat_col,
           self$data$data_model,
@@ -560,26 +560,26 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
           fold_specific_params = private$fold_specific_params
         )
 
-        d <- self$data$data_model[[self$data$treat_col]]
-        y <- self$data$data_model[[self$data$y_col]]
+        d = self$data$data_model[[self$data$treat_col]]
+        y = self$data$data_model[[self$data$y_col]]
 
-        psi_a <- -(d - m_hat$preds) * (d - m_hat$preds)
-        psi_b <- (d - m_hat$preds) * (y - l_hat$preds)
-        theta_initial <- -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
+        psi_a = -(d - m_hat$preds) * (d - m_hat$preds)
+        psi_b = (d - m_hat$preds) * (y - l_hat$preds)
+        theta_initial = -mean(psi_b, na.rm = TRUE) / mean(psi_a, na.rm = TRUE)
 
-        data_aux <- data.table(self$data$data_model,
+        data_aux = data.table(self$data$data_model,
           "y_minus_theta_d" = y - theta_initial * d
         )
 
         if (!tune_on_folds) {
-          data_aux_tune_list <- list(data_aux)
+          data_aux_tune_list = list(data_aux)
         } else {
-          data_aux_tune_list <- lapply(smpls$train_ids, function(x) {
+          data_aux_tune_list = lapply(smpls$train_ids, function(x) {
             extract_training_data(data_aux, x)
           })
         }
 
-        tuning_result_g <- dml_tune(self$learner$ml_g,
+        tuning_result_g = dml_tune(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           "y_minus_theta_d", data_aux_tune_list,
           nuisance_id = "nuis_g",
@@ -587,13 +587,13 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
           tune_settings$measure$ml_g,
           private$task_type$ml_g
         )
-        tuning_result <- list(
+        tuning_result = list(
           "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
           "ml_m" = list(tuning_result_m, params = tuning_result_m$params),
           "ml_g" = list(tuning_result_g, params = tuning_result_g$params)
         )
       } else {
-        tuning_result <- list(
+        tuning_result = list(
           "ml_l" = list(tuning_result_l, params = tuning_result_l$params),
           "ml_m" = list(tuning_result_m, params = tuning_result_m$params)
         )
@@ -607,7 +607,7 @@ DoubleMLPLR <- R6Class("DoubleMLPLR",
         check_class(score, "function")
       )
       if (is.character(score)) {
-        valid_score <- c("IV-type", "partialling out")
+        valid_score = c("IV-type", "partialling out")
         assertChoice(score, valid_score)
       }
       return()

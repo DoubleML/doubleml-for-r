@@ -43,20 +43,20 @@ library(mlr3)
 library(mlr3learners)
 library(data.table)
 set.seed(2)
-ml_g <- lrn("regr.ranger",
+ml_g = lrn("regr.ranger",
   num.trees = 100, mtry = 20,
   min.node.size = 2, max.depth = 5
 )
-ml_m <- lrn("classif.ranger",
+ml_m = lrn("classif.ranger",
   num.trees = 100, mtry = 20,
   min.node.size = 2, max.depth = 5
 )
-ml_r <- ml_m$clone()
-obj_dml_data <- make_iivm_data(
+ml_r = ml_m$clone()
+obj_dml_data = make_iivm_data(
   theta = 0.5, n_obs = 1000,
   alpha_x = 1, dim_x = 20
 )
-dml_iivm_obj <- DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
+dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 dml_iivm_obj$fit()
 dml_iivm_obj$summary()
 }
@@ -68,15 +68,15 @@ library(mlr3learners)
 library(mlr3tuning)
 library(data.table)
 set.seed(2)
-ml_g <- lrn("regr.rpart")
-ml_m <- lrn("classif.rpart")
-ml_r <- ml_m$clone()
-obj_dml_data <- make_iivm_data(
+ml_g = lrn("regr.rpart")
+ml_m = lrn("classif.rpart")
+ml_r = ml_m$clone()
+obj_dml_data = make_iivm_data(
   theta = 0.5, n_obs = 1000,
   alpha_x = 1, dim_x = 20
 )
-dml_iivm_obj <- DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
-param_grid <- list(
+dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
+param_grid = list(
   "ml_g" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
     minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -91,7 +91,7 @@ param_grid <- list(
   )
 )
 # minimum requirements for tune_settings
-tune_settings <- list(
+tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
 )

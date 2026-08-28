@@ -19,8 +19,8 @@ instance of \code{DoubleMLClusterData}.
 }
 \examples{
 library(DoubleML)
-dt <- make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
-obj_dml_data <- DoubleMLClusterData$new(dt,
+dt = make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
+obj_dml_data = DoubleMLClusterData$new(dt,
   y_col = "Y",
   d_cols = "D",
   z_cols = "Z",

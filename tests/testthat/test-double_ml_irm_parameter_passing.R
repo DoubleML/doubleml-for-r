@@ -2,9 +2,9 @@ context("Unit tests for parameter passing of IRM")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "rpart",
     dml_procedure = "dml2",
     score = "ATE",
@@ -12,7 +12,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
@@ -21,7 +21,7 @@ if (on_cran) {
   )
 }
 
-test_cases_nocf <- expand.grid(
+test_cases_nocf = expand.grid(
   learner = "rpart",
   dml_procedure = "dml1",
   score = c("ATE", "ATTE"),
@@ -29,20 +29,20 @@ test_cases_nocf <- expand.grid(
   stringsAsFactors = FALSE
 )
 
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
-test_cases_nocf[".test_name"] <- apply(test_cases_nocf, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases_nocf[".test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop vs fun):",
   .cases = test_cases,
   {
-    n_rep_boot <- 498
-    n_folds <- 2
-    n_rep <- 3
+    n_rep_boot = 498
+    n_folds = 2
+    n_rep = 3
 
-    learner_pars <- get_default_mlmethod_irm(learner)
+    learner_pars = get_default_mlmethod_irm(learner)
 
     set.seed(3141)
-    irm_hat <- dml_irm(data_irm$df,
+    irm_hat = dml_irm(data_irm$df,
       y = "y", d = "d",
       n_folds = n_folds,
       n_rep = n_rep,
@@ -53,10 +53,10 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
       dml_procedure = dml_procedure, score = score,
       trimming_threshold = trimming_threshold
     )
-    theta <- irm_hat$coef
-    se <- irm_hat$se
+    theta = irm_hat$coef
+    se = irm_hat$se
 
-    boot_theta <- bootstrap_irm(irm_hat$thetas, irm_hat$ses,
+    boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
       data_irm$df,
       y = "y", d = "d",
       n_folds = n_folds, n_rep = n_rep,
@@ -68,7 +68,7 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
     )$boot_coef
 
     set.seed(3141)
-    double_mlirm_obj <- DoubleMLIRM$new(
+    double_mlirm_obj = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
@@ -97,12 +97,12 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
     )
 
     double_mlirm_obj$fit()
-    theta_obj <- double_mlirm_obj$coef
-    se_obj <- double_mlirm_obj$se
+    theta_obj = double_mlirm_obj$coef
+    se_obj = double_mlirm_obj$se
 
     # bootstrap
     double_mlirm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta_obj <- double_mlirm_obj$boot_coef
+    boot_theta_obj = double_mlirm_obj$boot_coef
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
@@ -114,19 +114,19 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (oop
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no cross-fitting)",
   .cases = test_cases_nocf,
   {
-    n_folds <- 2
+    n_folds = 2
 
-    learner_pars <- get_default_mlmethod_irm(learner)
+    learner_pars = get_default_mlmethod_irm(learner)
 
     # Passing for non-cross-fitting case
     set.seed(3141)
-    my_task <- Task$new("help task", "regr", data_irm$df)
-    my_sampling <- rsmp("holdout", ratio = 0.5)$instantiate(my_task)
-    train_ids <- list(my_sampling$train_set(1))
-    test_ids <- list(my_sampling$test_set(1))
-    smpls <- list(list(train_ids = train_ids, test_ids = test_ids))
+    my_task = Task$new("help task", "regr", data_irm$df)
+    my_sampling = rsmp("holdout", ratio = 0.5)$instantiate(my_task)
+    train_ids = list(my_sampling$train_set(1))
+    test_ids = list(my_sampling$test_set(1))
+    smpls = list(list(train_ids = train_ids, test_ids = test_ids))
 
-    irm_hat <- dml_irm(data_irm$df,
+    irm_hat = dml_irm(data_irm$df,
       y = "y", d = "d",
       n_folds = 1,
       ml_g = mlr3::lrn(learner_pars$mlmethod$mlmethod_g),
@@ -137,11 +137,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
       trimming_threshold = trimming_threshold,
       smpls = smpls
     )
-    theta <- irm_hat$coef
-    se <- irm_hat$se
+    theta = irm_hat$coef
+    se = irm_hat$se
 
     set.seed(3141)
-    dml_irm_nocf <- DoubleMLIRM$new(
+    dml_irm_nocf = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
@@ -171,8 +171,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
     )
 
     dml_irm_nocf$fit()
-    theta_obj <- dml_irm_nocf$coef
-    se_obj <- dml_irm_nocf$se
+    theta_obj = dml_irm_nocf$coef
+    se_obj = dml_irm_nocf$se
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)
@@ -182,13 +182,13 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (no 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fold-wise vs global)",
   .cases = test_cases,
   {
-    n_folds <- 2
-    n_rep <- 3
+    n_folds = 2
+    n_rep = 3
 
-    learner_pars <- get_default_mlmethod_irm(learner)
+    learner_pars = get_default_mlmethod_irm(learner)
 
     set.seed(3141)
-    double_mlirm_obj <- DoubleMLIRM$new(
+    double_mlirm_obj = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
@@ -217,14 +217,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
     )
 
     double_mlirm_obj$fit()
-    theta <- double_mlirm_obj$coef
-    se <- double_mlirm_obj$se
+    theta = double_mlirm_obj$coef
+    se = double_mlirm_obj$se
 
-    params_g_fold_wise <- rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
-    params_m_fold_wise <- rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
+    params_g_fold_wise = rep(list(rep(list(learner_pars$params$params_g), n_folds)), n_rep)
+    params_m_fold_wise = rep(list(rep(list(learner_pars$params$params_m), n_folds)), n_rep)
 
     set.seed(3141)
-    dml_irm_fold_wise <- DoubleMLIRM$new(
+    dml_irm_fold_wise = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn(learner_pars$mlmethod$mlmethod_g),
@@ -256,8 +256,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
     )
 
     dml_irm_fold_wise$fit()
-    theta_fold_wise <- dml_irm_fold_wise$coef
-    se_fold_wise <- dml_irm_fold_wise$se
+    theta_fold_wise = dml_irm_fold_wise$coef
+    se_fold_wise = dml_irm_fold_wise$se
 
     expect_equal(theta, theta_fold_wise, tolerance = 1e-8)
     expect_equal(se, se_fold_wise, tolerance = 1e-8)
@@ -267,14 +267,14 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (fol
 patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (default vs explicit)",
   .cases = test_cases,
   {
-    n_folds <- 2
-    n_rep <- 3
+    n_folds = 2
+    n_rep = 3
 
-    params_g <- list(cp = 0.01, minsplit = 20) # this are defaults
-    params_m <- list(cp = 0.01, minsplit = 20) # this are defaults
+    params_g = list(cp = 0.01, minsplit = 20) # this are defaults
+    params_m = list(cp = 0.01, minsplit = 20) # this are defaults
 
     set.seed(3141)
-    dml_irm_default <- DoubleMLIRM$new(
+    dml_irm_default = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn("regr.rpart"),
@@ -285,11 +285,11 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (def
     )
 
     dml_irm_default$fit()
-    theta_default <- dml_irm_default$coef
-    se_default <- dml_irm_default$se
+    theta_default = dml_irm_default$coef
+    se_default = dml_irm_default$se
 
     set.seed(3141)
-    double_mlirm_obj <- DoubleMLIRM$new(
+    double_mlirm_obj = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = lrn("regr.rpart"),
@@ -318,8 +318,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IRM (def
     )
 
     double_mlirm_obj$fit()
-    theta <- double_mlirm_obj$coef
-    se <- double_mlirm_obj$se
+    theta = double_mlirm_obj$coef
+    se = double_mlirm_obj$se
 
     expect_equal(theta, theta_default, tolerance = 1e-8)
     expect_equal(se, se_default, tolerance = 1e-8)

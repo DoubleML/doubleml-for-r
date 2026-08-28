@@ -1,41 +1,41 @@
 context("Unit tests for DoubleMLData")
 
 test_that("Unit tests for DoubleMLData", {
-  data <- data_iivm$df
+  data = data_iivm$df
 
   # Input: Matrix and vectors
-  y <- data[, "y"] # input: numeric
-  d <- data[, "d"] # input: integer
-  z <- data[, "z"] # input: integer
+  y = data[, "y"] # input: numeric
+  d = data[, "d"] # input: integer
+  z = data[, "z"] # input: integer
   # For ssm models
-  s <- abs(1 - data[, "z"]) # input: integer
-  data <- data.frame(data, s)
+  s = abs(1 - data[, "z"]) # input: integer
+  data = data.frame(data, s)
 
-  d2 <- as.matrix(cbind(d, d * 2), ncol = 2)
-  colnames(d2) <- c("d1", "d2")
+  d2 = as.matrix(cbind(d, d * 2), ncol = 2)
+  colnames(d2) = c("d1", "d2")
 
-  X_indx1 <- names(data) %in% c("y", "d", "z", "s") == FALSE
+  X_indx1 = names(data) %in% c("y", "d", "z", "s") == FALSE
 
-  check_indx1 <- c(names(data)[X_indx1], "y", "d", "z", "s")
-  X_dt1 <- as.data.table(data)[, check_indx1, with = FALSE]
-  X <- as.matrix(data[, X_indx1])
+  check_indx1 = c(names(data)[X_indx1], "y", "d", "z", "s")
+  X_dt1 = as.data.table(data)[, check_indx1, with = FALSE]
+  X = as.matrix(data[, X_indx1])
 
   # With z, X and s
-  D1 <- double_ml_data_from_matrix(X, y, d, z, s)
+  D1 = double_ml_data_from_matrix(X, y, d, z, s)
   expect_equal(D1$data, X_dt1)
   expect_identical(D1$data_model, X_dt1)
 
   # No X
-  D1b <- double_ml_data_from_matrix(X = NULL, y, d, z, s)
-  X_dt1b <- as.data.table(data)[, c("y", "d", "z", "s")]
+  D1b = double_ml_data_from_matrix(X = NULL, y, d, z, s)
+  X_dt1b = as.data.table(data)[, c("y", "d", "z", "s")]
   expect_equal(D1b$data, X_dt1b)
   expect_identical(D1b$data_model, X_dt1b)
 
   # with multiple z
-  z_mult <- cbind(z, d2[, 2])
+  z_mult = cbind(z, d2[, 2])
   # with X
-  D1_multZ <- double_ml_data_from_matrix(X, y, d, z_mult, s)
-  multZ_dt1 <- as.data.table(
+  D1_multZ = double_ml_data_from_matrix(X, y, d, z_mult, s)
+  multZ_dt1 = as.data.table(
     data.frame(data, "z1" = z, "z2" = d2[, 2], "s" = s)
   )[, c(
     names(data)[X_indx1],
@@ -47,8 +47,8 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D1_multZ$data_model, multZ_dt1)
 
   # No X
-  D1b_multZ <- double_ml_data_from_matrix(X = NULL, y, d, z_mult, s)
-  multZ_dt1b <- as.data.table(
+  D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult, s)
+  multZ_dt1b = as.data.table(
     data.frame(data, "z1" = z, "z2" = d2[, 2], "s" = s)
   )[, c("y", "d", "z1", "z2", "s"),
     with = FALSE
@@ -57,8 +57,8 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D1_multZ$data_model, multZ_dt1)
 
   # No X, no s
-  D1b_multZ <- double_ml_data_from_matrix(X = NULL, y, d, z_mult)
-  multZ_dt1b <- as.data.table(
+  D1b_multZ = double_ml_data_from_matrix(X = NULL, y, d, z_mult)
+  multZ_dt1b = as.data.table(
     data.frame(data, "z1" = z, "z2" = d2[, 2])
   )[, c("y", "d", "z1", "z2"),
     with = FALSE
@@ -67,31 +67,31 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D1b_multZ$data_model, multZ_dt1b)
 
   # No z, with X and s
-  D2 <- double_ml_data_from_matrix(X, y, d, z = NULL, s = NULL)
-  check_indx2 <- c(names(data)[X_indx1], "y", "d")
-  X_dt2 <- as.data.table(data)[, check_indx2, with = FALSE]
+  D2 = double_ml_data_from_matrix(X, y, d, z = NULL, s = NULL)
+  check_indx2 = c(names(data)[X_indx1], "y", "d")
+  X_dt2 = as.data.table(data)[, check_indx2, with = FALSE]
   expect_equal(D2$data, X_dt2)
   expect_equal(D2$data_model, X_dt2)
 
   # No z, no X, no s
-  D2b <- double_ml_data_from_matrix(X = NULL, y, d)
-  X_dt2b <- as.data.table(data)[, c("y", "d"), with = FALSE]
+  D2b = double_ml_data_from_matrix(X = NULL, y, d)
+  X_dt2b = as.data.table(data)[, c("y", "d"), with = FALSE]
   expect_equal(D2b$data, X_dt2b)
   expect_equal(D2b$data_model, X_dt2b)
 
   # test with only 1 d, 1 X, 1 Z
-  X <- as.matrix(data$X1)
-  D2_1X <- double_ml_data_from_matrix(X, y, d)
-  X_dt21X <- as.data.table(data)[, c("X1", "y", "d"), with = FALSE]
+  X = as.matrix(data$X1)
+  D2_1X = double_ml_data_from_matrix(X, y, d)
+  X_dt21X = as.data.table(data)[, c("X1", "y", "d"), with = FALSE]
   expect_equal(D2_1X$data, X_dt21X)
   expect_equal(D2_1X$data_model, X_dt21X)
 
   # Two d variables
-  X_indx2 <- names(data) %in% c("y", "d", "z", "s", "d1", "d2") == FALSE
-  X2 <- as.matrix(data[, X_indx2])
-  D3 <- double_ml_data_from_matrix(X2, y, d2)
+  X_indx2 = names(data) %in% c("y", "d", "z", "s", "d1", "d2") == FALSE
+  X2 = as.matrix(data[, X_indx2])
+  D3 = double_ml_data_from_matrix(X2, y, d2)
 
-  X_dt3 <- as.data.table(
+  X_dt3 = as.data.table(
     data.frame(data, "d1" = d2[, 1], "d2" = d2[, 2])
   )[, c(
     names(data)[X_indx2],
@@ -103,8 +103,8 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D3$data_model, X_dt3)
 
   # set_data_model
-  D3_setd_multd <- D3$clone()$set_data_model("d2")
-  X_dt3_setd_multd <- data.table::copy(X_dt3)[, c(
+  D3_setd_multd = D3$clone()$set_data_model("d2")
+  X_dt3_setd_multd = data.table::copy(X_dt3)[, c(
     names(data)[X_indx2],
     "y", "d2", "d1"
   ),
@@ -114,31 +114,31 @@ test_that("Unit tests for DoubleMLData", {
   expect_equal(D3_setd_multd$data_model, X_dt3_setd_multd)
 
   # Do not include other treatment var in nuisance part
-  D3_1d <- double_ml_data_from_matrix(X2, y, d2,
+  D3_1d = double_ml_data_from_matrix(X2, y, d2,
     use_other_treat_as_covariate = FALSE
   )
   # Data backend
   expect_equal(D3_1d$data, X_dt3)
 
   # Data model
-  X_dt31d <- data.table::copy(X_dt3)[, d2 := NULL]
+  X_dt31d = data.table::copy(X_dt3)[, d2 := NULL]
   expect_equal(D3_1d$data_model, X_dt31d)
 
   # set_data_model
-  D3_setd <- D3_1d$clone()$set_data_model("d2")
-  X_dt3_setd <- data.table::copy(X_dt3)[, d1 := NULL]
+  D3_setd = D3_1d$clone()$set_data_model("d2")
+  X_dt3_setd = data.table::copy(X_dt3)[, d1 := NULL]
   expect_equal(D3_setd$data_model, X_dt3_setd)
 
   # Input: Data frame, assign columns by names
-  d_indx <- "d"
-  y_indx <- "y"
-  z_null <- NULL
-  z_indx <- "z"
-  s_indx <- "s"
-  s_null <- NULL
-  X_cols1 <- names(data[, X_indx1])
+  d_indx = "d"
+  y_indx = "y"
+  z_null = NULL
+  z_indx = "z"
+  s_indx = "s"
+  s_null = NULL
+  X_cols1 = names(data[, X_indx1])
 
-  D4 <- double_ml_data_from_data_frame(data,
+  D4 = double_ml_data_from_data_frame(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
@@ -146,7 +146,7 @@ test_that("Unit tests for DoubleMLData", {
     s_col = s_indx
   )
 
-  D4b <- double_ml_data_from_data_frame(data,
+  D4b = double_ml_data_from_data_frame(data,
     x_cols = NULL,
     y_col = y_indx,
     d_cols = d_indx,
@@ -155,12 +155,12 @@ test_that("Unit tests for DoubleMLData", {
   )
 
   # with renamed variables
-  data_renamed <- data
-  names(data_renamed) <- c(
+  data_renamed = data
+  names(data_renamed) = c(
     "outc", "exposure", "instr", paste0("Explr", 1:(ncol(data_renamed) - 4)), "selection"
   )
-  Expl_cols1 <- names(data_renamed[, X_indx1])
-  D4_renamed <- double_ml_data_from_data_frame(data_renamed,
+  Expl_cols1 = names(data_renamed[, X_indx1])
+  D4_renamed = double_ml_data_from_data_frame(data_renamed,
     x_cols = Expl_cols1,
     y_col = "outc",
     d_cols = "exposure",
@@ -168,26 +168,26 @@ test_that("Unit tests for DoubleMLData", {
     s_col = "selection"
   )
 
-  D5 <- double_ml_data_from_data_frame(data,
+  D5 = double_ml_data_from_data_frame(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx
   )
 
-  D5b <- double_ml_data_from_data_frame(data,
+  D5b = double_ml_data_from_data_frame(data,
     x_cols = NULL,
     y_col = y_indx,
     d_cols = d_indx
   )
 
   # test with only 1 d, 1 X
-  D5_1X <- double_ml_data_from_data_frame(data,
+  D5_1X = double_ml_data_from_data_frame(data,
     x_cols = X_cols1[1],
     y_col = y_indx,
     d_cols = d_indx
   )
 
-  D6 <- double_ml_data_from_data_frame(data,
+  D6 = double_ml_data_from_data_frame(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
@@ -196,26 +196,26 @@ test_that("Unit tests for DoubleMLData", {
   )
 
   # Two d Variables
-  data2 <- data.frame(data, d2)
-  d2_indx <- colnames(d2)
+  data2 = data.frame(data, d2)
+  d2_indx = colnames(d2)
 
-  D7 <- double_ml_data_from_data_frame(data2,
+  D7 = double_ml_data_from_data_frame(data2,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d2_indx,
     z_cols = z_null,
     s_col = s_null
   )
-  D7_setd_multd <- D7$clone()$set_data_model("d2")
+  D7_setd_multd = D7$clone()$set_data_model("d2")
 
-  D7_1d <- double_ml_data_from_data_frame(data2,
+  D7_1d = double_ml_data_from_data_frame(data2,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d2_indx,
     z_cols = z_null,
     use_other_treat_as_covariate = FALSE
   )
-  D7_setd <- D7_1d$clone()$set_data_model("d2")
+  D7_setd = D7_1d$clone()$set_data_model("d2")
 
   expect_error(double_ml_data_from_data_frame(data),
     regexp = "Assertion on 'y_col' failed: Must be of type 'character', not 'NULL'."
@@ -240,9 +240,9 @@ test_that("Unit tests for DoubleMLData", {
   expect_identical(D5$data[, sort(names(D5$data_model))], D5b$data[, sort(names(D5$data_model))])
 
   # Instantiate DoubleMLData
-  data <- data.table::data.table(data)
-  data2 <- data.table::data.table(data2)
-  D8 <- DoubleMLData$new(data,
+  data = data.table::data.table(data)
+  data2 = data.table::data.table(data2)
+  D8 = DoubleMLData$new(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
@@ -250,7 +250,7 @@ test_that("Unit tests for DoubleMLData", {
     s_col = s_indx
   )
 
-  D8_noXcols <- DoubleMLData$new(data,
+  D8_noXcols = DoubleMLData$new(data,
     y_col = y_indx,
     d_cols = d_indx,
     z_cols = z_indx,
@@ -258,14 +258,14 @@ test_that("Unit tests for DoubleMLData", {
   )
 
   # with renamed variables
-  data_renamed <- data.table::copy(data)
-  data_renamed <- data.table::setnames(data_renamed, c(
+  data_renamed = data.table::copy(data)
+  data_renamed = data.table::setnames(data_renamed, c(
     "outc", "exposure", "instr",
     paste0("Explr", 1:(ncol(data_renamed) - 4)), "selection"
   ))
 
-  Expl_cols1 <- names(data_renamed[, X_indx1, with = FALSE])
-  D8_renamed <- DoubleMLData$new(data_renamed,
+  Expl_cols1 = names(data_renamed[, X_indx1, with = FALSE])
+  D8_renamed = DoubleMLData$new(data_renamed,
     x_cols = Expl_cols1,
     y_col = "outc",
     d_cols = "exposure",
@@ -273,36 +273,36 @@ test_that("Unit tests for DoubleMLData", {
     s_col = "selection"
   )
 
-  D9 <- DoubleMLData$new(data,
+  D9 = DoubleMLData$new(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx
   )
 
   # skip z if not X indx specified
-  noxz_indx <- which(!names(data) %in% c("z", "s"))
-  data_noz <- data[, noxz_indx, with = FALSE]
-  D9_noXcols <- DoubleMLData$new(data_noz,
+  noxz_indx = which(!names(data) %in% c("z", "s"))
+  data_noz = data[, noxz_indx, with = FALSE]
+  D9_noXcols = DoubleMLData$new(data_noz,
     y_col = y_indx,
     d_cols = d_indx
   )
 
-  D9_1X <- DoubleMLData$new(data,
+  D9_1X = DoubleMLData$new(data,
     x_cols = "X1",
     y_col = y_indx,
     d_cols = d_indx
   )
 
-  D10 <- DoubleMLData$new(data2,
+  D10 = DoubleMLData$new(data2,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d2_indx,
     z_cols = z_null
   )
 
-  D10_setd <- D10$clone()$set_data_model("d2")
+  D10_setd = D10$clone()$set_data_model("d2")
 
-  D10_1d <- DoubleMLData$new(data2,
+  D10_1d = DoubleMLData$new(data2,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d2_indx,
@@ -310,9 +310,9 @@ test_that("Unit tests for DoubleMLData", {
     use_other_treat_as_covariate = FALSE
   )
 
-  D10_1d_setd <- D10_1d$clone()$set_data_model("d2")
+  D10_1d_setd = D10_1d$clone()$set_data_model("d2")
 
-  msg1 <- paste0(
+  msg1 = paste0(
     "At least one variable/column is set as treatment variable \\('d_cols'\\) ",
     "and as a covariate \\('x_cols'\\). Consider using parameter ",
     "'use_other_treat_as_covariate'."
@@ -328,7 +328,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg1
   )
 
-  msg2 <- paste0(
+  msg2 = paste0(
     "At least one variable/column is set as covariate \\('x_cols'\\) and ",
     "instrumental variable in 'z_cols'."
   )
@@ -342,7 +342,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg2
   )
 
-  msg2s <- paste0(
+  msg2s = paste0(
     "At least one variable/column is set as covariate \\('x_cols'\\) and ",
     "selection variable in 's_col'."
   )
@@ -356,7 +356,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg2s
   )
 
-  msg3 <- "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
+  msg3 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
   expect_error(
     double_ml_data_from_data_frame(data,
       x_cols = c(y_indx, X_cols1),
@@ -367,7 +367,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg3
   )
 
-  msg4 <- paste0(
+  msg4 = paste0(
     "At least one variable/column is set as treatment variable \\('d_cols'\\) ",
     "and instrumental variable in 'z_cols'."
   )
@@ -381,7 +381,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg4
   )
 
-  msg4s <- paste0(
+  msg4s = paste0(
     "At least one variable/column is set as treatment variable \\('d_cols'\\) ",
     "and selection variable in 's_col'."
   )
@@ -395,7 +395,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg4s
   )
 
-  msg5 <- "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
+  msg5 = "y cannot be set as outcome variable 'y_col' and treatment variable in 'd_cols'."
   expect_error(
     double_ml_data_from_data_frame(data,
       x_cols = X_cols1,
@@ -406,7 +406,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg5
   )
 
-  msg6 <- "y cannot be set as outcome variable 'y_col' and instrumental variable in 'z_cols'."
+  msg6 = "y cannot be set as outcome variable 'y_col' and instrumental variable in 'z_cols'."
   expect_error(
     double_ml_data_from_data_frame(data,
       x_cols = X_cols1,
@@ -417,7 +417,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg6
   )
 
-  msg6s <- "y cannot be set as outcome variable 'y_col' and selection variable in 's_col'."
+  msg6s = "y cannot be set as outcome variable 'y_col' and selection variable in 's_col'."
   expect_error(
     double_ml_data_from_data_frame(data,
       x_cols = X_cols1,
@@ -429,7 +429,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg6s
   )
 
-  msg7 <- "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
+  msg7 = "Assertion on 'x_cols' failed: Contains duplicated values, position 21."
   expect_error(
     double_ml_data_from_data_frame(data,
       x_cols = rep(X_cols1, 2),
@@ -454,7 +454,7 @@ test_that("Unit tests for DoubleMLData", {
   expect_identical(D9$data_model, D9_noXcols$data_model)
 
   # Exception handling
-  msg8 <- paste0(
+  msg8 = paste0(
     "At least one variable/column is set as treatment variable \\('d_cols'\\) ",
     "and as a covariate \\('x_cols'\\). Consider using parameter ",
     "'use_other_treat_as_covariate'."
@@ -469,7 +469,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg8
   )
 
-  msg9 <- paste0(
+  msg9 = paste0(
     "At least one variable/column is set as covariate \\('x_cols'\\) and ",
     "instrumental variable in 'z_cols'."
   )
@@ -483,7 +483,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg9
   )
 
-  msg10 <- "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
+  msg10 = "y cannot be set as outcome variable 'y_col' and covariate in 'x_cols'."
   expect_error(
     DoubleMLData$new(data,
       x_cols = c(y_indx, X_cols1),
@@ -494,7 +494,7 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg10
   )
 
-  msg11 <- paste0(
+  msg11 = paste0(
     "At least one variable/column is set as treatment variable \\('d_cols'\\) ",
     "and instrumental variable in 'z_cols'."
   )
@@ -508,14 +508,14 @@ test_that("Unit tests for DoubleMLData", {
     regexp = msg11
   )
 
-  D11 <- DoubleMLData$new(data,
+  D11 = DoubleMLData$new(data,
     x_cols = X_cols1,
     y_col = y_indx,
     d_cols = d_indx,
     z_cols = z_indx
   )
 
-  msg12 <- "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}"
+  msg12 = "Assertion on 'treatment_var' failed: Must be a subset of \\{'d'\\}"
   expect_error(D11$set_data_model(X_cols1[1]),
     regexp = msg12
   )
@@ -523,7 +523,7 @@ test_that("Unit tests for DoubleMLData", {
 
 test_that("Unit tests for invalid data", {
   # PLR with IV
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "z has been set as instrumental variable\\(s\\).\\n",
     "To fit a partially linear IV regression model use",
@@ -539,7 +539,7 @@ test_that("Unit tests for invalid data", {
   )
 
   # PLIV without IV
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "At least one variable must be set as instrumental variable.\\n",
     "To fit a partially linear regression model without instrumental",
@@ -556,7 +556,7 @@ test_that("Unit tests for invalid data", {
   )
 
   # IRM with IV
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "z has been set as instrumental variable\\(s\\).\\n",
     "To fit an interactive IV regression model use",
@@ -572,14 +572,14 @@ test_that("Unit tests for invalid data", {
   )
 
   # IIVM without IV
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IIVM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
     "needs to be specified as instrumental variable."
   )
   expect_error(
-    double_mlplr_obj <- DoubleMLIIVM$new(
+    double_mlplr_obj = DoubleMLIIVM$new(
       data = data_irm$dml_data,
       ml_g = mlr3::lrn("regr.rpart"),
       ml_m = mlr3::lrn("classif.rpart", predict_type = "prob")
@@ -588,10 +588,10 @@ test_that("Unit tests for invalid data", {
   )
 
   # non-binary D for IRM
-  df <- data_irm$df
-  df["d"] <- df["d"] * 5
-  dml_data <- double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
-  msg <- paste(
+  df = data_irm$df
+  df["d"] = df["d"] * 5
+  dml_data = double_ml_data_from_data_frame(df, y_col = "y", d_cols = "d")
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IRM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
@@ -607,14 +607,14 @@ test_that("Unit tests for invalid data", {
   )
 
   # non-binary D for IIVM
-  df <- data_iivm$df
-  df["d"] <- df["d"] * 5
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_iivm$df
+  df["d"] = df["d"] * 5
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = "d",
     z_cols = "z"
   )
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IIVM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
@@ -630,14 +630,14 @@ test_that("Unit tests for invalid data", {
   )
 
   # non-binary Z for IIVM
-  df <- data_iivm$df
-  df["z"] <- df["z"] * 5
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_iivm$df
+  df["z"] = df["z"] * 5
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = "d",
     z_cols = "z"
   )
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IIVM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
@@ -653,12 +653,12 @@ test_that("Unit tests for invalid data", {
   )
 
   # multiple D for IRM
-  df <- data_irm$df
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_irm$df
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = c("d", "X1")
   )
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IRM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
@@ -674,13 +674,13 @@ test_that("Unit tests for invalid data", {
   )
 
   # multiple D for IIVM
-  df <- data_iivm$df
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_iivm$df
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = c("d", "X1"),
     z_cols = "z"
   )
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IIVM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
@@ -696,13 +696,13 @@ test_that("Unit tests for invalid data", {
   )
 
   # multiple Z for IIVM
-  df <- data_iivm$df
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_iivm$df
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = "d",
     z_cols = c("z", "X1")
   )
-  msg <- paste(
+  msg = paste(
     "Incompatible data.\\n",
     "To fit an IIVM model with DoubleML",
     "exactly one binary variable with values 0 and 1",
@@ -718,8 +718,8 @@ test_that("Unit tests for invalid data", {
   )
 
   # z_col for SSM missing at random
-  df <- data_ssm_nonignorable$df
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_ssm_nonignorable$df
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = "d",
     z_cols = "z",
@@ -741,13 +741,13 @@ test_that("Unit tests for invalid data", {
   # regexp = NA)
 
   # No z_col for SSM nonignorable
-  df <- data_ssm_nonignorable$df
-  dml_data <- double_ml_data_from_data_frame(df,
+  df = data_ssm_nonignorable$df
+  dml_data = double_ml_data_from_data_frame(df,
     y_col = "y",
     d_cols = "d",
     s_col = "s"
   )
-  msg <- paste(
+  msg = paste(
     "Sample selection by nonignorable nonresponse was set but instrumental variable is NULL.\n",
     "To estimate treatment effect under nonignorable nonresponse,",
     "specify an instrument for the selection variable."

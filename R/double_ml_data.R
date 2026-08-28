@@ -15,13 +15,13 @@
 #'
 #' @examples
 #' library(DoubleML)
-#' df <- make_plr_CCDDHNR2018(return_type = "data.table")
-#' obj_dml_data <- DoubleMLData$new(df,
+#' df = make_plr_CCDDHNR2018(return_type = "data.table")
+#' obj_dml_data = DoubleMLData$new(df,
 #'   y_col = "y",
 #'   d_cols = "d"
 #' )
 #' @export
-DoubleMLData <- R6Class("DoubleMLData",
+DoubleMLData = R6Class("DoubleMLData",
   active = list(
     #' @field all_variables (`character()`)\cr
     #' All variables available in the dataset.
@@ -39,11 +39,11 @@ DoubleMLData <- R6Class("DoubleMLData",
       if (missing(value)) {
         return(private$d_cols_)
       } else {
-        d_cols <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        d_cols = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
         assert_character(d_cols, unique = TRUE)
         assert_subset(d_cols, self$all_variables)
-        private$d_cols_ <- d_cols
+        private$d_cols_ = d_cols
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -133,10 +133,10 @@ DoubleMLData <- R6Class("DoubleMLData",
       if (missing(value)) {
         return(private$use_other_treat_as_covariate_)
       } else {
-        use_other_treat_as_covariate <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        use_other_treat_as_covariate = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
         assert_logical(use_other_treat_as_covariate, len = 1)
-        private$use_other_treat_as_covariate_ <- use_other_treat_as_covariate
+        private$use_other_treat_as_covariate_ = use_other_treat_as_covariate
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -153,26 +153,26 @@ DoubleMLData <- R6Class("DoubleMLData",
       if (missing(value)) {
         return(private$x_cols_)
       } else {
-        x_cols <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        x_cols = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
         if (!is.null(x_cols)) {
           assert_character(x_cols, unique = TRUE)
         }
 
         if (!is.null(x_cols)) {
           assert_subset(x_cols, self$all_variables)
-          private$x_cols_ <- x_cols
+          private$x_cols_ = x_cols
         } else {
           if (!is.null(self$z_cols) && is.null(self$s_col)) {
-            y_d_z <- unique(c(self$y_col, self$d_cols, self$z_cols))
-            private$x_cols_ <- setdiff(self$all_variables, y_d_z)
+            y_d_z = unique(c(self$y_col, self$d_cols, self$z_cols))
+            private$x_cols_ = setdiff(self$all_variables, y_d_z)
           } else {
             if (!is.null(self$s_col)) {
-              y_d_z_s <- unique(c(self$y_col, self$d_cols, self$z_cols, self$s_col))
-              private$x_cols_ <- setdiff(self$all_variables, y_d_z_s)
+              y_d_z_s = unique(c(self$y_col, self$d_cols, self$z_cols, self$s_col))
+              private$x_cols_ = setdiff(self$all_variables, y_d_z_s)
             } else {
-              y_d <- union(self$y_col, self$d_cols)
-              private$x_cols_ <- setdiff(self$all_variables, y_d)
+              y_d = union(self$y_col, self$d_cols)
+              private$x_cols_ = setdiff(self$all_variables, y_d)
             }
           }
         }
@@ -189,11 +189,11 @@ DoubleMLData <- R6Class("DoubleMLData",
       if (missing(value)) {
         return(private$y_col_)
       } else {
-        y_col <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        y_col = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
         assert_character(y_col, len = 1)
         assert_subset(y_col, self$all_variables)
-        private$y_col_ <- y_col
+        private$y_col_ = y_col
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -207,13 +207,13 @@ DoubleMLData <- R6Class("DoubleMLData",
       if (missing(value)) {
         return(private$z_cols_)
       } else {
-        z_cols <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        z_cols = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
         if (!is.null(z_cols)) {
           assert_character(z_cols, unique = TRUE)
         }
         assert_subset(z_cols, self$all_variables)
-        private$z_cols_ <- z_cols
+        private$z_cols_ = z_cols
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -226,14 +226,14 @@ DoubleMLData <- R6Class("DoubleMLData",
       if (missing(value)) {
         return(private$s_col_)
       } else {
-        s_col <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        s_col = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
 
         if (!is.null(s_col)) {
           assert_character(s_col, len = 1)
         }
         assert_subset(s_col, self$all_variables)
-        private$s_col_ <- s_col
+        private$s_col_ = s_col
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -277,21 +277,21 @@ DoubleMLData <- R6Class("DoubleMLData",
                           s_col = NULL,
                           use_other_treat_as_covariate = TRUE) {
       if (all(class(data) == "data.frame")) {
-        data <- data.table(data)
+        data = data.table(data)
       }
       assert_class(data, "data.table")
       assert_character(names(data), unique = TRUE)
 
-      private$data_ <- data
+      private$data_ = data
 
-      self$y_col <- y_col
-      self$d_cols <- d_cols
-      self$z_cols <- z_cols
-      self$s_col <- s_col
-      self$x_cols <- x_cols
+      self$y_col = y_col
+      self$d_cols = d_cols
+      self$z_cols = z_cols
+      self$s_col = s_col
+      self$x_cols = x_cols
       private$check_disjoint_sets()
 
-      self$use_other_treat_as_covariate <- use_other_treat_as_covariate
+      self$use_other_treat_as_covariate = use_other_treat_as_covariate
 
       # by default, we initialize to the first treatment variable
       self$set_data_model(d_cols[1])
@@ -302,8 +302,8 @@ DoubleMLData <- R6Class("DoubleMLData",
     #' @description
     #' Print DoubleMLData objects.
     print = function() {
-      header <- "================= DoubleMLData Object ==================\n"
-      data_info <- paste0(
+      header = "================= DoubleMLData Object ==================\n"
+      data_info = paste0(
         "Outcome variable: ", self$y_col, "\n",
         "Treatment variable(s): ", paste0(self$d_cols, collapse = ", "),
         "\n",
@@ -332,21 +332,21 @@ DoubleMLData <- R6Class("DoubleMLData",
       assert_character(treatment_var, max.len = 1)
       assert_subset(treatment_var, self$d_cols)
 
-      private$treat_col_ <- treatment_var
+      private$treat_col_ = treatment_var
 
       if (self$n_treat > 1) {
         if (self$use_other_treat_as_covariate) {
-          private$other_treat_cols_ <- self$d_cols[self$d_cols != treatment_var]
+          private$other_treat_cols_ = self$d_cols[self$d_cols != treatment_var]
         } else {
           message("Control variables do not include other treatment variables")
-          private$other_treat_cols_ <- NULL
+          private$other_treat_cols_ = NULL
         }
       }
-      col_indx <- c(
+      col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
         self$z_cols, self$s_col
       )
-      private$data_model_ <- self$data[, col_indx, with = FALSE]
+      private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
 
       # successful assigning treatment variable
@@ -368,9 +368,9 @@ DoubleMLData <- R6Class("DoubleMLData",
     z_cols_ = NULL,
     s_col_ = NULL,
     check_disjoint_sets = function() {
-      y_col <- self$y_col
-      x_cols <- self$x_cols
-      d_cols <- self$d_cols
+      y_col = self$y_col
+      x_cols = self$x_cols
+      d_cols = self$d_cols
 
       if (y_col %in% x_cols) {
         stop(paste(
@@ -395,7 +395,7 @@ DoubleMLData <- R6Class("DoubleMLData",
       }
 
       if (!is.null(self$z_cols)) {
-        z_cols <- self$z_cols
+        z_cols = self$z_cols
 
         if (y_col %in% z_cols) {
           stop(paste(
@@ -419,7 +419,7 @@ DoubleMLData <- R6Class("DoubleMLData",
       }
 
       if (!is.null(self$s_col)) {
-        s_col <- self$s_col
+        s_col = self$s_col
 
         if (y_col %in% s_col) {
           stop(paste(
@@ -461,15 +461,15 @@ DoubleMLData <- R6Class("DoubleMLData",
 #'
 #' @examples
 #' library(DoubleML)
-#' dt <- make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
-#' obj_dml_data <- DoubleMLClusterData$new(dt,
+#' dt = make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
+#' obj_dml_data = DoubleMLClusterData$new(dt,
 #'   y_col = "Y",
 #'   d_cols = "D",
 #'   z_cols = "Z",
 #'   cluster_cols = c("cluster_var_i", "cluster_var_j")
 #' )
 #' @export
-DoubleMLClusterData <- R6Class("DoubleMLClusterData",
+DoubleMLClusterData = R6Class("DoubleMLClusterData",
   inherit = DoubleMLData,
   active = list(
     #' @field cluster_cols (`character()`)\cr
@@ -478,11 +478,11 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
       if (missing(value)) {
         return(private$cluster_cols_)
       } else {
-        cluster_cols <- value # to get more meaningful assert error messages
-        reset_value <- !is.null(self$data_model)
+        cluster_cols = value # to get more meaningful assert error messages
+        reset_value = !is.null(self$data_model)
         assert_character(cluster_cols, unique = TRUE)
         assert_subset(cluster_cols, self$all_variables)
-        private$cluster_cols_ <- cluster_cols
+        private$cluster_cols_ = cluster_cols
         if (reset_value) {
           private$check_disjoint_sets()
           self$set_data_model(self$d_cols[1])
@@ -501,27 +501,27 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
         return(private$x_cols_)
       } else {
         if (!is.null(value)) {
-          super$x_cols <- value
+          super$x_cols = value
         } else {
           if (!is.null(self$z_cols) && is.null(self$s_col)) {
-            y_d_z <- unique(c(
+            y_d_z = unique(c(
               self$y_col, self$d_cols, self$z_cols,
               self$cluster_cols
             ))
-            x_cols <- setdiff(self$all_variables, y_d_z)
+            x_cols = setdiff(self$all_variables, y_d_z)
           } else {
             if (!is.null(self$s_col)) {
-              y_d_z_s <- unique(c(
+              y_d_z_s = unique(c(
                 self$y_col, self$d_cols, self$z_cols,
                 self$s_col, self$cluster_cols
               ))
-              x_cols <- setdiff(self$all_variables, y_d_z_s)
+              x_cols = setdiff(self$all_variables, y_d_z_s)
             } else {
-              y_d <- unique(c(self$y_col, self$d_cols, self$cluster_cols))
-              x_cols <- setdiff(self$all_variables, y_d)
+              y_d = unique(c(self$y_col, self$d_cols, self$cluster_cols))
+              x_cols = setdiff(self$all_variables, y_d)
             }
           }
-          super$x_cols <- x_cols
+          super$x_cols = x_cols
         }
       }
     },
@@ -579,14 +579,14 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
       # initialize because of the x_cols active binding
 
       if (all(class(data) == "data.frame")) {
-        data <- data.table(data)
+        data = data.table(data)
       }
       assert_class(data, "data.table")
       assert_character(names(data), unique = TRUE)
 
-      private$data_ <- data
+      private$data_ = data
 
-      self$cluster_cols <- cluster_cols
+      self$cluster_cols = cluster_cols
 
       super$initialize(
         data,
@@ -603,8 +603,8 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
     #' @description
     #' Print DoubleMLClusterData objects.
     print = function() {
-      header <- "================= DoubleMLClusterData Object ==================\n"
-      data_info <- paste0(
+      header = "================= DoubleMLClusterData Object ==================\n"
+      data_info = paste0(
         "Outcome variable: ", self$y_col, "\n",
         "Treatment variable(s): ", paste0(self$d_cols, collapse = ", "), "\n",
         "Cluster variable(s): ", paste0(self$cluster_cols, collapse = ", "),
@@ -634,11 +634,11 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
       super$set_data_model(treatment_var)
 
       # add the cluster_cols to the data_model_
-      col_indx <- c(
+      col_indx = c(
         self$x_cols, self$y_col, self$treat_col, self$other_treat_cols,
         self$z_cols, self$s_col, self$cluster_cols
       )
-      private$data_model_ <- self$data[, col_indx, with = FALSE]
+      private$data_model_ = self$data[, col_indx, with = FALSE]
       stopifnot(nrow(self$data) == nrow(self$data_model))
 
       invisible(self)
@@ -651,10 +651,10 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
 
       super$check_disjoint_sets()
 
-      cluster_cols <- self$cluster_cols
-      y_col <- self$y_col
-      x_cols <- self$x_cols
-      d_cols <- self$d_cols
+      cluster_cols = self$cluster_cols
+      y_col = self$y_col
+      x_cols = self$x_cols
+      d_cols = self$d_cols
 
       if (y_col %in% cluster_cols) {
         stop(paste(
@@ -677,7 +677,7 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
       }
 
       if (!is.null(self$z_cols)) {
-        z_cols <- self$z_cols
+        z_cols = self$z_cols
 
         if (any(z_cols %in% cluster_cols)) {
           stop(paste(
@@ -688,7 +688,7 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
       }
 
       if (!is.null(self$s_col)) {
-        s_col <- self$s_col
+        s_col = self$s_col
 
         if (any(s_col %in% cluster_cols)) {
           stop(paste(
@@ -738,27 +738,27 @@ DoubleMLClusterData <- R6Class("DoubleMLClusterData",
 #' @return Creates a new instance of class `DoubleMLData`.
 #'
 #' @examples
-#' df <- make_plr_CCDDHNR2018(return_type = "data.frame")
-#' x_names <- names(df)[grepl("X", names(df))]
-#' obj_dml_data <- double_ml_data_from_data_frame(
+#' df = make_plr_CCDDHNR2018(return_type = "data.frame")
+#' x_names = names(df)[grepl("X", names(df))]
+#' obj_dml_data = double_ml_data_from_data_frame(
 #'   df = df, x_cols = x_names,
 #'   y_col = "y", d_cols = "d"
 #' )
 #' # Input: Data frame, Output: DoubleMLData object
 #' @export
-double_ml_data_from_data_frame <- function(
+double_ml_data_from_data_frame = function(
   df, x_cols = NULL, y_col = NULL,
   d_cols = NULL, z_cols = NULL, s_col = NULL, cluster_cols = NULL,
   use_other_treat_as_covariate = TRUE
 ) {
   if (is.null(cluster_cols)) {
-    data <- DoubleMLData$new(df,
+    data = DoubleMLData$new(df,
       x_cols = x_cols, y_col = y_col, d_cols = d_cols,
       z_cols = z_cols, s_col = s_col,
       use_other_treat_as_covariate = use_other_treat_as_covariate
     )
   } else {
-    data <- DoubleMLClusterData$new(df,
+    data = DoubleMLClusterData$new(df,
       x_cols = x_cols, y_col = y_col,
       d_cols = d_cols, z_cols = z_cols,
       s_col = s_col, cluster_cols = cluster_cols,
@@ -805,14 +805,14 @@ double_ml_data_from_data_frame <- function(
 #' @return  Creates a new instance of class `DoubleMLData`.
 #'
 #' @examples
-#' matrix_list <- make_plr_CCDDHNR2018(return_type = "matrix")
-#' obj_dml_data <- double_ml_data_from_matrix(
+#' matrix_list = make_plr_CCDDHNR2018(return_type = "matrix")
+#' obj_dml_data = double_ml_data_from_matrix(
 #'   X = matrix_list$X,
 #'   y = matrix_list$y,
 #'   d = matrix_list$d
 #' )
 #' @export
-double_ml_data_from_matrix <- function(
+double_ml_data_from_matrix = function(
   X = NULL, y, d, z = NULL,
   s = NULL, cluster_vars = NULL,
   data_class = "DoubleMLData",
@@ -824,65 +824,65 @@ double_ml_data_from_matrix <- function(
   ))
   assert_logical(use_other_treat_as_covariate, len = 1)
 
-  y <- assure_matrix(y)
-  d <- assure_matrix(d)
-  mat_list <- list(y, d)
+  y = assure_matrix(y)
+  d = assure_matrix(d)
+  mat_list = list(y, d)
 
   if (!is.null(X)) {
-    X <- assure_matrix(X)
-    mat_list[[length(mat_list) + 1]] <- X
+    X = assure_matrix(X)
+    mat_list[[length(mat_list) + 1]] = X
   }
   if (!is.null(z)) {
-    z <- assure_matrix(z)
-    mat_list[[length(mat_list) + 1]] <- z
+    z = assure_matrix(z)
+    mat_list[[length(mat_list) + 1]] = z
   }
   if (!is.null(s)) {
-    s <- assure_matrix(s)
-    mat_list[[length(mat_list) + 1]] <- s
+    s = assure_matrix(s)
+    mat_list[[length(mat_list) + 1]] = s
   }
   if (!is.null(cluster_vars)) {
-    cluster_vars <- assure_matrix(cluster_vars)
-    mat_list[[length(mat_list) + 1]] <- cluster_vars
+    cluster_vars = assure_matrix(cluster_vars)
+    mat_list[[length(mat_list) + 1]] = cluster_vars
   }
 
   check_matrix_row(mat_list)
-  data <- data.table(X, y, d, z, s, cluster_vars)
+  data = data.table(X, y, d, z, s, cluster_vars)
 
   if (!is.null(z)) {
     if (ncol(z) == 1) {
-      z_cols <- "z"
+      z_cols = "z"
     } else {
-      z_cols <- paste0("z", seq_len(ncol(z)))
+      z_cols = paste0("z", seq_len(ncol(z)))
     }
   } else {
-    z_cols <- NULL
+    z_cols = NULL
   }
-  y_col <- "y"
+  y_col = "y"
   if (ncol(d) == 1) {
-    d_cols <- "d"
+    d_cols = "d"
   } else {
-    d_cols <- paste0("d", seq_len(ncol(d)))
+    d_cols = paste0("d", seq_len(ncol(d)))
   }
   if (!is.null(X)) {
-    x_cols <- paste0("X", seq_len(ncol(X)))
+    x_cols = paste0("X", seq_len(ncol(X)))
   } else {
-    x_cols <- NULL
+    x_cols = NULL
   }
   if (!is.null(s)) {
-    s_col <- "s"
+    s_col = "s"
   } else {
-    s_col <- NULL
+    s_col = NULL
   }
   if (!is.null(cluster_vars)) {
     if (ncol(cluster_vars) == 1) {
-      cluster_cols <- "cluster_var"
+      cluster_cols = "cluster_var"
     } else {
-      cluster_cols <- paste0("cluster_var", seq_len(ncol(z)))
+      cluster_cols = paste0("cluster_var", seq_len(ncol(z)))
     }
   } else {
-    cluster_cols <- NULL
+    cluster_cols = NULL
   }
-  names(data) <- c(x_cols, y_col, d_cols, z_cols, s_col, cluster_cols)
+  names(data) = c(x_cols, y_col, d_cols, z_cols, s_col, cluster_cols)
 
   if (data_class %in% c("DoubleMLData", "DoubleMLClusterData")) {
     if (is.null(cluster_vars)) {
@@ -892,13 +892,13 @@ double_ml_data_from_matrix <- function(
           "variables (`cluster_vars`) must be provided."
         ))
       }
-      data <- DoubleMLData$new(data,
+      data = DoubleMLData$new(data,
         x_cols = x_cols, y_col = y_col, d_cols = d_cols,
         z_cols = z_cols, s_col = s_col,
         use_other_treat_as_covariate = use_other_treat_as_covariate
       )
     } else {
-      data <- DoubleMLClusterData$new(data,
+      data = DoubleMLClusterData$new(data,
         x_cols = x_cols, y_col = y_col, d_cols = d_cols,
         z_cols = z_cols, s_col = s_col, cluster_cols = cluster_cols,
         use_other_treat_as_covariate = use_other_treat_as_covariate

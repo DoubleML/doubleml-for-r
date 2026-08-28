@@ -80,8 +80,8 @@ The supplementary data of the study by Bilias (2000) is available at
 }
 \examples{
 library(DoubleML)
-df_bonus <- fetch_bonus(return_type = "data.table")
-obj_dml_data_bonus <- DoubleMLData$new(df_bonus,
+df_bonus = fetch_bonus(return_type = "data.table")
+obj_dml_data_bonus = DoubleMLData$new(df_bonus,
   y_col = "inuidur1",
   d_cols = "tg",
   x_cols = c(

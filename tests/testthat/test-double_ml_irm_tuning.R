@@ -2,14 +2,14 @@ context("Unit tests for tuning of IRM")
 
 requireNamespace("lgr")
 
-logger <- lgr::get_logger("bbotk")
+logger = lgr::get_logger("bbotk")
 logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 # settings for parameter provision
-learner <- "rpart"
+learner = "rpart"
 
-learner_list <- list("mlmethod_m" = learner, "mlmethod_g" = learner)
+learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
 # tune_settings = list(n_folds_tune = 3,
 #                       n_rep_tune = 1,
@@ -22,14 +22,14 @@ learner_list <- list("mlmethod_m" = learner, "mlmethod_g" = learner)
 #                       resolution = 5)
 
 # only minimum amount of input for tuning
-tune_settings <- list(
+tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
   resolution = 5
 )
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = learner,
     dml_procedure = "dml2",
     score = "ATE",
@@ -38,7 +38,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = learner,
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
@@ -48,20 +48,20 @@ if (on_cran) {
   )
 }
 
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 # skip('Skip tests for tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   .cases = test_cases,
   {
-    n_rep_boot <- 498
-    n_folds <- 2
+    n_rep_boot = 498
+    n_folds = 2
 
     # TODO: Functional Test Case
     set.seed(3141)
-    learner_pars <- get_default_mlmethod_irm(learner)
+    learner_pars = get_default_mlmethod_irm(learner)
 
-    double_mlirm_obj_tuned <- DoubleMLIRM$new(
+    double_mlirm_obj_tuned = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = learner_pars$mlmethod$mlmethod_g,
@@ -70,7 +70,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
       score = score
     )
 
-    param_grid <- list(
+    param_grid = list(
       "ml_g" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
         minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -86,8 +86,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     )
     double_mlirm_obj_tuned$fit()
 
-    theta_obj_tuned <- double_mlirm_obj_tuned$coef
-    se_obj_tuned <- double_mlirm_obj_tuned$se
+    theta_obj_tuned = double_mlirm_obj_tuned$coef
+    se_obj_tuned = double_mlirm_obj_tuned$se
 
     # TODO: bootstrap
     # double_mlirm_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)
@@ -100,9 +100,9 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     expect_is(se_obj_tuned, "numeric")
 
     # loaded learner
-    loaded_regr_learner <- mlr3::lrn("regr.rpart", "cp" = 0.1, "minsplit" = 20)
-    loaded_classif_learner <- mlr3::lrn("classif.rpart", "cp" = 0.1, "minsplit" = 20)
-    double_mlirm_obj_loaded_tuned <- DoubleMLIRM$new(
+    loaded_regr_learner = mlr3::lrn("regr.rpart", "cp" = 0.1, "minsplit" = 20)
+    loaded_classif_learner = mlr3::lrn("classif.rpart", "cp" = 0.1, "minsplit" = 20)
+    double_mlirm_obj_loaded_tuned = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = n_folds,
       ml_g = loaded_regr_learner,
@@ -115,8 +115,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     )
     double_mlirm_obj_loaded_tuned$fit()
 
-    theta_obj_loaded_tuned <- double_mlirm_obj_loaded_tuned$coef
-    se_obj_loaded_tuned <- double_mlirm_obj_loaded_tuned$se
+    theta_obj_loaded_tuned = double_mlirm_obj_loaded_tuned$coef
+    se_obj_loaded_tuned = double_mlirm_obj_loaded_tuned$se
 
     # TODO: bootstrap
     # double_mlirm_obj_loaded_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)

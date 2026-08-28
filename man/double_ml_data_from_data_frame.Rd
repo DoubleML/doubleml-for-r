@@ -52,9 +52,9 @@ Creates a new instance of class \code{DoubleMLData}.
 Initalization of DoubleMLData from \code{data.frame}.
 }
 \examples{
-df <- make_plr_CCDDHNR2018(return_type = "data.frame")
-x_names <- names(df)[grepl("X", names(df))]
-obj_dml_data <- double_ml_data_from_data_frame(
+df = make_plr_CCDDHNR2018(return_type = "data.frame")
+x_names = names(df)[grepl("X", names(df))]
+obj_dml_data = double_ml_data_from_data_frame(
   df = df, x_cols = x_names,
   y_col = "y", d_cols = "d"
 )

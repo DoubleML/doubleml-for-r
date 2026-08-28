@@ -44,20 +44,20 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g <- lrn("regr.ranger",
+#' ml_g = lrn("regr.ranger",
 #'   num.trees = 100, mtry = 20,
 #'   min.node.size = 2, max.depth = 5
 #' )
-#' ml_m <- lrn("classif.ranger",
+#' ml_m = lrn("classif.ranger",
 #'   num.trees = 100, mtry = 20,
 #'   min.node.size = 2, max.depth = 5
 #' )
-#' ml_r <- ml_m$clone()
-#' obj_dml_data <- make_iivm_data(
+#' ml_r = ml_m$clone()
+#' obj_dml_data = make_iivm_data(
 #'   theta = 0.5, n_obs = 1000,
 #'   alpha_x = 1, dim_x = 20
 #' )
-#' dml_iivm_obj <- DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 #' dml_iivm_obj$fit()
 #' dml_iivm_obj$summary()
 #' }
@@ -69,15 +69,15 @@
 #' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g <- lrn("regr.rpart")
-#' ml_m <- lrn("classif.rpart")
-#' ml_r <- ml_m$clone()
-#' obj_dml_data <- make_iivm_data(
+#' ml_g = lrn("regr.rpart")
+#' ml_m = lrn("classif.rpart")
+#' ml_r = ml_m$clone()
+#' obj_dml_data = make_iivm_data(
 #'   theta = 0.5, n_obs = 1000,
 #'   alpha_x = 1, dim_x = 20
 #' )
-#' dml_iivm_obj <- DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
-#' param_grid <- list(
+#' dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
+#' param_grid = list(
 #'   "ml_g" = paradox::ps(
 #'     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
 #'     minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -92,7 +92,7 @@
 #'   )
 #' )
 #' # minimum requirements for tune_settings
-#' tune_settings <- list(
+#' tune_settings = list(
 #'   terminator = mlr3tuning::trm("evals", n_evals = 5),
 #'   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
 #' )
@@ -102,7 +102,7 @@
 #' }
 #'
 #' @export
-DoubleMLIIVM <- R6Class("DoubleMLIIVM",
+DoubleMLIIVM = R6Class("DoubleMLIIVM",
   inherit = DoubleML,
   active = list(
     #' @field subgroups (named `list(2)`) \cr
@@ -255,20 +255,20 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
 
       private$check_data(self$data)
       private$check_score(self$score)
-      ml_g <- private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
-      ml_m <- private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
-      ml_r <- private$assert_learner(ml_r, "ml_r", Regr = FALSE, Classif = TRUE)
+      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
+      ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
+      ml_r = private$assert_learner(ml_r, "ml_r", Regr = FALSE, Classif = TRUE)
 
-      private$learner_ <- list(
+      private$learner_ = list(
         "ml_g" = ml_g,
         "ml_m" = ml_m,
         "ml_r" = ml_r
       )
       private$initialize_ml_nuisance_params()
 
-      private$subgroups_ <- subgroups
-      private$trimming_rule_ <- trimming_rule
-      private$trimming_threshold_ <- trimming_threshold
+      private$subgroups_ = subgroups
+      private$trimming_rule_ = trimming_rule
+      private$trimming_threshold_ = trimming_threshold
     }
   ),
   private = list(
@@ -277,9 +277,9 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
     trimming_threshold_ = NULL,
     n_nuisance = 3,
     initialize_ml_nuisance_params = function() {
-      nuisance <- vector("list", self$data$n_treat)
-      names(nuisance) <- self$data$d_cols
-      private$params_ <- list(
+      nuisance = vector("list", self$data$n_treat)
+      names(nuisance) = self$data$d_cols
+      private$params_ = list(
         "ml_g0" = nuisance,
         "ml_g1" = nuisance,
         "ml_m" = nuisance,
@@ -294,12 +294,12 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         message("If there are no always-takers and no never-takers,
                 ATE is estimated")
       }
-      cond_smpls <- get_cond_samples(
+      cond_smpls = get_cond_samples(
         smpls,
         self$data$data_model[[self$data$z_cols]]
       )
 
-      m_hat <- dml_cv_predict(self$learner$ml_m,
+      m_hat = dml_cv_predict(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$z_cols,
         self$data$data_model,
@@ -311,7 +311,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         fold_specific_params = private$fold_specific_params
       )
 
-      g0_hat <- dml_cv_predict(self$learner$ml_g,
+      g0_hat = dml_cv_predict(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
@@ -323,7 +323,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         fold_specific_params = private$fold_specific_params
       )
 
-      g1_hat <- dml_cv_predict(self$learner$ml_g,
+      g1_hat = dml_cv_predict(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
@@ -336,9 +336,9 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
       )
 
       if (self$subgroups$always_takers == FALSE) {
-        r0_hat <- list(preds = rep(0, self$data$n_obs), models = NULL)
+        r0_hat = list(preds = rep(0, self$data$n_obs), models = NULL)
       } else {
-        r0_hat <- dml_cv_predict(self$learner$ml_r,
+        r0_hat = dml_cv_predict(self$learner$ml_r,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$treat_col,
           self$data$data_model,
@@ -352,9 +352,9 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
       }
 
       if (self$subgroups$never_takers == FALSE) {
-        r1_hat <- list(preds = rep(1, self$data$n_obs), models = NULL)
+        r1_hat = list(preds = rep(1, self$data$n_obs), models = NULL)
       } else {
-        r1_hat <- dml_cv_predict(self$learner$ml_r,
+        r1_hat = dml_cv_predict(self$learner$ml_r,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$treat_col,
           self$data$data_model,
@@ -368,24 +368,24 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
       }
 
       # compute residuals
-      z <- self$data$data_model[[self$data$z_cols]]
-      d <- self$data$data_model[[self$data$treat_col]]
-      y <- self$data$data_model[[self$data$y_col]]
+      z = self$data$data_model[[self$data$z_cols]]
+      d = self$data$data_model[[self$data$treat_col]]
+      y = self$data$data_model[[self$data$y_col]]
 
-      res <- private$score_elements(
+      res = private$score_elements(
         y, z, d,
         g0_hat$preds, g1_hat$preds, m_hat$preds,
         r0_hat$preds, r1_hat$preds,
         smpls
       )
-      res$preds <- list(
+      res$preds = list(
         "ml_g0" = g0_hat$preds,
         "ml_g1" = g1_hat$preds,
         "ml_m" = m_hat$preds,
         "ml_r0" = r0_hat$preds,
         "ml_r1" = r1_hat$preds
       )
-      res$models <- list(
+      res$models = list(
         "ml_g0" = g0_hat$models,
         "ml_g1" = g1_hat$models,
         "ml_m" = m_hat$models,
@@ -398,26 +398,26 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
                               g0_hat = g0_hat, g1_hat = g1_hat, m_hat = m_hat,
                               r0_hat = r0_hat, r1_hat = r1_hat,
                               smpls = smpls) {
-      u0_hat <- y - g0_hat
-      u1_hat <- y - g1_hat
-      w0_hat <- d - r0_hat
-      w1_hat <- d - r1_hat
+      u0_hat = y - g0_hat
+      u1_hat = y - g1_hat
+      w0_hat = d - r0_hat
+      w1_hat = d - r1_hat
 
       if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
-        m_hat[m_hat < self$trimming_threshold] <- self$trimming_threshold
-        m_hat[m_hat > 1 - self$trimming_threshold] <- 1 - self$trimming_threshold
+        m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
+        m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
       }
 
       if (is.character(self$score)) {
         if (self$score == "LATE") {
-          psi_b <- g1_hat - g0_hat + z * (u1_hat) / m_hat -
+          psi_b = g1_hat - g0_hat + z * (u1_hat) / m_hat -
             (1 - z) * u0_hat / (1 - m_hat)
-          psi_a <- -1 * (r1_hat - r0_hat + z * (w1_hat) / m_hat -
+          psi_a = -1 * (r1_hat - r0_hat + z * (w1_hat) / m_hat -
             (1 - z) * w0_hat / (1 - m_hat))
         }
-        psis <- list(psi_a = psi_a, psi_b = psi_b)
+        psis = list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        psis <- self$score(
+        psis = self$score(
           y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
           r1_hat, smpls
         )
@@ -427,26 +427,26 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
     nuisance_tuning = function(smpls, param_set, tune_settings,
                                tune_on_folds, ...) {
       if (!tune_on_folds) {
-        data_tune_list <- list(self$data$data_model)
+        data_tune_list = list(self$data$data_model)
       } else {
-        data_tune_list <- lapply(
+        data_tune_list = lapply(
           smpls$train_ids,
           function(x) extract_training_data(self$data$data_model, x)
         )
       }
 
-      indx_g0 <- lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 0)
-      indx_g1 <- lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 1)
-      data_tune_list_z0 <- lapply(
+      indx_g0 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 0)
+      indx_g1 = lapply(data_tune_list, function(x) x[[self$data$z_cols]] == 1)
+      data_tune_list_z0 = lapply(
         seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_g0[[x]], ]
       )
-      data_tune_list_z1 <- lapply(
+      data_tune_list_z1 = lapply(
         seq_along(data_tune_list),
         function(x) data_tune_list[[x]][indx_g1[[x]], ]
       )
 
-      tuning_result_m <- dml_tune(self$learner$ml_m,
+      tuning_result_m = dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$z_cols,
         data_tune_list,
@@ -456,7 +456,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         private$task_type$ml_m
       )
 
-      tuning_result_g0 <- dml_tune(self$learner$ml_g,
+      tuning_result_g0 = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         data_tune_list_z0,
@@ -466,7 +466,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         private$task_type$ml_g
       )
 
-      tuning_result_g1 <- dml_tune(self$learner$ml_g,
+      tuning_result_g1 = dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         data_tune_list_z1,
@@ -477,7 +477,7 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
       )
 
       if (self$subgroups$always_takers == TRUE) {
-        tuning_result_r0 <- dml_tune(self$learner$ml_r,
+        tuning_result_r0 = dml_tune(self$learner$ml_r,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$treat_col,
           data_tune_list_z0,
@@ -487,11 +487,11 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
           private$task_type$ml_r
         )
       } else {
-        tuning_result_r0 <- list(list(), "params" = list(list()))
+        tuning_result_r0 = list(list(), "params" = list(list()))
       }
 
       if (self$subgroups$never_takers == TRUE) {
-        tuning_result_r1 <- dml_tune(self$learner$ml_r,
+        tuning_result_r1 = dml_tune(self$learner$ml_r,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$treat_col,
           data_tune_list_z1,
@@ -501,9 +501,9 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
           private$task_type$ml_r
         )
       } else {
-        tuning_result_r1 <- list(list(), "params" = list(list()))
+        tuning_result_r1 = list(list(), "params" = list(list()))
       }
-      tuning_result <- list(
+      tuning_result = list(
         "ml_m" = list(tuning_result_m, params = tuning_result_m$params),
         "ml_g0" = list(tuning_result_g0, params = tuning_result_g0$params),
         "ml_g1" = list(tuning_result_g1, params = tuning_result_g1$params),
@@ -518,21 +518,21 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         check_class(score, "function")
       )
       if (is.character(score)) {
-        valid_score <- c("LATE")
+        valid_score = c("LATE")
         assertChoice(score, valid_score)
       }
       return()
     },
     check_data = function(obj_dml_data) {
-      one_treat <- (obj_dml_data$n_treat == 1)
-      err_msg <- paste(
+      one_treat = (obj_dml_data$n_treat == 1)
+      err_msg = paste(
         "Incompatible data.\n",
         "To fit an IIVM model with DoubleML",
         "exactly one binary variable with values 0 and 1",
         "needs to be specified as treatment variable."
       )
       if (one_treat) {
-        binary_treat <- test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
+        binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
           lower = 0, upper = 1
         )
         if (!(one_treat & binary_treat)) {
@@ -542,15 +542,15 @@ DoubleMLIIVM <- R6Class("DoubleMLIIVM",
         stop(err_msg)
       }
 
-      one_instr <- (obj_dml_data$n_instr == 1)
-      err_msg <- paste(
+      one_instr = (obj_dml_data$n_instr == 1)
+      err_msg = paste(
         "Incompatible data.\n",
         "To fit an IIVM model with DoubleML",
         "exactly one binary variable with values 0 and 1",
         "needs to be specified as instrumental variable."
       )
       if (one_instr) {
-        binary_instr <- test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]],
+        binary_instr = test_integerish(obj_dml_data$data[[obj_dml_data$z_cols]],
           lower = 0, upper = 1
         )
         if (!(one_instr & binary_instr)) {

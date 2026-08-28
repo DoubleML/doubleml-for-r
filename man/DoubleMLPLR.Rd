@@ -28,10 +28,10 @@ library(mlr3)
 library(mlr3learners)
 library(data.table)
 set.seed(2)
-ml_g <- lrn("regr.ranger", num.trees = 10, max.depth = 2)
-ml_m <- ml_g$clone()
-obj_dml_data <- make_plr_CCDDHNR2018(alpha = 0.5)
-dml_plr_obj <- DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
+ml_g = lrn("regr.ranger", num.trees = 10, max.depth = 2)
+ml_m = ml_g$clone()
+obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
+dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_g, ml_m)
 dml_plr_obj$fit()
 dml_plr_obj$summary()
 }
@@ -43,12 +43,12 @@ library(mlr3learners)
 library(mlr3tuning)
 library(data.table)
 set.seed(2)
-ml_l <- lrn("regr.rpart")
-ml_m <- ml_l$clone()
-obj_dml_data <- make_plr_CCDDHNR2018(alpha = 0.5)
-dml_plr_obj <- DoubleMLPLR$new(obj_dml_data, ml_l, ml_m)
+ml_l = lrn("regr.rpart")
+ml_m = ml_l$clone()
+obj_dml_data = make_plr_CCDDHNR2018(alpha = 0.5)
+dml_plr_obj = DoubleMLPLR$new(obj_dml_data, ml_l, ml_m)
 
-param_grid <- list(
+param_grid = list(
   "ml_l" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
     minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -60,7 +60,7 @@ param_grid <- list(
 )
 
 # minimum requirements for tune_settings
-tune_settings <- list(
+tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
 )

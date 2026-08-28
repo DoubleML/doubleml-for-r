@@ -2,9 +2,9 @@ context("Unit tests for IRM propensity score trimming")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "rpart",
     dml_procedure = "dml2",
     score = "ATTE",
@@ -13,7 +13,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
@@ -22,16 +22,16 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 }
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases,
   {
-    learner_pars <- get_default_mlmethod_irm(learner)
-    n_rep_boot <- 498
+    learner_pars = get_default_mlmethod_irm(learner)
+    n_rep_boot = 498
 
     set.seed(3141)
-    irm_hat <- dml_irm(data_irm$df,
+    irm_hat = dml_irm(data_irm$df,
       y = "y", d = "d",
       n_folds = 5,
       ml_g = learner_pars$ml_g$clone(),
@@ -39,10 +39,10 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       dml_procedure = dml_procedure, score = score,
       trimming_threshold = trimming_threshold
     )
-    theta <- irm_hat$coef
-    se <- irm_hat$se
+    theta = irm_hat$coef
+    se = irm_hat$se
 
-    boot_theta <- bootstrap_irm(irm_hat$thetas, irm_hat$ses,
+    boot_theta = bootstrap_irm(irm_hat$thetas, irm_hat$ses,
       data_irm$df,
       y = "y", d = "d",
       n_folds = 5, smpls = irm_hat$smpls,
@@ -53,7 +53,7 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     )$boot_coef
 
     set.seed(3141)
-    double_mlirm_obj <- DoubleMLIRM$new(
+    double_mlirm_obj = DoubleMLIRM$new(
       data = data_irm$dml_data,
       n_folds = 5,
       ml_g = learner_pars$ml_g$clone(),
@@ -65,12 +65,12 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     )
 
     double_mlirm_obj$fit()
-    theta_obj <- double_mlirm_obj$coef
-    se_obj <- double_mlirm_obj$se
+    theta_obj = double_mlirm_obj$coef
+    se_obj = double_mlirm_obj$se
 
     # bootstrap
     double_mlirm_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta_obj <- double_mlirm_obj$boot_coef
+    boot_theta_obj = double_mlirm_obj$boot_coef
 
     expect_equal(theta, theta_obj, tolerance = 1e-8)
     expect_equal(se, se_obj, tolerance = 1e-8)

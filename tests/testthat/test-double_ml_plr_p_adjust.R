@@ -4,9 +4,9 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "regr.rpart",
     dml_procedure = "dml1",
     score = "partialling out",
@@ -15,7 +15,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "regr.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
@@ -24,45 +24,45 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 }
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
   .cases = test_cases,
   {
-    learner_pars <- get_default_mlmethod_plr(learner)
+    learner_pars = get_default_mlmethod_plr(learner)
 
-    n_rep_boot <- 498
+    n_rep_boot = 498
 
     if (!apply_cross_fitting) {
-      n_folds <- 2
+      n_folds = 2
     } else {
-      n_folds <- 5
+      n_folds = 5
     }
 
     set.seed(1)
-    n <- 100 # sample size
-    p <- 25 # number of variables
-    s <- 3 # nubmer of non-zero variables
-    X <- matrix(rnorm(n * p), ncol = p)
-    colnames(X) <- paste("X", 1:p, sep = "")
-    beta <- c(rep(3, s), rep(0, p - s))
-    y <- 1 + X %*% beta + rnorm(n)
-    data <- data.frame(cbind(y, X))
-    colnames(data)[1] <- "y"
+    n = 100 # sample size
+    p = 25 # number of variables
+    s = 3 # nubmer of non-zero variables
+    X = matrix(rnorm(n * p), ncol = p)
+    colnames(X) = paste("X", 1:p, sep = "")
+    beta = c(rep(3, s), rep(0, p - s))
+    y = 1 + X %*% beta + rnorm(n)
+    data = data.frame(cbind(y, X))
+    colnames(data)[1] = "y"
 
     # index for hypoth testing
-    k <- 10
-    data_ml <- double_ml_data_from_data_frame(data,
+    k = 10
+    data_ml = double_ml_data_from_data_frame(data,
       x_cols = colnames(X)[(k + 1):p],
       y_col = "y",
       d_cols = colnames(X)[1:k]
     )
     if (score == "IV-type") {
-      ml_g <- learner_pars$ml_g$clone()
+      ml_g = learner_pars$ml_g$clone()
     } else {
-      ml_g <- NULL
+      ml_g = NULL
     }
-    double_mlplr_obj <- DoubleMLPLR$new(data_ml,
+    double_mlplr_obj = DoubleMLPLR$new(data_ml,
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_g = ml_g,

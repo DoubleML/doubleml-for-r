@@ -19,23 +19,23 @@ library(mlr3)
 library(mlr3learners)
 library(data.table)
 set.seed(2)
-ml_g <- lrn("regr.ranger",
+ml_g = lrn("regr.ranger",
   num.trees = 100, mtry = 20,
   min.node.size = 2, max.depth = 5
 )
-ml_m <- lrn("classif.ranger",
+ml_m = lrn("classif.ranger",
   num.trees = 100, mtry = 20,
   min.node.size = 2, max.depth = 5
 )
-ml_pi <- lrn("classif.ranger",
+ml_pi = lrn("classif.ranger",
   num.trees = 100, mtry = 20,
   min.node.size = 2, max.depth = 5
 )
 
-n_obs <- 2000
-df <- make_ssm_data(n_obs = n_obs, mar = TRUE, return_type = "data.table")
-dml_data <- DoubleMLData$new(df, y_col = "y", d_cols = "d", s_col = "s")
-dml_ssm <- DoubleMLSSM$new(dml_data, ml_g, ml_m, ml_pi, score = "missing-at-random")
+n_obs = 2000
+df = make_ssm_data(n_obs = n_obs, mar = TRUE, return_type = "data.table")
+dml_data = DoubleMLData$new(df, y_col = "y", d_cols = "d", s_col = "s")
+dml_ssm = DoubleMLSSM$new(dml_data, ml_g, ml_m, ml_pi, score = "missing-at-random")
 dml_ssm$fit()
 print(dml_ssm)
 }
@@ -46,16 +46,16 @@ library(mlr3learners)
 library(mlr3tuning)
 library(data.table)
 set.seed(2)
-ml_g <- lrn("regr.rpart")
-ml_m <- lrn("classif.rpart")
-ml_pi <- lrn("classif.rpart")
-dml_data <- make_ssm_data(n_obs = n_obs, mar = TRUE)
-dml_ssm <- DoubleMLSSM$new(dml_data,
+ml_g = lrn("regr.rpart")
+ml_m = lrn("classif.rpart")
+ml_pi = lrn("classif.rpart")
+dml_data = make_ssm_data(n_obs = n_obs, mar = TRUE)
+dml_ssm = DoubleMLSSM$new(dml_data,
   ml_g = ml_g, ml_m = ml_m, ml_pi = ml_pi,
   score = "missing-at-random"
 )
 
-param_grid <- list(
+param_grid = list(
   "ml_g" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
     minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -71,7 +71,7 @@ param_grid <- list(
 )
 
 # minimum requirements for tune_settings
-tune_settings <- list(
+tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
 )

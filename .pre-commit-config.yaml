@@ -5,7 +5,12 @@ repos:
     rev: v0.4.3.9030
     hooks:
     -   id: style-files
-        args: [--style_pkg=styler, --style_fun=tidyverse_style]    
+        # scope=line_breaks stops short of styler's "tokens" transformations,
+        # which is where tidyverse_style forces `<-` over `=` (no supported
+        # way to disable just that one rule). Also skips a few other
+        # token-level tidy-ups (quote style, trailing semicolons, pipe
+        # brackets) that this codebase doesn't rely on.
+        args: [--style_pkg=styler, --style_fun=tidyverse_style, --scope=line_breaks]
     -   id: roxygenize
         # roxygen requires loading pkg -> add dependencies from DESCRIPTION
         additional_dependencies:

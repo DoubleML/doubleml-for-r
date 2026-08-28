@@ -2,7 +2,7 @@ context("Unit tests for tuning of PLR")
 
 requireNamespace("lgr")
 
-logger <- lgr::get_logger("bbotk")
+logger = lgr::get_logger("bbotk")
 logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
@@ -11,9 +11,9 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 #
 # learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "regr.rpart",
     m_learner = "regr.rpart",
     dml_procedure = "dml2",
@@ -23,7 +23,7 @@ if (on_cran) {
     stringsAsFactors = FALSE
   )
 } else {
-  test_cases <- expand.grid(
+  test_cases = expand.grid(
     learner = "regr.rpart",
     m_learner = c("regr.rpart", "classif.rpart"),
     dml_procedure = c("dml1", "dml2"),
@@ -35,37 +35,37 @@ if (on_cran) {
 }
 
 
-test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 # skip('Skip tests for PLR tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   .cases = test_cases,
   {
-    n_rep_boot <- 498
-    n_folds <- 4
+    n_rep_boot = 498
+    n_folds = 4
 
     set.seed(3141)
-    Xnames <- names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
+    Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
     if (m_learner == "regr.rpart") {
-      data_ml <- double_ml_data_from_data_frame(data_plr_multi,
+      data_ml = double_ml_data_from_data_frame(data_plr_multi,
         y_col = "y",
         d_cols = c("d1", "d2"), x_cols = Xnames
       )
     } else if (m_learner == "classif.rpart") {
-      data_plr_binary <- data_plr_multi
-      data_plr_binary$d1 <- as.numeric(data_plr_binary$d1 > 0)
-      data_plr_binary$d2 <- as.numeric(data_plr_binary$d2 > 0)
-      data_ml <- double_ml_data_from_data_frame(data_plr_binary,
+      data_plr_binary = data_plr_multi
+      data_plr_binary$d1 = as.numeric(data_plr_binary$d1 > 0)
+      data_plr_binary$d2 = as.numeric(data_plr_binary$d2 > 0)
+      data_ml = double_ml_data_from_data_frame(data_plr_binary,
         y_col = "y",
         d_cols = c("d1", "d2"), x_cols = Xnames
       )
     }
     if (score == "IV-type") {
-      ml_g <- learner
+      ml_g = learner
     } else {
-      ml_g <- NULL
+      ml_g = NULL
     }
-    double_mlplr_obj_tuned <- DoubleMLPLR$new(data_ml,
+    double_mlplr_obj_tuned = DoubleMLPLR$new(data_ml,
       n_folds = n_folds,
       ml_l = learner,
       ml_m = m_learner,
@@ -75,7 +75,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
       n_rep = n_rep
     )
 
-    tune_sets <- list(
+    tune_sets = list(
       n_folds_tune = 2,
       n_folds_tune = 1,
       rsmp_tune = "cv",
@@ -84,7 +84,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
       resolution = 5
     )
 
-    param_grid <- list(
+    param_grid = list(
       "ml_l" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.02, upper = 0.03),
         minsplit = paradox::p_int(lower = 1, upper = 2)
@@ -96,7 +96,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     )
 
     if (score == "IV-type") {
-      param_grid[["ml_g"]] <- paradox::ps(
+      param_grid[["ml_g"]] = paradox::ps(
         cp = paradox::p_dbl(lower = 0.015, upper = 0.025),
         minsplit = paradox::p_int(lower = 3, upper = 4)
       )
@@ -108,8 +108,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
 
     double_mlplr_obj_tuned$fit()
 
-    theta_obj_tuned <- double_mlplr_obj_tuned$coef
-    se_obj_tuned <- double_mlplr_obj_tuned$se
+    theta_obj_tuned = double_mlplr_obj_tuned$coef
+    se_obj_tuned = double_mlplr_obj_tuned$se
 
     # bootstrap
     # double_mlplr_obj_tuned$bootstrap(method = 'normal',  n_rep = n_rep_boot)

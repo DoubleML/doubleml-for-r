@@ -5,6 +5,7 @@
 ^README.Rmd
 ^\.Rproj\.user$
 ^\.github$
+^\.lintr$
 ^\.pre-commit-config\.yaml$
 ^_pkgdown\.yml$
 ^codecov\.yml$

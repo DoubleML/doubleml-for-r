@@ -1,200 +1,200 @@
 # simulate data sets
-setting <- list(theta = 0.5, n = 1000, p = 20)
+setting = list(theta = 0.5, n = 1000, p = 20)
 
-on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  setting_irm <- list(theta = 0.5, n = 1000, p = 20)
+  setting_irm = list(theta = 0.5, n = 1000, p = 20)
 } else {
-  setting_irm <- list(theta = 0.5, n = 5000, p = 20)
+  setting_irm = list(theta = 0.5, n = 5000, p = 20)
 }
 
-setting_pliv_partial <- list(theta = 1.0, n = 500)
+setting_pliv_partial = list(theta = 1.0, n = 500)
 
 set.seed(1282)
-df <- dgp1_plr(
+df = dgp1_plr(
   setting$theta,
   setting$n,
   setting$p
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames
 )
-data_plr <- list(
+data_plr = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- dgp1_iv(
+df = dgp1_iv(
   setting$theta,
   setting$n,
   setting$p
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z") == FALSE] # note that Xnames includes z2
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE] # note that Xnames includes z2
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = "z"
 )
-data_pliv <- list(
+data_pliv = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- dgp1_irm(
+df = dgp1_irm(
   setting_irm$theta,
   setting_irm$n,
   setting_irm$p
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames
 )
-data_irm <- list(
+data_irm = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- dgp1_irm_binary(
+df = dgp1_irm_binary(
   setting_irm$theta,
   setting_irm$n,
   setting_irm$p
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames
 )
-data_irm_binary <- list(
+data_irm_binary = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- dgp1_irmiv(
+df = dgp1_irmiv(
   setting$theta,
   setting$n,
   setting$p
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_col = "z"
 )
-data_iivm <- list(
+data_iivm = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- dgp1_irmiv_binary(
+df = dgp1_irmiv_binary(
   setting$theta,
   setting$n,
   setting$p
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_col = "z"
 )
-data_iivm_binary <- list(
+data_iivm_binary = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-data_plr_multi <- dgp1_toeplitz(
+data_plr_multi = dgp1_toeplitz(
   setting$n,
   setting$p
 )
 
 set.seed(1282)
-dim_z <- 150
-df <- make_pliv_CHS2015(
+dim_z = 150
+df = make_pliv_CHS2015(
   setting$n,
   alpha = setting$theta,
   dim_z = dim_z,
   return_type = "data.frame"
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
-data_pliv_partial_xz <- list(
+data_pliv_partial_xz = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-dim_z <- 5
-df <- make_pliv_CHS2015(
+dim_z = 5
+df = make_pliv_CHS2015(
   setting$n,
   alpha = setting$theta,
   dim_z = dim_z,
   return_type = "data.frame"
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
-data_pliv_partial_x <- list(
+data_pliv_partial_x = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-dim_z <- 150
-df <- make_data_pliv_partialZ(
+dim_z = 150
+df = make_data_pliv_partialZ(
   setting$n,
   alpha = setting$theta,
   dim_x = 5
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
-data_pliv_partial_z <- list(
+data_pliv_partial_z = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- make_data_ssm(
+df = make_data_ssm(
   setting$n,
   setting$p,
   setting$theta,
   mar = TRUE
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "s") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "s") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", s_col = "s", x_cols = Xnames
 )
-data_ssm_mar <- list(
+data_ssm_mar = list(
   df = df,
   dml_data = dml_data
 )
 
 set.seed(1282)
-df <- make_data_ssm(
+df = make_data_ssm(
   setting$n,
   setting$p,
   setting$theta,
   mar = FALSE
 )
-Xnames <- names(df)[names(df) %in% c("y", "d", "z", "s") == FALSE]
-dml_data <- double_ml_data_from_data_frame(df,
+Xnames = names(df)[names(df) %in% c("y", "d", "z", "s") == FALSE]
+dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", z_cols = "z", s_col = "s", x_cols = Xnames
 )
-data_ssm_nonignorable <- list(
+data_ssm_nonignorable = list(
   df = df,
   dml_data = dml_data
 )

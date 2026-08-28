@@ -19,8 +19,8 @@ instance of \code{DoubleMLData}.
 }
 \examples{
 library(DoubleML)
-df <- make_plr_CCDDHNR2018(return_type = "data.table")
-obj_dml_data <- DoubleMLData$new(df,
+df = make_plr_CCDDHNR2018(return_type = "data.table")
+obj_dml_data = DoubleMLData$new(df,
   y_col = "y",
   d_cols = "d"
 )
