@@ -42,7 +42,7 @@ jobs:
 
       - name: Install dev tools used only by pre-commit hooks
         run: |
-          install.packages("pkgdown")
+          install.packages(c("pkgdown", "remotes", "styler", "roxygen2", "lintr"))
           remotes::install_local(".", force = TRUE)
         shell: Rscript {0}
 
