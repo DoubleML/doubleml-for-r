@@ -19,6 +19,14 @@ jobs:
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      # pre-commit's R-language hooks (roxygenize, lintr, pkgdown, ...) each
+      # bootstrap their own isolated renv library via `additional_dependencies:`
+      # in .pre-commit-config.yaml, but that install step is currently broken
+      # (silently installs nothing) with this pre-commit/pre-commit-uv version.
+      # Disabling renv's sandbox lets those hook environments fall back to
+      # this job's regular R library instead, which setup-r-dependencies (via
+      # DESCRIPTION) and the explicit installs below already populate.
+      RENV_CONFIG_SANDBOX_ENABLED: false
 
     steps:
       - uses: actions/checkout@v7
@@ -31,6 +39,12 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r-dependencies@v2
+
+      - name: Install dev tools used only by pre-commit hooks
+        run: |
+          install.packages("pkgdown")
+          remotes::install_local(".", force = TRUE)
+        shell: Rscript {0}
 
       - uses: actions/setup-python@v6
         with:
