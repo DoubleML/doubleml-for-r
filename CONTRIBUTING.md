@@ -127,8 +127,9 @@ You can also run all hooks on demand, e.g. before opening a PR
 ```sh
 pre-commit run --all-files
 ```
-The same checks run in CI on every push/PR via [pre-commit.ci](https://pre-commit.ci),
-which also auto-fixes and commits trivial issues (e.g. styling) directly on PR branches.
+These checks are not currently enforced in CI (matching the [mlr3](https://github.com/mlr-org)
+ecosystem's own practice for the same tooling), so please run them locally
+before opening a PR.
 
 If your PR is still **work in progress**, please consider marking it a **draft PR**
 (see also [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)).
