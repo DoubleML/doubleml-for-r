@@ -8,6 +8,8 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r/badge)](https://www.codefactor.io/repository/github/doubleml/doubleml-for-r)
 [![CRAN
 Version](https://www.r-pkg.org/badges/version/DoubleML)](https://cran.r-project.org/package=DoubleML)
+[![pre-commit.ci
+status](https://results.pre-commit.ci/badge/github/DoubleML/doubleml-for-r/main.svg)](https://results.pre-commit.ci/latest/github/DoubleML/doubleml-for-r/main)
 
 The R package **DoubleML** provides an implementation of the double /
 debiased machine learning framework of [Chernozhukov et
