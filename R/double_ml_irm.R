@@ -35,14 +35,16 @@
 #' library(mlr3learners)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.ranger",
+#' ml_g <- lrn("regr.ranger",
 #'   num.trees = 100, mtry = 20,
-#'   min.node.size = 2, max.depth = 5)
-#' ml_m = lrn("classif.ranger",
+#'   min.node.size = 2, max.depth = 5
+#' )
+#' ml_m <- lrn("classif.ranger",
 #'   num.trees = 100, mtry = 20,
-#'   min.node.size = 2, max.depth = 5)
-#' obj_dml_data = make_irm_data(theta = 0.5)
-#' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
+#'   min.node.size = 2, max.depth = 5
+#' )
+#' obj_dml_data <- make_irm_data(theta = 0.5)
+#' dml_irm_obj <- DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 #' dml_irm_obj$fit()
 #' dml_irm_obj$summary()
 #' }
@@ -53,30 +55,34 @@
 #' library(mlr3tuning)
 #' library(data.table)
 #' set.seed(2)
-#' ml_g = lrn("regr.rpart")
-#' ml_m = lrn("classif.rpart")
-#' obj_dml_data = make_irm_data(theta = 0.5)
-#' dml_irm_obj = DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
+#' ml_g <- lrn("regr.rpart")
+#' ml_m <- lrn("classif.rpart")
+#' obj_dml_data <- make_irm_data(theta = 0.5)
+#' dml_irm_obj <- DoubleMLIRM$new(obj_dml_data, ml_g, ml_m)
 #'
-#' param_grid = list(
+#' param_grid <- list(
 #'   "ml_g" = paradox::ps(
 #'     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-#'     minsplit = paradox::p_int(lower = 1, upper = 2)),
+#'     minsplit = paradox::p_int(lower = 1, upper = 2)
+#'   ),
 #'   "ml_m" = paradox::ps(
 #'     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-#'     minsplit = paradox::p_int(lower = 1, upper = 2)))
+#'     minsplit = paradox::p_int(lower = 1, upper = 2)
+#'   )
+#' )
 #'
 #' # minimum requirements for tune_settings
-#' tune_settings = list(
+#' tune_settings <- list(
 #'   terminator = mlr3tuning::trm("evals", n_evals = 5),
-#'   algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+#'   algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
+#' )
 #' dml_irm_obj$tune(param_set = param_grid, tune_settings = tune_settings)
 #' dml_irm_obj$fit()
 #' dml_irm_obj$summary()
 #' }
 #'
 #' @export
-DoubleMLIRM = R6Class("DoubleMLIRM",
+DoubleMLIRM <- R6Class("DoubleMLIRM",
   inherit = DoubleML,
   active = list(
     #' @field trimming_rule (`character(1)`) \cr
@@ -99,7 +105,6 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
       }
     }
   ),
-
   public = list(
     #' @description
     #' Creates a new instance of this R6 class.
@@ -168,17 +173,16 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Indicates whether cross-fitting should be applied. Default is `TRUE`.
     initialize = function(data,
-      ml_g,
-      ml_m,
-      n_folds = 5,
-      n_rep = 1,
-      score = "ATE",
-      trimming_rule = "truncate",
-      trimming_threshold = 1e-12,
-      dml_procedure = "dml2",
-      draw_sample_splitting = TRUE,
-      apply_cross_fitting = TRUE) {
-
+                          ml_g,
+                          ml_m,
+                          n_folds = 5,
+                          n_rep = 1,
+                          score = "ATE",
+                          trimming_rule = "truncate",
+                          trimming_threshold = 1e-12,
+                          dml_procedure = "dml2",
+                          draw_sample_splitting = TRUE,
+                          apply_cross_fitting = TRUE) {
       super$initialize_double_ml(
         data,
         n_folds,
@@ -186,20 +190,22 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         score,
         dml_procedure,
         draw_sample_splitting,
-        apply_cross_fitting)
+        apply_cross_fitting
+      )
 
       private$check_data(self$data)
       private$check_score(self$score)
-      ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
-      ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
+      ml_g <- private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = TRUE)
+      ml_m <- private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
 
-      private$learner_ = list(
+      private$learner_ <- list(
         "ml_g" = ml_g,
-        "ml_m" = ml_m)
+        "ml_m" = ml_m
+      )
       private$initialize_ml_nuisance_params()
 
-      private$trimming_rule_ = trimming_rule
-      private$trimming_threshold_ = trimming_threshold
+      private$trimming_rule_ <- trimming_rule
+      private$trimming_threshold_ <- trimming_threshold
     }
   ),
   private = list(
@@ -207,21 +213,22 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
     trimming_threshold_ = NULL,
     n_nuisance = 2,
     initialize_ml_nuisance_params = function() {
-      nuisance = vector("list", self$data$n_treat)
-      names(nuisance) = self$data$d_cols
-      private$params_ = list(
+      nuisance <- vector("list", self$data$n_treat)
+      names(nuisance) <- self$data$d_cols
+      private$params_ <- list(
         "ml_g0" = nuisance,
         "ml_g1" = nuisance,
-        "ml_m" = nuisance)
+        "ml_m" = nuisance
+      )
       invisible(self)
     },
     nuisance_est = function(smpls, ...) {
-
-      cond_smpls = get_cond_samples(
+      cond_smpls <- get_cond_samples(
         smpls,
-        self$data$data_model[[self$data$treat_col]])
+        self$data$data_model[[self$data$treat_col]]
+      )
 
-      m_hat = dml_cv_predict(self$learner$ml_m,
+      m_hat <- dml_cv_predict(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$treat_col,
         self$data$data_model,
@@ -230,9 +237,10 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         est_params = self$get_params("ml_m"),
         return_train_preds = FALSE,
         task_type = private$task_type$ml_m,
-        fold_specific_params = private$fold_specific_params)
+        fold_specific_params = private$fold_specific_params
+      )
 
-      g0_hat = dml_cv_predict(self$learner$ml_g,
+      g0_hat <- dml_cv_predict(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         self$data$data_model,
@@ -241,11 +249,12 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
         est_params = self$get_params("ml_g0"),
         return_train_preds = FALSE,
         task_type = private$task_type$ml_g,
-        fold_specific_params = private$fold_specific_params)
+        fold_specific_params = private$fold_specific_params
+      )
 
-      g1_hat = list(preds = NULL, models = NULL)
+      g1_hat <- list(preds = NULL, models = NULL)
       if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
-        g1_hat = dml_cv_predict(self$learner$ml_g,
+        g1_hat <- dml_cv_predict(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
           self$data$data_model,
@@ -254,131 +263,145 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           est_params = self$get_params("ml_g1"),
           return_train_preds = FALSE,
           task_type = private$task_type$ml_g,
-          fold_specific_params = private$fold_specific_params)
+          fold_specific_params = private$fold_specific_params
+        )
       }
 
-      d = self$data$data_model[[self$data$treat_col]]
-      y = self$data$data_model[[self$data$y_col]]
+      d <- self$data$data_model[[self$data$treat_col]]
+      y <- self$data$data_model[[self$data$y_col]]
 
-      res = private$score_elements(
+      res <- private$score_elements(
         y, d,
         g0_hat$preds, g1_hat$preds, m_hat$preds,
-        smpls)
-      res$preds = list(
+        smpls
+      )
+      res$preds <- list(
         "ml_g0" = g0_hat$preds,
         "ml_g1" = g1_hat$preds,
-        "ml_m" = m_hat$preds)
-      res$models = list(
+        "ml_m" = m_hat$preds
+      )
+      res$models <- list(
         "ml_g0" = g0_hat$models,
         "ml_g1" = g1_hat$models,
-        "ml_m" = m_hat$models)
+        "ml_m" = m_hat$models
+      )
       return(res)
     },
     score_elements = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
       if (is.character(self$score) && self$score == "ATTE") {
         # fraction of treated for ATTE
-        p_hat = vector("numeric", length = self$data$n_obs)
+        p_hat <- vector("numeric", length = self$data$n_obs)
         for (i_fold in seq_along(smpls$test_ids)) {
-          p_hat[smpls$test_ids[[i_fold]]] = mean(
-            self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]])
+          p_hat[smpls$test_ids[[i_fold]]] <- mean(
+            self$data$data_model[[self$data$treat_col]][smpls$test_ids[[i_fold]]]
+          )
         }
       }
 
       if (self$trimming_rule == "truncate" & self$trimming_threshold > 0) {
-        m_hat[m_hat < self$trimming_threshold] = self$trimming_threshold
-        m_hat[m_hat > 1 - self$trimming_threshold] = 1 - self$trimming_threshold
+        m_hat[m_hat < self$trimming_threshold] <- self$trimming_threshold
+        m_hat[m_hat > 1 - self$trimming_threshold] <- 1 - self$trimming_threshold
       }
 
       if (is.character(self$score)) {
         # compute residuals
-        u0_hat = y - g0_hat
+        u0_hat <- y - g0_hat
         if (self$score == "ATE") {
-          u1_hat = y - g1_hat
-          psi_b = g1_hat - g0_hat + d * (u1_hat) / m_hat -
+          u1_hat <- y - g1_hat
+          psi_b <- g1_hat - g0_hat + d * (u1_hat) / m_hat -
             (1 - d) * u0_hat / (1 - m_hat)
-          psi_a = rep(-1, self$data$n_obs)
+          psi_a <- rep(-1, self$data$n_obs)
         } else if (self$score == "ATTE") {
-          psi_b = d * u0_hat / p_hat -
+          psi_b <- d * u0_hat / p_hat -
             m_hat * (1 - d) * u0_hat / (p_hat * (1 - m_hat))
-          psi_a = -d / p_hat
+          psi_a <- -d / p_hat
         }
-        psis = list(psi_a = psi_a, psi_b = psi_b)
+        psis <- list(psi_a = psi_a, psi_b = psi_b)
       } else if (is.function(self$score)) {
-        psis = self$score(
+        psis <- self$score(
           y = y, d = d,
           g0_hat = g0_hat, g1_hat = g1_hat, m_hat = m_hat,
-          smpls = smpls)
+          smpls = smpls
+        )
       }
       return(psis)
     },
     nuisance_tuning = function(smpls, param_set, tune_settings,
-      tune_on_folds, ...) {
-
+                               tune_on_folds, ...) {
       if (!tune_on_folds) {
-        data_tune_list = list(self$data$data_model)
+        data_tune_list <- list(self$data$data_model)
       } else {
-        data_tune_list = lapply(smpls$train_ids, function(x) {
+        data_tune_list <- lapply(smpls$train_ids, function(x) {
           extract_training_data(self$data$data_model, x)
         })
       }
       # TODO: Use wrapper here
-      indx_g0 = lapply(
+      indx_g0 <- lapply(
         data_tune_list,
-        function(x) x[[self$data$treat_col]] == 0)
-      indx_g1 = lapply(
+        function(x) x[[self$data$treat_col]] == 0
+      )
+      indx_g1 <- lapply(
         data_tune_list,
-        function(x) x[[self$data$treat_col]] == 1)
-      data_tune_list_d0 = lapply(
+        function(x) x[[self$data$treat_col]] == 1
+      )
+      data_tune_list_d0 <- lapply(
         seq_along(data_tune_list),
-        function(x) data_tune_list[[x]][indx_g0[[x]], ])
-      data_tune_list_d1 = lapply(
+        function(x) data_tune_list[[x]][indx_g0[[x]], ]
+      )
+      data_tune_list_d1 <- lapply(
         seq_along(data_tune_list),
-        function(x) data_tune_list[[x]][indx_g1[[x]], ])
+        function(x) data_tune_list[[x]][indx_g1[[x]], ]
+      )
 
-      tuning_result_m = dml_tune(self$learner$ml_m,
+      tuning_result_m <- dml_tune(self$learner$ml_m,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$treat_col,
         data_tune_list,
         nuisance_id = "nuis_m",
         param_set$ml_m, tune_settings,
         tune_settings$measure$ml_m,
-        private$task_type$ml_m)
+        private$task_type$ml_m
+      )
 
-      tuning_result_g0 = dml_tune(self$learner$ml_g,
+      tuning_result_g0 <- dml_tune(self$learner$ml_g,
         c(self$data$x_cols, self$data$other_treat_cols),
         self$data$y_col,
         data_tune_list_d0,
         nuisance_id = "nuis_g0",
         param_set$ml_g, tune_settings,
         tune_settings$measure$ml_g,
-        private$task_type$ml_g)
+        private$task_type$ml_g
+      )
 
       if ((is.character(self$score) && self$score == "ATE") || is.function(self$score)) {
-        tuning_result_g1 = dml_tune(self$learner$ml_g,
+        tuning_result_g1 <- dml_tune(self$learner$ml_g,
           c(self$data$x_cols, self$data$other_treat_cols),
           self$data$y_col,
           data_tune_list_d1,
           nuisance_id = "nuis_g1",
           param_set$ml_g, tune_settings,
           tune_settings$measure$ml_g,
-          private$task_type$ml_g)
+          private$task_type$ml_g
+        )
       } else {
-        tuning_result_g1 = list(list(), "params" = list(list()))
+        tuning_result_g1 <- list(list(), "params" = list(list()))
       }
 
-      tuning_result = list(
+      tuning_result <- list(
         "ml_g0" = list(tuning_result_g0, params = tuning_result_g0$params),
         "ml_g1" = list(tuning_result_g1, params = tuning_result_g1$params),
-        "ml_m" = list(tuning_result_m, params = tuning_result_m$params))
+        "ml_m" = list(tuning_result_m, params = tuning_result_m$params)
+      )
 
       return(tuning_result)
     },
     check_score = function(score) {
       assert(
         check_character(score),
-        check_class(score, "function"))
+        check_class(score, "function")
+      )
       if (is.character(score)) {
-        valid_score = c("ATE", "ATTE")
+        valid_score <- c("ATE", "ATTE")
         assertChoice(score, valid_score)
       }
       return()
@@ -389,17 +412,20 @@ DoubleMLIRM = R6Class("DoubleMLIRM",
           "Incompatible data.\n", paste(obj_dml_data$z_cols, collapse = ", "),
           "has been set as instrumental variable(s).\n",
           "To fit an interactive IV regression model use DoubleMLIIVM",
-          "instead of DoubleMLIRM."))
+          "instead of DoubleMLIRM."
+        ))
       }
-      one_treat = (obj_dml_data$n_treat == 1)
-      err_msg = paste(
+      one_treat <- (obj_dml_data$n_treat == 1)
+      err_msg <- paste(
         "Incompatible data.\n",
         "To fit an IRM model with DoubleML",
         "exactly one binary variable with values 0 and 1",
-        "needs to be specified as treatment variable.")
+        "needs to be specified as treatment variable."
+      )
       if (one_treat) {
-        binary_treat = test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
-          lower = 0, upper = 1)
+        binary_treat <- test_integerish(obj_dml_data$data[[obj_dml_data$d_cols]],
+          lower = 0, upper = 1
+        )
         if (!(one_treat & binary_treat)) {
           stop(err_msg)
         }

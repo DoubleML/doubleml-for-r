@@ -1,0 +1,26 @@
+linters: linters_with_defaults(
+    # lintr defaults: https://lintr.r-lib.org/reference/linters.html
+    # the following setup changes/removes certain linters, following
+    # https://github.com/mlr-org/mlr3spatiotempcv/blob/main/.lintr
+    assignment_linter = NULL, # do not force using <- for assignments
+    # not enforced: this codebase deliberately uses statistical notation
+    # (X/D/Z/Y-based names for covariates/treatment/instrument/outcome),
+    # which neither snake_case nor CamelCase accepts, plus it flags public
+    # API like DoubleMLPLIV.partialX() that can't be renamed
+    object_name_linter = NULL,
+    commented_code_linter = NULL, # allow code in comments
+    line_length_linter = line_length_linter(100),
+    return_linter = NULL, # explicit return() is idiomatic in this R6-heavy codebase
+    indentation_linter = NULL # disagrees with styler's tidyverse_style on some continuation lines
+  )
+exclusions: list(
+    # long URLs in roxygen @references / markdown links and source comments
+    # that can't be wrapped without breaking the link/URL itself; and the
+    # exported make_pliv_multiway_cluster_CKMS2021 name. Line-number exclusions used here (not an inline
+    # # nolint comment) since styler can silently drop trailing comments when
+    # it reformats a line
+    "R/datasets.R" = c(28, 84, 93, 171, 174, 234, 392, 878),
+    # @importFrom must be a single line; a trailing comment would be parsed
+    # by roxygen2 as bogus additional import names
+    "R/zzz.R" = c(9)
+  )

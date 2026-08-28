@@ -51,9 +51,10 @@ Creates a new instance of class \code{DoubleMLData}.
 Initalization of DoubleMLData from \code{matrix()} objects.
 }
 \examples{
-matrix_list = make_plr_CCDDHNR2018(return_type = "matrix")
-obj_dml_data = double_ml_data_from_matrix(
+matrix_list <- make_plr_CCDDHNR2018(return_type = "matrix")
+obj_dml_data <- double_ml_data_from_matrix(
   X = matrix_list$X,
   y = matrix_list$y,
-  d = matrix_list$d)
+  d = matrix_list$d
+)
 }

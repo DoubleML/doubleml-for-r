@@ -4,142 +4,154 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
+on_cran <- !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  test_cases = expand.grid(
+  test_cases <- expand.grid(
     dml_procedure = "dml1",
     score = "IV-type",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
-  test_cases = expand.grid(
+  test_cases <- expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
-test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
+test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
-  .cases = test_cases, {
-    n_folds = 2
-    n_rep_boot = 498
+  .cases = test_cases,
+  {
+    n_folds <- 2
+    n_rep_boot <- 498
     set.seed(3141)
 
     # load learner by name
-    learner_name = "regr.rpart"
-    params = list("cp" = 0.01, "minsplit" = 20)
+    learner_name <- "regr.rpart"
+    params <- list("cp" = 0.01, "minsplit" = 20)
 
     set.seed(123)
     if (score == "IV-type") {
-      ml_g = learner_name
+      ml_g <- learner_name
     } else {
-      ml_g = NULL
+      ml_g <- NULL
     }
-    double_mlplr = DoubleMLPLR$new(
+    double_mlplr <- DoubleMLPLR$new(
       data = data_plr$dml_data,
       ml_l = learner_name,
       ml_m = learner_name,
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
 
     # set params for nuisance part m
     double_mlplr$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     # set params for nuisance part l
     double_mlplr$set_ml_nuisance_params(
       learner = "ml_l",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     if (score == "IV-type") {
       # set params for nuisance part g
       double_mlplr$set_ml_nuisance_params(
         learner = "ml_g",
         treat_var = "d",
-        params = params)
+        params = params
+      )
     }
 
     double_mlplr$fit()
-    theta = double_mlplr$coef
-    se = double_mlplr$se
-    t = double_mlplr$t_stat
-    pval = double_mlplr$pval
-    ci = double_mlplr$confint(level = 0.95, joint = FALSE)
+    theta <- double_mlplr$coef
+    se <- double_mlplr$se
+    t <- double_mlplr$t_stat
+    pval <- double_mlplr$pval
+    ci <- double_mlplr$confint(level = 0.95, joint = FALSE)
     double_mlplr$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta = double_mlplr$boot_coef
+    boot_theta <- double_mlplr$boot_coef
 
     set.seed(123)
-    loaded_learner = mlr3::lrn("regr.rpart", "cp" = 0.01, "minsplit" = 20)
+    loaded_learner <- mlr3::lrn("regr.rpart", "cp" = 0.01, "minsplit" = 20)
     if (score == "IV-type") {
-      ml_g = loaded_learner
+      ml_g <- loaded_learner
     } else {
-      ml_g = NULL
+      ml_g <- NULL
     }
-    double_mlplr_loaded = DoubleMLPLR$new(
+    double_mlplr_loaded <- DoubleMLPLR$new(
       data = data_plr$dml_data,
       ml_l = loaded_learner,
       ml_m = loaded_learner,
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
 
     double_mlplr_loaded$fit()
-    theta_loaded = double_mlplr_loaded$coef
-    se_loaded = double_mlplr_loaded$se
-    t_loaded = double_mlplr_loaded$t_stat
-    pval_loaded = double_mlplr_loaded$pval
-    ci_loaded = double_mlplr_loaded$confint(level = 0.95, joint = FALSE)
+    theta_loaded <- double_mlplr_loaded$coef
+    se_loaded <- double_mlplr_loaded$se
+    t_loaded <- double_mlplr_loaded$t_stat
+    pval_loaded <- double_mlplr_loaded$pval
+    ci_loaded <- double_mlplr_loaded$confint(level = 0.95, joint = FALSE)
     double_mlplr$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta_loaded = double_mlplr$boot_coef
+    boot_theta_loaded <- double_mlplr$boot_coef
 
     set.seed(123)
-    semiloaded_learner = mlr3::lrn("regr.rpart")
+    semiloaded_learner <- mlr3::lrn("regr.rpart")
     if (score == "IV-type") {
-      ml_g = semiloaded_learner
+      ml_g <- semiloaded_learner
     } else {
-      ml_g = NULL
+      ml_g <- NULL
     }
-    double_mlplr_semiloaded = DoubleMLPLR$new(
+    double_mlplr_semiloaded <- DoubleMLPLR$new(
       data = data_plr$dml_data,
       ml_l = semiloaded_learner,
       ml_m = semiloaded_learner,
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
     # set params for nuisance part m
     double_mlplr_semiloaded$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     # set params for nuisance part l
     double_mlplr_semiloaded$set_ml_nuisance_params(
       learner = "ml_l",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     if (score == "IV-type") {
       # set params for nuisance part g
       double_mlplr_semiloaded$set_ml_nuisance_params(
         learner = "ml_g",
         treat_var = "d",
-        params = params)
+        params = params
+      )
     }
 
     double_mlplr_semiloaded$fit()
-    theta_semiloaded = double_mlplr_semiloaded$coef
-    se_semiloaded = double_mlplr_semiloaded$se
-    t_semiloaded = double_mlplr_semiloaded$t_stat
-    pval_semiloaded = double_mlplr_semiloaded$pval
-    ci_semiloaded = double_mlplr_semiloaded$confint(level = 0.95, joint = FALSE)
+    theta_semiloaded <- double_mlplr_semiloaded$coef
+    se_semiloaded <- double_mlplr_semiloaded$se
+    t_semiloaded <- double_mlplr_semiloaded$t_stat
+    pval_semiloaded <- double_mlplr_semiloaded$pval
+    ci_semiloaded <- double_mlplr_semiloaded$confint(level = 0.95, joint = FALSE)
     double_mlplr$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta_semiloaded = double_mlplr$boot_coef
+    boot_theta_semiloaded <- double_mlplr$boot_coef
 
     expect_equal(theta, theta_loaded, tolerance = 1e-8)
     expect_equal(se, se_loaded, tolerance = 1e-8)

@@ -4,49 +4,54 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 
 skip_on_cran()
 
-test_cases = expand.grid(
+test_cases <- expand.grid(
   learner = c("regr.lm", "regr.glmnet"),
   dml_procedure = c("dml1", "dml2"),
   score = "partialling out",
-  stringsAsFactors = FALSE)
-test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
+  stringsAsFactors = FALSE
+)
+test_cases[".test_name"] <- apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
-  .cases = test_cases, {
-    learner_pars = get_default_mlmethod_pliv(learner)
-    n_rep_boot = 498
+  .cases = test_cases,
+  {
+    learner_pars <- get_default_mlmethod_pliv(learner)
+    n_rep_boot <- 498
 
     set.seed(3141)
-    dim_z = 150
-    pliv_hat = dml_pliv_partial_z(data_pliv_partialZ$df,
+    dim_z <- 150
+    pliv_hat <- dml_pliv_partial_z(data_pliv_partial_z$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5,
       ml_r = learner_pars$ml_r$clone(),
-      dml_procedure = dml_procedure, score = score)
-    theta = pliv_hat$coef
-    se = pliv_hat$se
+      dml_procedure = dml_procedure, score = score
+    )
+    theta <- pliv_hat$coef
+    se <- pliv_hat$se
 
-    boot_theta = bootstrap_pliv_partial_z(pliv_hat$thetas, pliv_hat$ses,
-      data_pliv_partialZ$df,
+    boot_theta <- bootstrap_pliv_partial_z(pliv_hat$thetas, pliv_hat$ses,
+      data_pliv_partial_z$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5, smpls = pliv_hat$smpls,
       all_preds = pliv_hat$all_preds,
-      bootstrap = "normal", n_rep_boot = n_rep_boot)$boot_coef
+      bootstrap = "normal", n_rep_boot = n_rep_boot
+    )$boot_coef
 
     set.seed(3141)
-    double_mlpliv_obj = DoubleMLPLIV.partialZ(data_pliv_partialZ$dml_data,
+    double_mlpliv_obj <- DoubleMLPLIV.partialZ(data_pliv_partial_z$dml_data,
       ml_r = learner_pars$ml_r$clone(),
       n_folds = 5,
       score = score,
-      dml_procedure = dml_procedure)
+      dml_procedure = dml_procedure
+    )
 
     double_mlpliv_obj$fit()
-    theta_obj = double_mlpliv_obj$coef
-    se_obj = double_mlpliv_obj$se
+    theta_obj <- double_mlpliv_obj$coef
+    se_obj <- double_mlpliv_obj$se
 
     # bootstrap
     double_mlpliv_obj$bootstrap(method = "normal", n_rep = n_rep_boot)
-    boot_theta_obj = double_mlpliv_obj$boot_coef
+    boot_theta_obj <- double_mlpliv_obj$boot_coef
 
     # at the moment the object result comes without a name
     expect_equal(theta, theta_obj, tolerance = 1e-8)
@@ -56,16 +61,18 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
 )
 
 test_that("Unit tests for PLIV.partialZ invalid score", {
-  msg = paste(
+  msg <- paste(
     "Callable score not implemented for DoubleMLPLIV with",
-    "partialX=FALSE and partialZ=TRUE.")
-  double_mlplr_obj = DoubleMLPLIV.partialZ(
-    data_pliv_partialZ$dml_data,
+    "partialX=FALSE and partialZ=TRUE."
+  )
+  double_mlplr_obj <- DoubleMLPLIV.partialZ(
+    data_pliv_partial_z$dml_data,
     ml_r = mlr3::lrn("regr.rpart"),
     score = function(x) {
       return(mean(x))
     }
   )
   expect_error(double_mlplr_obj$fit(),
-    regexp = msg)
+    regexp = msg
+  )
 })

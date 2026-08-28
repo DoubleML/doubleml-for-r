@@ -19,50 +19,52 @@ instance of \code{DoubleMLClusterData}.
 }
 \examples{
 library(DoubleML)
-dt = make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
-obj_dml_data = DoubleMLClusterData$new(dt,
+dt <- make_pliv_multiway_cluster_CKMS2021(return_type = "data.table")
+obj_dml_data <- DoubleMLClusterData$new(dt,
   y_col = "Y",
   d_cols = "D",
   z_cols = "Z",
-  cluster_cols = c("cluster_var_i", "cluster_var_j"))
+  cluster_cols = c("cluster_var_i", "cluster_var_j")
+)
 }
 \section{Super class}{
-\code{\link[DoubleML:DoubleMLData]{DoubleML::DoubleMLData}} -> \code{DoubleMLClusterData}
+\code{\link[DoubleML:DoubleMLData]{DoubleMLData}} -> \code{DoubleMLClusterData}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{cluster_cols}}{(\code{character()})\cr
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{cluster_cols}}{(\code{character()})\cr
 The cluster variable(s).}
 
-\item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
+    \item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
 The covariates. If \code{NULL}, all variables (columns of \code{data}) which are
 neither specified as outcome variable \code{y_col}, nor as treatment variables
 \code{d_cols}, nor as instrumental variables \code{z_cols}, nor as cluster
 variables \code{cluster_cols} are used as covariates.
 Default is \code{NULL}.}
 
-\item{\code{n_cluster_vars}}{(\code{integer(1)}) \cr
+    \item{\code{n_cluster_vars}}{(\code{integer(1)}) \cr
 The number of cluster variables.}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-DoubleMLClusterData-new}{\code{DoubleMLClusterData$new()}}
-\item \href{#method-DoubleMLClusterData-print}{\code{DoubleMLClusterData$print()}}
-\item \href{#method-DoubleMLClusterData-set_data_model}{\code{DoubleMLClusterData$set_data_model()}}
-\item \href{#method-DoubleMLClusterData-clone}{\code{DoubleMLClusterData$clone()}}
-}
+  \itemize{
+    \item \href{#method-DoubleMLClusterData-initialize}{\code{DoubleMLClusterData$new()}}
+    \item \href{#method-DoubleMLClusterData-print}{\code{DoubleMLClusterData$print()}}
+    \item \href{#method-DoubleMLClusterData-set_data_model}{\code{DoubleMLClusterData$set_data_model()}}
+    \item \href{#method-DoubleMLClusterData-clone}{\code{DoubleMLClusterData$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DoubleMLClusterData-new"></a>}}
-\if{latex}{\out{\hypertarget{method-DoubleMLClusterData-new}{}}}
-\subsection{Method \code{new()}}{
-Creates a new instance of this \link[R6:R6Class]{R6} class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLClusterData$new(
+\if{html}{\out{<a id="method-DoubleMLClusterData-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLClusterData-initialize}{}}}
+\subsection{\code{DoubleMLClusterData$new()}}{
+  Creates a new instance of this \link[R6:R6Class]{R6} class.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLClusterData$new(
   data = NULL,
   x_cols = NULL,
   y_col = NULL,
@@ -71,89 +73,89 @@ Creates a new instance of this \link[R6:R6Class]{R6} class.
   z_cols = NULL,
   s_col = NULL,
   use_other_treat_as_covariate = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{(\code{\link[data.table:data.table]{data.table}}, \code{data.frame()})\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{(\code{\link[data.table:data.table]{data.table}}, \code{data.frame()})\cr
 Data object.}
-
-\item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
+      \item{\code{x_cols}}{(\code{NULL}, \code{character()}) \cr
 The covariates. If \code{NULL}, all variables (columns of \code{data}) which are
 neither specified as outcome variable \code{y_col}, nor as treatment variables
 \code{d_cols}, nor as instrumental variables \code{z_cols} are used as covariates.
 Default is \code{NULL}.}
-
-\item{\code{y_col}}{(\code{character(1)}) \cr
+      \item{\code{y_col}}{(\code{character(1)}) \cr
 The outcome variable.}
-
-\item{\code{d_cols}}{(\code{character()}) \cr
+      \item{\code{d_cols}}{(\code{character()}) \cr
 The treatment variable(s).}
-
-\item{\code{cluster_cols}}{(\code{character()}) \cr
+      \item{\code{cluster_cols}}{(\code{character()}) \cr
 The cluster variable(s).}
-
-\item{\code{z_cols}}{(\code{NULL}, \code{character()}) \cr
+      \item{\code{z_cols}}{(\code{NULL}, \code{character()}) \cr
 The instrumental variables. Default is \code{NULL}.}
-
-\item{\code{s_col}}{(\code{NULL}, \code{character()}) \cr
+      \item{\code{s_col}}{(\code{NULL}, \code{character()}) \cr
 The score or selection variable (only relevant/used for SSM Estimators). Default is \code{NULL}.}
-
-\item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
+      \item{\code{use_other_treat_as_covariate}}{(\code{logical(1)}) \cr
 Indicates whether in the multiple-treatment case the other treatment
 variables should be added as covariates. Default is \code{TRUE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLClusterData-print"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLClusterData-print}{}}}
-\subsection{Method \code{print()}}{
-Print DoubleMLClusterData objects.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLClusterData$print()}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLClusterData$print()}}{
+  Print DoubleMLClusterData objects.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLClusterData$print()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLClusterData-set_data_model"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLClusterData-set_data_model}{}}}
-\subsection{Method \code{set_data_model()}}{
-Setter function for \code{data_model}. The function implements the causal model
+\subsection{\code{DoubleMLClusterData$set_data_model()}}{
+  Setter function for \code{data_model}. The function implements the causal model
 as specified by the user via \code{y_col}, \code{d_cols}, \code{x_cols}, \code{z_cols} and
 \code{cluster_cols} and assigns the role for the treatment variables in the
 multiple-treatment case.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLClusterData$set_data_model(treatment_var)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLClusterData$set_data_model(treatment_var)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{treatment_var}}{(\code{character()})\cr
+Active treatment variable that will be set to \code{treat_col}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{treatment_var}}{(\code{character()})\cr
-Active treatment variable that will be set to \code{treat_col}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLClusterData-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLClusterData-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLClusterData$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLClusterData$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLClusterData$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

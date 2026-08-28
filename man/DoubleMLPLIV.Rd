@@ -16,7 +16,11 @@ Partially linear IV regression (PLIV) models take the form
 
 \eqn{Z = m_0(X) + V},
 
-with \eqn{E[\zeta|Z,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome variable variable, \eqn{D} is the policy variable of interest and \eqn{Z} denotes one or multiple instrumental variables. The high-dimensional vector \eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates, and \eqn{\zeta} and \eqn{V} are stochastic errors.
+with \eqn{E[\zeta|Z,X]=0} and \eqn{E[V|X] = 0}. \eqn{Y} is the outcome
+variable, \eqn{D} is the policy variable of interest and \eqn{Z} denotes
+one or multiple instrumental variables. The high-dimensional vector
+\eqn{X = (X_1, \ldots, X_p)} consists of other confounding covariates,
+and \eqn{\zeta} and \eqn{V} are stochastic errors.
 }
 \examples{
 \donttest{
@@ -25,11 +29,11 @@ library(mlr3)
 library(mlr3learners)
 library(data.table)
 set.seed(2)
-ml_l = lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
-ml_m = ml_l$clone()
-ml_r = ml_l$clone()
-obj_dml_data = make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
-dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
+ml_l <- lrn("regr.ranger", num.trees = 100, mtry = 20, min.node.size = 2, max.depth = 5)
+ml_m <- ml_l$clone()
+ml_r <- ml_l$clone()
+obj_dml_data <- make_pliv_CHS2015(alpha = 1, n_obs = 500, dim_x = 20, dim_z = 1)
+dml_pliv_obj <- DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
 dml_pliv_obj$fit()
 dml_pliv_obj$summary()
 }
@@ -41,35 +45,41 @@ library(mlr3learners)
 library(mlr3tuning)
 library(data.table)
 set.seed(2)
-ml_l = lrn("regr.rpart")
-ml_m = ml_l$clone()
-ml_r = ml_l$clone()
-obj_dml_data = make_pliv_CHS2015(
+ml_l <- lrn("regr.rpart")
+ml_m <- ml_l$clone()
+ml_r <- ml_l$clone()
+obj_dml_data <- make_pliv_CHS2015(
   alpha = 1, n_obs = 500, dim_x = 20,
-  dim_z = 1)
-dml_pliv_obj = DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
-param_grid = list(
+  dim_z = 1
+)
+dml_pliv_obj <- DoubleMLPLIV$new(obj_dml_data, ml_l, ml_m, ml_r)
+param_grid <- list(
   "ml_l" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-    minsplit = paradox::p_int(lower = 1, upper = 2)),
+    minsplit = paradox::p_int(lower = 1, upper = 2)
+  ),
   "ml_m" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-    minsplit = paradox::p_int(lower = 1, upper = 2)),
+    minsplit = paradox::p_int(lower = 1, upper = 2)
+  ),
   "ml_r" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-    minsplit = paradox::p_int(lower = 1, upper = 2)))
+    minsplit = paradox::p_int(lower = 1, upper = 2)
+  )
+)
 
 # minimum requirements for tune_settings
-tune_settings = list(
+tune_settings <- list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
-  algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+  algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
+)
 dml_pliv_obj$tune(param_set = param_grid, tune_settings = tune_settings)
 dml_pliv_obj$fit()
 dml_pliv_obj$summary()
 }
 }
 \seealso{
-Other DoubleML: 
+Other DoubleML:
 \code{\link{DoubleML}},
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
@@ -78,52 +88,51 @@ Other DoubleML:
 }
 \concept{DoubleML}
 \section{Super class}{
-\code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLPLIV}
+\code{\link[DoubleML:DoubleML]{DoubleML}} -> \code{DoubleMLPLIV}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{partialX}}{(\code{logical(1)})  \cr
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{partialX}}{(\code{logical(1)})  \cr
 Indicates whether covariates \eqn{X} should be partialled out.}
 
-\item{\code{partialZ}}{(\code{logical(1)}) \cr
+    \item{\code{partialZ}}{(\code{logical(1)}) \cr
 Indicates whether instruments \eqn{Z} should be partialled out.}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-DoubleMLPLIV-new}{\code{DoubleMLPLIV$new()}}
-\item \href{#method-DoubleMLPLIV-set_ml_nuisance_params}{\code{DoubleMLPLIV$set_ml_nuisance_params()}}
-\item \href{#method-DoubleMLPLIV-tune}{\code{DoubleMLPLIV$tune()}}
-\item \href{#method-DoubleMLPLIV-clone}{\code{DoubleMLPLIV$clone()}}
+  \itemize{
+    \item \href{#method-DoubleMLPLIV-initialize}{\code{DoubleMLPLIV$new()}}
+    \item \href{#method-DoubleMLPLIV-set_ml_nuisance_params}{\code{DoubleMLPLIV$set_ml_nuisance_params()}}
+    \item \href{#method-DoubleMLPLIV-tune}{\code{DoubleMLPLIV$tune()}}
+    \item \href{#method-DoubleMLPLIV-clone}{\code{DoubleMLPLIV$clone()}}
+  }
 }
-}
-\if{html}{\out{
-<details><summary>Inherited methods</summary>
+\if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML::DoubleML$bootstrap()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML::DoubleML$confint()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-fit'><code>DoubleML::DoubleML$fit()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML::DoubleML$get_params()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML::DoubleML$learner_names()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML::DoubleML$p_adjust()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML::DoubleML$params_names()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML::DoubleML$print()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML::DoubleML$set_sample_splitting()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML::DoubleML$split_samples()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML::DoubleML$summary()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML$bootstrap()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML$confint()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-fit'><code>DoubleML$fit()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML$get_params()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML$learner_names()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML$p_adjust()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML$params_names()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML$print()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML$set_sample_splitting()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML$split_samples()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML$summary()</code></a></span></li>
 </ul>
-</details>
-}}
+</details>}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DoubleMLPLIV-new"></a>}}
-\if{latex}{\out{\hypertarget{method-DoubleMLPLIV-new}{}}}
-\subsection{Method \code{new()}}{
-Creates a new instance of this R6 class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLIV$new(
+\if{html}{\out{<a id="method-DoubleMLPLIV-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLPLIV-initialize}{}}}
+\subsection{\code{DoubleMLPLIV$new()}}{
+  Creates a new instance of this R6 class.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLPLIV$new(
   data,
   ml_l,
   ml_m,
@@ -137,17 +146,16 @@ Creates a new instance of this R6 class.
   dml_procedure = "dml2",
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{(\code{DoubleMLData}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the data and specifying the variables
 of the causal model.}
-
-\item{\code{ml_l}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+      \item{\code{ml_l}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
 \code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerRegr]{LearnerRegr}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
@@ -155,12 +163,11 @@ extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "regr"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}.  \cr
 \code{ml_l} refers to the nuisance function \eqn{l_0(X) = E[Y|X]}.}
-
-\item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+      \item{\code{ml_m}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
 \code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerRegr]{LearnerRegr}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
@@ -168,12 +175,11 @@ extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "regr"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.}
-
-\item{\code{ml_r}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+      \item{\code{ml_r}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
 \code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerRegr]{LearnerRegr}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
@@ -181,12 +187,11 @@ extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "regr"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}. \cr
 \code{ml_r} refers to the nuisance function \eqn{r_0(X) = E[D|X]}.}
-
-\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+      \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
 \code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerRegr]{LearnerRegr}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
@@ -194,126 +199,118 @@ extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "regr"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("regr.cv_glmnet", s = "lambda.min")}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(X) = E[Y - D\theta_0|X]}.
 Note: The learner \code{ml_g} is only required for the score \code{'IV-type'}.
 Optionally, it can be specified and estimated for callable scores.}
-
-\item{\code{partialX}}{(\code{logical(1)})  \cr
+      \item{\code{partialX}}{(\code{logical(1)})  \cr
 Indicates whether covariates \eqn{X} should be partialled out.
 Default is \code{TRUE}.}
-
-\item{\code{partialZ}}{(\code{logical(1)}) \cr
+      \item{\code{partialZ}}{(\code{logical(1)}) \cr
 Indicates whether instruments \eqn{Z} should be partialled out.
 Default is \code{FALSE}.}
-
-\item{\code{n_folds}}{(\code{integer(1)})\cr
+      \item{\code{n_folds}}{(\code{integer(1)})\cr
 Number of folds. Default is \code{5}.}
-
-\item{\code{n_rep}}{(\code{integer(1)}) \cr
+      \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for the sample splitting. Default is \code{1}.}
-
-\item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
+      \item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
 A \code{character(1)} (\code{"partialling out"} or \code{"IV-type"}) or a \verb{function()}
 specifying the score function.
 If a \verb{function()} is provided, it must be of the form
 \verb{function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls)} and
 the returned output must be a named \code{list()} with elements
 \code{psi_a} and \code{psi_b}. Default is \code{"partialling out"}.}
-
-\item{\code{dml_procedure}}{(\code{character(1)}) \cr
+      \item{\code{dml_procedure}}{(\code{character(1)}) \cr
 A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine
 learning algorithm. Default is \code{"dml2"}.}
-
-\item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
+      \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
 Indicates whether the sample splitting should be drawn during
 initialization of the object. Default is \code{TRUE}.}
-
-\item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
+      \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLPLIV-set_ml_nuisance_params"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLPLIV-set_ml_nuisance_params}{}}}
-\subsection{Method \code{set_ml_nuisance_params()}}{
-Set hyperparameters for the nuisance models of DoubleML models.
+\subsection{\code{DoubleMLPLIV$set_ml_nuisance_params()}}{
+  Set hyperparameters for the nuisance models of DoubleML models.
 
 Note that in the current implementation, either all parameters have to
 be set globally or all parameters have to be provided fold-specific.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLIV$set_ml_nuisance_params(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLPLIV$set_ml_nuisance_params(
   learner = NULL,
   treat_var = NULL,
   params,
   set_fold_specific = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{learner}}{(\code{character(1)}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{learner}}{(\code{character(1)}) \cr
 The nuisance model/learner (see method \code{params_names}).}
-
-\item{\code{treat_var}}{(\code{character(1)}) \cr
+      \item{\code{treat_var}}{(\code{character(1)}) \cr
 The treatment varaible (hyperparameters can be set treatment-variable
 specific).}
-
-\item{\code{params}}{(named \code{list()}) \cr
+      \item{\code{params}}{(named \code{list()}) \cr
 A named \code{list()} with estimator parameters. Parameters are used for all
 folds by default. Alternatively, parameters can be passed in a
 fold-specific way if option  \code{fold_specific}is \code{TRUE}. In this case, the
 outer list needs to be of length \code{n_rep} and the inner list of length
 \code{n_folds}.}
-
-\item{\code{set_fold_specific}}{(\code{logical(1)}) \cr
+      \item{\code{set_fold_specific}}{(\code{logical(1)}) \cr
 Indicates if the parameters passed in \code{params} should be passed in
 fold-specific way. Default is \code{FALSE}. If \code{TRUE}, the outer list needs
 to be of length \code{n_rep} and the inner list of length \code{n_folds}.
 Note that in the current implementation, either all parameters have to
 be set globally or all parameters have to be provided fold-specific.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLPLIV-tune"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLPLIV-tune}{}}}
-\subsection{Method \code{tune()}}{
-Hyperparameter-tuning for DoubleML models.
+\subsection{\code{DoubleMLPLIV$tune()}}{
+  Hyperparameter-tuning for DoubleML models.
 
 The hyperparameter-tuning is performed using the tuning methods provided
 in the \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} package. For more
 information on tuning in \href{https://mlr3.mlr-org.com/}{mlr3}, we refer to
 the section on parameter tuning in the
 \href{https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html}{mlr3 book}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLIV$tune(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLPLIV$tune(
   param_set,
   tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5), measure
     = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
     mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{param_set}}{(named \code{list()}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{param_set}}{(named \code{list()}) \cr
 A named \code{list} with a parameter grid for each nuisance model/learner
 (see method \code{learner_names()}). The parameter grid must be an object of
 class \link[paradox:ParamSet]{ParamSet}.}
-
-\item{\code{tune_settings}}{(named \code{list()}) \cr
+      \item{\code{tune_settings}}{(named \code{list()}) \cr
 A named \code{list()} with arguments passed to the hyperparameter-tuning with
 \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up
 \link[mlr3tuning:TuningInstanceBatchSingleCrit]{TuningInstance} objects.
@@ -341,7 +338,7 @@ If not specified by the user, default is set to \code{5}.
 \item \code{measure} (\code{NULL}, named \code{list()}, optional) \cr
 Named list containing the measures used for parameter tuning. Entries in
 list must either be \link[mlr3:Measure]{Measure} objects or keys to be
-passed to passed to \link[mlr3:mlr_sugar]{msr()}. The names of the entries must
+passed to passed to \link[mlr3:msr]{msr()}. The names of the entries must
 match the learner names (see method \code{learner_names()}). If set to \code{NULL},
 default measures are used, i.e., \code{"regr.mse"} for continuous outcome
 variables and \code{"classif.ce"} for binary outcomes.
@@ -350,32 +347,34 @@ dictionary to specify  the tuning algorithm used in
 \link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to
 \link[mlr3tuning:tnr]{tnr()}.
 }}
-
-\item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
+      \item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
 Indicates whether the tuning should be done fold-specific or globally.
 Default is \code{FALSE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLPLIV-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLPLIV-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLPLIV$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLPLIV$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLPLIV$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

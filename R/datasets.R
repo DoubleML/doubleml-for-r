@@ -55,55 +55,56 @@
 #'
 #'
 #' @export
-fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
-  instrument = FALSE) {
-
+fetch_401k <- function(
+  return_type = "DoubleMLData", polynomial_features = FALSE,
+  instrument = FALSE
+) {
   assert_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
   assert_logical(polynomial_features)
   assert_logical(instrument)
-  url = "https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta"
-  data = read.dta13(url)
+  url <- "https://github.com/VC2015/DMLonGitHub/raw/master/sipp1991.dta"
+  data <- read.dta13(url)
 
-  x_cols = NULL
-  z_cols = NULL
-  d_cols = NULL
-  y_col = "net_tfa"
+  x_cols <- NULL
+  z_cols <- NULL
+  d_cols <- NULL
+  y_col <- "net_tfa"
 
   if (polynomial_features) {
-    formula_x = formula(" ~ -1 + (poly(age, 6, raw=TRUE) +
+    formula_x <- formula(" ~ -1 + (poly(age, 6, raw=TRUE) +
                             poly(inc, 8, raw=TRUE) +
                             poly(educ, 4, raw=TRUE) + poly(fsize, 2, raw=TRUE) +
                             marr + twoearn + db + pira + hown)^2")
   } else {
-    formula_x = formula(" ~ -1 + age + inc + educ + fsize + marr + twoearn +
+    formula_x <- formula(" ~ -1 + age + inc + educ + fsize + marr + twoearn +
                             db + pira + hown")
   }
 
   if (instrument) {
     # https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K-LATE.R#L60-L71
-    data = data.frame(
+    data <- data.frame(
       "net_tfa" = data$net_tfa,
       model.matrix(formula_x, data),
       "p401" = data$p401, "e401" = data$e401
     )
-    d_cols = "p401"
-    z_cols = "e401"
+    d_cols <- "p401"
+    z_cols <- "e401"
   } else {
     # see https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/401K.R#L67
-    data = data.frame(
+    data <- data.frame(
       "net_tfa" = data$net_tfa, model.matrix(formula_x, data),
       "e401" = data$e401
     )
-    d_cols = "e401"
+    d_cols <- "e401"
   }
   if (return_type == "data.frame") {
     return(data)
   } else if (return_type == "data.table") {
-    data = as.data.table(data)
+    data <- as.data.table(data)
     return(data)
   } else if (return_type == "DoubleMLData") {
-    dt = as.data.table(data)
-    data = DoubleMLData$new(dt,
+    dt <- as.data.table(data)
+    data <- DoubleMLData$new(dt,
       y_col = y_col, d_cols = d_cols, x_cols = x_cols,
       z_cols = z_cols
     )
@@ -195,8 +196,8 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #'
 #' @examples
 #' library(DoubleML)
-#' df_bonus = fetch_bonus(return_type = "data.table")
-#' obj_dml_data_bonus = DoubleMLData$new(df_bonus,
+#' df_bonus <- fetch_bonus(return_type = "data.table")
+#' obj_dml_data_bonus <- DoubleMLData$new(df_bonus,
 #'   y_col = "inuidur1",
 #'   d_cols = "tg",
 #'   x_cols = c(
@@ -207,62 +208,63 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #' )
 #' obj_dml_data_bonus
 #' @export
-fetch_bonus = function(return_type = "DoubleMLData",
-  polynomial_features = FALSE) {
-
+fetch_bonus <- function(
+  return_type = "DoubleMLData",
+  polynomial_features = FALSE
+) {
   assert_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
-  url = "https://raw.githubusercontent.com/VC2015/DMLonGitHub/master/penn_jae.dat"
-  raw_data = read.table(url, header = TRUE)
+  url <- "https://raw.githubusercontent.com/VC2015/DMLonGitHub/master/penn_jae.dat"
+  raw_data <- read.table(url, header = TRUE)
 
-  ind = (raw_data$tg == 0 | raw_data$tg == 4)
-  data = raw_data[ind, ]
-  data$tg[(data$tg == 4)] = 1
-  data$inuidur1 = log(data$inuidur1)
+  ind <- (raw_data$tg == 0 | raw_data$tg == 4)
+  data <- raw_data[ind, ]
+  data$tg[(data$tg == 4)] <- 1
+  data$inuidur1 <- log(data$inuidur1)
 
-  data$dep1 = as.integer(data$dep == 1)
-  data$dep2 = as.integer(data$dep == 2)
-  col_indx = names(data) != "dep"
-  data = data[, col_indx]
+  data$dep1 <- as.integer(data$dep == 1)
+  data$dep2 <- as.integer(data$dep == 2)
+  col_indx <- names(data) != "dep"
+  data <- data[, col_indx]
 
-  y_col = "inuidur1"
-  d_cols = "tg"
-  x_cols = NULL
+  y_col <- "inuidur1"
+  d_cols <- "tg"
+  x_cols <- NULL
 
   if (polynomial_features) {
     # https://github.com/VC2015/DMLonGitHub/blob/b91cbf96c01eccd73367fbd6601ecdd7aa78403b/Bonus.R#L84
-    formula_x = formula(" ~ -1 + (female + black + othrace + dep1 +
+    formula_x <- formula(" ~ -1 + (female + black + othrace + dep1 +
                                    dep2 + q2 + q3 + q4 + q5 + q6 + agelt35 +
                                    agegt54 + durable + lusd + husd)^2")
   } else {
-    formula_x = formula(" ~ -1 + female + black + othrace + dep1 +
+    formula_x <- formula(" ~ -1 + female + black + othrace + dep1 +
                                    dep2 + q2 + q3 + q4 + q5 + q6 + agelt35 +
                                    agegt54 + durable + lusd + husd")
   }
-  data = data.frame(
+  data <- data.frame(
     "inuidur1" = data$inuidur1, model.matrix(formula_x, data),
     "tg" = data$tg
   )
   if (return_type == "data.frame") {
     return(data)
   } else if (return_type == "data.table") {
-    data = as.data.table(data)
+    data <- as.data.table(data)
     return(data)
   } else if (return_type == "DoubleMLData") {
-    dt = as.data.table(data)
-    data = DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
+    dt <- as.data.table(data)
+    data <- DoubleMLData$new(dt, y_col = y_col, d_cols = d_cols, x_cols = x_cols)
     return(data)
   }
 }
 
 
-m = function(x, nu = 0, gamma = 1) {
-  y = 0.5 / pi * sinh(gamma) / (cosh(gamma) - cos(x - nu))
+m <- function(x, nu = 0, gamma = 1) {
+  y <- 0.5 / pi * sinh(gamma) / (cosh(gamma) - cos(x - nu))
   return(y)
 }
 
 
-g = function(x) {
-  y = sin(x)^2
+g <- function(x) {
+  y <- sin(x)^2
   return(y)
 }
 
@@ -316,9 +318,10 @@ g = function(x) {
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
-  return_type = "DoubleMLData") {
-
+make_plr_CCDDHNR2018 <- function(
+  n_obs = 500, dim_x = 20, alpha = 0.5,
+  return_type = "DoubleMLData"
+) {
   assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData")
@@ -327,34 +330,34 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
   assert_count(dim_x)
   assert_numeric(alpha, len = 1)
 
-  cov_mat = toeplitz(0.7^(0:(dim_x - 1)))
-  a_0 = 1
-  a_1 = 0.25
-  s_1 = 1
-  b_0 = 1
-  b_1 = 0.25
-  s_2 = 1
-  x = rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
+  cov_mat <- toeplitz(0.7^(0:(dim_x - 1)))
+  a_0 <- 1
+  a_1 <- 0.25
+  s_1 <- 1
+  b_0 <- 1
+  b_1 <- 0.25
+  s_2 <- 1
+  x <- rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
 
-  d = as.matrix(a_0 * x[, 1] + a_1 * (exp(x[, 3]) /
+  d <- as.matrix(a_0 * x[, 1] + a_1 * (exp(x[, 3]) /
     (1 + exp(x[, 3]))) + s_1 * rnorm(n_obs))
-  y = as.matrix(alpha * d + b_0 * exp(x[, 1]) /
+  y <- as.matrix(alpha * d + b_0 * exp(x[, 1]) /
     (1 + exp(x[, 1])) + b_1 * x[, 3] + s_2 * rnorm(n_obs))
 
-  colnames(x) = paste0("X", 1:dim_x)
-  colnames(y) = "y"
-  colnames(d) = "d"
+  colnames(x) <- paste0("X", 1:dim_x)
+  colnames(y) <- "y"
+  colnames(d) <- "d"
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d))
   } else if (return_type == "data.frame") {
-    data = data.frame(x, y, d)
+    data <- data.frame(x, y, d)
     return(data)
   } else if (return_type == "data.table") {
-    data = data.table(x, y, d)
+    data <- data.table(x, y, d)
     return(data)
   } else if (return_type == "DoubleMLData") {
-    dt = data.table(x, y, d)
-    data = DoubleMLData$new(dt, y_col = "y", d_cols = "d")
+    dt <- data.table(x, y, d)
+    data <- DoubleMLData$new(dt, y_col = "y", d_cols = "d")
     return(data)
   }
 }
@@ -413,9 +416,10 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
-  return_type = "DoubleMLData", nu = 0, gamma = 1) {
-
+make_plr_turrell2018 <- function(
+  n_obs = 100, dim_x = 20, theta = 0.5,
+  return_type = "DoubleMLData", nu = 0, gamma = 1
+) {
   assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData")
@@ -426,29 +430,29 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
   assert_numeric(nu, len = 1)
   assert_numeric(gamma, len = 1)
 
-  b = 1 / (1:dim_x)
-  sigma = genPositiveDefMat(dim_x)
-  x = rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = sigma$Sigma)
-  G = g(x %*% b)
-  M = m(x %*% b, nu = nu, gamma = gamma)
-  d = M + rnorm(n_obs)
-  y = theta * d + G + rnorm(n_obs)
+  b <- 1 / (1:dim_x)
+  sigma <- genPositiveDefMat(dim_x)
+  x <- rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = sigma$Sigma)
+  G <- g(x %*% b)
+  M <- m(x %*% b, nu = nu, gamma = gamma)
+  d <- M + rnorm(n_obs)
+  y <- theta * d + G + rnorm(n_obs)
 
-  colnames(x) = paste0("X", 1:dim_x)
-  colnames(y) = "y"
-  colnames(d) = "d"
+  colnames(x) <- paste0("X", 1:dim_x)
+  colnames(y) <- "y"
+  colnames(d) <- "d"
 
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d))
   } else if (return_type == "data.frame") {
-    data = data.frame(x, y, d)
+    data <- data.frame(x, y, d)
     return(data)
   } else if (return_type == "data.table") {
-    data = data.table(x, y, d)
+    data <- data.table(x, y, d)
     return(data)
   } else if (return_type == "DoubleMLData") {
-    dt = data.table(x, y, d)
-    data = DoubleMLData$new(dt, y_col = "y", d_cols = "d")
+    dt <- data.table(x, y, d)
+    data <- DoubleMLData$new(dt, y_col = "y", d_cols = "d")
     return(data)
   }
 }
@@ -512,8 +516,10 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
-  return_type = "DoubleMLData") {
+make_pliv_CHS2015 <- function(
+  n_obs, alpha = 1, dim_x = 200, dim_z = 150,
+  return_type = "DoubleMLData"
+) {
   # see https://assets.aeaweb.org/asset-server/articles-attachments/aer/app/10505/P2015_1022_app.pdf
 
   assert_choice(
@@ -527,48 +533,48 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
   if (dim_x < dim_z) {
     stop("Dimension of X should be greater than dimension of Z.")
   }
-  sigma_e_u = matrix(c(1, 0.6, 0.6, 1), ncol = 2)
-  mu_e_u = rep(0, 2)
-  e_u = rmvnorm(n = n_obs, mean = mu_e_u, sigma = sigma_e_u)
-  epsilon = e_u[, 1]
-  u = e_u[, 2]
+  sigma_e_u <- matrix(c(1, 0.6, 0.6, 1), ncol = 2)
+  mu_e_u <- rep(0, 2)
+  e_u <- rmvnorm(n = n_obs, mean = mu_e_u, sigma = sigma_e_u)
+  epsilon <- e_u[, 1]
+  u <- e_u[, 2]
 
-  sigma_x = toeplitz(0.5^(0:(dim_x - 1)))
-  mu_x = rep(0, dim_x)
-  x = rmvnorm(n = n_obs, mean = mu_x, sigma = sigma_x)
+  sigma_x <- toeplitz(0.5^(0:(dim_x - 1)))
+  mu_x <- rep(0, dim_x)
+  x <- rmvnorm(n = n_obs, mean = mu_x, sigma = sigma_x)
 
-  I_z = diag(x = 1, ncol = dim_z, nrow = dim_z)
-  mu_xi = rep(0, dim_z)
-  xi = rmvnorm(n = n_obs, mean = mu_xi, sigma = 0.25 * I_z)
+  I_z <- diag(x = 1, ncol = dim_z, nrow = dim_z)
+  mu_xi <- rep(0, dim_z)
+  xi <- rmvnorm(n = n_obs, mean = mu_xi, sigma = 0.25 * I_z)
 
-  beta = 1 / (1:dim_x)^2
-  gamma = beta
-  delta = 1 / (1:dim_z)^2
+  beta <- 1 / (1:dim_x)^2
+  gamma <- beta
+  delta <- 1 / (1:dim_z)^2
 
-  zeros = matrix(0, nrow = dim_z, ncol = (dim_x - dim_z))
-  Pi = cbind(I_z, zeros)
+  zeros <- matrix(0, nrow = dim_z, ncol = (dim_x - dim_z))
+  Pi <- cbind(I_z, zeros)
 
-  z = x %*% t(Pi) + xi
-  d = x %*% gamma + z %*% delta + u
-  y = alpha * d + x %*% beta + epsilon
+  z <- x %*% t(Pi) + xi
+  d <- x %*% gamma + z %*% delta + u
+  y <- alpha * d + x %*% beta + epsilon
 
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d, "z" = z))
   } else {
-    colnames(x) = paste0("X", 1:dim_x)
-    colnames(z) = paste0("Z", 1:dim_z)
-    colnames(y) = "y"
-    colnames(d) = "d"
+    colnames(x) <- paste0("X", 1:dim_x)
+    colnames(z) <- paste0("Z", 1:dim_z)
+    colnames(y) <- "y"
+    colnames(d) <- "d"
 
     if (return_type == "data.frame") {
-      data = data.frame(x, y, d, z)
+      data <- data.frame(x, y, d, z)
       return(data)
     } else if (return_type == "data.table") {
-      data = data.table(x, y, d, z)
+      data <- data.table(x, y, d, z)
       return(data)
     } else if (return_type == "DoubleMLData") {
-      dt = data.table(x, y, d, z)
-      data = DoubleMLData$new(dt,
+      dt <- data.table(x, y, d, z)
+      data <- DoubleMLData$new(dt,
         y_col = "y", d_cols = "d",
         x_cols = colnames(x),
         z_cols = colnames(z)
@@ -630,8 +636,10 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
 #' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #'
 #' @export
-make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
-  R2_y = 0.5, return_type = "DoubleMLData") {
+make_irm_data <- function(
+  n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
+  R2_y = 0.5, return_type = "DoubleMLData"
+) {
   # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723
   # (see supplement)
 
@@ -645,36 +653,36 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
   assert_numeric(R2_d, len = 1)
   assert_numeric(R2_y, len = 1)
 
-  v = runif(n_obs)
-  zeta = rnorm(n_obs)
-  cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
-  x = rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
+  v <- runif(n_obs)
+  zeta <- rnorm(n_obs)
+  cov_mat <- toeplitz(0.5^(0:(dim_x - 1)))
+  x <- rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
 
-  beta = 1 / (1:dim_x)^2
-  b_sigma_b = beta %*% cov_mat %*% beta
-  c_y = c(R2_y / ((1 - R2_y) * b_sigma_b))
-  c_d = c(pi^2 / 3 * R2_d / ((1 - R2_d) * b_sigma_b))
+  beta <- 1 / (1:dim_x)^2
+  b_sigma_b <- beta %*% cov_mat %*% beta
+  c_y <- c(R2_y / ((1 - R2_y) * b_sigma_b))
+  c_d <- c(pi^2 / 3 * R2_d / ((1 - R2_d) * b_sigma_b))
 
-  xx = exp(x %*% (beta * c_d))
-  d = 1 * ((xx / (1 + xx)) > v)
+  xx <- exp(x %*% (beta * c_d))
+  d <- 1 * ((xx / (1 + xx)) > v)
 
-  y = d * theta + d * x %*% (beta * c_y) + zeta
+  y <- d * theta + d * x %*% (beta * c_y) + zeta
 
-  colnames(x) = paste0("X", 1:dim_x)
-  colnames(y) = "y"
-  colnames(d) = "d"
+  colnames(x) <- paste0("X", 1:dim_x)
+  colnames(y) <- "y"
+  colnames(d) <- "d"
 
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d))
   } else if (return_type == "data.frame") {
-    data = data.frame(x, y, d)
+    data <- data.frame(x, y, d)
     return(data)
   } else if (return_type == "data.table") {
-    data = data.table(x, y, d)
+    data <- data.table(x, y, d)
     return(data)
   } else if (return_type == "DoubleMLData") {
-    dt = data.table(x, y, d)
-    data = DoubleMLData$new(dt, y_col = "y", d_cols = "d")
+    dt <- data.table(x, y, d)
+    data <- DoubleMLData$new(dt, y_col = "y", d_cols = "d")
     return(data)
   }
 }
@@ -730,8 +738,10 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
 #' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #'
 #' @export
-make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
-  return_type = "DoubleMLData") {
+make_iivm_data <- function(
+  n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
+  return_type = "DoubleMLData"
+) {
   # inspired by https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3619201&download=yes
 
   assert_choice(
@@ -742,41 +752,41 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
   assert_count(dim_x)
   assert_numeric(theta, len = 1)
   assert_numeric(alpha_x, len = 1)
-  xx = rmvnorm(
+  xx <- rmvnorm(
     n = n_obs, mean = rep(0, 2),
     sigma = matrix(c(1, 0.3, 0.3, 1), ncol = 2, nrow = 2)
   )
-  u = xx[, 1]
-  v = xx[, 2]
+  u <- xx[, 1]
+  v <- xx[, 2]
 
-  cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
-  x = rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
+  cov_mat <- toeplitz(0.5^(0:(dim_x - 1)))
+  x <- rmvnorm(n = n_obs, mean = rep(0, dim_x), sigma = cov_mat)
 
-  beta = 1 / (1:dim_x)^2
-  z = matrix(sample(c(0, 1), size = n_obs, prob = c(0.5, 0.5), replace = TRUE))
-  d = matrix(1 * (alpha_x * z + v > 0))
+  beta <- 1 / (1:dim_x)^2
+  z <- matrix(sample(c(0, 1), size = n_obs, prob = c(0.5, 0.5), replace = TRUE))
+  d <- matrix(1 * (alpha_x * z + v > 0))
 
-  y = d * theta + x %*% beta + u
+  y <- d * theta + x %*% beta + u
 
-  colnames(x) = paste0("X", 1:dim_x)
-  colnames(y) = "y"
-  colnames(d) = "d"
-  colnames(z) = "z"
+  colnames(x) <- paste0("X", 1:dim_x)
+  colnames(y) <- "y"
+  colnames(d) <- "d"
+  colnames(z) <- "z"
 
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d, "z" = z))
   } else {
-    colnames(x) = paste0("x", 1:dim_x)
-    colnames(y) = "y"
+    colnames(x) <- paste0("x", 1:dim_x)
+    colnames(y) <- "y"
     if (return_type == "data.frame") {
-      data = data.frame(x, y, d, z)
+      data <- data.frame(x, y, d, z)
       return(data)
     } else if (return_type == "data.table") {
-      data = data.table(x, y, d, z)
+      data <- data.table(x, y, d, z)
       return(data)
     } else if (return_type == "DoubleMLData") {
-      dt = data.table(x, y, d, z)
-      data = DoubleMLData$new(dt,
+      dt <- data.table(x, y, d, z)
+      data <- DoubleMLData$new(dt,
         y_col = "y", d_cols = "d",
         x_cols = colnames(x),
         z_cols = "z"
@@ -865,95 +875,100 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
+make_pliv_multiway_cluster_CKMS2021 <- function(
+  # nolint: object_length_linter.
+  N = 25, M = 25, dim_X = 100,
   theta = 1.,
   return_type = "DoubleMLClusterData",
-  ...) {
-
+  ...
+) {
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLClusterData"))
-  kwargs = list(...)
-  pi_10 = if ("pi_10" %in% names(kwargs)) kwargs$pi_10 else 1.0
-  zeta_0 = if ("zeta_0" %in% names(kwargs)) kwargs$zeta_0 else 0.5^(1:dim_X)
-  pi_20 = if ("pi_20" %in% names(kwargs)) kwargs$pi_20 else 0.5^(1:dim_X)
-  xi_0 = if ("xi_0" %in% names(kwargs)) kwargs$xi_0 else 0.5^(1:dim_X)
+    c("data.table", "matrix", "data.frame", "DoubleMLClusterData")
+  )
+  kwargs <- list(...)
+  pi_10 <- if ("pi_10" %in% names(kwargs)) kwargs$pi_10 else 1.0
+  zeta_0 <- if ("zeta_0" %in% names(kwargs)) kwargs$zeta_0 else 0.5^(1:dim_X)
+  pi_20 <- if ("pi_20" %in% names(kwargs)) kwargs$pi_20 else 0.5^(1:dim_X)
+  xi_0 <- if ("xi_0" %in% names(kwargs)) kwargs$xi_0 else 0.5^(1:dim_X)
 
-  omega_X = if ("omega_X" %in% names(kwargs)) kwargs$omega_X else c(0.25, 0.25)
-  omega_epsilon = if ("omega_epsilon" %in% names(kwargs)) kwargs$omega_epsilon else c(0.25, 0.25)
-  omega_v = if ("omega_v" %in% names(kwargs)) kwargs$omega_v else c(0.25, 0.25)
-  omega_V = if ("omega_V" %in% names(kwargs)) kwargs$omega_V else c(0.25, 0.25)
+  omega_X <- if ("omega_X" %in% names(kwargs)) kwargs$omega_X else c(0.25, 0.25)
+  omega_epsilon <- if ("omega_epsilon" %in% names(kwargs)) kwargs$omega_epsilon else c(0.25, 0.25)
+  omega_v <- if ("omega_v" %in% names(kwargs)) kwargs$omega_v else c(0.25, 0.25)
+  omega_V <- if ("omega_V" %in% names(kwargs)) kwargs$omega_V else c(0.25, 0.25)
 
-  s_X = if ("s_X" %in% names(kwargs)) kwargs$s_X else 0.25
-  s_epsilon_v = if ("s_epsilon_v" %in% names(kwargs)) kwargs$s_epsilon_v else 0.25
+  s_X <- if ("s_X" %in% names(kwargs)) kwargs$s_X else 0.25
+  s_epsilon_v <- if ("s_epsilon_v" %in% names(kwargs)) kwargs$s_epsilon_v else 0.25
 
-  alpha_V = rnorm(N * M)
-  alpha_V_i = rep(rnorm(N), each = M)
-  alpha_V_j = rep(rnorm(M), times = N)
+  alpha_V <- rnorm(N * M)
+  alpha_V_i <- rep(rnorm(N), each = M)
+  alpha_V_j <- rep(rnorm(M), times = N)
 
-  cov_mat = matrix(c(1, s_epsilon_v, s_epsilon_v, 1), nrow = 2)
-  alpha_eps_v = rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
-  alpha_eps = alpha_eps_v[, 1]
-  alpha_v = alpha_eps_v[, 2]
+  cov_mat <- matrix(c(1, s_epsilon_v, s_epsilon_v, 1), nrow = 2)
+  alpha_eps_v <- rmvnorm(n = N * M, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps <- alpha_eps_v[, 1]
+  alpha_v <- alpha_eps_v[, 2]
 
-  alpha_eps_v_i = rmvnorm(n = N, mean = rep(0, 2), sigma = cov_mat)
-  alpha_eps_i = rep(alpha_eps_v_i[, 1], each = M)
-  alpha_v_i = rep(alpha_eps_v_i[, 2], each = M)
+  alpha_eps_v_i <- rmvnorm(n = N, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps_i <- rep(alpha_eps_v_i[, 1], each = M)
+  alpha_v_i <- rep(alpha_eps_v_i[, 2], each = M)
 
-  alpha_eps_v_j = rmvnorm(n = M, mean = rep(0, 2), sigma = cov_mat)
-  alpha_eps_j = rep(alpha_eps_v_j[, 1], times = N)
-  alpha_v_j = rep(alpha_eps_v_j[, 2], times = N)
+  alpha_eps_v_j <- rmvnorm(n = M, mean = rep(0, 2), sigma = cov_mat)
+  alpha_eps_j <- rep(alpha_eps_v_j[, 1], times = N)
+  alpha_v_j <- rep(alpha_eps_v_j[, 2], times = N)
 
-  cov_mat = toeplitz(s_X^(0:(dim_X - 1)))
-  alpha_X = rmvnorm(n = N * M, mean = rep(0, dim_X), sigma = cov_mat)
-  xx = rmvnorm(N, mean = rep(0, dim_X), sigma = cov_mat)
-  alpha_X_i = matrix(rep(xx, each = M), ncol = ncol(xx), byrow = FALSE)
-  xx = rmvnorm(M, mean = rep(0, dim_X), sigma = cov_mat)
-  alpha_X_j = matrix(rep(xx, each = N), ncol = ncol(xx), byrow = TRUE)
+  cov_mat <- toeplitz(s_X^(0:(dim_X - 1)))
+  alpha_X <- rmvnorm(n = N * M, mean = rep(0, dim_X), sigma = cov_mat)
+  xx <- rmvnorm(N, mean = rep(0, dim_X), sigma = cov_mat)
+  alpha_X_i <- matrix(rep(xx, each = M), ncol = ncol(xx), byrow = FALSE)
+  xx <- rmvnorm(M, mean = rep(0, dim_X), sigma = cov_mat)
+  alpha_X_j <- matrix(rep(xx, each = N), ncol = ncol(xx), byrow = TRUE)
 
   # generate variables
-  x = (1 - omega_X[1] - omega_X[2]) * alpha_X +
+  x <- (1 - omega_X[1] - omega_X[2]) * alpha_X +
     omega_X[1] * alpha_X_i + omega_X[2] * alpha_X_j
 
-  eps = (1 - omega_epsilon[1] - omega_epsilon[2]) * alpha_eps +
+  eps <- (1 - omega_epsilon[1] - omega_epsilon[2]) * alpha_eps +
     omega_epsilon[1] * alpha_eps_i + omega_epsilon[2] * alpha_eps_j
 
-  v = (1 - omega_v[1] - omega_v[2]) * alpha_v +
+  v <- (1 - omega_v[1] - omega_v[2]) * alpha_v +
     omega_v[1] * alpha_v_i + omega_v[2] * alpha_v_j
 
-  V = (1 - omega_V[1] - omega_V[2]) * alpha_V +
+  V <- (1 - omega_V[1] - omega_V[2]) * alpha_V +
     omega_V[1] * alpha_V_i + omega_V[2] * alpha_V_j
 
-  z = x %*% xi_0 + V
-  d = z * pi_10 + x %*% pi_20 + v
-  y = d * theta + x %*% zeta_0 + eps
+  z <- x %*% xi_0 + V
+  d <- z * pi_10 + x %*% pi_20 + v
+  y <- d * theta + x %*% zeta_0 + eps
 
-  cluster_vars = expand.grid(seq(M), seq(N))[, c(2, 1)]
+  cluster_vars <- expand.grid(seq(M), seq(N))[, c(2, 1)]
 
-  colnames(x) = paste0("X", 1:dim_X)
-  colnames(y) = "Y"
-  colnames(d) = "D"
-  colnames(z) = "Z"
-  colnames(cluster_vars) = c("cluster_var_i", "cluster_var_j")
+  colnames(x) <- paste0("X", 1:dim_X)
+  colnames(y) <- "Y"
+  colnames(d) <- "D"
+  colnames(z) <- "Z"
+  colnames(cluster_vars) <- c("cluster_var_i", "cluster_var_j")
 
   if (return_type == "matrix") {
     return(list("X" = x, "y" = y, "d" = d, "cluster_vars" = cluster_vars, "z" = z))
   } else {
     if (return_type == "data.frame") {
-      data = data.frame(x, y, d, cluster_vars, z)
+      data <- data.frame(x, y, d, cluster_vars, z)
       return(data)
     } else if (return_type == "data.table") {
-      data = data.table(x, y, d, cluster_vars, z)
+      data <- data.table(x, y, d, cluster_vars, z)
       return(data)
     } else if (return_type == "DoubleMLClusterData") {
-      dt = data.table(x, y, d, cluster_vars, z)
-      data = DoubleMLClusterData$new(dt,
+      dt <- data.table(x, y, d, cluster_vars, z)
+      data <- DoubleMLClusterData$new(dt,
         y_col = "Y", d_cols = "D",
         x_cols = colnames(x),
         z_cols = "Z",
         cluster_cols = c(
           "cluster_var_i",
-          "cluster_var_j"))
+          "cluster_var_j"
+        )
+      )
       return(data)
     }
   }
@@ -970,7 +985,8 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #'
 #' \deqn{d_i = 1\lbrace x_i' \beta  + w_i > 0 \rbrace,}
 #'
-#' with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
+#' with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates
+#' \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
 #' \eqn{\Sigma^2_x} is a matrix with entries
 #' \eqn{\Sigma_{kj} = 0.5^{|j-k|}}.
 #' \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{0.4}{j^2}}
@@ -978,8 +994,8 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' \eqn{(u_i,v_i) \sim \mathcal{N}(0, \Sigma^2_{u,v})},
 #' \eqn{w_i \sim \mathcal{N}(0, 1)}.
 #'
-#' The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
-#' Huber and Lafférs (2023).
+#' The data generating process is inspired by a process used in the
+#' simulation study (see Appendix E) of Bia, Huber and Lafférs (2023).
 #'
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate.
@@ -995,13 +1011,14 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' If `"data.table"` returns a `data.table()`.
 #' Default is `"DoubleMLData"`.
 #'
-#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
-#' Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
+#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine
+#' Learning for Sample Selection Models, Journal of Business & Economic
+#' Statistics, DOI: 10.1080/07350015.2023.2271071
 #'
 #' @return Depending on the `return_type`, returns an object or set of objects as specified.
 #' @export
-make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE, return_type = "DoubleMLData") {
-
+make_ssm_data <- function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE,
+                          return_type = "DoubleMLData") {
   assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData")
@@ -1012,28 +1029,28 @@ make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE, retur
   assert_numeric(theta, len = 1)
 
   if (mar == TRUE) {
-    sigma = matrix(c(1, 0, 0, 1), 2, 2)
-    gamma = 0
+    sigma <- matrix(c(1, 0, 0, 1), 2, 2)
+    gamma <- 0
   } else {
-    sigma = matrix(c(1, 0.8, 0.8, 1), 2, 2)
-    gamma = 1
+    sigma <- matrix(c(1, 0.8, 0.8, 1), 2, 2)
+    gamma <- 1
   }
 
-  e = t(rmvnorm(n_obs, rep(0, 2), sigma))
-  cov_mat = toeplitz(0.5^(0:(dim_x - 1)))
-  x = rmvnorm(n_obs, rep(0, dim_x), cov_mat)
-  beta = 0.4 / ((1:dim_x)^2)
-  d = ifelse(x %*% beta + rnorm(n_obs) > 0, 1, 0)
-  z = as.matrix(rnorm(n_obs))
-  s = ifelse(x %*% beta + d + gamma * z + e[1, ] > 0, 1, 0)
-  y = x %*% beta + theta * d + e[2, ]
-  y[s == 0] = 0
+  e <- t(rmvnorm(n_obs, rep(0, 2), sigma))
+  cov_mat <- toeplitz(0.5^(0:(dim_x - 1)))
+  x <- rmvnorm(n_obs, rep(0, dim_x), cov_mat)
+  beta <- 0.4 / ((1:dim_x)^2)
+  d <- ifelse(x %*% beta + rnorm(n_obs) > 0, 1, 0)
+  z <- as.matrix(rnorm(n_obs))
+  s <- ifelse(x %*% beta + d + gamma * z + e[1, ] > 0, 1, 0)
+  y <- x %*% beta + theta * d + e[2, ]
+  y[s == 0] <- 0
 
-  colnames(x) = paste0("X", 1:dim_x)
-  colnames(y) = "y"
-  colnames(d) = "d"
-  colnames(z) = "z"
-  colnames(s) = "s"
+  colnames(x) <- paste0("X", 1:dim_x)
+  colnames(y) <- "y"
+  colnames(d) <- "d"
+  colnames(z) <- "z"
+  colnames(s) <- "s"
 
   if (return_type == "matrix") {
     if (mar == TRUE) {
@@ -1044,30 +1061,30 @@ make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE, retur
   }
   if (return_type == "data.frame") {
     if (mar == TRUE) {
-      data = data.frame(x, y, d, s)
+      data <- data.frame(x, y, d, s)
       return(data)
     } else {
-      data = data.frame(x, y, d, z, s)
+      data <- data.frame(x, y, d, z, s)
       return(data)
     }
   }
   if (return_type == "data.table") {
     if (mar == TRUE) {
-      data = data.table(x, y, d, s)
+      data <- data.table(x, y, d, s)
       return(data)
     } else {
-      data = data.table(x, y, d, z, s)
+      data <- data.table(x, y, d, z, s)
       return(data)
     }
   }
   if (return_type == "DoubleMLData") {
     if (mar == TRUE) {
-      dt = data.table(x, y, d, s)
-      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", s_col = "s")
+      dt <- data.table(x, y, d, s)
+      data <- DoubleMLData$new(dt, y_col = "y", d_cols = "d", s_col = "s")
       return(data)
     } else {
-      dt = data.table(x, y, d, z, s)
-      data = DoubleMLData$new(dt, y_col = "y", d_cols = "d", z_cols = "z", s_col = "s")
+      dt <- data.table(x, y, d, z, s)
+      data <- DoubleMLData$new(dt, y_col = "y", d_cols = "d", z_cols = "z", s_col = "s")
       return(data)
     }
   }
