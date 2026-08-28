@@ -54,9 +54,9 @@ with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mat
 \eqn{w_i \sim \mathcal{N}(0, 1)}.
 
 The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
-Huber and Lafférs (2023).
+Huber and Laff<U+00E9>rs (2023).
 }
 \references{
-Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
+Michela Bia, Martin Huber & Luk<U+00E1><U+0161> Laff<U+00E9>rs (2023) Double Machine Learning for Sample Selection Models,
 Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
 }

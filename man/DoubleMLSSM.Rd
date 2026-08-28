@@ -77,7 +77,10 @@ Other DoubleML:
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
 \code{\link{DoubleMLPLIV}},
-\code{\link{DoubleMLPLR}}
+\code{\link{DoubleMLPLR}},
+\code{\link{DoubleMLRMST}},
+\code{\link{DoubleMLSurvival}},
+\code{\link{DoubleMLSurvivalProb}}
 }
 \concept{DoubleML}
 \section{Super class}{

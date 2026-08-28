@@ -60,7 +60,7 @@ The data generating process is inspired by a process used in the simulation
 experiment (see Appendix P) of Belloni et al. (2017).
 }
 \references{
-Belloni, A., Chernozhukov, V., Fernández-Val, I. and
+Belloni, A., Chernozhukov, V., Fern<U+00E1>ndez-Val, I. and
 Hansen, C. (2017). Program Evaluation and Causal Inference With
 High-Dimensional Data. Econometrica, 85: 233-298.
 }

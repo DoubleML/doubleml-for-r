@@ -94,7 +94,7 @@ obj_dml_data_bonus
 }
 \references{
 Bilias Y. (2000), Sequential Testing of Duration Data:
-The Case of Pennsylvania ‘Reemployment Bonus’ Experiment. Journal of Applied
+The Case of Pennsylvania <U+2018>Reemployment Bonus<U+2019> Experiment. Journal of Applied
 Econometrics, 15(6): 575-594.
 
 Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E.,

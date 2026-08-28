@@ -53,10 +53,10 @@ is a matrix with entries
 entries \eqn{\beta_j=\frac{1}{j^2}}.
 
 The data generating process is inspired by a process used in the
-simulation experiment of Farbmacher, Gruber and Klaaßen (2020).
+simulation experiment of Farbmacher, Gruber and Klaa<U+00DF>en (2020).
 }
 \references{
-Farbmacher, H., Guber, R. and Klaaßen, S. (2020).
+Farbmacher, H., Guber, R. and Klaa<U+00DF>en, S. (2020).
 Instrument Validity Tests with Causal Forests.
 MEA Discussion Paper No. 13-2020.
 Available at SSRN:\doi{10.2139/ssrn.3619201}.
