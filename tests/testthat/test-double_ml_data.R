@@ -579,7 +579,7 @@ test_that("Unit tests for invalid data", {
     "needs to be specified as instrumental variable."
   )
   expect_error(
-    double_mlplr_obj = DoubleMLIIVM$new(
+    double_mlplr_obj <- DoubleMLIIVM$new(
       data = data_irm$dml_data,
       ml_g = mlr3::lrn("regr.rpart"),
       ml_m = mlr3::lrn("classif.rpart", predict_type = "prob")
