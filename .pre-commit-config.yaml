@@ -106,7 +106,10 @@ repos:
     -   id: file-contents-sorter
         files: '^\.Rbuildignore$'
     -   id: end-of-file-fixer
-        exclude: '\.Rd'
+        # print_outputs/*.txt are byte-exact testthat::verify_output()
+        # snapshots; trailing blank lines are part of the recorded output
+        # and must not be stripped.
+        exclude: '(\.Rd|tests/testthat/print_outputs/.*\.txt)'
 -   repo: https://github.com/pre-commit-ci/pre-commit-ci-config
     rev: v1.6.1
     hooks:
