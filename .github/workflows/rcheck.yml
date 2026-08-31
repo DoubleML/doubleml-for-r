@@ -120,7 +120,7 @@ jobs:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-${{ matrix.config.mlr3 }}-results
           path: check
 
-      - name: Install covr
+      - name: Test coverage
         if: runner.os == 'macOS'
         run: |
           remotes::install_cran("covr")
@@ -131,6 +131,26 @@ jobs:
             install_path = file.path(normalizePath(Sys.getenv("RUNNER_TEMP"), winslash = "/"), "package")
           )
           covr::to_cobertura(cov)
+
+          cov_list <- covr::coverage_to_list(cov)
+          file_cov <- cov_list$filecoverage[order(names(cov_list$filecoverage))]
+
+          summary_lines <- c(
+            "## Test coverage",
+            "",
+            "### Overall coverage",
+            "",
+            "| Metric | Coverage |",
+            "| --- | --- |",
+            sprintf("| **Overall** | %.2f%% |", cov_list$totalcoverage),
+            "",
+            "### Coverage by file",
+            "",
+            "| File | Coverage |",
+            "| --- | --- |",
+            sprintf("| %s | %.2f%% |", names(file_cov), file_cov)
+          )
+          cat(summary_lines, file = Sys.getenv("GITHUB_STEP_SUMMARY"), sep = "\n", append = TRUE)
         shell: Rscript {0}
   
       - uses: codecov/codecov-action@v7
