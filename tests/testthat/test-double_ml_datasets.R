@@ -48,7 +48,8 @@ patrick::with_parameters_test_that("Unit tests for datasets functionalities:",
     M = 10
     if (return_type == "DoubleMLData") {
       df = make_pliv_multiway_cluster_CKMS2021(N, M,
-        return_type = "DoubleMLClusterData")
+        return_type = "DoubleMLClusterData"
+      )
       expect_is(df, "DoubleMLClusterData")
     } else if (return_type != "matrix") {
       df = make_pliv_multiway_cluster_CKMS2021(N, M, return_type = return_type)

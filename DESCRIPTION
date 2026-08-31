@@ -19,7 +19,7 @@ Description: Implementation of the double/debiased machine learning framework of
     the 'R6' package is very flexible. More information available in the
     publication in the Journal of Statistical Software: <doi:10.18637/jss.v108.i03>.
 License: MIT + file LICENSE
-URL: https://docs.doubleml.org/stable/index.html, https://github.com/DoubleML/doubleml-for-r/
+URL: https://docs.doubleml.org/r/stable/, https://github.com/DoubleML/doubleml-for-r/
 BugReports: https://github.com/DoubleML/doubleml-for-r/issues
 Encoding: UTF-8
 Depends: 
@@ -38,7 +38,6 @@ Imports:
     mlr3learners (>= 0.3.0),
     mlr3misc
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown,
@@ -67,3 +66,4 @@ Collate:
     'helper.R'
     'datasets.R'
     'zzz.R'
+Config/roxygen2/version: 8.0.0

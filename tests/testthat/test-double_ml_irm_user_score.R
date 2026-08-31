@@ -15,7 +15,8 @@ score_fct = function(y, d, g0_hat, g1_hat, m_hat, smpls) {
   psi_a = rep(-1, n_obs)
   psis = list(
     psi_a = psi_a,
-    psi_b = psi_b)
+    psi_b = psi_b
+  )
   return(psis)
 }
 
@@ -26,7 +27,8 @@ if (on_cran) {
     learner_m = "classif.rpart",
     dml_procedure = "dml2",
     trimming_threshold = 1e-5,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
   test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 } else {
   test_cases = expand.grid(
@@ -34,12 +36,14 @@ if (on_cran) {
     learner_m = "classif.glmnet",
     dml_procedure = c("dml1", "dml2"),
     trimming_threshold = c(1e-5, 0.01),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
   test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 }
 
 patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
 
     set.seed(3141)
@@ -50,7 +54,8 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
       ml_m = lrn(learner_m),
       dml_procedure = dml_procedure,
       score = "ATE",
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     double_mlirm_obj$fit()
     theta_obj = double_mlirm_obj$coef
     se_obj = double_mlirm_obj$se
@@ -65,7 +70,8 @@ patrick::with_parameters_test_that("Unit tests for IRM, callable score:",
       ml_m = lrn(learner_m),
       dml_procedure = dml_procedure,
       score = score_fct,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     double_mlirm_obj_score$fit()
     theta_obj_score = double_mlirm_obj_score$coef
     se_obj_score = double_mlirm_obj_score$se

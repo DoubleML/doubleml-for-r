@@ -12,7 +12,8 @@ if (on_cran) {
     score = "partialling out",
     apply_cross_fitting = FALSE,
     n_folds = c(1, 2),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "regr.lm",
@@ -20,12 +21,14 @@ if (on_cran) {
     score = c("IV-type", "partialling out"),
     apply_cross_fitting = FALSE,
     n_folds = c(1, 2),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
@@ -40,8 +43,9 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       smpls = list(list(train_ids = train_ids, test_ids = test_ids))
     } else {
       smpls = list(list(
-        train_ids = list(seq(nrow(df))),
-        test_ids = list(seq(nrow(df)))))
+        train_ids = list(seq_len(nrow(df))),
+        test_ids = list(seq_len(nrow(df)))
+      ))
     }
     if (score == "IV-type") {
       ml_g = learner_pars$ml_g$clone()
@@ -55,7 +59,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_m = learner_pars$ml_m$clone(),
       ml_g = ml_g,
       dml_procedure = dml_procedure, score = score,
-      smpls = smpls)
+      smpls = smpls
+    )
     theta = plr_hat$coef
     se = plr_hat$se
     t = plr_hat$t
@@ -75,7 +80,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
-      apply_cross_fitting = apply_cross_fitting)
+      apply_cross_fitting = apply_cross_fitting
+    )
 
     double_mlplr_obj$fit(store_predictions = TRUE)
     theta_obj = double_mlplr_obj$coef
@@ -99,7 +105,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score,
-        draw_sample_splitting = FALSE, apply_cross_fitting = FALSE)
+        draw_sample_splitting = FALSE, apply_cross_fitting = FALSE
+      )
 
       set.seed(3141)
       # set up a task and cross-validation resampling scheme in mlr3
@@ -130,7 +137,6 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       expect_equal(se, se_obj, tolerance = 1e-8)
       expect_equal(t, t_obj, tolerance = 1e-8)
       expect_equal(pval, pval_obj, tolerance = 1e-8)
-
     } else {
       expect_equal(theta, theta_obj, tolerance = 1e-8)
       expect_equal(se, se_obj, tolerance = 1e-8)

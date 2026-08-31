@@ -10,7 +10,8 @@ if (on_cran) {
     score = "ATTE",
     trimming_rule = c("truncate"),
     trimming_threshold = c(0.05),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "rpart",
@@ -18,12 +19,14 @@ if (on_cran) {
     score = c("ATE", "ATTE"),
     trimming_rule = c("truncate"),
     trimming_threshold = c(1e-12, 0.05),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_irm(learner)
     n_rep_boot = 498
 
@@ -34,7 +37,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       ml_g = learner_pars$ml_g$clone(),
       ml_m = learner_pars$ml_m$clone(),
       dml_procedure = dml_procedure, score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     theta = irm_hat$coef
     se = irm_hat$se
 
@@ -45,7 +49,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       all_preds = irm_hat$all_preds,
       score = score,
       bootstrap = "normal", n_rep_boot = n_rep_boot,
-      trimming_threshold = trimming_threshold)$boot_coef
+      trimming_threshold = trimming_threshold
+    )$boot_coef
 
     set.seed(3141)
     double_mlirm_obj = DoubleMLIRM$new(
@@ -56,7 +61,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       dml_procedure = dml_procedure,
       score = score,
       trimming_rule = trimming_rule,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     double_mlirm_obj$fit()
     theta_obj = double_mlirm_obj$coef

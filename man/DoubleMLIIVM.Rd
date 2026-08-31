@@ -45,14 +45,17 @@ library(data.table)
 set.seed(2)
 ml_g = lrn("regr.ranger",
   num.trees = 100, mtry = 20,
-  min.node.size = 2, max.depth = 5)
+  min.node.size = 2, max.depth = 5
+)
 ml_m = lrn("classif.ranger",
   num.trees = 100, mtry = 20,
-  min.node.size = 2, max.depth = 5)
+  min.node.size = 2, max.depth = 5
+)
 ml_r = ml_m$clone()
 obj_dml_data = make_iivm_data(
   theta = 0.5, n_obs = 1000,
-  alpha_x = 1, dim_x = 20)
+  alpha_x = 1, dim_x = 20
+)
 dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 dml_iivm_obj$fit()
 dml_iivm_obj$summary()
@@ -70,22 +73,28 @@ ml_m = lrn("classif.rpart")
 ml_r = ml_m$clone()
 obj_dml_data = make_iivm_data(
   theta = 0.5, n_obs = 1000,
-  alpha_x = 1, dim_x = 20)
+  alpha_x = 1, dim_x = 20
+)
 dml_iivm_obj = DoubleMLIIVM$new(obj_dml_data, ml_g, ml_m, ml_r)
 param_grid = list(
   "ml_g" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-    minsplit = paradox::p_int(lower = 1, upper = 2)),
+    minsplit = paradox::p_int(lower = 1, upper = 2)
+  ),
   "ml_m" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-    minsplit = paradox::p_int(lower = 1, upper = 2)),
+    minsplit = paradox::p_int(lower = 1, upper = 2)
+  ),
   "ml_r" = paradox::ps(
     cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-    minsplit = paradox::p_int(lower = 1, upper = 2)))
+    minsplit = paradox::p_int(lower = 1, upper = 2)
+  )
+)
 # minimum requirements for tune_settings
 tune_settings = list(
   terminator = mlr3tuning::trm("evals", n_evals = 5),
-  algorithm = mlr3tuning::tnr("grid_search", resolution = 5))
+  algorithm = mlr3tuning::tnr("grid_search", resolution = 5)
+)
 dml_iivm_obj$tune(param_set = param_grid, tune_settings = tune_settings)
 dml_iivm_obj$fit()
 dml_iivm_obj$summary()
@@ -93,7 +102,7 @@ dml_iivm_obj$summary()
 
 }
 \seealso{
-Other DoubleML: 
+Other DoubleML:
 \code{\link{DoubleML}},
 \code{\link{DoubleMLIRM}},
 \code{\link{DoubleMLPLIV}},
@@ -102,59 +111,58 @@ Other DoubleML:
 }
 \concept{DoubleML}
 \section{Super class}{
-\code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLIIVM}
+\code{\link[DoubleML:DoubleML]{DoubleML}} -> \code{DoubleMLIIVM}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{subgroups}}{(named \code{list(2)}) \cr
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{subgroups}}{(named \code{list(2)}) \cr
 Named \code{list(2)} with options to adapt to cases with and without the
 subgroups of always-takers and never-takes.
 The entry \code{always_takers}(\code{logical(1)}) speficies whether there are
 always takers in the sample. The entry \code{never_takers} (\code{logical(1)})
 speficies whether there are never takers in the sample.}
 
-\item{\code{trimming_rule}}{(\code{character(1)}) \cr
+    \item{\code{trimming_rule}}{(\code{character(1)}) \cr
 A \code{character(1)} specifying the trimming approach.}
 
-\item{\code{trimming_threshold}}{(\code{numeric(1)}) \cr
+    \item{\code{trimming_threshold}}{(\code{numeric(1)}) \cr
 The threshold used for timming.}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-DoubleMLIIVM-new}{\code{DoubleMLIIVM$new()}}
-\item \href{#method-DoubleMLIIVM-clone}{\code{DoubleMLIIVM$clone()}}
+  \itemize{
+    \item \href{#method-DoubleMLIIVM-initialize}{\code{DoubleMLIIVM$new()}}
+    \item \href{#method-DoubleMLIIVM-clone}{\code{DoubleMLIIVM$clone()}}
+  }
 }
-}
-\if{html}{\out{
-<details><summary>Inherited methods</summary>
+\if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML::DoubleML$bootstrap()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML::DoubleML$confint()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-fit'><code>DoubleML::DoubleML$fit()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML::DoubleML$get_params()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML::DoubleML$learner_names()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML::DoubleML$p_adjust()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML::DoubleML$params_names()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML::DoubleML$print()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_ml_nuisance_params'><code>DoubleML::DoubleML$set_ml_nuisance_params()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML::DoubleML$set_sample_splitting()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML::DoubleML$split_samples()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML::DoubleML$summary()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-tune'><code>DoubleML::DoubleML$tune()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML$bootstrap()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML$confint()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="fit"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-fit'><code>DoubleML$fit()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML$get_params()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML$learner_names()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML$p_adjust()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML$params_names()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML$print()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_ml_nuisance_params'><code>DoubleML$set_ml_nuisance_params()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML$set_sample_splitting()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML$split_samples()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML$summary()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-tune'><code>DoubleML$tune()</code></a></span></li>
 </ul>
-</details>
-}}
+</details>}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DoubleMLIIVM-new"></a>}}
-\if{latex}{\out{\hypertarget{method-DoubleMLIIVM-new}{}}}
-\subsection{Method \code{new()}}{
-Creates a new instance of this R6 class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLIIVM$new(
+\if{html}{\out{<a id="method-DoubleMLIIVM-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLIIVM-initialize}{}}}
+\subsection{\code{DoubleMLIIVM$new()}}{
+  Creates a new instance of this R6 class.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLIIVM$new(
   data,
   ml_g,
   ml_m,
@@ -168,17 +176,16 @@ Creates a new instance of this R6 class.
   trimming_threshold = 1e-12,
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{(\code{DoubleMLData}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the data and specifying the variables
 of the causal model.}
-
-\item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
+      \item{\code{ml_g}}{(\code{\link[mlr3:LearnerRegr]{LearnerRegr}},
 \code{\link[mlr3:LearnerClassif]{LearnerClassif}}, \code{\link[mlr3:Learner]{Learner}},
 \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerRegr]{LearnerRegr}}, which is
@@ -191,10 +198,9 @@ For binary treatment outcomes, an object of the class
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "regr"} or \code{task_type = "classif"} can be passed,
 respectively, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. \cr
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. \cr
 \code{ml_g} refers to the nuisance function \eqn{g_0(Z,X) = E[Y|X,Z]}.}
-
-\item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}},
+      \item{\code{ml_m}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}},
 \code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerClassif]{LearnerClassif}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
@@ -202,12 +208,11 @@ extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "classif"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("classif.cv_glmnet", s = "lambda.min")}. \cr
 \code{ml_m} refers to the nuisance function \eqn{m_0(X) = E[Z|X]}.}
-
-\item{\code{ml_r}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}},
+      \item{\code{ml_r}}{(\code{\link[mlr3:LearnerClassif]{LearnerClassif}},
 \code{\link[mlr3:Learner]{Learner}}, \code{character(1)}) \cr
 A learner of the class \code{\link[mlr3:LearnerClassif]{LearnerClassif}}, which is
 available from \href{https://mlr3.mlr-org.com/index.html}{mlr3} or its
@@ -215,69 +220,63 @@ extension packages \href{https://mlr3learners.mlr-org.com/}{mlr3learners} or
 \href{https://mlr3extralearners.mlr-org.com/}{mlr3extralearners}.
 Alternatively, a \code{\link[mlr3:Learner]{Learner}} object with public field
 \code{task_type = "classif"} can be passed, for example of class
-\code{\link[mlr3pipelines:mlr_learners_graph]{GraphLearner}}. The learner can possibly
+\code{\link[mlr3pipelines:GraphLearner]{GraphLearner}}. The learner can possibly
 be passed with specified parameters, for example
 \code{lrn("classif.cv_glmnet", s = "lambda.min")}. \cr
 \code{ml_r} refers to the nuisance function \eqn{r_0(Z,X) = E[D|X,Z]}.}
-
-\item{\code{n_folds}}{(\code{integer(1)})\cr
+      \item{\code{n_folds}}{(\code{integer(1)})\cr
 Number of folds. Default is \code{5}.}
-
-\item{\code{n_rep}}{(\code{integer(1)}) \cr
+      \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for the sample splitting. Default is \code{1}.}
-
-\item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
+      \item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
 A \code{character(1)} (\code{"LATE"} is the only choice) specifying the score
 function.
 If a \verb{function()} is provided, it must be of the form
 \verb{function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat, r1_hat, smpls)} and
 the returned output must be a named \code{list()} with elements \code{psi_a} and
 \code{psi_b}. Default is \code{"LATE"}.}
-
-\item{\code{subgroups}}{(named \code{list(2)}) \cr
+      \item{\code{subgroups}}{(named \code{list(2)}) \cr
 Named \code{list(2)} with options to adapt to cases with and without the
 subgroups of always-takers and never-takes. The entry
 \code{always_takers}(\code{logical(1)}) speficies whether there are always takers
 in the sample. The entry \code{never_takers} (\code{logical(1)}) speficies whether
 there are never takers in the sample. Default is
 \code{list(always_takers = TRUE, never_takers = TRUE)}.}
-
-\item{\code{dml_procedure}}{(\code{character(1)}) \cr
+      \item{\code{dml_procedure}}{(\code{character(1)}) \cr
 A \code{character(1)} (\code{"dml1"} or \code{"dml2"}) specifying the double machine
 learning algorithm. Default is \code{"dml2"}.}
-
-\item{\code{trimming_rule}}{(\code{character(1)}) \cr
+      \item{\code{trimming_rule}}{(\code{character(1)}) \cr
 A \code{character(1)} (\code{"truncate"} is the only choice) specifying the
 trimming approach. Default is \code{"truncate"}.}
-
-\item{\code{trimming_threshold}}{(\code{numeric(1)}) \cr
+      \item{\code{trimming_threshold}}{(\code{numeric(1)}) \cr
 The threshold used for timming. Default is \code{1e-12}.}
-
-\item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
+      \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
 Indicates whether the sample splitting should be drawn during
 initialization of the object. Default is \code{TRUE}.}
-
-\item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
+      \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLIIVM-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLIIVM-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLIIVM$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLIIVM$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLIIVM$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

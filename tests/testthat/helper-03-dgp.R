@@ -1,3 +1,7 @@
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
 # dgps
 
 g = function(x) {
@@ -12,7 +16,6 @@ m = function(x, nu = 0, gamma = 1) {
 }
 
 dgp1_plr = function(theta, N, k) {
-
   b = 1 / (1:k)
   sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
 
@@ -28,7 +31,6 @@ dgp1_plr = function(theta, N, k) {
 
 
 dgp1_iv = function(theta, N, k) {
-
   b = 1 / (1:k)
   sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
 
@@ -47,7 +49,6 @@ dgp1_iv = function(theta, N, k) {
 
 
 dgp1_irm = function(theta, N, k) {
-
   b = 1 / (1:k)
   sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
 
@@ -71,7 +72,6 @@ dgp1_irm = function(theta, N, k) {
 }
 
 dgp1_irm_binary = function(theta, N, k) {
-
   b = 1 / (1:k)
   sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
 
@@ -96,7 +96,6 @@ dgp1_irm_binary = function(theta, N, k) {
 }
 
 dgp1_irmiv = function(theta, N, k) {
-
   b = 1 / (1:k)
   sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
 
@@ -124,7 +123,6 @@ dgp1_irmiv = function(theta, N, k) {
 }
 
 dgp1_irmiv_binary = function(theta, N, k) {
-
   b = 1 / (1:k)
   sigma = clusterGeneration::genPositiveDefMat(k, "unifcorrmat")$Sigma
 
@@ -153,7 +151,6 @@ dgp1_irmiv_binary = function(theta, N, k) {
 }
 
 dgp1_toeplitz = function(n, p, betamax = 4, decay = 0.99, threshold = 0, noisevar = 10, ...) {
-
   beta = vector("numeric", length = p)
 
   for (j in 1:p) {
@@ -186,7 +183,6 @@ dgp1_toeplitz = function(n, p, betamax = 4, decay = 0.99, threshold = 0, noiseva
 }
 
 make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150) {
-
   sigma_e_u = matrix(c(1, 0.6, 0.6, 1), ncol = 2)
   mu_e_u = rep(0, 2)
   e_u = mvtnorm::rmvnorm(n = n_obs, mean = mu_e_u, sigma = sigma_e_u)
@@ -224,7 +220,6 @@ make_data_pliv_partialZ = function(n_obs, alpha = 1, dim_x = 5, dim_z = 150) {
 }
 
 make_data_ssm = function(n_obs, dim_x, theta, mar = TRUE) {
-
   if (mar == TRUE) {
     sigma = matrix(c(1, 0, 0, 1), 2, 2)
     gamma = 0
@@ -256,3 +251,4 @@ make_data_ssm = function(n_obs, dim_x, theta, mar = TRUE) {
   }
   return(data)
 }
+# nolint end

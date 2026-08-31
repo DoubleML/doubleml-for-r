@@ -1,11 +1,16 @@
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
 # Double Machine Learning for Partially Linear Instrumental Variable Regression.
-dml_pliv = function(data, y, d, z,
+dml_pliv = function(
+  data, y, d, z,
   n_folds,
   ml_l, ml_m, ml_r, ml_g,
   params, dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_l = NULL, params_m = NULL, params_r = NULL, params_g = NULL) {
-
+  params_l = NULL, params_m = NULL, params_r = NULL, params_g = NULL
+) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -23,11 +28,13 @@ dml_pliv = function(data, y, d, z,
       data, y, d, z,
       ml_l, ml_m, ml_r, ml_g,
       n_folds, this_smpl, fit_g,
-      params_l, params_m, params_r, params_g)
+      params_l, params_m, params_r, params_g
+    )
 
     residuals = compute_pliv_residuals(
       data, y, d, z, n_folds, this_smpl,
-      all_preds[[i_rep]])
+      all_preds[[i_rep]]
+    )
     y_minus_l_hat = residuals$y_minus_l_hat
     z_minus_m_hat = residuals$z_minus_m_hat
     d_minus_r_hat = residuals$d_minus_r_hat
@@ -36,7 +43,7 @@ dml_pliv = function(data, y, d, z,
 
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA_real_, n_folds)
+      thetas = rep(NA_real_, n_folds)
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
         orth_est = orth_pliv_dml(
@@ -45,7 +52,8 @@ dml_pliv = function(data, y, d, z,
           d_minus_r_hat = d_minus_r_hat[test_index],
           y_minus_g_hat = y_minus_g_hat[test_index],
           D = D[test_index],
-          score = score)
+          score = score
+        )
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
@@ -60,7 +68,8 @@ dml_pliv = function(data, y, d, z,
       orth_est = orth_pliv_dml(
         y_minus_l_hat = y_minus_l_hat, z_minus_m_hat = z_minus_m_hat,
         d_minus_r_hat = d_minus_r_hat, y_minus_g_hat = y_minus_g_hat,
-        D = D, score = score)
+        D = D, score = score
+      )
       all_thetas[i_rep] = orth_est$theta
     }
 
@@ -68,7 +77,8 @@ dml_pliv = function(data, y, d, z,
       D = D, theta = all_thetas[i_rep],
       y_minus_l_hat = y_minus_l_hat, z_minus_m_hat = z_minus_m_hat,
       d_minus_r_hat = d_minus_r_hat, y_minus_g_hat = y_minus_g_hat,
-      score = score))
+      score = score
+    ))
   }
 
   theta = stats::median(all_thetas)
@@ -86,16 +96,18 @@ dml_pliv = function(data, y, d, z,
   res = list(
     coef = theta, se = se, t = t, pval = pval,
     thetas = all_thetas, ses = all_ses,
-    all_preds = all_preds, smpls = smpls)
+    all_preds = all_preds, smpls = smpls
+  )
 
   return(res)
 }
 
-fit_nuisance_pliv = function(data, y, d, z,
+fit_nuisance_pliv = function(
+  data, y, d, z,
   ml_l, ml_m, ml_r, ml_g,
   n_folds, smpls, fit_g,
-  params_l, params_m, params_r, params_g) {
-
+  params_l, params_m, params_r, params_g
+) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
@@ -150,7 +162,9 @@ fit_nuisance_pliv = function(data, y, d, z,
         l_hat_list = l_hat_list,
         m_hat_list = m_hat_list,
         r_hat_list = r_hat_list,
-        g_hat_list = NULL))
+        g_hat_list = NULL
+      )
+    )
     y_minus_l_hat = residuals$y_minus_l_hat
     z_minus_m_hat = residuals$z_minus_m_hat
     d_minus_r_hat = residuals$d_minus_r_hat
@@ -166,7 +180,8 @@ fit_nuisance_pliv = function(data, y, d, z,
 
     task_g = mlr3::TaskRegr$new(
       id = paste0("nuis_g_", d), backend = data_g,
-      target = "y_minus_theta_d")
+      target = "y_minus_theta_d"
+    )
 
     resampling_g = mlr3::rsmp("custom")
     resampling_g$instantiate(task_g, train_ids, test_ids)
@@ -185,13 +200,13 @@ fit_nuisance_pliv = function(data, y, d, z,
     l_hat_list = l_hat_list,
     m_hat_list = m_hat_list,
     r_hat_list = r_hat_list,
-    g_hat_list = g_hat_list)
+    g_hat_list = g_hat_list
+  )
 
   return(all_preds)
 }
 
 compute_pliv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
-
   test_ids = smpls$test_ids
 
   l_hat_list = all_preds$l_hat_list
@@ -226,14 +241,17 @@ compute_pliv_residuals = function(data, y, d, z, n_folds, smpls, all_preds) {
     y_minus_l_hat = y_minus_l_hat,
     z_minus_m_hat = z_minus_m_hat,
     d_minus_r_hat = d_minus_r_hat,
-    y_minus_g_hat = y_minus_g_hat)
+    y_minus_g_hat = y_minus_g_hat
+  )
 
   return(residuals)
 }
 
 # Orthogonalized Estimation of Coefficient in PLR
-orth_pliv_dml = function(y_minus_l_hat, z_minus_m_hat,
-  d_minus_r_hat, y_minus_g_hat, D, score) {
+orth_pliv_dml = function(
+  y_minus_l_hat, z_minus_m_hat,
+  d_minus_r_hat, y_minus_g_hat, D, score
+) {
   if (score == "partialling out") {
     theta = mean(y_minus_l_hat * z_minus_m_hat) / mean(d_minus_r_hat * z_minus_m_hat)
   } else if (score == "IV-type") {
@@ -246,8 +264,10 @@ orth_pliv_dml = function(y_minus_l_hat, z_minus_m_hat,
 }
 
 # Variance estimation for DML estimator in the partially linear regression model
-var_pliv = function(theta, D, y_minus_l_hat, z_minus_m_hat,
-  d_minus_r_hat, y_minus_g_hat, score) {
+var_pliv = function(
+  theta, D, y_minus_l_hat, z_minus_m_hat,
+  d_minus_r_hat, y_minus_g_hat, score
+) {
   if (score == "partialling out") {
     var = mean(1 / length(y_minus_l_hat) * 1 / (mean(d_minus_r_hat * z_minus_m_hat))^2 *
       mean(((y_minus_l_hat - d_minus_r_hat * theta) * z_minus_m_hat)^2))
@@ -261,13 +281,16 @@ var_pliv = function(theta, D, y_minus_l_hat, z_minus_m_hat,
 }
 
 # Bootstrap Implementation for Partially Linear Regression Model
-bootstrap_pliv = function(theta, se, data, y, d, z, n_folds, smpls,
+bootstrap_pliv = function(
+  theta, se, data, y, d, z, n_folds, smpls,
   all_preds, bootstrap, n_rep_boot, score,
-  n_rep = 1) {
+  n_rep = 1
+) {
   for (i_rep in 1:n_rep) {
     residuals = compute_pliv_residuals(
       data, y, d, z, n_folds,
-      smpls[[i_rep]], all_preds[[i_rep]])
+      smpls[[i_rep]], all_preds[[i_rep]]
+    )
     y_minus_l_hat = residuals$y_minus_l_hat
     d_minus_r_hat = residuals$d_minus_r_hat
     z_minus_m_hat = residuals$z_minus_m_hat
@@ -287,7 +310,8 @@ bootstrap_pliv = function(theta, se, data, y, d, z, n_folds, smpls,
     this_res = functional_bootstrap(
       theta[i_rep], se[i_rep], psi, psi_a, n_folds,
       smpls[[i_rep]],
-      n_rep_boot, weights)
+      n_rep_boot, weights
+    )
     if (i_rep == 1) {
       boot_res = this_res
     } else {
@@ -297,3 +321,4 @@ bootstrap_pliv = function(theta, se, data, y, d, z, n_folds, smpls,
   }
   return(boot_res)
 }
+# nolint end

@@ -1,12 +1,17 @@
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
 # Double Machine Learning for Sample Selection Models
-dml_ssm = function(data, y, d, z, s,
+dml_ssm = function(
+  data, y, d, z, s,
   n_folds, ml_pi, ml_m, ml_g,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
   trimming_threshold = 1e-12,
   normalize_ipw = FALSE,
-  params_pi = NULL, params_m = NULL, params_g = NULL) {
-
+  params_pi = NULL, params_m = NULL, params_g = NULL
+) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -26,7 +31,8 @@ dml_ssm = function(data, y, d, z, s,
       params_pi, params_m, params_g
     )
 
-    res = extract_ssm_preds(data = data, n_folds = n_folds, smpls = this_smpl,
+    res = extract_ssm_preds(
+      data = data, n_folds = n_folds, smpls = this_smpl,
       all_preds = all_preds[[i_rep]], trimming_threshold = trimming_threshold
     )
     pi_hat = res$pi_hat
@@ -120,12 +126,13 @@ dml_ssm = function(data, y, d, z, s,
   return(res)
 }
 
-fit_nuisance_ssm = function(data, y, d, z, s,
+fit_nuisance_ssm = function(
+  data, y, d, z, s,
   ml_pi, ml_m, ml_g,
   this_smpl,
   score = score,
-  params_pi, params_m, params_g) {
-
+  params_pi, params_m, params_g
+) {
   if (score == "missing-at-random") {
     train_ids = this_smpl$train_ids
     test_ids = this_smpl$test_ids
@@ -196,7 +203,6 @@ fit_nuisance_ssm = function(data, y, d, z, s,
     resampling_g_d1$instantiate(task_g_d1, train_ids_d1_s1, test_ids)
     r_g_d1 = mlr3::resample(task_g_d1, ml_g_d1, resampling_g_d1, store_models = TRUE)
     g_hat_d1_list = lapply(r_g_d1$predictions(), function(x) x$response)
-
   } else { # nonignorable
 
     pi_hat_list = list()
@@ -214,7 +220,9 @@ fit_nuisance_ssm = function(data, y, d, z, s,
       # split train_ids into 2 sets
       dummy_train_task = Task$new("dummy", "regr", data)
       dummy_train_task$set_col_roles("strata", c("target", "stratum"))
-      dummy_train_resampling = rsmp("holdout", ratio = 0.5)$instantiate(dummy_train_task$filter(train_ids))
+      dummy_train_resampling = rsmp("holdout", ratio = 0.5)$instantiate(
+        dummy_train_task$filter(train_ids)
+      )
       train1 = dummy_train_resampling$train_set(1)
       train2 = dummy_train_resampling$test_set(1)
 
@@ -229,14 +237,17 @@ fit_nuisance_ssm = function(data, y, d, z, s,
       )
 
       resampling_pi_prelim = mlr3::rsmp("custom")
-      resampling_pi_prelim$instantiate(task_pi_prelim, list(train1), list(1:nrow(data)))
+      resampling_pi_prelim$instantiate(task_pi_prelim, list(train1), list(seq_len(nrow(data))))
 
       ml_pi_prelim = ml_pi$clone()
       if (!is.null(params_pi)) {
         ml_pi_prelim$param_set$values = params_pi
       }
 
-      r_pi_prelim = mlr3::resample(task_pi_prelim, ml_pi_prelim, resampling_pi_prelim, store_models = TRUE)
+      r_pi_prelim = mlr3::resample(
+        task_pi_prelim, ml_pi_prelim, resampling_pi_prelim,
+        store_models = TRUE
+      )
       preds_pi_hat_prelim = r_pi_prelim$predictions()[[1]]$prob[, "1"]
 
       data$pi_hat_prelim = preds_pi_hat_prelim
@@ -289,9 +300,7 @@ fit_nuisance_ssm = function(data, y, d, z, s,
       resampling_g_d1$instantiate(task_g_d1, list(train2_d1_s1), list(test_ids))
       r_g_d1 = mlr3::resample(task_g_d1, ml_g_d1, resampling_g_d1, store_models = TRUE)
       g_hat_d1_list[[i_fold]] = r_g_d1$predictions()[[1]]$response
-
     }
-
   }
 
   all_preds = list(
@@ -305,7 +314,6 @@ fit_nuisance_ssm = function(data, y, d, z, s,
 }
 
 extract_ssm_preds = function(data, n_folds, smpls, all_preds, trimming_threshold) {
-
   test_ids = smpls$test_ids
 
   pi_hat_list = all_preds$pi_hat_list
@@ -324,7 +332,6 @@ extract_ssm_preds = function(data, n_folds, smpls, all_preds, trimming_threshold
     m_hat[test_index] = m_hat_list[[i]]
     g_hat_d0[test_index] = g_hat_d0_list[[i]]
     g_hat_d1[test_index] = g_hat_d1_list[[i]]
-
   }
 
   m_hat = trim_vec(m_hat, trimming_threshold)
@@ -339,27 +346,23 @@ extract_ssm_preds = function(data, n_folds, smpls, all_preds, trimming_threshold
 
 # Orthogonalized estimation of coefficient in SSM
 orth_ssm_dml = function(pi_hat, m_hat, g_hat_d0, g_hat_d1, y, d, s, score, normalize_ipw) {
-
   dtreat = (d == 1)
   dcontrol = (d == 0)
 
-  if (score == "missing-at-random" | score == "nonignorable") {
-
+  if (score == "missing-at-random" || score == "nonignorable") {
     psi_a = -1
     if (normalize_ipw == TRUE) {
       weight_treat = sum(dtreat) / sum((dtreat * s) / (pi_hat * m_hat))
       weight_control = sum(dcontrol) / sum((dcontrol * s) / (pi_hat * (1 - m_hat)))
 
       psi_b1 = weight_treat * ((dtreat * s * (y - g_hat_d1)) / (m_hat * pi_hat)) + g_hat_d1
-      psi_b0 = weight_control * ((dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat)) + g_hat_d0
-
+      psi_b0 = weight_control * ((dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat)) +
+        g_hat_d0
     } else {
       psi_b1 = (dtreat * s * (y - g_hat_d1)) / (m_hat * pi_hat) + g_hat_d1
       psi_b0 = (dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat) + g_hat_d0
-
     }
     psi_b = psi_b1 - psi_b0
-
   } else {
     stop("Inference framework for orthogonal estimation unknown")
   }
@@ -379,12 +382,16 @@ var_ssm = function(theta, psi_a, psi_b, d) {
 }
 
 # Bootstrap Implementation for SSM
-bootstrap_ssm = function(theta, se, data, y, d, s, n_folds, smpls, all_preds,
+bootstrap_ssm = function(
+  theta, se, data, y, d, s, n_folds, smpls, all_preds,
   score, bootstrap, n_rep_boot,
-  n_rep = 1, trimming_threshold = 1e-12, normalize_ipw = FALSE) {
+  n_rep = 1, trimming_threshold = 1e-12, normalize_ipw = FALSE
+) {
   for (i_rep in 1:n_rep) {
-    res = extract_ssm_preds(data = data, n_folds = n_folds, smpls = smpls[[i_rep]], all_preds = all_preds[[i_rep]],
-      trimming_threshold = trimming_threshold)
+    res = extract_ssm_preds(
+      data = data, n_folds = n_folds, smpls = smpls[[i_rep]], all_preds = all_preds[[i_rep]],
+      trimming_threshold = trimming_threshold
+    )
 
     pi_hat = res$pi_hat
     m_hat = res$m_hat
@@ -404,12 +411,11 @@ bootstrap_ssm = function(theta, se, data, y, d, s, n_folds, smpls, all_preds,
       weight_control = sum(dcontrol) / sum((dcontrol * s) / (pi_hat * (1 - m_hat)))
 
       psi_b1 = weight_treat * ((dtreat * s * (y - g_hat_d1)) / (m_hat * pi_hat)) + g_hat_d1
-      psi_b0 = weight_control * ((dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat)) + g_hat_d0
-
+      psi_b0 = weight_control * ((dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat)) +
+        g_hat_d0
     } else {
       psi_b1 = (dtreat * s * (y - g_hat_d1)) / (m_hat * pi_hat) + g_hat_d1
       psi_b0 = (dcontrol * s * (y - g_hat_d0)) / ((1 - m_hat) * pi_hat) + g_hat_d0
-
     }
     psi_b = psi_b1 - psi_b0
     psi = psi_a * theta[i_rep] + psi_b
@@ -431,3 +437,4 @@ bootstrap_ssm = function(theta, se, data, y, d, s, n_folds, smpls, all_preds,
   }
   return(boot_res)
 }
+# nolint end

@@ -20,7 +20,8 @@ if (on_cran) {
     score = "partialling out",
     n_rep = c(1),
     tune_on_folds = c(FALSE, TRUE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "regr.rpart",
@@ -29,7 +30,8 @@ if (on_cran) {
     score = c("IV-type", "partialling out"),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 
 
@@ -37,7 +39,8 @@ test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 # skip('Skip tests for PLR tuning')
 patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     n_folds = 4
 
@@ -46,15 +49,16 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
     if (m_learner == "regr.rpart") {
       data_ml = double_ml_data_from_data_frame(data_plr_multi,
         y_col = "y",
-        d_cols = c("d1", "d2"), x_cols = Xnames)
-
+        d_cols = c("d1", "d2"), x_cols = Xnames
+      )
     } else if (m_learner == "classif.rpart") {
       data_plr_binary = data_plr_multi
       data_plr_binary$d1 = as.numeric(data_plr_binary$d1 > 0)
       data_plr_binary$d2 = as.numeric(data_plr_binary$d2 > 0)
       data_ml = double_ml_data_from_data_frame(data_plr_binary,
         y_col = "y",
-        d_cols = c("d1", "d2"), x_cols = Xnames)
+        d_cols = c("d1", "d2"), x_cols = Xnames
+      )
     }
     if (score == "IV-type") {
       ml_g = learner
@@ -68,7 +72,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
-      n_rep = n_rep)
+      n_rep = n_rep
+    )
 
     tune_sets = list(
       n_folds_tune = 2,
@@ -76,23 +81,30 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
       rsmp_tune = "cv",
       terminator = mlr3tuning::trm("evals", n_evals = 2),
       algorithm = "grid_search",
-      resolution = 5)
+      resolution = 5
+    )
 
     param_grid = list(
       "ml_l" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.02, upper = 0.03),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_m" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.03, upper = 0.04),
-        minsplit = paradox::p_int(lower = 2, upper = 3)))
+        minsplit = paradox::p_int(lower = 2, upper = 3)
+      )
+    )
 
     if (score == "IV-type") {
       param_grid[["ml_g"]] = paradox::ps(
         cp = paradox::p_dbl(lower = 0.015, upper = 0.025),
-        minsplit = paradox::p_int(lower = 3, upper = 4))
+        minsplit = paradox::p_int(lower = 3, upper = 4)
+      )
     }
 
-    double_mlplr_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_sets)
+    double_mlplr_obj_tuned$tune(
+      param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_sets
+    )
 
     double_mlplr_obj_tuned$fit()
 

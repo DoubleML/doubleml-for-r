@@ -10,18 +10,21 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml1",
     score = "partialling out",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
     score = c("partialling out", "IV-type"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_pliv(learner)
     n_rep_boot = 498
 
@@ -33,7 +36,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       ml_g = learner_pars$ml_g$clone(),
-      dml_procedure = dml_procedure, score = score)
+      dml_procedure = dml_procedure, score = score
+    )
     theta = pliv_hat$coef
     se = pliv_hat$se
 
@@ -43,7 +47,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
       n_folds = 5, smpls = pliv_hat$smpls,
       all_preds = pliv_hat$all_preds,
       bootstrap = "normal", n_rep_boot = n_rep_boot,
-      score = score)$boot_coef
+      score = score
+    )$boot_coef
 
     set.seed(3141)
     if (score == "partialling out") {
@@ -54,7 +59,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
         ml_m = learner_pars$ml_m$clone(),
         ml_r = learner_pars$ml_r$clone(),
         dml_procedure = dml_procedure,
-        score = score)
+        score = score
+      )
     } else {
       double_mlpliv_obj = DoubleMLPLIV$new(
         data = data_pliv$dml_data,
@@ -64,10 +70,11 @@ patrick::with_parameters_test_that("Unit tests for PLIV:",
         ml_r = learner_pars$ml_r$clone(),
         ml_g = learner_pars$ml_g$clone(),
         dml_procedure = dml_procedure,
-        score = score)
+        score = score
+      )
     }
 
-    double_mlpliv_obj$fit(store_predictions = T)
+    double_mlpliv_obj$fit(store_predictions = TRUE)
     theta_obj = double_mlpliv_obj$coef
     se_obj = double_mlpliv_obj$se
 

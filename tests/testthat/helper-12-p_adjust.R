@@ -1,3 +1,7 @@
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
 #' Multiple Testing Adjustment of p-values for S3 objects \code{DML}
 #'
 #' Multiple hypotheses testing adjustment of p-values for double machine learning.
@@ -38,7 +42,6 @@ p_adjust = function(x, ...) {
 #' @export
 #'
 p_adjust.DML = function(x, method = "RW", ...) {
-
   checkmate::checkClass(x, "DML")
   checkmate::checkChoice(method, c("RW", stats::p.adjust.methods))
 
@@ -61,8 +64,6 @@ p_adjust.DML = function(x, method = "RW", ...) {
   }
 
   if (method == "RW") {
-
-
     # e = x$residuals$e
     # v = x$residuals$v
     # ev = e * v
@@ -91,7 +92,7 @@ p_adjust.DML = function(x, method = "RW", ...) {
         pinit[s] = pmin(1, (sum(sim >= abs(tstats[stepdown.index][s]))) / B)
       }
       if (s > 1) {
-        sim = apply(abs(Beta_i[-stepdown.index[1:(s - 1)], , drop = F]), 2, max)
+        sim = apply(abs(Beta_i[-stepdown.index[1:(s - 1)], , drop = FALSE]), 2, max)
 
         pinit[s] = pmin(1, (sum(sim >= abs(tstats[stepdown.index][s]))) / B)
       }
@@ -106,7 +107,6 @@ p_adjust.DML = function(x, method = "RW", ...) {
         }
       }
       pval = corr.padj[ro]
-
     }
   }
 
@@ -115,3 +115,4 @@ p_adjust.DML = function(x, method = "RW", ...) {
 
   return(res)
 }
+# nolint end

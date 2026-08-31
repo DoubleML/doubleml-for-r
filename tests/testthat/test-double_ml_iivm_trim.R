@@ -10,7 +10,8 @@ if (on_cran) {
     score = "LATE",
     trimming_rule = c("truncate"),
     trimming_threshold = c(0.05),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "rpart",
@@ -18,12 +19,14 @@ if (on_cran) {
     score = "LATE",
     trimming_rule = c("truncate"),
     trimming_threshold = c(1e-12, 0.05),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IIVM:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_iivm(learner)
     n_rep_boot = 498
 
@@ -35,7 +38,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       ml_m = learner_pars$ml_m$clone(),
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure, score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     theta = iivm_hat$coef
     se = iivm_hat$se
 
@@ -46,7 +50,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       all_preds = iivm_hat$all_preds,
       score = score,
       bootstrap = "normal", n_rep_boot = n_rep_boot,
-      trimming_threshold = trimming_threshold)$boot_coef
+      trimming_threshold = trimming_threshold
+    )$boot_coef
 
     set.seed(3141)
 
@@ -58,7 +63,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
 
     data_ml = double_ml_data_from_data_frame(data,
       y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_col = "Z_IV")
+      d_cols = "d", x_cols = Xnames, z_col = "Z_IV"
+    )
 
     double_mliivm_obj = DoubleMLIIVM$new(data_ml,
       n_folds = 5,
@@ -67,7 +73,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM:",
       ml_r = learner_pars$ml_r$clone(),
       dml_procedure = dml_procedure,
       trimming_threshold = trimming_threshold,
-      score = score)
+      score = score
+    )
 
     double_mliivm_obj$fit()
     theta_obj = double_mliivm_obj$coef

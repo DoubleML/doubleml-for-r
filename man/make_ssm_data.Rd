@@ -45,7 +45,8 @@ y_i = \theta d_i + x_i' \beta  + u_i,}
 
 \deqn{d_i = 1\lbrace x_i' \beta  + w_i > 0 \rbrace,}
 
-with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
+with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates
+\eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
 \eqn{\Sigma^2_x} is a matrix with entries
 \eqn{\Sigma_{kj} = 0.5^{|j-k|}}.
 \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{0.4}{j^2}}
@@ -53,10 +54,11 @@ with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mat
 \eqn{(u_i,v_i) \sim \mathcal{N}(0, \Sigma^2_{u,v})},
 \eqn{w_i \sim \mathcal{N}(0, 1)}.
 
-The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
-Huber and Lafférs (2023).
+The data generating process is inspired by a process used in the
+simulation study (see Appendix E) of Bia, Huber and Lafférs (2023).
 }
 \references{
-Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
-Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
+Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine
+Learning for Sample Selection Models, Journal of Business & Economic
+Statistics, DOI: 10.1080/07350015.2023.2271071
 }

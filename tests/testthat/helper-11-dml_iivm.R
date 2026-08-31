@@ -1,13 +1,18 @@
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
 # Double Machine Learning for Interactive Instrumental Variable Regression Model.
-dml_irmiv = function(data, y, d, z,
+dml_irmiv = function(
+  data, y, d, z,
   n_folds,
   ml_g, ml_m, ml_r,
   dml_procedure, score,
   always_takers = TRUE, never_takers = TRUE,
   n_rep = 1, smpls = NULL,
   trimming_threshold = 1e-12,
-  params_g = NULL, params_m = NULL, params_r = NULL) {
-
+  params_g = NULL, params_m = NULL, params_r = NULL
+) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -25,10 +30,12 @@ dml_irmiv = function(data, y, d, z,
       ml_g, ml_m, ml_r,
       train_ids, test_ids,
       always_takers, never_takers,
-      params_g, params_m, params_r)
+      params_g, params_m, params_r
+    )
     res = extract_iivm_preds(data, y, d, z, n_folds,
       this_smpl, all_preds[[i_rep]],
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     m_hat = res$m_hat
     g0_hat = res$g0_hat
     g1_hat = res$g1_hat
@@ -48,7 +55,8 @@ dml_irmiv = function(data, y, d, z,
           g0_hat = g0_hat[test_index], g1_hat = g1_hat[test_index],
           r0_hat = r0_hat[test_index], r1_hat = r1_hat[test_index],
           d = D[test_index], y = Y[test_index], z = Z[test_index],
-          score = score)
+          score = score
+        )
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
@@ -69,14 +77,16 @@ dml_irmiv = function(data, y, d, z,
         g1_hat = g1_hat,
         r0_hat = r0_hat, r1_hat = r1_hat,
         d = D, y = Y, z = Z,
-        score = score)
+        score = score
+      )
       all_thetas[i_rep] = orth_est$theta
     }
 
     all_ses[i_rep] = sqrt(var_irmiv(
       theta = all_thetas[i_rep], m_hat = m_hat, g0_hat = g0_hat,
       g1_hat = g1_hat, r0_hat = r0_hat, r1_hat = r1_hat,
-      d = D, y = Y, z = Z, score = score))
+      d = D, y = Y, z = Z, score = score
+    ))
   }
 
   theta = stats::median(all_thetas)
@@ -94,18 +104,20 @@ dml_irmiv = function(data, y, d, z,
   res = list(
     coef = theta, se = se, t = t, pval = pval,
     thetas = all_thetas, ses = all_ses,
-    all_preds = all_preds, smpls = smpls)
+    all_preds = all_preds, smpls = smpls
+  )
 
   return(res)
 }
 
 
-fit_nuisance_iivm = function(data, y, d, z,
+fit_nuisance_iivm = function(
+  data, y, d, z,
   ml_g, ml_m, ml_r,
   train_ids, test_ids,
   always_takers, never_takers,
-  params_g, params_m, params_r) {
-
+  params_g, params_m, params_r
+) {
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
 
@@ -123,7 +135,8 @@ fit_nuisance_iivm = function(data, y, d, z,
   data_m[, z] = factor(data_m[, z])
   task_m = mlr3::TaskClassif$new(
     id = paste0("nuis_m_", z), backend = data_m,
-    target = z, positive = "1")
+    target = z, positive = "1"
+  )
   # }
 
   resampling_m = mlr3::rsmp("custom")
@@ -209,7 +222,7 @@ fit_nuisance_iivm = function(data, y, d, z,
   data_r = data[, r_indx, drop = FALSE]
   data_r[, d] = factor(data_r[, d])
 
-  if (always_takers == FALSE & never_takers == FALSE) {
+  if (always_takers == FALSE && never_takers == FALSE) {
     message("If there are no always-takers and no never-takers, ATE is estimated")
   }
 
@@ -221,7 +234,8 @@ fit_nuisance_iivm = function(data, y, d, z,
   if (always_takers == TRUE) {
     task_r0 = mlr3::TaskClassif$new(
       id = paste0("nuis_r0_", d), backend = data_r,
-      target = d, positive = "1")
+      target = d, positive = "1"
+    )
     ml_r0 = ml_r$clone()
     if (!is.null(params_r)) {
       ml_r0$param_set$values = params_r
@@ -245,7 +259,8 @@ fit_nuisance_iivm = function(data, y, d, z,
     # nuisance m1: E[E|Z=1, 0]
     task_r1 = mlr3::TaskClassif$new(
       id = paste0("nuis_r1_", d), backend = data_r,
-      target = d, positive = "1")
+      target = d, positive = "1"
+    )
     ml_r1 = ml_r$clone()
     if (!is.null(params_r)) {
       ml_r1$param_set$values = params_r
@@ -265,15 +280,17 @@ fit_nuisance_iivm = function(data, y, d, z,
     g0_hat_list = g0_hat_list,
     g1_hat_list = g1_hat_list,
     r0_hat_list = r0_hat_list,
-    r1_hat_list = r1_hat_list)
+    r1_hat_list = r1_hat_list
+  )
 
   return(all_preds)
 }
 
 
-extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
-  trimming_threshold) {
-
+extract_iivm_preds = function(
+  data, y, d, z, n_folds, smpls, all_preds,
+  trimming_threshold
+) {
   test_ids = smpls$test_ids
 
   m_hat_list = all_preds$m_hat_list
@@ -302,7 +319,8 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
 
   res = list(
     m_hat = m_hat, g0_hat = g0_hat, g1_hat = g1_hat,
-    r0_hat = r0_hat, r1_hat = r1_hat)
+    r0_hat = r0_hat, r1_hat = r1_hat
+  )
   return(res)
 }
 
@@ -311,11 +329,11 @@ extract_iivm_preds = function(data, y, d, z, n_folds, smpls, all_preds,
 orth_irmiv_dml = function(m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, score) {
   theta = NA_real_
 
-  if (score == "LATE" | score == "partialling out") {
-    theta = 1 / mean(r1_hat - r0_hat + z * (d - r1_hat) / m_hat - ((1 - z) * (d - r0_hat) / (1 - m_hat))) *
+  if (score == "LATE" || score == "partialling out") {
+    theta = 1 / mean(r1_hat - r0_hat + z * (d - r1_hat) / m_hat -
+      ((1 - z) * (d - r0_hat) / (1 - m_hat))) *
       mean(g1_hat - g0_hat + z * (y - g1_hat) / m_hat - ((1 - z) * (y - g0_hat) / (1 - m_hat)))
-  }
-  else {
+  } else {
     stop("Inference framework for orthogonal estimation unknown")
   }
 
@@ -328,9 +346,12 @@ orth_irmiv_dml = function(m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, score)
 var_irmiv = function(theta, m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, score) {
   n = length(d)
   if (score == "LATE") {
-    var = 1 / n * 1 / (mean((r1_hat - r0_hat + z * (d - r1_hat) / m_hat - (1 - z) * (d - r0_hat) / (1 - m_hat))))^2 *
+    var = 1 / n * 1 /
+      (mean((r1_hat - r0_hat + z * (d - r1_hat) / m_hat -
+        (1 - z) * (d - r0_hat) / (1 - m_hat))))^2 *
       mean((g1_hat - g0_hat + z * (y - g1_hat) / m_hat - (1 - z) * (y - g0_hat) / (1 - m_hat) -
-        (r1_hat - r0_hat + z * (d - r1_hat) / m_hat - (1 - z) * (d - r0_hat) / (1 - m_hat)) * theta)^2)
+        (r1_hat - r0_hat + z * (d - r1_hat) / m_hat -
+          (1 - z) * (d - r0_hat) / (1 - m_hat)) * theta)^2)
   } else {
     stop("Inference framework for variance estimation unknown")
   }
@@ -339,13 +360,16 @@ var_irmiv = function(theta, m_hat, g0_hat, g1_hat, r0_hat, r1_hat, d, y, z, scor
 
 
 # Bootstrap Implementation for Interactive Instrumental Variable Regression Model
-bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
+bootstrap_irmiv = function(
+  theta, se, data, y, d, z, n_folds, smpls, all_preds,
   score, bootstrap, n_rep_boot,
-  n_rep = 1, trimming_threshold = 1e-12) {
+  n_rep = 1, trimming_threshold = 1e-12
+) {
   for (i_rep in 1:n_rep) {
     res = extract_iivm_preds(data, y, d, z, n_folds,
       smpls[[i_rep]], all_preds[[i_rep]],
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     m_hat = res$m_hat
     g0_hat = res$g0_hat
     g1_hat = res$g1_hat
@@ -356,9 +380,9 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
     Z = data[, z]
 
     if (score == "LATE") {
-
       psi = g1_hat - g0_hat + Z * (Y - g1_hat) / m_hat - (1 - Z) * (Y - g0_hat) / (1 - m_hat) -
-        (r1_hat - r0_hat + Z * (D - r1_hat) / m_hat - (1 - Z) * (D - r0_hat) / (1 - m_hat)) * theta[i_rep]
+        (r1_hat - r0_hat + Z * (D - r1_hat) / m_hat -
+          (1 - Z) * (D - r0_hat) / (1 - m_hat)) * theta[i_rep]
 
       psi_a = -(r1_hat - r0_hat + Z * (D - r1_hat) / m_hat
         - (1 - Z) * (D - r0_hat) / (1 - m_hat))
@@ -371,7 +395,8 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
     this_res = functional_bootstrap(
       theta[i_rep], se[i_rep], psi, psi_a, n_folds,
       smpls[[i_rep]],
-      n_rep_boot, weights)
+      n_rep_boot, weights
+    )
     if (i_rep == 1) {
       boot_res = this_res
     } else {
@@ -381,3 +406,4 @@ bootstrap_irmiv = function(theta, se, data, y, d, z, n_folds, smpls, all_preds,
   }
   return(boot_res)
 }
+# nolint end

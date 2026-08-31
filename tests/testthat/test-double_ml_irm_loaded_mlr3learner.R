@@ -10,18 +10,21 @@ if (on_cran) {
     dml_procedure = "dml1",
     score = "ATTE",
     trimming_threshold = 0,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = c("ATE", "ATTE"),
     trimming_threshold = 0,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IRM:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     set.seed(3141)
     n_rep_boot = 212
 
@@ -44,7 +47,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
     loaded_classif_learner = mlr3::lrn("classif.ranger", "num.trees" = 10, "max.depth" = 2)
     # loaded_regr_learner = mlr3::lrn("regr.rpart", "cp" = 0.1, "minsplit" = 20)
     # loaded_classif_learner = mlr3::lrn("classif.rpart", "cp" = 0.1, "minsplit" = 20)
-    # loaded_regr_learner = mlr3::lrn("regr.cv_glmnet", "s" = "lambda.min", "family" = "gaussian", "nfolds" = 5)
+    # loaded_regr_learner = mlr3::lrn("regr.cv_glmnet", "s" = "lambda.min",
+    #   "family" = "gaussian", "nfolds" = 5)
     # loaded_classif_learner = mlr3::lrn("classif.cv_glmnet", "s" = "lambda.min", "nfolds" = 5)
 
     set.seed(2)
@@ -55,27 +59,30 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       ml_m = learner_classif_name,
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     # set params for nuisance part m
     double_mlirm$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = classif_params)
+      params = classif_params
+    )
     # set params for nuisance part g
     double_mlirm$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
-      params = regr_params)
+      params = regr_params
+    )
     double_mlirm$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
-      params = regr_params)
+      params = regr_params
+    )
     double_mlirm$fit()
     theta = double_mlirm$coef
     se = double_mlirm$se
     double_mlirm$bootstrap(method = "normal", n_rep = n_rep_boot)
     boot_theta = double_mlirm$boot_coef
-
 
 
     set.seed(2)
@@ -86,7 +93,8 @@ patrick::with_parameters_test_that("Unit tests for IRM:",
       ml_m = loaded_classif_learner,
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     double_mlirm_loaded$fit()
     theta_loaded = double_mlirm_loaded$coef
     se_loaded = double_mlirm_loaded$se

@@ -1,7 +1,6 @@
 context("Unit tests for DoubleMLCluster (Additional tests)")
 
 test_that("Unit tests for DoubleMLData", {
-
   set.seed(1234)
   N = 25 # number of observations (first dimension)
   M = 25 # number of observations (second dimension)
@@ -10,7 +9,8 @@ test_that("Unit tests for DoubleMLData", {
     omega_X = c(0.25, 0),
     omega_epsilon = c(0.25, 0),
     omega_v = c(0.25, 0),
-    omega_V = c(0.25, 0))
+    omega_V = c(0.25, 0)
+  )
   data_one_way$cluster_cols = "cluster_var_i"
 
   data_model = data_one_way$data_model
@@ -21,7 +21,8 @@ test_that("Unit tests for DoubleMLData", {
     y_col = "Y",
     d_cols = "D",
     z_cols = "Z",
-    cluster_cols = "cluster_var_i")
+    cluster_cols = "cluster_var_i"
+  )
   expect_null(dml_data$s_col)
   expect_data_table(dml_data$data_model)
   x_cols_exp = c(paste0("X", 1:10), "S")
@@ -32,20 +33,26 @@ test_that("Unit tests for DoubleMLData", {
     y_col = "Y",
     d_cols = "D",
     s_col = "S",
-    cluster_cols = "cluster_var_i")
+    cluster_cols = "cluster_var_i"
+  )
   expect_data_table(dml_data$data_model)
   x_cols_exp = c(paste0("X", 1:10), "Z")
   expect_identical(dml_data$x_cols, x_cols_exp)
 
-  msg = paste("At least one variable/column is set as selection variable",
-    "\\('s_col'\\) and as a cluster variable \\('cluster_cols'\\).")
+  msg = paste(
+    "At least one variable/column is set as selection variable",
+    "\\('s_col'\\) and as a cluster variable \\('cluster_cols'\\)."
+  )
 
-  expect_error(DoubleMLClusterData$new(data_model,
-    x_cols = c("X1", "X2"),
-    y_col = "Y",
-    d_cols = "D",
-    z_cols = "Z",
-    s_col = "S",
-    cluster_cols = "S"),
-  regexp = msg)
+  expect_error(
+    DoubleMLClusterData$new(data_model,
+      x_cols = c("X1", "X2"),
+      y_col = "Y",
+      d_cols = "D",
+      z_cols = "Z",
+      s_col = "S",
+      cluster_cols = "S"
+    ),
+    regexp = msg
+  )
 })

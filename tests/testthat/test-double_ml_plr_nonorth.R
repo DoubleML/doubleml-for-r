@@ -13,7 +13,6 @@ non_orth_score_w_g = function(y, d, l_hat, m_hat, g_hat, smpls) {
 }
 
 non_orth_score_w_l = function(y, d, l_hat, m_hat, g_hat, smpls) {
-
   p_a = -(d - m_hat) * (d - m_hat)
   p_b = (d - m_hat) * (y - l_hat)
   theta_initial = -mean(p_b, na.rm = TRUE) / mean(p_a, na.rm = TRUE)
@@ -34,22 +33,26 @@ if (on_cran) {
     which_score = c("non_orth_score_w_g"),
     n_folds = c(3),
     n_rep = c(2),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     which_score = c(
       "non_orth_score_w_g",
-      "non_orth_score_w_l"),
+      "non_orth_score_w_l"
+    ),
     n_folds = c(2, 3),
     n_rep = c(1, 2),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_plr(learner)
 
     if (which_score == "non_orth_score_w_g") {
@@ -69,7 +72,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
 
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef
@@ -95,7 +99,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
         dml_procedure = dml_procedure,
         n_folds = n_folds,
         score = score,
-        apply_cross_fitting = FALSE)
+        apply_cross_fitting = FALSE
+      )
 
       double_mlplr_nocf$fit()
       theta_nocf = double_mlplr_nocf$coef
@@ -109,7 +114,6 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       expect_is(t_nocf, "numeric")
       expect_is(pval_nocf, "numeric")
       expect_is(ci_nocf, "matrix")
-
     }
 
     # expect_equal(as.vector(plr_hat$boot_theta), as.vector(boot_theta_obj), tolerance = 1e-8)

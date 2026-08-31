@@ -1,9 +1,10 @@
-dml_cv_predict = function(learner, X_cols, y_col,
+dml_cv_predict = function(
+  learner, X_cols, y_col,
   data_model, nuisance_id,
   smpls = NULL, est_params = NULL,
   return_train_preds = FALSE, task_type = NULL,
-  fold_specific_params = FALSE) {
-
+  fold_specific_params = FALSE
+) {
   valid_task_type = c("regr", "classif")
   assertChoice(task_type, valid_task_type)
   # TODO: extend asserts
@@ -20,22 +21,27 @@ dml_cv_predict = function(learner, X_cols, y_col,
       id = nuisance_id, data = data_model,
       target = y_col,
       select_cols = X_cols,
-      task_type = task_type)
+      task_type = task_type
+    )
 
     if (!fold_specific_params) {
       ml_learner = initiate_learner(
         learner, task_type,
-        est_params, return_train_preds)
+        est_params, return_train_preds
+      )
       resampling_smpls = rsmp("custom")$instantiate(
         task_pred, smpls$train_ids,
-        smpls$test_ids)
+        smpls$test_ids
+      )
       resampling_pred = resample(task_pred, ml_learner, resampling_smpls,
-        store_models = TRUE)
+        store_models = TRUE
+      )
       preds = extract_prediction(resampling_pred, task_type, n_obs)
       models = extract_models(resampling_pred)
       if (return_train_preds) {
         train_preds = extract_prediction(resampling_pred, task_type, n_obs,
-          return_train_preds = TRUE)
+          return_train_preds = TRUE
+        )
       }
     } else {
       # learners initiated according to fold-specific learners, proceed foldwise
@@ -45,7 +51,8 @@ dml_cv_predict = function(learner, X_cols, y_col,
           initiate_learner(
             learner,
             task_type, x,
-            return_train_preds)
+            return_train_preds
+          )
         }
       )
       resampling_smpls = lapply(
@@ -53,14 +60,16 @@ dml_cv_predict = function(learner, X_cols, y_col,
         function(x) {
           rsmp("custom")$instantiate(
             task_pred, list(smpls$train_ids[[x]]),
-            list(smpls$test_ids[[x]]))
+            list(smpls$test_ids[[x]])
+          )
         }
       )
 
       resampling_pred = lapply(seq_along(ml_learners), function(x) {
         resample(task_pred, ml_learners[[x]],
           resampling_smpls[[x]],
-          store_models = TRUE)
+          store_models = TRUE
+        )
       })
 
       preds = extract_prediction(resampling_pred, task_type, n_obs)
@@ -68,7 +77,8 @@ dml_cv_predict = function(learner, X_cols, y_col,
       if (return_train_preds) {
         train_preds = extract_prediction(resampling_pred, task_type,
           n_obs,
-          return_train_preds = TRUE)
+          return_train_preds = TRUE
+        )
       }
     }
   } else {
@@ -78,7 +88,8 @@ dml_cv_predict = function(learner, X_cols, y_col,
         id = nuisance_id, data = x,
         target = y_col,
         select_cols = X_cols,
-        task_type = task_type)
+        task_type = task_type
+      )
     })
     # fold_specific_target == TRUE; only required for pliv_partialXZ
     if (!fold_specific_params) {
@@ -90,7 +101,8 @@ dml_cv_predict = function(learner, X_cols, y_col,
           rsmp("custom")$instantiate(
             task_pred[[x]],
             list(smpls$train_ids[[x]]),
-            list(smpls$test_ids[[x]]))
+            list(smpls$test_ids[[x]])
+          )
         }
       )
       resampling_pred = lapply(
@@ -98,7 +110,8 @@ dml_cv_predict = function(learner, X_cols, y_col,
         function(x) {
           resample(task_pred[[x]], ml_learner,
             resampling_smpls[[x]],
-            store_models = TRUE)
+            store_models = TRUE
+          )
         }
       )
       preds = extract_prediction(resampling_pred, task_type, n_obs)
@@ -107,16 +120,19 @@ dml_cv_predict = function(learner, X_cols, y_col,
       # learners initiated according to fold-specific learners, proceed foldwise
       ml_learners = lapply(
         est_params,
-        function(x) initiate_learner(learner, task_type, x))
+        function(x) initiate_learner(learner, task_type, x)
+      )
       resampling_smpls = lapply(seq_along(smpls$train_ids), function(x) {
         rsmp("custom")$instantiate(
           task_pred[[x]], list(smpls$train_ids[[x]]),
-          list(smpls$test_ids[[x]]))
+          list(smpls$test_ids[[x]])
+        )
       })
       resampling_pred = lapply(seq_along(ml_learners), function(x) {
         resample(task_pred[[x]], ml_learners[[x]],
           resampling_smpls[[x]],
-          store_models = TRUE)
+          store_models = TRUE
+        )
       })
       preds = extract_prediction(resampling_pred, task_type, n_obs)
       models = extract_models(resampling_pred)
@@ -126,24 +142,28 @@ dml_cv_predict = function(learner, X_cols, y_col,
     return(list(
       "preds" = preds,
       "train_preds" = train_preds,
-      "models" = models))
+      "models" = models
+    ))
   } else {
     return(list(
       "preds" = preds,
-      "models" = models))
+      "models" = models
+    ))
   }
 }
 
-dml_tune = function(learner, X_cols, y_col, data_tune_list,
-  nuisance_id, param_set, tune_settings, measure, task_type) {
-
+dml_tune = function(
+  learner, X_cols, y_col, data_tune_list,
+  nuisance_id, param_set, tune_settings, measure, task_type
+) {
   task_tune = lapply(data_tune_list, function(x) {
     initiate_task(
       id = nuisance_id,
       data = x,
       target = y_col,
       select_cols = X_cols,
-      task_type = task_type)
+      task_type = task_type
+    )
   })
   valid_task_type = c("regr", "classif")
   assertChoice(task_type, valid_task_type)
@@ -156,23 +176,28 @@ dml_tune = function(learner, X_cols, y_col, data_tune_list,
       resampling = tune_settings$rsmp_tune,
       measure = measure,
       search_space = param_set,
-      terminator = tune_settings$terminator)
+      terminator = tune_settings$terminator
+    )
   })
   tuning_result = lapply(
     tuning_instance,
-    function(x) tune_instance(tune_settings$tuner, x))
+    function(x) tune_instance(tune_settings$tuner, x)
+  )
   params = vapply(
     tuning_result,
-    function(x) x$tuning_result$learner_param_vals, list(1L))
+    function(x) x$tuning_result$learner_param_vals, list(1L)
+  )
 
   return(list(
     "tuning_result" = tuning_result,
-    "params" = params))
+    "params" = params
+  ))
 }
 
-extract_prediction = function(obj_resampling, task_type, n_obs,
-  return_train_preds = FALSE) {
-
+extract_prediction = function(
+  obj_resampling, task_type, n_obs,
+  return_train_preds = FALSE
+) {
   valid_task_type = c("regr", "classif")
   assertChoice(task_type, valid_task_type)
 
@@ -193,7 +218,8 @@ extract_prediction = function(obj_resampling, task_type, n_obs,
       preds = vector("list", n_iters)
       f_hat_list = lapply(
         1:n_iters,
-        function(x) as.data.table(obj_resampling$predictions("train")[[x]]))
+        function(x) as.data.table(obj_resampling$predictions("train")[[x]])
+      )
       for (i_iter in 1:n_iters) {
         preds_vec = rep(NA_real_, n_obs)
         f_hat = f_hat_list[[i_iter]]
@@ -241,7 +267,6 @@ extract_models = function(obj_resampling) {
 }
 
 initiate_learner = function(learner, task_type, params, return_train_preds = FALSE) {
-
   valid_task_type = c("regr", "classif")
   assertChoice(task_type, valid_task_type)
 
@@ -250,7 +275,8 @@ initiate_learner = function(learner, task_type, params, return_train_preds = FAL
   if (!is.null(params)) {
     ml_learner$param_set$values = insert_named(
       ml_learner$param_set$values,
-      params)
+      params
+    )
   } # else if (is.null(params) | length(params) == 0) {
   # message("No parameters provided for learners. Default values are used.")
   # }
@@ -279,10 +305,12 @@ initiate_task = function(id, data, target, select_cols, task_type) {
     data[[target]] = factor(data[[target]])
     assert_set_equal(
       levels(data[[target]]),
-      c("0", "1"))
+      c("0", "1")
+    )
     task = TaskClassif$new(
       id = id, backend = data, target = target,
-      positive = "1")
+      positive = "1"
+    )
   }
   return(task)
 }
@@ -314,10 +342,13 @@ get_cond_samples = function(smpls, D) {
   return(list(
     smpls_0 = list(
       "train_ids" = train_ids_0,
-      "test_ids" = smpls$test_ids),
+      "test_ids" = smpls$test_ids
+    ),
     smpls_1 = list(
       "train_ids" = train_ids_1,
-      "test_ids" = smpls$test_ids)))
+      "test_ids" = smpls$test_ids
+    )
+  ))
 }
 
 get_cond_samples_2d = function(smpls, var1, var2) {
@@ -336,16 +367,21 @@ get_cond_samples_2d = function(smpls, var1, var2) {
   return(list(
     smpls_00 = list(
       "train_ids" = train_ids_00,
-      "test_ids" = smpls$test_ids),
+      "test_ids" = smpls$test_ids
+    ),
     smpls_01 = list(
       "train_ids" = train_ids_01,
-      "test_ids" = smpls$test_ids),
+      "test_ids" = smpls$test_ids
+    ),
     smpls_10 = list(
       "train_ids" = train_ids_10,
-      "test_ids" = smpls$test_ids),
+      "test_ids" = smpls$test_ids
+    ),
     smpls_11 = list(
       "train_ids" = train_ids_11,
-      "test_ids" = smpls$test_ids)))
+      "test_ids" = smpls$test_ids
+    )
+  ))
 }
 
 set_default_measure = function(measure_in = NA, task_type) {
@@ -368,7 +404,8 @@ set_default_measure = function(measure_in = NA, task_type) {
 format_perc = function(probs, digits) {
   paste(
     format(100 * probs, trim = TRUE, scientific = FALSE, digits = digits),
-    "%")
+    "%"
+  )
 }
 
 
@@ -376,12 +413,10 @@ format_perc = function(probs, digits) {
 assure_matrix = function(x) {
   if (is.vector(x)) {
     x = matrix(x, ncol = 1)
-  }
-  else {
+  } else {
     check_matrix(x)
   }
   return(x)
-
 }
 
 # Check if matrices in a list have the same number of rows
@@ -411,7 +446,8 @@ tune_instance = function(tuner, tuning_instance) {
   tuning_results = list(
     tuning_result = tuning_result,
     tuning_archive = tuning_archive,
-    params = tuning_instance$result$params)
+    params = tuning_instance$result$params
+  )
   return(tuning_results)
 }
 
@@ -431,7 +467,6 @@ check_is_partition = function(ind, n_obs) {
 }
 
 check_smpl_split = function(smpl, n_obs, check_intersect = FALSE) {
-
   assert_list(smpl, names = "named")
   assert_set_equal(names(smpl), c("train_ids", "test_ids"))
   assert_list(smpl$train_ids, names = "unnamed")
@@ -442,7 +477,8 @@ check_smpl_split = function(smpl, n_obs, check_intersect = FALSE) {
   lapply(smpl$train_ids, function(train_ids) {
     assert_vector(train_ids,
       any.missing = FALSE, all.missing = FALSE,
-      unique = TRUE, max.len = n_obs)
+      unique = TRUE, max.len = n_obs
+    )
   })
   lapply(smpl$train_ids, function(train_ids) {
     assert_subset(train_ids, seq(n_obs))
@@ -450,14 +486,14 @@ check_smpl_split = function(smpl, n_obs, check_intersect = FALSE) {
   lapply(smpl$test_ids, function(test_ids) {
     assert_vector(test_ids,
       any.missing = FALSE, all.missing = FALSE,
-      unique = TRUE, max.len = n_obs)
+      unique = TRUE, max.len = n_obs
+    )
   })
   lapply(smpl$test_ids, function(test_ids) {
     assert_subset(test_ids, seq(n_obs))
   })
   if (check_intersect) {
-    for (i_fold in seq_along(length(length(smpl$train_ids))))
-    {
+    for (i_fold in seq_along(length(length(smpl$train_ids)))) {
       assert_disjunct(smpl$train_ids[[i_fold]], smpl$test_ids[[i_fold]])
     }
   }

@@ -12,7 +12,7 @@ Abstract base class that can't be initialized.
 \examples{
 
 ## ------------------------------------------------
-## Method `DoubleML$set_sample_splitting`
+## Method `DoubleML$set_sample_splitting()`
 ## ------------------------------------------------
 
 library(DoubleML)
@@ -40,7 +40,7 @@ smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
 dml_plr_obj$set_sample_splitting(smpls)
 }
 \seealso{
-Other DoubleML: 
+Other DoubleML:
 \code{\link{DoubleMLIIVM}},
 \code{\link{DoubleMLIRM}},
 \code{\link{DoubleMLPLIV}},
@@ -49,239 +49,248 @@ Other DoubleML:
 }
 \concept{DoubleML}
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{all_coef}}{(\code{matrix()}) \cr
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{all_coef}}{(\code{matrix()}) \cr
 Estimates of the causal parameter(s) for the \code{n_rep} different sample
 splits after calling \code{fit()}.}
 
-\item{\code{all_dml1_coef}}{(\code{array()}) \cr
+    \item{\code{all_dml1_coef}}{(\code{array()}) \cr
 Estimates of the causal parameter(s) for the \code{n_rep} different sample
 splits after calling \code{fit()} with \code{dml_procedure = "dml1"}.}
 
-\item{\code{all_se}}{(\code{matrix()}) \cr
+    \item{\code{all_se}}{(\code{matrix()}) \cr
 Standard errors of the causal parameter(s) for the \code{n_rep} different
 sample splits after calling \code{fit()}.}
 
-\item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
+    \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Indicates whether cross-fitting should be applied. Default is \code{TRUE}.}
 
-\item{\code{boot_coef}}{(\code{matrix()}) \cr
+    \item{\code{boot_coef}}{(\code{matrix()}) \cr
 Bootstrapped coefficients for the causal parameter(s) after calling
 \code{fit()} and \code{bootstrap()}.}
 
-\item{\code{boot_t_stat}}{(\code{matrix()}) \cr
+    \item{\code{boot_t_stat}}{(\code{matrix()}) \cr
 Bootstrapped t-statistics for the causal parameter(s) after calling
 \code{fit()} and \code{bootstrap()}.}
 
-\item{\code{coef}}{(\code{numeric()}) \cr
+    \item{\code{coef}}{(\code{numeric()}) \cr
 Estimates for the causal parameter(s) after calling \code{fit()}.}
 
-\item{\code{data}}{(\code{\link[data.table:data.table]{data.table}})\cr
+    \item{\code{data}}{(\code{\link[data.table:data.table]{data.table}})\cr
 Data object.}
 
-\item{\code{dml_procedure}}{(\code{character(1)}) \cr
+    \item{\code{dml_procedure}}{(\code{character(1)}) \cr
 A \code{character()} (\code{"dml1"} or \code{"dml2"}) specifying the double machine
 learning algorithm. Default is \code{"dml2"}.}
 
-\item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
+    \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
 Indicates whether the sample splitting should be drawn during
 initialization of the object. Default is \code{TRUE}.}
 
-\item{\code{learner}}{(named \code{list()}) \cr
+    \item{\code{learner}}{(named \code{list()}) \cr
 The machine learners for the nuisance functions.}
 
-\item{\code{n_folds}}{(\code{integer(1)}) \cr
+    \item{\code{n_folds}}{(\code{integer(1)}) \cr
 Number of folds. Default is \code{5}.}
 
-\item{\code{n_rep}}{(\code{integer(1)}) \cr
+    \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for the sample splitting. Default is \code{1}.}
 
-\item{\code{params}}{(named \code{list()}) \cr
+    \item{\code{params}}{(named \code{list()}) \cr
 The hyperparameters of the learners.}
 
-\item{\code{psi}}{(\code{array()}) \cr
+    \item{\code{psi}}{(\code{array()}) \cr
 Value of the score function
 \eqn{\psi(W;\theta, \eta)=\psi_a(W;\eta) \theta + \psi_b (W; \eta)}
 after calling \code{fit()}.}
 
-\item{\code{psi_a}}{(\code{array()}) \cr
+    \item{\code{psi_a}}{(\code{array()}) \cr
 Value of the score function component \eqn{\psi_a(W;\eta)} after
 calling \code{fit()}.}
 
-\item{\code{psi_b}}{(\code{array()}) \cr
+    \item{\code{psi_b}}{(\code{array()}) \cr
 Value of the score function component \eqn{\psi_b(W;\eta)} after
 calling \code{fit()}.}
 
-\item{\code{predictions}}{(\code{array()}) \cr
+    \item{\code{predictions}}{(\code{array()}) \cr
 Predictions of the nuisance models after calling
 \code{fit(store_predictions=TRUE)}.}
 
-\item{\code{models}}{(\code{array()}) \cr
+    \item{\code{models}}{(\code{array()}) \cr
 The fitted nuisance models after calling
 \code{fit(store_models=TRUE)}.}
 
-\item{\code{pval}}{(\code{numeric()}) \cr
+    \item{\code{pval}}{(\code{numeric()}) \cr
 p-values for the causal parameter(s) after calling \code{fit()}.}
 
-\item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
+    \item{\code{score}}{(\code{character(1)}, \verb{function()}) \cr
 A \code{character(1)} or \verb{function()} specifying the score function.}
 
-\item{\code{se}}{(\code{numeric()}) \cr
+    \item{\code{se}}{(\code{numeric()}) \cr
 Standard errors for the causal parameter(s) after calling \code{fit()}.}
 
-\item{\code{smpls}}{(\code{list()}) \cr
+    \item{\code{smpls}}{(\code{list()}) \cr
 The partition used for cross-fitting.}
 
-\item{\code{smpls_cluster}}{(\code{list()}) \cr
+    \item{\code{smpls_cluster}}{(\code{list()}) \cr
 The partition of clusters used for cross-fitting.}
 
-\item{\code{t_stat}}{(\code{numeric()}) \cr
+    \item{\code{t_stat}}{(\code{numeric()}) \cr
 t-statistics for the causal parameter(s) after calling \code{fit()}.}
 
-\item{\code{tuning_res}}{(named \code{list()}) \cr
+    \item{\code{tuning_res}}{(named \code{list()}) \cr
 Results from hyperparameter tuning.}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-DoubleML-new}{\code{DoubleML$new()}}
-\item \href{#method-DoubleML-print}{\code{DoubleML$print()}}
-\item \href{#method-DoubleML-fit}{\code{DoubleML$fit()}}
-\item \href{#method-DoubleML-bootstrap}{\code{DoubleML$bootstrap()}}
-\item \href{#method-DoubleML-split_samples}{\code{DoubleML$split_samples()}}
-\item \href{#method-DoubleML-set_sample_splitting}{\code{DoubleML$set_sample_splitting()}}
-\item \href{#method-DoubleML-tune}{\code{DoubleML$tune()}}
-\item \href{#method-DoubleML-summary}{\code{DoubleML$summary()}}
-\item \href{#method-DoubleML-confint}{\code{DoubleML$confint()}}
-\item \href{#method-DoubleML-learner_names}{\code{DoubleML$learner_names()}}
-\item \href{#method-DoubleML-params_names}{\code{DoubleML$params_names()}}
-\item \href{#method-DoubleML-set_ml_nuisance_params}{\code{DoubleML$set_ml_nuisance_params()}}
-\item \href{#method-DoubleML-p_adjust}{\code{DoubleML$p_adjust()}}
-\item \href{#method-DoubleML-get_params}{\code{DoubleML$get_params()}}
-\item \href{#method-DoubleML-clone}{\code{DoubleML$clone()}}
-}
+  \itemize{
+    \item \href{#method-DoubleML-initialize}{\code{DoubleML$new()}}
+    \item \href{#method-DoubleML-print}{\code{DoubleML$print()}}
+    \item \href{#method-DoubleML-fit}{\code{DoubleML$fit()}}
+    \item \href{#method-DoubleML-bootstrap}{\code{DoubleML$bootstrap()}}
+    \item \href{#method-DoubleML-split_samples}{\code{DoubleML$split_samples()}}
+    \item \href{#method-DoubleML-set_sample_splitting}{\code{DoubleML$set_sample_splitting()}}
+    \item \href{#method-DoubleML-tune}{\code{DoubleML$tune()}}
+    \item \href{#method-DoubleML-summary}{\code{DoubleML$summary()}}
+    \item \href{#method-DoubleML-confint}{\code{DoubleML$confint()}}
+    \item \href{#method-DoubleML-learner_names}{\code{DoubleML$learner_names()}}
+    \item \href{#method-DoubleML-params_names}{\code{DoubleML$params_names()}}
+    \item \href{#method-DoubleML-set_ml_nuisance_params}{\code{DoubleML$set_ml_nuisance_params()}}
+    \item \href{#method-DoubleML-p_adjust}{\code{DoubleML$p_adjust()}}
+    \item \href{#method-DoubleML-get_params}{\code{DoubleML$get_params()}}
+    \item \href{#method-DoubleML-clone}{\code{DoubleML$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DoubleML-new"></a>}}
-\if{latex}{\out{\hypertarget{method-DoubleML-new}{}}}
-\subsection{Method \code{new()}}{
-DoubleML is an abstract class that can't be initialized.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$new()}\if{html}{\out{</div>}}
+\if{html}{\out{<a id="method-DoubleML-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleML-initialize}{}}}
+\subsection{\code{DoubleML$new()}}{
+  DoubleML is an abstract class that can't be initialized.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$new()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-print"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-print}{}}}
-\subsection{Method \code{print()}}{
-Print DoubleML objects.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$print()}\if{html}{\out{</div>}}
+\subsection{\code{DoubleML$print()}}{
+  Print DoubleML objects.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$print()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-fit}{}}}
-\subsection{Method \code{fit()}}{
-Estimate DoubleML models.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$fit(store_predictions = FALSE, store_models = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{store_predictions}}{(\code{logical(1)}) \cr
+\subsection{\code{DoubleML$fit()}}{
+  Estimate DoubleML models.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$fit(store_predictions = FALSE, store_models = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{store_predictions}}{(\code{logical(1)}) \cr
 Indicates whether the predictions for the nuisance functions should be
 stored in field \code{predictions}. Default is \code{FALSE}.}
-
-\item{\code{store_models}}{(\code{logical(1)}) \cr
+      \item{\code{store_models}}{(\code{logical(1)}) \cr
 Indicates whether the fitted models for the nuisance functions should be
 stored in field \code{models} if you want to analyze the models or extract
 information like variable importance. Default is \code{FALSE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-bootstrap"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-bootstrap}{}}}
-\subsection{Method \code{bootstrap()}}{
-Multiplier bootstrap for DoubleML models.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$bootstrap(method = "normal", n_rep_boot = 500)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{method}}{(\code{character(1)}) \cr
+\subsection{\code{DoubleML$bootstrap()}}{
+  Multiplier bootstrap for DoubleML models.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$bootstrap(method = "normal", n_rep_boot = 500)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{method}}{(\code{character(1)}) \cr
 A \code{character(1)} (\code{"Bayes"}, \code{"normal"} or \code{"wild"}) specifying the
 multiplier bootstrap method.}
-
-\item{\code{n_rep_boot}}{(\code{integer(1)}) \cr
+      \item{\code{n_rep_boot}}{(\code{integer(1)}) \cr
 The number of bootstrap replications.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-split_samples"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-split_samples}{}}}
-\subsection{Method \code{split_samples()}}{
-Draw sample splitting for DoubleML models.
+\subsection{\code{DoubleML$split_samples()}}{
+  Draw sample splitting for DoubleML models.
 
 The samples are drawn according to the attributes \code{n_folds}, \code{n_rep}
 and \code{apply_cross_fitting}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$split_samples()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$split_samples()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
 
-\subsection{Returns}{
-self
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-set_sample_splitting"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-set_sample_splitting}{}}}
-\subsection{Method \code{set_sample_splitting()}}{
-Set the sample splitting for DoubleML models.
+\subsection{\code{DoubleML$set_sample_splitting()}}{
+  Set the sample splitting for DoubleML models.
 
 The attributes \code{n_folds} and \code{n_rep} are derived from the provided
 partition.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_sample_splitting(smpls)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{smpls}}{(\code{list()}) \cr
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$set_sample_splitting(smpls)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{smpls}}{(\code{list()}) \cr
 A nested \code{list()}. The outer lists needs to provide an entry per
 repeated sample splitting (length of the list is set as \code{n_rep}).
 The inner list is a named \code{list()} with names \code{train_ids} and \code{test_ids}.
 The entries in \code{train_ids} and \code{test_ids} must be partitions per fold
 (length of \code{train_ids} and \code{test_ids} is set as \code{n_folds}).}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{library(DoubleML)
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
+  \subsection{Examples}{
+    \if{html}{\out{<div class="r example copy">}}
+    \preformatted{library(DoubleML)
 library(mlr3)
 set.seed(2)
 obj_dml_data = make_plr_CCDDHNR2018(n_obs=10)
@@ -305,41 +314,40 @@ smpls = list(list(train_ids = list(c(1, 2, 3, 4, 5), c(6, 7, 8, 9, 10)),
                   test_ids = list(c(2, 4, 6, 8, 10), c(1, 3, 5, 7, 9))))
 dml_plr_obj$set_sample_splitting(smpls)
 }
-\if{html}{\out{</div>}}
-
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-tune"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-tune}{}}}
-\subsection{Method \code{tune()}}{
-Hyperparameter-tuning for DoubleML models.
+\subsection{\code{DoubleML$tune()}}{
+  Hyperparameter-tuning for DoubleML models.
 
 The hyperparameter-tuning is performed using the tuning methods provided
 in the \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} package. For more
 information on tuning in \href{https://mlr3.mlr-org.com/}{mlr3}, we refer to
 the section on parameter tuning in the
 \href{https://mlr3book.mlr-org.com/chapters/chapter4/hyperparameter_optimization.html}{mlr3 book}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$tune(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$tune(
   param_set,
   tune_settings = list(n_folds_tune = 5, rsmp_tune = mlr3::rsmp("cv", folds = 5), measure
     = NULL, terminator = mlr3tuning::trm("evals", n_evals = 20), algorithm =
     mlr3tuning::tnr("grid_search"), resolution = 5),
   tune_on_folds = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{param_set}}{(named \code{list()}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{param_set}}{(named \code{list()}) \cr
 A named \code{list} with a parameter grid for each nuisance model/learner
 (see method \code{learner_names()}). The parameter grid must be an object of
 class \link[paradox:ParamSet]{ParamSet}.}
-
-\item{\code{tune_settings}}{(named \code{list()}) \cr
+      \item{\code{tune_settings}}{(named \code{list()}) \cr
 A named \code{list()} with arguments passed to the hyperparameter-tuning with
 \href{https://mlr3tuning.mlr-org.com/}{mlr3tuning} to set up
 \link[mlr3tuning:TuningInstanceBatchSingleCrit]{TuningInstance} objects.
@@ -367,7 +375,7 @@ If not specified by the user, default is set to \code{5}.
 \item \code{measure} (\code{NULL}, named \code{list()}, optional) \cr
 Named list containing the measures used for parameter tuning. Entries in
 list must either be \link[mlr3:Measure]{Measure} objects or keys to be
-passed to passed to \link[mlr3:mlr_sugar]{msr()}. The names of the entries must
+passed to passed to \link[mlr3:msr]{msr()}. The names of the entries must
 match the learner names (see method \code{learner_names()}). If set to \code{NULL},
 default measures are used, i.e., \code{"regr.mse"} for continuous outcome
 variables and \code{"classif.ce"} for binary outcomes.
@@ -376,204 +384,214 @@ dictionary to specify  the tuning algorithm used in
 \link[mlr3tuning:tnr]{tnr()}. \code{resolution} is passed as an argument to
 \link[mlr3tuning:tnr]{tnr()}.
 }}
-
-\item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
+      \item{\code{tune_on_folds}}{(\code{logical(1)}) \cr
 Indicates whether the tuning should be done fold-specific or globally.
 Default is \code{FALSE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-summary}{}}}
-\subsection{Method \code{summary()}}{
-Summary for DoubleML models after calling \code{fit()}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$summary(digits = max(3L, getOption("digits") - 3L))}\if{html}{\out{</div>}}
+\subsection{\code{DoubleML$summary()}}{
+  Summary for DoubleML models after calling \code{fit()}.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$summary(digits = max(3L, getOption("digits") - 3L))}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{digits}}{(\code{integer(1)}) \cr
+The number of significant digits to use when printing.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{digits}}{(\code{integer(1)}) \cr
-The number of significant digits to use when printing.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-confint"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-confint}{}}}
-\subsection{Method \code{confint()}}{
-Confidence intervals for DoubleML models.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$confint(parm, joint = FALSE, level = 0.95)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{parm}}{(\code{numeric()} or \code{character()}) \cr
+\subsection{\code{DoubleML$confint()}}{
+  Confidence intervals for DoubleML models.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$confint(parm, joint = FALSE, level = 0.95)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{parm}}{(\code{numeric()} or \code{character()}) \cr
 A specification of which parameters are to be given confidence intervals
 among the variables for which inference was done, either a vector of
 numbers or a vector of names. If missing, all parameters are considered
 (default).}
-
-\item{\code{joint}}{(\code{logical(1)}) \cr
+      \item{\code{joint}}{(\code{logical(1)}) \cr
 Indicates whether joint confidence intervals are computed.
 Default is \code{FALSE}.}
-
-\item{\code{level}}{(\code{numeric(1)}) \cr
+      \item{\code{level}}{(\code{numeric(1)}) \cr
 The confidence level. Default is \code{0.95}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A \code{matrix()} with the confidence interval(s).
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A \code{matrix()} with the confidence interval(s).
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-learner_names"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-learner_names}{}}}
-\subsection{Method \code{learner_names()}}{
-Returns the names of the learners.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$learner_names()}\if{html}{\out{</div>}}
+\subsection{\code{DoubleML$learner_names()}}{
+  Returns the names of the learners.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$learner_names()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    \code{character()} with names of learners.
+  }
 }
 
-\subsection{Returns}{
-\code{character()} with names of learners.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-params_names"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-params_names}{}}}
-\subsection{Method \code{params_names()}}{
-Returns the names of the nuisance models with hyperparameters.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$params_names()}\if{html}{\out{</div>}}
+\subsection{\code{DoubleML$params_names()}}{
+  Returns the names of the nuisance models with hyperparameters.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$params_names()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    \code{character()} with names of nuisance models with hyperparameters.
+  }
 }
 
-\subsection{Returns}{
-\code{character()} with names of nuisance models with hyperparameters.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-set_ml_nuisance_params"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-set_ml_nuisance_params}{}}}
-\subsection{Method \code{set_ml_nuisance_params()}}{
-Set hyperparameters for the nuisance models of DoubleML models.
+\subsection{\code{DoubleML$set_ml_nuisance_params()}}{
+  Set hyperparameters for the nuisance models of DoubleML models.
 
 Note that in the current implementation, either all parameters have to
 be set globally or all parameters have to be provided fold-specific.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$set_ml_nuisance_params(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$set_ml_nuisance_params(
   learner = NULL,
   treat_var = NULL,
   params,
   set_fold_specific = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{learner}}{(\code{character(1)}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{learner}}{(\code{character(1)}) \cr
 The nuisance model/learner (see method \code{params_names}).}
-
-\item{\code{treat_var}}{(\code{character(1)}) \cr
+      \item{\code{treat_var}}{(\code{character(1)}) \cr
 The treatment varaible (hyperparameters can be set treatment-variable
 specific).}
-
-\item{\code{params}}{(named \code{list()}) \cr
+      \item{\code{params}}{(named \code{list()}) \cr
 A named \code{list()} with estimator parameters. Parameters are used for all
 folds by default. Alternatively, parameters can be passed in a
 fold-specific way if option  \code{fold_specific}is \code{TRUE}. In this case, the
 outer list needs to be of length \code{n_rep} and the inner list of length
 \code{n_folds}.}
-
-\item{\code{set_fold_specific}}{(\code{logical(1)}) \cr
+      \item{\code{set_fold_specific}}{(\code{logical(1)}) \cr
 Indicates if the parameters passed in \code{params} should be passed in
 fold-specific way. Default is \code{FALSE}. If \code{TRUE}, the outer list needs
 to be of length \code{n_rep} and the inner list of length \code{n_folds}.
 Note that in the current implementation, either all parameters have to
 be set globally or all parameters have to be provided fold-specific.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-self
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-p_adjust"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-p_adjust}{}}}
-\subsection{Method \code{p_adjust()}}{
-Multiple testing adjustment for DoubleML models.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$p_adjust(method = "romano-wolf", return_matrix = TRUE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{method}}{(\code{character(1)}) \cr
+\subsection{\code{DoubleML$p_adjust()}}{
+  Multiple testing adjustment for DoubleML models.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$p_adjust(method = "romano-wolf", return_matrix = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{method}}{(\code{character(1)}) \cr
 A \code{character(1)}(\code{"romano-wolf"}, \code{"bonferroni"}, \code{"holm"}, etc)
 specifying the adjustment method. In addition to \code{"romano-wolf"},
 all methods implemented in \link[stats:p.adjust]{p.adjust()} can be
 applied. Default is \code{"romano-wolf"}.}
-
-\item{\code{return_matrix}}{(\code{logical(1)}) \cr
+      \item{\code{return_matrix}}{(\code{logical(1)}) \cr
 Indicates if the output is returned as a matrix with corresponding
 coefficient names.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-\code{numeric()} with adjusted p-values. If \code{return_matrix = TRUE},
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    \code{numeric()} with adjusted p-values. If \code{return_matrix = TRUE},
 a \code{matrix()} with adjusted p_values.
+  }
 }
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-get_params"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-get_params}{}}}
-\subsection{Method \code{get_params()}}{
-Get hyperparameters for the nuisance model of DoubleML models.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$get_params(learner)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleML$get_params()}}{
+  Get hyperparameters for the nuisance model of DoubleML models.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$get_params(learner)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{learner}}{(\code{character(1)}) \cr
+The nuisance model/learner (see method \code{params_names()})}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    named \code{list()}with paramers for the nuisance model/learner.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{learner}}{(\code{character(1)}) \cr
-The nuisance model/learner (see method \code{params_names()})}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-named \code{list()}with paramers for the nuisance model/learner.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleML-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleML-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleML$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleML$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleML$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

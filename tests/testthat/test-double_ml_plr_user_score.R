@@ -7,7 +7,6 @@ lgr::get_logger("mlr3")$set_threshold("warn")
 score_fct = function(y, d, l_hat, m_hat, g_hat, smpls) {
   v_hat = d - m_hat
   u_hat = y - l_hat
-  v_hatd = v_hat * d
   psi_a = -v_hat * v_hat
   psi_b = v_hat * u_hat
   psis = list(psi_a = psi_a, psi_b = psi_b)
@@ -21,19 +20,22 @@ if (on_cran) {
     dml_procedure = "dml1",
     n_folds = c(3),
     n_rep = c(2),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
     n_folds = c(2, 3),
     n_rep = c(1, 2),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     set.seed(3141)
 
@@ -43,7 +45,8 @@ patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
       ml_m = lrn(learner),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = "partialling out")
+      score = "partialling out"
+    )
 
     double_mlplr_obj$fit()
     theta_obj = double_mlplr_obj$coef
@@ -59,7 +62,8 @@ patrick::with_parameters_test_that("Unit tests for PLR, callable score:",
       ml_m = lrn(learner),
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score_fct)
+      score = score_fct
+    )
     double_mlplr_obj_score$fit()
     theta_obj_score = double_mlplr_obj_score$coef
     se_obj_score = double_mlplr_obj_score$se

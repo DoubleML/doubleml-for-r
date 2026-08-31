@@ -73,9 +73,12 @@ and $\zeta$ and $V$ are stochastic errors.
 dml_data_bonus = DoubleMLData$new(df_bonus,
   y_col = "inuidur1",
   d_cols = "tg",
-  x_cols = c("female", "black", "othrace", "dep1", "dep2",
+  x_cols = c(
+    "female", "black", "othrace", "dep1", "dep2",
     "q2", "q3", "q4", "q5", "q6", "agelt35", "agegt54",
-    "durable", "lusd", "husd"))
+    "durable", "lusd", "husd"
+  )
+)
 print(dml_data_bonus)
 
 # matrix interface to DoubleMLData
@@ -131,9 +134,3 @@ obj_dml_plr_sim = DoubleMLPLR$new(dml_data_sim, ml_l = ml_l_sim, ml_m = ml_m_sim
 obj_dml_plr_sim$fit()
 print(obj_dml_plr_sim)
 ```
-
-
-
-
-
-

@@ -125,7 +125,7 @@ dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
-data_pliv_partialXZ = list(
+data_pliv_partial_xz = list(
   df = df,
   dml_data = dml_data
 )
@@ -143,7 +143,7 @@ dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
-data_pliv_partialX = list(
+data_pliv_partial_x = list(
   df = df,
   dml_data = dml_data
 )
@@ -160,7 +160,7 @@ dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
   d_cols = "d", x_cols = Xnames, z_cols = paste0("Z", 1:dim_z)
 )
-data_pliv_partialZ = list(
+data_pliv_partial_z = list(
   df = df,
   dml_data = dml_data
 )
@@ -170,7 +170,8 @@ df = make_data_ssm(
   setting$n,
   setting$p,
   setting$theta,
-  mar = TRUE)
+  mar = TRUE
+)
 Xnames = names(df)[names(df) %in% c("y", "d", "s") == FALSE]
 dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",
@@ -186,7 +187,8 @@ df = make_data_ssm(
   setting$n,
   setting$p,
   setting$theta,
-  mar = FALSE)
+  mar = FALSE
+)
 Xnames = names(df)[names(df) %in% c("y", "d", "z", "s") == FALSE]
 dml_data = double_ml_data_from_data_frame(df,
   y_col = "y",

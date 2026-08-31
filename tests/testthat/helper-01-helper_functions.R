@@ -5,7 +5,6 @@ se_repeated = function(se_s, coefficients, theta_s) {
 
 
 sample_splitting = function(k, data) {
-
   resampling = mlr3::ResamplingCV$new()
   resampling$param_set$values$folds = k
 
@@ -26,7 +25,8 @@ draw_bootstrap_weights = function(bootstrap, n_rep_boot, n_obs) {
   } else if (bootstrap == "normal") {
     weights = stats::rnorm(n_rep_boot * n_obs)
   } else if (bootstrap == "wild") {
-    weights = stats::rnorm(n_rep_boot * n_obs) / sqrt(2) + (stats::rnorm(n_rep_boot * n_obs)^2 - 1) / 2
+    weights = stats::rnorm(n_rep_boot * n_obs) / sqrt(2) +
+      (stats::rnorm(n_rep_boot * n_obs)^2 - 1) / 2
   } else {
     stop("invalid boot method")
   }
@@ -36,8 +36,10 @@ draw_bootstrap_weights = function(bootstrap, n_rep_boot, n_obs) {
 }
 
 
-functional_bootstrap = function(theta, se, psi, psi_a, k, smpls,
-  n_rep_boot, weights) {
+functional_bootstrap = function(
+  theta, se, psi, psi_a, k, smpls,
+  n_rep_boot, weights
+) {
   score = psi
   J = mean(psi_a)
   boot_coef = matrix(NA_real_, nrow = 1, ncol = n_rep_boot)

@@ -1,10 +1,15 @@
-dml_pliv_partial_z = function(data, y, d, z,
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
+dml_pliv_partial_z = function(
+  data, y, d, z,
   n_folds,
   ml_r,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_r = NULL) {
-
+  params_r = NULL
+) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -19,26 +24,29 @@ dml_pliv_partial_z = function(data, y, d, z,
       data, y, d, z,
       ml_r,
       this_smpl,
-      params_r)
+      params_r
+    )
 
-    residuals = compute_pliv_partial_z_residuals(
+    residuals = pliv_partial_z_residuals(
       data, y, d, z, n_folds,
       this_smpl,
-      all_preds[[i_rep]])
+      all_preds[[i_rep]]
+    )
     r_hat = residuals$r_hat
     D = data[, d]
     Y = data[, y]
 
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA_real_, n_folds)
+      thetas = rep(NA_real_, n_folds)
       for (i in 1:n_folds) {
         test_index = this_smpl$test_ids[[i]]
         orth_est = orth_pliv_partial_z_dml(
           r_hat = r_hat[test_index],
           y = Y[test_index],
           d = D[test_index],
-          score = score)
+          score = score
+        )
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
@@ -51,13 +59,15 @@ dml_pliv_partial_z = function(data, y, d, z,
     if (dml_procedure == "dml2") {
       orth_est = orth_pliv_partial_z_dml(
         r_hat = r_hat, y = Y, d = D,
-        score = score)
+        score = score
+      )
       all_thetas[i_rep] = orth_est$theta
     }
 
     all_ses[i_rep] = sqrt(var_pliv_partial_z(
       theta = all_thetas[i_rep], r_hat = r_hat, y = Y, d = D,
-      score = score))
+      score = score
+    ))
   }
 
   theta = stats::median(all_thetas)
@@ -75,16 +85,18 @@ dml_pliv_partial_z = function(data, y, d, z,
   res = list(
     coef = theta, se = se, t = t, pval = pval,
     thetas = all_thetas, ses = all_ses,
-    all_preds = all_preds, smpls = smpls)
+    all_preds = all_preds, smpls = smpls
+  )
 
   return(res)
 }
 
-fit_nuisance_pliv_partial_z = function(data, y, d, z,
+fit_nuisance_pliv_partial_z = function(
+  data, y, d, z,
   ml_r,
   smpls,
-  params_r) {
-
+  params_r
+) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
@@ -103,14 +115,16 @@ fit_nuisance_pliv_partial_z = function(data, y, d, z,
   r_hat_list = lapply(r_r$predictions(), function(x) x$response)
 
   all_preds = list(
-    r_hat_list = r_hat_list)
+    r_hat_list = r_hat_list
+  )
 
   return(all_preds)
 }
 
-compute_pliv_partial_z_residuals = function(data, y, d, z, n_folds, smpls,
-  all_preds) {
-
+pliv_partial_z_residuals = function(
+  data, y, d, z, n_folds, smpls,
+  all_preds
+) {
   test_ids = smpls$test_ids
 
   r_hat_list = all_preds$r_hat_list
@@ -144,14 +158,17 @@ var_pliv_partial_z = function(theta, r_hat, y, d, score) {
 }
 
 
-bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
+bootstrap_pliv_partial_z = function(
+  theta, se, data, y, d, z, n_folds, smpls,
   all_preds, bootstrap,
-  n_rep_boot, n_rep = 1) {
+  n_rep_boot, n_rep = 1
+) {
   for (i_rep in 1:n_rep) {
-    residuals = compute_pliv_partial_z_residuals(
+    residuals = pliv_partial_z_residuals(
       data, y, d, z, n_folds,
       smpls[[i_rep]],
-      all_preds[[i_rep]])
+      all_preds[[i_rep]]
+    )
     r_hat = residuals$r_hat
     D = data[, d]
     Y = data[, y]
@@ -164,7 +181,8 @@ bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
     this_res = functional_bootstrap(
       theta[i_rep], se[i_rep], psi, psi_a, n_folds,
       smpls[[i_rep]],
-      n_rep_boot, weights)
+      n_rep_boot, weights
+    )
     if (i_rep == 1) {
       boot_res = this_res
     } else {
@@ -174,3 +192,4 @@ bootstrap_pliv_partial_z = function(theta, se, data, y, d, z, n_folds, smpls,
   }
   return(boot_res)
 }
+# nolint end

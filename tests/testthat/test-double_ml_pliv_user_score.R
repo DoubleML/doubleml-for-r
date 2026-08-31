@@ -10,18 +10,20 @@ score_fct_po = function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls) {
   v_hat = z - m_hat
   psi_a = -w_hat * v_hat
   psi_b = v_hat * u_hat
-  psis = list(
+  list(
     psi_a = psi_a,
-    psi_b = psi_b)
+    psi_b = psi_b
+  )
 }
 
 score_fct_iv = function(y, z, d, l_hat, m_hat, r_hat, g_hat, smpls) {
   v_hat = z - m_hat
   psi_a = -d * v_hat
   psi_b = v_hat * (y - g_hat)
-  psis = list(
+  list(
     psi_a = psi_a,
-    psi_b = psi_b)
+    psi_b = psi_b
+  )
 }
 
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
@@ -30,18 +32,21 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml2",
     score = "partialling out",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = c("partialling out", "IV-type"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
 
     if (score == "partialling out") {
@@ -61,7 +66,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
       ml_r = lrn(learner),
       ml_g = ml_g,
       dml_procedure = dml_procedure,
-      score = score)
+      score = score
+    )
 
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
@@ -79,7 +85,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV, callable score:",
       ml_r = lrn(learner),
       ml_g = ml_g,
       dml_procedure = dml_procedure,
-      score = score_fct)
+      score = score_fct
+    )
 
     double_mlpliv_obj_score$fit()
     theta_obj_score = double_mlpliv_obj_score$coef

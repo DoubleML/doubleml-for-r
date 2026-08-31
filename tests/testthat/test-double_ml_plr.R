@@ -10,18 +10,21 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml2",
     score = "partialling out",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet", "graph_learner"),
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_plr(learner)
     n_rep_boot = 498
 
@@ -33,7 +36,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_l = learner_pars$ml_l$clone(),
       ml_m = learner_pars$ml_m$clone(),
       ml_g = learner_pars$ml_g$clone(),
-      dml_procedure = dml_procedure, score = score)
+      dml_procedure = dml_procedure, score = score
+    )
     theta = plr_hat$coef
     se = plr_hat$se
     t = plr_hat$t
@@ -46,7 +50,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       n_folds = n_folds, smpls = plr_hat$smpls,
       all_preds = plr_hat$all_preds,
       bootstrap = "normal", n_rep_boot = n_rep_boot,
-      score = score)$boot_coef
+      score = score
+    )$boot_coef
 
     set.seed(3141)
     if (score == "partialling out") {
@@ -56,7 +61,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
         ml_m = learner_pars$ml_m$clone(),
         dml_procedure = dml_procedure,
         n_folds = n_folds,
-        score = score)
+        score = score
+      )
     } else {
       double_mlplr_obj = DoubleMLPLR$new(
         data = data_plr$dml_data,
@@ -65,7 +71,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
         ml_g = learner_pars$ml_g$clone(),
         dml_procedure = dml_procedure,
         n_folds = n_folds,
-        score = score)
+        score = score
+      )
     }
 
     double_mlplr_obj$fit()
