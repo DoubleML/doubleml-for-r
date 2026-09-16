@@ -95,7 +95,7 @@ double_ml_rmtlj = function(id, a, time, event, bw, tilt, G.a0, G.a1, S.a0, S.a1,
 
   # Indicators
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
   RMTLj.obs = do.call(cbind, lapply(1:ns, function(u) (s[u] - pmin(time, s[u])) * (event == cause)))
 
   # 5-term UEIF for A=0
@@ -223,10 +223,10 @@ double_ml_rmtlj_sep_direct_astar1 = function(id, a, time, event, bw, tilt, G.a0,
   RMTLj.a0.a1 = t(apply(Fj.a0.a1 * matrix(ds, ncol = ns, nrow = n, byrow = TRUE), 1, cumsum))
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * RMTLj.a0.a1
@@ -356,10 +356,10 @@ double_ml_rmtlj_sep_indirect_astar1 = function(id, a, time, event, bw, tilt, G.a
   RMTLj.a0.a1 = t(apply(Fj.a0.a1 * matrix(ds, ncol = ns, nrow = n, byrow = TRUE), 1, cumsum))
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * RMTLj.a0
@@ -489,10 +489,10 @@ double_ml_rmtlj_sep_direct_astar0 = function(id, a, time, event, bw, tilt, G.a0,
   RMTLj.a1.a0 = t(apply(Fj.a1.a0 * matrix(ds, ncol = ns, nrow = n, byrow = TRUE), 1, cumsum))
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * RMTLj.a0
@@ -622,10 +622,10 @@ double_ml_rmtlj_sep_indirect_astar0 = function(id, a, time, event, bw, tilt, G.a
   RMTLj.a1.a0 = t(apply(Fj.a1.a0 * matrix(ds, ncol = ns, nrow = n, byrow = TRUE), 1, cumsum))
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * RMTLj.a1.a0
@@ -752,7 +752,8 @@ DoubleMLRMTLJ = R6Class("DoubleMLRMTLJ",
     #' Name of the event column (0=censored, 1=cause 1, 2=cause 2, ...).
     #'
     #' @param cause (`integer(1)`) \cr
-    #' Cause of interest (default is 1).
+    #' The cause of interest. Only `1` is currently supported: recode the event
+    #' column so that the cause of interest is coded as `1`. Default is `1`.
     #'
     #' @param tau (`numeric(1)` or `numeric(vector)`) \cr
     #' Evaluation time point(s) for RMTL estimation. Default is admin_cens.

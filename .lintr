@@ -1,0 +1,13 @@
+linters: linters_with_defaults(
+    # Linters that conflict with the mlr style used throughout this package
+    # (`=` assignment, dot.case names, explicit return(), long formula lines).
+    assignment_linter = NULL,
+    brace_linter = NULL,
+    commented_code_linter = NULL,
+    indentation_linter = NULL,
+    line_length_linter = NULL,
+    object_length_linter = NULL,
+    object_name_linter = NULL,
+    object_usage_linter = NULL,
+    return_linter = NULL
+  )

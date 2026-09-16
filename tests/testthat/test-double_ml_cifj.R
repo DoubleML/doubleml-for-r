@@ -23,9 +23,9 @@ test_that("DoubleMLCIFJ with n_folds=2 works", {
     return_type = "DoubleMLData"
   )
 
-  ml_g_surv = c("survSL.km")
-  ml_g_cens = c("survSL.km")
-  ml_m = c("SL.glm")
+  ml_g_surv = "survSL.km"
+  ml_g_cens = "survSL.km"
+  ml_m = "SL.glm"
 
   # Test initialization with n_folds=2
   expect_error(
@@ -212,9 +212,9 @@ test_that("DoubleMLCIFJ with multiple tau values works", {
     return_type = "DoubleMLData"
   )
 
-  ml_g_surv = c("survSL.km")
-  ml_g_cens = c("survSL.km")
-  ml_m = c("SL.glm")
+  ml_g_surv = "survSL.km"
+  ml_g_cens = "survSL.km"
+  ml_m = "SL.glm"
 
   dml_cifj_multi = DoubleMLCIFJ$new(
     obj_dml_data,
@@ -375,4 +375,27 @@ test_that("DoubleMLCIFJ with multiple tau values works", {
   expect_true(all(curve_i0$estimate.diff.lower.cb <= curve_i0$estimate.diff.lower.ci))
   expect_true(all(curve_i0$estimate.diff.upper.cb >= curve_i0$estimate.diff.upper.ci))
   stopCluster(cl)
+})
+
+test_that("Competing risks classes reject cause != 1", {
+  skip_if_not_installed("simsurv")
+
+  set.seed(789)
+  obj_dml_data = make_competing_data(n_obs = 200, admin_cens = 10)
+
+  expect_error(
+    DoubleMLCIFJ$new(
+      obj_dml_data,
+      ml_g_surv = "survSL.km",
+      ml_g_surv_j = "survSL.km",
+      ml_g_surv_jbar = "survSL.km",
+      ml_g_cens = "survSL.km",
+      ml_m = "SL.glm",
+      admin_cens = 10,
+      time_col = "time",
+      event_col = "event",
+      cause = 2,
+      n_folds = 2
+    ),
+    "Only cause = 1")
 })

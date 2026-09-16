@@ -40,8 +40,7 @@ Imports:
     SuperLearner,
     survSuperLearner,
     fdrtool,
-    foreach,
-    magrittr
+    foreach
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RoxygenNote: 7.3.2
 Suggests:
@@ -63,9 +62,10 @@ Suggests:
     mgcv,
     simsurv,
     MASS,
-    Rfast,
     doParallel
 VignetteBuilder: knitr
+Remotes:
+    tedwestling/survSuperLearner
 Collate:
     'double_ml.R'
     'double_ml_data.R'

@@ -1,6 +1,5 @@
 # Survival Analysis Inference Functions
 #' @importFrom foreach foreach %dopar%
-#' @importFrom magrittr %>%
 NULL
 
 # These functions handle confidence intervals and confidence bands for survival outcomes
@@ -54,18 +53,18 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
   ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a0 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a0))
-  } %>% quantile(., probs = 0.95)
+  c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
+  }, probs = 0.95)
   ueif.df$estimate.a0.lower.cb = ueif.df$estimate.a0 - ueif.df$estimate.a0.se * c.a0 / sqrt(n)
   ueif.df$estimate.a0.upper.cb = ueif.df$estimate.a0 + ueif.df$estimate.a0.se * c.a0 / sqrt(n)
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
   ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a1 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a1))
-  } %>% quantile(., probs = 0.95)
+  c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
+  }, probs = 0.95)
   ueif.df$estimate.a1.lower.cb = ueif.df$estimate.a1 - ueif.df$estimate.a1.se * c.a1 / sqrt(n)
   ueif.df$estimate.a1.upper.cb = ueif.df$estimate.a1 + ueif.df$estimate.a1.se * c.a1 / sqrt(n)
 
@@ -73,9 +72,9 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
   ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
-  c.diff = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.diff))
-  } %>% quantile(., probs = 0.95)
+  c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
+  }, probs = 0.95)
   ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
   ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
@@ -133,18 +132,18 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
   ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a0 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a0))
-  } %>% quantile(., probs = 0.95)
+  c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
+  }, probs = 0.95)
   ueif.df$estimate.a0.lower.cb = ueif.df$estimate.a0 - ueif.df$estimate.a0.se * c.a0 / sqrt(n)
   ueif.df$estimate.a0.upper.cb = ueif.df$estimate.a0 + ueif.df$estimate.a0.se * c.a0 / sqrt(n)
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
   ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a1 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a1))
-  } %>% quantile(., probs = 0.95)
+  c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
+  }, probs = 0.95)
   ueif.df$estimate.a1.lower.cb = ueif.df$estimate.a1 - ueif.df$estimate.a1.se * c.a1 / sqrt(n)
   ueif.df$estimate.a1.upper.cb = ueif.df$estimate.a1 + ueif.df$estimate.a1.se * c.a1 / sqrt(n)
 
@@ -152,9 +151,9 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
   ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
-  c.diff = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.diff))
-  } %>% quantile(., probs = 0.95)
+  c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
+  }, probs = 0.95)
   ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
   ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
@@ -208,18 +207,18 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
   ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a0 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a0))
-  } %>% quantile(., probs = 0.95)
+  c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
+  }, probs = 0.95)
   ueif.df$estimate.a0.lower.cb = ueif.df$estimate.a0 - ueif.df$estimate.a0.se * c.a0 / sqrt(n)
   ueif.df$estimate.a0.upper.cb = ueif.df$estimate.a0 + ueif.df$estimate.a0.se * c.a0 / sqrt(n)
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
   ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a1 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a1))
-  } %>% quantile(., probs = 0.95)
+  c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
+  }, probs = 0.95)
   ueif.df$estimate.a1.lower.cb = ueif.df$estimate.a1 - ueif.df$estimate.a1.se * c.a1 / sqrt(n)
   ueif.df$estimate.a1.upper.cb = ueif.df$estimate.a1 + ueif.df$estimate.a1.se * c.a1 / sqrt(n)
 
@@ -227,9 +226,9 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
   ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
-  c.diff = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.diff))
-  } %>% quantile(., probs = 0.95)
+  c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
+  }, probs = 0.95)
   ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
   ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
@@ -287,18 +286,18 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
   ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a0 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a0))
-  } %>% quantile(., probs = 0.95)
+  c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
+  }, probs = 0.95)
   ueif.df$estimate.a0.lower.cb = ueif.df$estimate.a0 - ueif.df$estimate.a0.se * c.a0 / sqrt(n)
   ueif.df$estimate.a0.upper.cb = ueif.df$estimate.a0 + ueif.df$estimate.a0.se * c.a0 / sqrt(n)
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
   ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
-  c.a1 = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.a1))
-  } %>% quantile(., probs = 0.95)
+  c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
+  }, probs = 0.95)
   ueif.df$estimate.a1.lower.cb = ueif.df$estimate.a1 - ueif.df$estimate.a1.se * c.a1 / sqrt(n)
   ueif.df$estimate.a1.upper.cb = ueif.df$estimate.a1 + ueif.df$estimate.a1.se * c.a1 / sqrt(n)
 
@@ -306,9 +305,9 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
   ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
-  c.diff = foreach(i = 1:npath, .combine = c) %dopar% {
-    max(abs(rbind(Rfast::Rnorm(n) / sqrt(n)) %*% ceif.diff))
-  } %>% quantile(., probs = 0.95)
+  c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
+    max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
+  }, probs = 0.95)
   ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
   ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)

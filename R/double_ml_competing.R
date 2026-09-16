@@ -54,7 +54,8 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
     #' Name of the event column in the data (0=censored, 1=cause 1, 2=cause 2, ...).
     #'
     #' @param cause (`integer(1)`) \cr
-    #' The cause of interest (default is 1).
+    #' The cause of interest. Only `1` is currently supported: recode the event
+    #' column so that the cause of interest is coded as `1`. Default is `1`.
     #'
     #' @param freq_time (`numeric(1)`, optional) \cr
     #' Time grid frequency. If NULL, uses unique event times.
@@ -107,6 +108,11 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
       private$admin_cens_ = admin_cens
       private$time_col_ = time_col
       private$event_col_ = event_col
+      if (!identical(as.numeric(cause), 1)) {
+        stop(paste(
+          "Only cause = 1 is currently supported.",
+          "Recode the event column so that the cause of interest is 1."))
+      }
       private$cause_ = cause
       private$freq_time_ = freq_time
       private$ml_framework_ = ml_framework

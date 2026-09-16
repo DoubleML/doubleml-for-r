@@ -19,7 +19,7 @@ na.locf = function(x) {
       }
     }
   } else if (is.matrix(x)) {
-    for (j in 1:ncol(x)) {
+    for (j in seq_len(ncol(x))) {
       for (i in 2:nrow(x)) {
         if (is.na(x[i, j])) {
           x[i, j] = x[i - 1, j]
@@ -107,12 +107,12 @@ survival_prob_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, 
   # a=0
   estimate.a0.raw = colMeans(ueif.a0, na.rm = TRUE)
   estimate.a0 = cummin(estimate.a0.raw)
-  ueif.df = data.frame(t = union.time[1:length(estimate.a0)], estimate.a0 = estimate.a0)
+  ueif.df = data.frame(t = union.time[seq_along(estimate.a0)], estimate.a0 = estimate.a0)
 
   # a=1
   estimate.a1.raw = colMeans(ueif.a1, na.rm = TRUE)
   estimate.a1 = cummin(estimate.a1.raw)
-  ueif.df$estimate.a1 = estimate.a1[1:nrow(ueif.df)]
+  ueif.df$estimate.a1 = estimate.a1[seq_len(nrow(ueif.df))]
 
   ueif.df = approxTime(ueif.df, xout = ueif.df$t)
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
@@ -152,12 +152,12 @@ cifj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   # a=0
   estimate.a0.raw = colMeans(ueif.a0, na.rm = TRUE)
   estimate.a0 = cummax(estimate.a0.raw)
-  ueif.df = data.frame(t = union.time[1:length(estimate.a0)], estimate.a0 = estimate.a0)
+  ueif.df = data.frame(t = union.time[seq_along(estimate.a0)], estimate.a0 = estimate.a0)
 
   # a=1
   estimate.a1.raw = colMeans(ueif.a1, na.rm = TRUE)
   estimate.a1 = cummax(estimate.a1.raw)
-  ueif.df$estimate.a1 = estimate.a1[1:nrow(ueif.df)]
+  ueif.df$estimate.a1 = estimate.a1[seq_len(nrow(ueif.df))]
 
   ueif.df = approxTime(ueif.df, xout = ueif.df$t)
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0

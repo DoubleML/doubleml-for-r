@@ -92,7 +92,7 @@ double_ml_cifj = function(id, a, time, event, bw, tilt, G.a0, G.a1, S.a0, S.a1, 
 
   # Indicators
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
   Njt = do.call(cbind, lapply(1:ns, function(u) (time <= s[u]) * (event == cause)))
 
   # 4-term UEIF for A=0
@@ -164,10 +164,10 @@ double_ml_cifj_sep_direct_astar1 = function(id, a, time, event, bw, tilt, G.a0, 
   Fj.a0.a1 = t(apply(cbind(1, winsorize_values(Sj.a0 * Sjbar.a1, lower = 1e-3, upper = 1)[, 1:(ns - 1)]) * Fj.dHazard.a0, 1, cumsum)) # not Fj.dHazard.a1!
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * Fj.a0.a1
@@ -240,10 +240,10 @@ double_ml_cifj_sep_indirect_astar1 = function(id, a, time, event, bw, tilt, G.a0
   Fj.a0.a1 = t(apply(cbind(1, winsorize_values(Sj.a0 * Sjbar.a1, lower = 1e-3, upper = 1)[, 1:(ns - 1)]) * Fj.dHazard.a0, 1, cumsum)) # not Fj.dHazard.a1!
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * Fj.a0
@@ -316,10 +316,10 @@ double_ml_cifj_sep_direct_astar0 = function(id, a, time, event, bw, tilt, G.a0, 
   Fj.a1.a0 = t(apply(cbind(1, winsorize_values(Sj.a1 * Sjbar.a0, lower = 1e-3, upper = 1)[, 1:(ns - 1)]) * Fj.dHazard.a1, 1, cumsum)) # not Fj.dHazard.a1!
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * Fj.a0
@@ -392,10 +392,10 @@ double_ml_cifj_sep_indirect_astar0 = function(id, a, time, event, bw, tilt, G.a0
   Fj.a1.a0 = t(apply(cbind(1, winsorize_values(Sj.a1 * Sjbar.a0, lower = 1e-3, upper = 1)[, 1:(ns - 1)]) * Fj.dHazard.a1, 1, cumsum)) # not Fj.dHazard.a1!
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
-  dNt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event != 0)))
-  dNjt = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 1)))
-  dNjbart = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event > 1)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  dNt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event != 0)))
+  dNjt = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 1)))
+  dNjbart = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event > 1)))
 
   # a=0
   term1.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * Fj.a1.a0
@@ -511,7 +511,8 @@ DoubleMLCIFJ = R6Class("DoubleMLCIFJ",
     #' Name of the event column (0=censored, 1=cause 1, 2=cause 2, ...).
     #'
     #' @param cause (`integer(1)`) \cr
-    #' Cause of interest (default is 1).
+    #' The cause of interest. Only `1` is currently supported: recode the event
+    #' column so that the cause of interest is coded as `1`. Default is `1`.
     #'
     #' @param tau (`numeric(1)` or `numeric(vector)`) \cr
     #' Evaluation time point(s) for CIF estimation. Default is admin_cens.

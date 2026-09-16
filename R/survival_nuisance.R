@@ -11,6 +11,9 @@
 #' @importFrom survSuperLearner survSuperLearner
 NULL
 
+# Vectorised float equality with the same tolerance as dplyr::near()
+near = function(x, y, tol = .Machine$double.eps^0.5) abs(x - y) < tol
+
 #' Fit Survival and Censoring Functions using survSuperLearner
 #'
 #' Wrapper function to fit both event survival functions S(t|X,A) and censoring

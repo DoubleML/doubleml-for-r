@@ -6,6 +6,8 @@
 ^README.Rmd
 ^CONTRIBUTING.md
 ^CODE_OF_CONDUCT.md
+^CLAUDE\.md$
+^\.lintr$
 ^\.github$
 ^codecov\.yml$
 ^doc$

@@ -23,9 +23,9 @@ test_that("DoubleMLRMST with n_folds=2 works", {
     return_type = "DoubleMLData"
   )
 
-  ml_g_surv = c("survSL.km")
-  ml_g_cens = c("survSL.km")
-  ml_m = c("SL.glm")
+  ml_g_surv = "survSL.km"
+  ml_g_cens = "survSL.km"
+  ml_m = "SL.glm"
 
   # Test initialization with n_folds=2
   expect_error(
@@ -127,9 +127,9 @@ test_that("DoubleMLRMST with multiple tau values works", {
     return_type = "DoubleMLData"
   )
 
-  ml_g_surv = c("survSL.km")
-  ml_g_cens = c("survSL.km")
-  ml_m = c("SL.glm")
+  ml_g_surv = "survSL.km"
+  ml_g_cens = "survSL.km"
+  ml_m = "SL.glm"
 
   dml_rmst_multi = DoubleMLRMST$new(
     obj_dml_data,

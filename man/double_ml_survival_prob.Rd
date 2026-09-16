@@ -32,13 +32,13 @@ double_ml_survival_prob(
 
 \item{tilt}{Tilting weights for target population}
 
-\item{G.a0}{Censoring survival function matrix for A=0 (n <U+00D7> n_times)}
+\item{G.a0}{Censoring survival function matrix for A=0 (n × n_times)}
 
-\item{G.a1}{Censoring survival function matrix for A=1 (n <U+00D7> n_times)}
+\item{G.a1}{Censoring survival function matrix for A=1 (n × n_times)}
 
-\item{S.a0}{Event survival function matrix for A=0 (n <U+00D7> n_times)}
+\item{S.a0}{Event survival function matrix for A=0 (n × n_times)}
 
-\item{S.a1}{Event survival function matrix for A=1 (n <U+00D7> n_times)}
+\item{S.a1}{Event survival function matrix for A=1 (n × n_times)}
 
 \item{freq.time}{Time grid frequency. If NULL, uses unique event times}
 
@@ -47,8 +47,8 @@ double_ml_survival_prob(
 \value{
 List with two components:
 \describe{
-\item{ueif.a1}{Influence function matrix for A=1 (n <U+00D7> n_times)}
-\item{ueif.a0}{Influence function matrix for A=0 (n <U+00D7> n_times)}
+\item{ueif.a1}{Influence function matrix for A=1 (n × n_times)}
+\item{ueif.a0}{Influence function matrix for A=0 (n × n_times)}
 }
 }
 \description{

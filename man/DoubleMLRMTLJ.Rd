@@ -186,7 +186,8 @@ Name of the time column in the data.}
 Name of the event column (0=censored, 1=cause 1, 2=cause 2, ...).}
 
 \item{\code{cause}}{(\code{integer(1)}) \cr
-Cause of interest (default is 1).}
+The cause of interest. Only \code{1} is currently supported: recode the event
+column so that the cause of interest is coded as \code{1}. Default is \code{1}.}
 
 \item{\code{tau}}{(\code{numeric(1)} or \code{numeric(vector)}) \cr
 Evaluation time point(s) for RMTL estimation. Default is admin_cens.}

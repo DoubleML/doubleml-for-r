@@ -130,7 +130,8 @@ Name of the time column in the data.}
 Name of the event column in the data (0=censored, 1=cause 1, 2=cause 2, ...).}
 
 \item{\code{cause}}{(\code{integer(1)}) \cr
-The cause of interest (default is 1).}
+The cause of interest. Only \code{1} is currently supported: recode the event
+column so that the cause of interest is coded as \code{1}. Default is \code{1}.}
 
 \item{\code{freq_time}}{(\code{numeric(1)}, optional) \cr
 Time grid frequency. If NULL, uses unique event times.}

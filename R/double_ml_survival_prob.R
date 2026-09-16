@@ -91,17 +91,17 @@ NULL
 #' @param event Event indicator (0=censored, 1+=event)
 #' @param bw Balancing weights (inverse propensity weights)
 #' @param tilt Tilting weights for target population
-#' @param G.a0 Censoring survival function matrix for A=0 (n <U+00D7> n_times)
-#' @param G.a1 Censoring survival function matrix for A=1 (n <U+00D7> n_times)
-#' @param S.a0 Event survival function matrix for A=0 (n <U+00D7> n_times)
-#' @param S.a1 Event survival function matrix for A=1 (n <U+00D7> n_times)
+#' @param G.a0 Censoring survival function matrix for A=0 (n × n_times)
+#' @param G.a1 Censoring survival function matrix for A=1 (n × n_times)
+#' @param S.a0 Event survival function matrix for A=0 (n × n_times)
+#' @param S.a1 Event survival function matrix for A=1 (n × n_times)
 #' @param freq.time Time grid frequency. If NULL, uses unique event times
 #' @param admin.cens Administrative censoring time
 #'
 #' @return List with two components:
 #' \describe{
-#'   \item{ueif.a1}{Influence function matrix for A=1 (n <U+00D7> n_times)}
-#'   \item{ueif.a0}{Influence function matrix for A=0 (n <U+00D7> n_times)}
+#'   \item{ueif.a1}{Influence function matrix for A=1 (n × n_times)}
+#'   \item{ueif.a0}{Influence function matrix for A=0 (n × n_times)}
 #' }
 #'
 #' @details
@@ -137,7 +137,7 @@ double_ml_survival_prob = function(id, a, time, event, bw, tilt, G.a0, G.a1, S.a
   G.dHazard.a1 = t(apply(cbind(0, -log(G.a1)), 1, diff))
 
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
 
   cens.martingale.integral.a0 = t(apply((dNct - Yt * G.dHazard.a0) / (S.a0 * G.a0), 1, cumsum))
   term1.a0 = matrix(bw * (a == 0), ncol = ns, nrow = n, byrow = FALSE) * do.call(cbind, lapply(1:ns, function(u) ifelse(time > s[u], 1, 0))) / G.a0 # cbind(1, G.a0[, 1:(ns-1)])

@@ -127,7 +127,7 @@ double_ml_rmst = function(id, a, time, event, bw, tilt, G.a0, G.a1, S.a0, S.a1, 
   Delta.tau.over.G.a0 = do.call(cbind, lapply(1:ns, function(u) ifelse(time > s[u], 1, 0))) / G.a0 + matrix(event / rowSums(G.a0 * do.call(cbind, lapply(1:ns, function(u) ifelse(time == s[u], 1, 0)))), ncol = ns, nrow = n, byrow = FALSE) * do.call(cbind, lapply(1:ns, function(u) ifelse(time <= s[u], 1, 0)))
   Delta.tau.over.G.a1 = do.call(cbind, lapply(1:ns, function(u) ifelse(time > s[u], 1, 0))) / G.a1 + matrix(event / rowSums(G.a1 * do.call(cbind, lapply(1:ns, function(u) ifelse(time == s[u], 1, 0)))), ncol = ns, nrow = n, byrow = FALSE) * do.call(cbind, lapply(1:ns, function(u) ifelse(time <= s[u], 1, 0)))
   Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (dplyr::near(s[u], time)) * (event == 0)))
+  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
 
   term1.a0 = matrix(bw * (a == 0), ncol = ns, nrow = n, byrow = FALSE) * Delta.tau.over.G.a0 * pmin(matrix(time, ncol = ns, nrow = n, byrow = FALSE), matrix(s, ncol = ns, nrow = n, byrow = TRUE))
   term2.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * RMST.a0
