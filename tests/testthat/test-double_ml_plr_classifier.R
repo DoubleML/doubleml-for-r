@@ -12,7 +12,8 @@ if (on_cran) {
     g_learner = "regr.rpart",
     dml_procedure = "dml2",
     score = "partialling out",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     l_learner = c("regr.rpart", "classif.rpart"),
@@ -20,12 +21,14 @@ if (on_cran) {
     g_learner = "regr.cv_glmnet",
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     n_folds = 3
 
@@ -34,7 +37,6 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
     ml_g = mlr3::lrn(g_learner)
 
     if (ml_l$task_type == "regr") {
-
       set.seed(3141)
       if (score == "IV-type") {
         ml_g = ml_g$clone()
@@ -47,7 +49,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
         ml_l = ml_l$clone(),
         ml_m = ml_m$clone(),
         ml_g = ml_g,
-        dml_procedure = dml_procedure, score = score)
+        dml_procedure = dml_procedure, score = score
+      )
       theta = plr_hat$coef
       se = plr_hat$se
 
@@ -57,7 +60,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
         n_folds = n_folds, smpls = plr_hat$smpls,
         all_preds = plr_hat$all_preds,
         bootstrap = "normal", n_rep_boot = n_rep_boot,
-        score = score)$boot_coef
+        score = score
+      )$boot_coef
 
       t = plr_hat$t
       pval = plr_hat$pval
@@ -75,7 +79,8 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
         ml_g = ml_g,
         dml_procedure = dml_procedure,
         n_folds = n_folds,
-        score = score)
+        score = score
+      )
       double_mlplr_obj$fit()
       theta_obj = double_mlplr_obj$coef
       se_obj = double_mlplr_obj$se
@@ -92,7 +97,6 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       expect_equal(t, t_obj, tolerance = 1e-8)
       expect_equal(pval, pval_obj, tolerance = 1e-8)
       # expect_equal(ci, ci_obj, tolerance = 1e-8)
-
     } else if (ml_l$task_type == "classif") {
       msg = "Invalid learner provided for ml_l: 'learner\\$task_type' must be 'regr'"
       if (score == "IV-type") {
@@ -100,15 +104,18 @@ patrick::with_parameters_test_that("Unit tests for PLR with classifier for ml_m:
       } else {
         ml_g = NULL
       }
-      expect_error(DoubleMLPLR$new(
-        data = data_irm$dml_data,
-        ml_l = ml_l$clone(),
-        ml_m = ml_m$clone(),
-        ml_g = ml_g,
-        dml_procedure = dml_procedure,
-        n_folds = n_folds,
-        score = score),
-      regexp = msg)
+      expect_error(
+        DoubleMLPLR$new(
+          data = data_irm$dml_data,
+          ml_l = ml_l$clone(),
+          ml_m = ml_m$clone(),
+          ml_g = ml_g,
+          dml_procedure = dml_procedure,
+          n_folds = n_folds,
+          score = score
+        ),
+        regexp = msg
+      )
     }
   }
 )
@@ -123,11 +130,14 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
   double_mlplr_obj = DoubleMLPLR$new(
     data = dml_data,
     ml_l = mlr3::lrn("regr.rpart"),
-    ml_m = mlr3::lrn("classif.rpart"))
+    ml_m = mlr3::lrn("classif.rpart")
+  )
   msg = paste(
-    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}"
+  )
   expect_error(double_mlplr_obj$fit(),
-    regexp = msg)
+    regexp = msg
+  )
 
   # Test with 0.5 and 1
   df = data_irm$df
@@ -136,9 +146,12 @@ test_that("Unit tests for exception handling of PLR with classifier for ml_m:", 
   double_mlplr_obj = DoubleMLPLR$new(
     data = dml_data,
     ml_l = mlr3::lrn("regr.rpart"),
-    ml_m = mlr3::lrn("classif.rpart"))
+    ml_m = mlr3::lrn("classif.rpart")
+  )
   msg = paste(
-    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}")
+    "Assertion on 'levels\\(data\\[\\[target\\]\\])' failed: .* set \\{'0','1'\\}"
+  )
   expect_error(double_mlplr_obj$fit(),
-    regexp = msg)
+    regexp = msg
+  )
 })

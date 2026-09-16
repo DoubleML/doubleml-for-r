@@ -1,6 +1,8 @@
-est_one_way_cluster_dml2 = function(psi_a, psi_b,
+est_one_way_cluster_dml2 = function(
+  psi_a, psi_b,
   cluster_var,
-  smpls_one_split) {
+  smpls_one_split
+) {
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   psi_a_subsample = 0
@@ -16,10 +18,11 @@ est_one_way_cluster_dml2 = function(psi_a, psi_b,
   return(theta)
 }
 
-var_one_way_cluster = function(psi, psi_a,
+var_one_way_cluster = function(
+  psi, psi_a,
   cluster_var,
-  smpls_one_split) {
-
+  smpls_one_split
+) {
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   gamma_hat = 0
@@ -44,11 +47,12 @@ var_one_way_cluster = function(psi, psi_a,
   return(var)
 }
 
-est_two_way_cluster_dml2 = function(psi_a, psi_b,
+est_two_way_cluster_dml2 = function(
+  psi_a, psi_b,
   cluster_var1,
   cluster_var2,
-  smpls_one_split) {
-
+  smpls_one_split
+) {
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   psi_a_subsample = 0
@@ -65,11 +69,12 @@ est_two_way_cluster_dml2 = function(psi_a, psi_b,
   return(theta)
 }
 
-var_two_way_cluster = function(psi, psi_a,
+var_two_way_cluster = function(
+  psi, psi_a,
   cluster_var1,
   cluster_var2,
-  smpls_one_split) {
-
+  smpls_one_split
+) {
   test_ids = smpls_one_split$test_ids
   n_folds = length(test_ids)
   gamma_hat = 0

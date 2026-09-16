@@ -10,13 +10,15 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml1",
     score = "partialling out",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = c("partialling out", "IV-type"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
@@ -27,7 +29,8 @@ dim_x = 100 # dimension of x
 data_two_way = make_pliv_multiway_cluster_CKMS2021(N, M, dim_x)
 
 patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_pliv(learner)
 
     set.seed(3141)
@@ -44,7 +47,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
       ml_r = learner_pars$ml_r$clone(),
       ml_g = ml_g,
       dml_procedure = dml_procedure,
-      score = score)
+      score = score
+    )
 
     set.seed(3141)
     double_mlpliv_obj$fit()
@@ -70,7 +74,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
       ml_r = learner_pars$ml_r$clone(),
       ml_g = ml_g,
       dml_procedure = dml_procedure, score = score,
-      smpls = double_mlpliv_obj$smpls)
+      smpls = double_mlpliv_obj$smpls
+    )
 
 
     this_smpl = double_mlpliv_obj$smpls[[1]]
@@ -78,7 +83,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
       y = "Y", d = "D", z = "Z",
       n_folds = 4,
       smpls = this_smpl,
-      all_preds = pliv_hat$all_preds[[1]])
+      all_preds = pliv_hat$all_preds[[1]]
+    )
     y_minus_l_hat = residuals$y_minus_l_hat
     d_minus_r_hat = residuals$d_minus_r_hat
     z_minus_m_hat = residuals$z_minus_m_hat
@@ -94,7 +100,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
         psi_a, psi_b,
         cluster_var1,
         cluster_var2,
-        this_smpl)
+        this_smpl
+      )
     } else {
       theta = pliv_hat$coef
     }
@@ -104,7 +111,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV with two-way clustering:
       psi, psi_a,
       cluster_var1,
       cluster_var2,
-      this_smpl)
+      this_smpl
+    )
     se = sqrt(var)
     names(theta) = "D"
     names(se) = "D"

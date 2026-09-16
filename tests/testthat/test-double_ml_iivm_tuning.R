@@ -11,9 +11,11 @@ tune_settings = list(
   measure = list(
     "ml_m" = "classif.ce",
     "ml_g" = "regr.mse",
-    "ml_r" = "classif.ce"),
+    "ml_r" = "classif.ce"
+  ),
   terminator = mlr3tuning::trm("evals", n_evals = 5),
-  algorithm = tnr("random_search"))
+  algorithm = tnr("random_search")
+)
 
 learner = "rpart"
 
@@ -27,7 +29,8 @@ if (on_cran) {
     NT = c(TRUE),
     n_rep = c(1),
     tune_on_folds = FALSE,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner_list = learner,
@@ -37,14 +40,16 @@ if (on_cran) {
     NT = c(TRUE, FALSE),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 
 
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     n_folds = 2
 
@@ -57,23 +62,31 @@ patrick::with_parameters_test_that("Unit tests for tuning of IIVM:",
       ml_r = "classif.rpart",
       subgroups = list(
         always_takers = AT,
-        never_takers = NT),
+        never_takers = NT
+      ),
       dml_procedure = dml_procedure,
       score = score,
-      n_rep = n_rep)
+      n_rep = n_rep
+    )
 
     param_grid = list(
       "ml_m" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_g" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_r" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)))
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      )
+    )
 
-    double_mliivm_obj_tuned$tune(param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_settings)
+    double_mliivm_obj_tuned$tune(
+      param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_settings
+    )
     double_mliivm_obj_tuned$fit()
 
     theta_obj_tuned = double_mliivm_obj_tuned$coef

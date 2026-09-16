@@ -1,11 +1,16 @@
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
 # Double Machine Learning for Interactive Regression Model.
-dml_irm = function(data, y, d,
+dml_irm = function(
+  data, y, d,
   n_folds, ml_g, ml_m,
   dml_procedure, score,
   n_rep = 1, smpls = NULL,
   trimming_threshold = 1e-12,
-  params_g = NULL, params_m = NULL) {
-
+  params_g = NULL, params_m = NULL
+) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -39,7 +44,7 @@ dml_irm = function(data, y, d,
 
     # DML 1
     if (dml_procedure == "dml1") {
-      thetas = vars = rep(NA_real_, n_folds)
+      thetas = rep(NA_real_, n_folds)
 
       for (i in 1:n_folds) {
         test_index = test_ids[[i]]
@@ -101,10 +106,12 @@ dml_irm = function(data, y, d,
   return(res)
 }
 
-fit_nuisance_irm = function(data, y, d,
+fit_nuisance_irm = function(
+  data, y, d,
   ml_g, ml_m,
   train_ids, test_ids, score,
-  params_g, params_m) {
+  params_g, params_m
+) {
   # Set up task_m first to get resampling (test and train ids) scheme based on full sample
   # nuisance m
 
@@ -159,8 +166,6 @@ fit_nuisance_irm = function(data, y, d,
   resampling_g0 = mlr3::rsmp("custom")
   # Train on subset with d == 0 (in each fold) only, predict for all test obs
   resampling_g0$instantiate(task_g0, train_ids_0, test_ids)
-  train_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$train_set(x))
-  test_ids_g0 = lapply(1:n_iters, function(x) resampling_g0$test_set(x))
 
   r_g0 = mlr3::resample(task_g0, ml_g0, resampling_g0, store_models = TRUE)
 
@@ -188,8 +193,6 @@ fit_nuisance_irm = function(data, y, d,
     }
     resampling_g1 = mlr3::rsmp("custom")
     resampling_g1$instantiate(task_g1, train_ids_1, test_ids)
-    train_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$train_set(x))
-    test_ids_g1 = lapply(1:n_iters, function(x) resampling_g1$test_set(x))
 
     r_g1 = mlr3::resample(task_g1, ml_g1, resampling_g1, store_models = TRUE)
     if (any(class(ml_g) == "LearnerClassif")) {
@@ -210,9 +213,10 @@ fit_nuisance_irm = function(data, y, d,
   return(all_preds)
 }
 
-extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score,
-  trimming_threshold) {
-
+extract_irm_residuals = function(
+  data, y, d, n_folds, smpls, all_preds, score,
+  trimming_threshold
+) {
   test_ids = smpls$test_ids
 
   m_hat_list = all_preds$m_hat_list
@@ -258,11 +262,10 @@ extract_irm_residuals = function(data, y, d, n_folds, smpls, all_preds, score,
 orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
   if (score == "ATE") {
     theta = mean(g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m))
-  }
-  else if (score == "ATTE") {
-    theta = mean(d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m))) / mean(d / p_hat)
-  }
-  else {
+  } else if (score == "ATTE") {
+    theta = mean(d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m))) /
+      mean(d / p_hat)
+  } else {
     stop("Inference framework for orthogonal estimation unknown")
   }
 
@@ -275,19 +278,23 @@ orth_irm_dml = function(g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
 var_irm = function(theta, g0_hat, g1_hat, u0_hat, u1_hat, d, p_hat, m, y, score) {
   n = length(d)
   if (score == "ATE") {
-    var = 1 / n * mean(((g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m) - theta)^2))
-  }
-  else if (score == "ATTE") {
-    var = 1 / n * mean((d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m)) - d / p_hat * theta)^2) / (mean(d / p_hat)^2)
+    var = 1 / n *
+      mean(((g1_hat - g0_hat + d * (u1_hat) / m - (1 - d) * u0_hat / (1 - m) - theta)^2))
+  } else if (score == "ATTE") {
+    var = 1 / n *
+      mean((d * (y - g0_hat) / p_hat - m * (1 - d) * u0_hat / (p_hat * (1 - m)) -
+        d / p_hat * theta)^2) / (mean(d / p_hat)^2)
   }
 
   return(c(var))
 }
 
 # Bootstrap Implementation for Interactive Regression Model
-bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
+bootstrap_irm = function(
+  theta, se, data, y, d, n_folds, smpls, all_preds,
   score, bootstrap, n_rep_boot,
-  n_rep = 1, trimming_threshold = 1e-12) {
+  n_rep = 1, trimming_threshold = 1e-12
+) {
   for (i_rep in 1:n_rep) {
     res = extract_irm_residuals(data, y, d, n_folds,
       smpls[[i_rep]], all_preds[[i_rep]], score,
@@ -304,9 +311,9 @@ bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
     if (score == "ATE") {
       psi = g1_hat - g0_hat + D * u1_hat / m_hat - (1 - D) * u0_hat / (1 - m_hat) - theta[i_rep]
       psi_a = rep(-1, length(D))
-    }
-    else if (score == "ATTE") {
-      psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) - D / p_hat * theta[i_rep]
+    } else if (score == "ATTE") {
+      psi = D * u0_hat / p_hat - m_hat * (1 - D) * u0_hat / (p_hat * (1 - m_hat)) -
+        D / p_hat * theta[i_rep]
       psi_a = -D / p_hat
     }
 
@@ -326,3 +333,4 @@ bootstrap_irm = function(theta, se, data, y, d, n_folds, smpls, all_preds,
   }
   return(boot_res)
 }
+# nolint end

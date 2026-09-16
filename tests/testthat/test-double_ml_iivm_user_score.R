@@ -4,9 +4,10 @@ library("mlr3learners")
 
 lgr::get_logger("mlr3")$set_threshold("warn")
 
-score_fct = function(y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
-  r1_hat, smpls) {
-
+score_fct = function(
+  y, z, d, g0_hat, g1_hat, m_hat, r0_hat,
+  r1_hat, smpls
+) {
   u0_hat = y - g0_hat
   u1_hat = y - g1_hat
   w0_hat = d - r0_hat
@@ -27,20 +28,23 @@ if (on_cran) {
     learner_m = "classif.rpart",
     dml_procedure = "dml2",
     trimming_threshold = c(0),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "regr.glmnet",
     learner_m = "classif.glmnet",
     dml_procedure = c("dml1", "dml2"),
     trimming_threshold = c(0),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     set.seed(3141)
     double_mliivm_obj = DoubleMLIIVM$new(
@@ -51,7 +55,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
       ml_r = lrn(learner_m),
       dml_procedure = dml_procedure,
       trimming_threshold = trimming_threshold,
-      score = "LATE")
+      score = "LATE"
+    )
     double_mliivm_obj$fit()
     theta_obj = double_mliivm_obj$coef
     se_obj = double_mliivm_obj$se
@@ -65,7 +70,8 @@ patrick::with_parameters_test_that("Unit tests for IIVM, callable score:",
       ml_r = lrn(learner_m),
       dml_procedure = dml_procedure,
       trimming_threshold = trimming_threshold,
-      score = score_fct)
+      score = score_fct
+    )
     double_mliivm_obj_score$fit()
     theta_obj_score = double_mliivm_obj_score$coef
     se_obj_score = double_mliivm_obj_score$se

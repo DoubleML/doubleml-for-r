@@ -9,14 +9,16 @@ if (on_cran) {
     dml_procedure = "dml2",
     score = "LATE",
     trimming_threshold = 1e-5,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "rpart",
     dml_procedure = c("dml1", "dml2"),
     score = "LATE",
     trimming_threshold = 1e-5,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 
 test_cases_nocf = expand.grid(
@@ -24,13 +26,15 @@ test_cases_nocf = expand.grid(
   dml_procedure = "dml1",
   score = "LATE",
   trimming_threshold = 1e-5,
-  stringsAsFactors = FALSE)
+  stringsAsFactors = FALSE
+)
 
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 test_cases_nocf[".test_name"] = apply(test_cases_nocf, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oop vs fun):",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     n_folds = 2
     n_rep = 3
@@ -49,7 +53,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
       params_m = learner_pars$params$params_m,
       params_r = learner_pars$params$params_r,
       dml_procedure = dml_procedure, score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
     theta = iivm_hat$coef
     se = iivm_hat$se
 
@@ -62,7 +67,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
       all_preds = iivm_hat$all_preds,
       score = score,
       bootstrap = "normal", n_rep_boot = n_rep_boot,
-      trimming_threshold = trimming_threshold)$boot_coef
+      trimming_threshold = trimming_threshold
+    )$boot_coef
 
     set.seed(3141)
     dml_iivm_obj = DoubleMLIIVM$new(
@@ -74,28 +80,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = learner_pars$params$params_m)
+      params = learner_pars$params$params_m
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
-      params = learner_pars$params$params_g)
+      params = learner_pars$params$params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
-      params = learner_pars$params$params_g)
+      params = learner_pars$params$params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
-      params = learner_pars$params$params_r)
+      params = learner_pars$params$params_r
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
-      params = learner_pars$params$params_r)
+      params = learner_pars$params$params_r
+    )
 
     dml_iivm_obj$fit()
     theta_obj = dml_iivm_obj$coef
@@ -113,7 +125,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (oo
 )
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no cross-fitting)",
-  .cases = test_cases_nocf, {
+  .cases = test_cases_nocf,
+  {
     n_folds = 2
 
     learner_pars = get_default_mlmethod_iivm(learner)
@@ -137,7 +150,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
       params_r = learner_pars$params$params_r,
       dml_procedure = dml_procedure, score = score,
       trimming_threshold = trimming_threshold,
-      smpls = smpls)
+      smpls = smpls
+    )
     theta = iivm_hat$coef
     se = iivm_hat$se
 
@@ -151,28 +165,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
       dml_procedure = dml_procedure,
       score = score,
       trimming_threshold = trimming_threshold,
-      apply_cross_fitting = FALSE)
+      apply_cross_fitting = FALSE
+    )
 
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = learner_pars$params$params_m)
+      params = learner_pars$params$params_m
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
-      params = learner_pars$params$params_g)
+      params = learner_pars$params$params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
-      params = learner_pars$params$params_g)
+      params = learner_pars$params$params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
-      params = learner_pars$params$params_r)
+      params = learner_pars$params$params_r
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
-      params = learner_pars$params$params_r)
+      params = learner_pars$params$params_r
+    )
 
     dml_iivm_obj$fit()
     theta_obj = dml_iivm_obj$coef
@@ -184,7 +204,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (no
 )
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fold-wise vs global)",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_rep_boot = 498
     n_folds = 2
     n_rep = 3
@@ -201,28 +222,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = learner_pars$params$params_m)
+      params = learner_pars$params$params_m
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
-      params = learner_pars$params$params_g)
+      params = learner_pars$params$params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
-      params = learner_pars$params$params_g)
+      params = learner_pars$params$params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
-      params = learner_pars$params$params_r)
+      params = learner_pars$params$params_r
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
-      params = learner_pars$params$params_r)
+      params = learner_pars$params$params_r
+    )
 
     dml_iivm_obj$fit()
     theta = dml_iivm_obj$coef
@@ -243,33 +270,39 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
       ml_r = mlr3::lrn(learner_pars$mlmethod$mlmethod_r, predict_type = "prob"),
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     dml_iivm_fold_wise$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
       params = params_m_fold_wise,
-      set_fold_specific = TRUE)
+      set_fold_specific = TRUE
+    )
     dml_iivm_fold_wise$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
       params = params_g_fold_wise,
-      set_fold_specific = TRUE)
+      set_fold_specific = TRUE
+    )
     dml_iivm_fold_wise$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
       params = params_g_fold_wise,
-      set_fold_specific = TRUE)
+      set_fold_specific = TRUE
+    )
     dml_iivm_fold_wise$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
       params = params_r_fold_wise,
-      set_fold_specific = TRUE)
+      set_fold_specific = TRUE
+    )
     dml_iivm_fold_wise$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
       params = params_r_fold_wise,
-      set_fold_specific = TRUE)
+      set_fold_specific = TRUE
+    )
 
     dml_iivm_fold_wise$fit()
     theta_fold_wise = dml_iivm_fold_wise$coef
@@ -281,7 +314,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (fo
 )
 
 patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (default vs explicit)",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_folds = 2
     n_rep = 3
 
@@ -299,7 +333,8 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (de
       ml_r = lrn("classif.rpart", predict_type = "prob"),
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     dml_iivm_default$fit()
     theta_default = dml_iivm_default$coef
@@ -315,28 +350,34 @@ patrick::with_parameters_test_that("Unit tests for parameter passing of IIVM (de
       ml_r = lrn("classif.rpart", predict_type = "prob"),
       dml_procedure = dml_procedure,
       score = score,
-      trimming_threshold = trimming_threshold)
+      trimming_threshold = trimming_threshold
+    )
 
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = params_m)
+      params = params_m
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g0",
       treat_var = "d",
-      params = params_g)
+      params = params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_g1",
       treat_var = "d",
-      params = params_g)
+      params = params_g
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r0",
       treat_var = "d",
-      params = params_r)
+      params = params_r
+    )
     dml_iivm_obj$set_ml_nuisance_params(
       learner = "ml_r1",
       treat_var = "d",
-      params = params_r)
+      params = params_r
+    )
 
     dml_iivm_obj$fit()
     theta = dml_iivm_obj$coef

@@ -8,24 +8,28 @@ if (on_cran) {
     learner = "regr.lm",
     dml_procedure = "dml2",
     score = "IV-type",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = c("regr.lm", "regr.cv_glmnet"),
     dml_procedure = c("dml1", "dml2"),
     score = "IV-type",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLIV (partialX functional initialization):",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_pliv(learner)
     df = data_pliv$df
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_cols = "z")
+      d_cols = "d", x_cols = Xnames, z_cols = "z"
+    )
 
     # Partial out X (default PLIV)
     set.seed(3141)
@@ -36,7 +40,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialX functional ini
       ml_r = learner_pars$ml_r$clone(),
       ml_g = learner_pars$ml_g$clone(),
       dml_procedure = dml_procedure,
-      score = score)
+      score = score
+    )
 
     double_mlpliv_obj$fit()
     theta_obj = double_mlpliv_obj$coef
@@ -51,7 +56,8 @@ patrick::with_parameters_test_that("Unit tests for PLIV (partialX functional ini
       ml_r = learner_pars$ml_r$clone(),
       ml_g = learner_pars$ml_g$clone(),
       dml_procedure = dml_procedure,
-      score = score)
+      score = score
+    )
 
     double_mlpliv_partX$fit()
     theta_partX = double_mlpliv_partX$coef

@@ -3,7 +3,7 @@ Type: Package
 Title: Double Machine Learning in R
 Version: 1.0.1.9000
 Authors@R: c(
-    person("Philipp", "Bach", email = "philipp.bach@uni-hamburg.de", role=c("aut", "cre")),
+    person("Philipp", "Bach", email = "philipp.bach@fu-berlin.de", role=c("aut", "cre")),
     person("Victor", "Chernozhukov", role="aut"),
     person("Malte S.", "Kurz", email = "mkurz-software@gmx.de", role="aut"),
     person("Martin", "Spindler", email="martin.spindler@gmx.de", role="aut"),
@@ -19,7 +19,7 @@ Description: Implementation of the double/debiased machine learning framework of
     the 'R6' package is very flexible. More information available in the
     publication in the Journal of Statistical Software: <doi:10.18637/jss.v108.i03>.
 License: MIT + file LICENSE
-URL: https://docs.doubleml.org/stable/index.html, https://github.com/DoubleML/doubleml-for-r/
+URL: https://docs.doubleml.org/r/stable/, https://github.com/DoubleML/doubleml-for-r/
 BugReports: https://github.com/DoubleML/doubleml-for-r/issues
 Encoding: UTF-8
 Depends: 
@@ -42,7 +42,6 @@ Imports:
     fdrtool,
     foreach
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RoxygenNote: 7.3.2
 Suggests:
     knitr,
     rmarkdown,
@@ -87,3 +86,4 @@ Collate:
     'double_ml_cifj.R'
     'double_ml_rmtlj.R'
     'zzz.R'
+Config/roxygen2/version: 8.0.0

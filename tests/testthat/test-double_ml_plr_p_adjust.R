@@ -12,7 +12,8 @@ if (on_cran) {
     score = "partialling out",
     method = c("romano-wolf"),
     apply_cross_fitting = c(TRUE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     learner = "regr.cv_glmnet",
@@ -20,12 +21,14 @@ if (on_cran) {
     score = c("IV-type", "partialling out"),
     method = c("romano-wolf", "bonferroni"),
     apply_cross_fitting = c(TRUE, FALSE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     learner_pars = get_default_mlmethod_plr(learner)
 
     n_rep_boot = 498
@@ -52,7 +55,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
     data_ml = double_ml_data_from_data_frame(data,
       x_cols = colnames(X)[(k + 1):p],
       y_col = "y",
-      d_cols = colnames(X)[1:k])
+      d_cols = colnames(X)[1:k]
+    )
     if (score == "IV-type") {
       ml_g = learner_pars$ml_g$clone()
     } else {
@@ -65,7 +69,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       dml_procedure = dml_procedure,
       n_folds = n_folds,
       score = score,
-      apply_cross_fitting = apply_cross_fitting)
+      apply_cross_fitting = apply_cross_fitting
+    )
     double_mlplr_obj$fit()
     double_mlplr_obj$bootstrap()
     double_mlplr_obj$p_adjust(method = method)

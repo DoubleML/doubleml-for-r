@@ -1,10 +1,15 @@
-dml_pliv_partial_xz = function(data, y, d, z,
+# nolint start: object_usage_linter.
+# (calls functions defined in other tests/testthat/helper-*.R files, which
+# testthat sources together but which lintr can't see when checking this
+# file in isolation)
+dml_pliv_partial_xz = function(
+  data, y, d, z,
   n_folds,
   ml_l, ml_m, ml_r,
   params, dml_procedure, score,
   n_rep = 1, smpls = NULL,
-  params_l = NULL, params_m = NULL, params_r = NULL) {
-
+  params_l = NULL, params_m = NULL, params_r = NULL
+) {
   if (is.null(smpls)) {
     smpls = lapply(1:n_rep, function(x) sample_splitting(n_folds, data))
   }
@@ -19,12 +24,14 @@ dml_pliv_partial_xz = function(data, y, d, z,
       data, y, d, z,
       ml_l, ml_m, ml_r,
       this_smpl,
-      params_l, params_m, params_r)
+      params_l, params_m, params_r
+    )
 
-    residuals = compute_pliv_partial_xz_residuals(
+    residuals = pliv_partial_xz_residuals(
       data, y, d, z, n_folds,
       this_smpl,
-      all_preds[[i_rep]])
+      all_preds[[i_rep]]
+    )
     u_hat = residuals$u_hat
     v_hat = residuals$v_hat
     w_hat = residuals$w_hat
@@ -38,7 +45,8 @@ dml_pliv_partial_xz = function(data, y, d, z,
           u_hat = u_hat[test_index],
           v_hat = v_hat[test_index],
           w_hat = w_hat[test_index],
-          score = score)
+          score = score
+        )
         thetas[i] = orth_est$theta
       }
       all_thetas[i_rep] = mean(thetas, na.rm = TRUE)
@@ -51,13 +59,15 @@ dml_pliv_partial_xz = function(data, y, d, z,
     if (dml_procedure == "dml2") {
       orth_est = orth_pliv_partial_xz_dml(
         u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
-        score = score)
+        score = score
+      )
       all_thetas[i_rep] = orth_est$theta
     }
 
     all_ses[i_rep] = sqrt(var_pliv_partial_xz(
       theta = all_thetas[i_rep], u_hat = u_hat, v_hat = v_hat, w_hat = w_hat,
-      score = score))
+      score = score
+    ))
   }
 
   theta = stats::median(all_thetas)
@@ -75,16 +85,18 @@ dml_pliv_partial_xz = function(data, y, d, z,
   res = list(
     coef = theta, se = se, t = t, pval = pval,
     thetas = all_thetas, ses = all_ses,
-    all_preds = all_preds, smpls = smpls)
+    all_preds = all_preds, smpls = smpls
+  )
 
   return(res)
 }
 
-fit_nuisance_pliv_partial_xz = function(data, y, d, z,
+fit_nuisance_pliv_partial_xz = function(
+  data, y, d, z,
   ml_l, ml_m, ml_r,
   smpls,
-  params_l, params_m, params_r) {
-
+  params_l, params_m, params_r
+) {
   train_ids = smpls$train_ids
   test_ids = smpls$test_ids
 
@@ -128,8 +140,11 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
     m_hat_train[train_index] = m_hat_list_train[[i]]
     r_indx = names(data) != y & names(data) != d & (names(data) %in% z == FALSE)
     data_r = setnafill(cbind(data[, r_indx, drop = FALSE], m_hat_train),
-      fill = -1111.11) # mlr3 does not allow NA's (values are not used)
-    task_r = mlr3::TaskRegr$new(id = paste0("nuis_r_", "m_hat_train"), backend = data_r, target = "m_hat_train")
+      fill = -1111.11
+    ) # mlr3 does not allow NA's (values are not used)
+    task_r = mlr3::TaskRegr$new(
+      id = paste0("nuis_r_", "m_hat_train"), backend = data_r, target = "m_hat_train"
+    )
     this_ml_r = ml_r$clone()
     if (!is.null(params_r)) {
       this_ml_r$param_set$values = params_r
@@ -143,14 +158,16 @@ fit_nuisance_pliv_partial_xz = function(data, y, d, z,
   all_preds = list(
     l_hat_list = l_hat_list,
     m_hat_list = m_hat_list,
-    r_hat_list = r_hat_list)
+    r_hat_list = r_hat_list
+  )
 
   return(all_preds)
 }
 
-compute_pliv_partial_xz_residuals = function(data, y, d, z, n_folds, smpls,
-  all_preds) {
-
+pliv_partial_xz_residuals = function(
+  data, y, d, z, n_folds, smpls,
+  all_preds
+) {
   test_ids = smpls$test_ids
 
   l_hat_list = all_preds$l_hat_list
@@ -196,14 +213,17 @@ var_pliv_partial_xz = function(theta, u_hat, v_hat, w_hat, score) {
 }
 
 
-bootstrap_pliv_partial_xz = function(theta, se, data, y, d, z, n_folds, smpls,
+bootstrap_pliv_partial_xz = function(
+  theta, se, data, y, d, z, n_folds, smpls,
   all_preds, bootstrap,
-  n_rep_boot, n_rep = 1) {
+  n_rep_boot, n_rep = 1
+) {
   for (i_rep in 1:n_rep) {
-    residuals = compute_pliv_partial_xz_residuals(
+    residuals = pliv_partial_xz_residuals(
       data, y, d, z, n_folds,
       smpls[[i_rep]],
-      all_preds[[i_rep]])
+      all_preds[[i_rep]]
+    )
     u_hat = residuals$u_hat
     v_hat = residuals$v_hat
     w_hat = residuals$w_hat
@@ -216,7 +236,8 @@ bootstrap_pliv_partial_xz = function(theta, se, data, y, d, z, n_folds, smpls,
     this_res = functional_bootstrap(
       theta[i_rep], se[i_rep], psi, psi_a, n_folds,
       smpls[[i_rep]],
-      n_rep_boot, weights)
+      n_rep_boot, weights
+    )
     if (i_rep == 1) {
       boot_res = this_res
     } else {
@@ -226,3 +247,4 @@ bootstrap_pliv_partial_xz = function(theta, se, data, y, d, z, n_folds, smpls,
   }
   return(boot_res)
 }
+# nolint end

@@ -9,17 +9,20 @@ if (on_cran) {
   test_cases = expand.grid(
     dml_procedure = "dml1",
     score = "IV-type",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = c("IV-type", "partialling out"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for PLR:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_folds = 2
     n_rep_boot = 498
     set.seed(3141)
@@ -41,26 +44,30 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
 
     # set params for nuisance part m
     double_mlplr$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     # set params for nuisance part l
     double_mlplr$set_ml_nuisance_params(
       learner = "ml_l",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     if (score == "IV-type") {
       # set params for nuisance part g
       double_mlplr$set_ml_nuisance_params(
         learner = "ml_g",
         treat_var = "d",
-        params = params)
+        params = params
+      )
     }
 
     double_mlplr$fit()
@@ -86,7 +93,8 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
 
     double_mlplr_loaded$fit()
     theta_loaded = double_mlplr_loaded$coef
@@ -111,25 +119,29 @@ patrick::with_parameters_test_that("Unit tests for PLR:",
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
     # set params for nuisance part m
     double_mlplr_semiloaded$set_ml_nuisance_params(
       learner = "ml_m",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     # set params for nuisance part l
     double_mlplr_semiloaded$set_ml_nuisance_params(
       learner = "ml_l",
       treat_var = "d",
-      params = params)
+      params = params
+    )
 
     if (score == "IV-type") {
       # set params for nuisance part g
       double_mlplr_semiloaded$set_ml_nuisance_params(
         learner = "ml_g",
         treat_var = "d",
-        params = params)
+        params = params
+      )
     }
 
     double_mlplr_semiloaded$fit()

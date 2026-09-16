@@ -112,15 +112,24 @@ devtools::test()
 - [x] If you add an **enhancements** or **new feature**, **unit tests**
 (with a certain level of coverage) are **mandatory** for getting the PR merged.
 
-- [x] Check whether your changes adhere to the **"mlr-style" standards**.
-For the check you can use the following code
+- [x] Check whether your changes adhere to the **style and lint checks**.
+This repo uses [pre-commit](https://pre-commit.com) (via the R
+[precommit](https://lorenzwalthert.github.io/precommit/) package) to enforce
+style (`styler`, `tidyverse_style`, loosely aligned with the [mlr3 style guidelines](https://github.com/mlr-org/mlr3/wiki/Style-Guide)), roxygen docs, linting and a few sanity
+checks; see [.pre-commit-config.yaml](.pre-commit-config.yaml). Install it
+once per clone so the hooks run automatically on every commit
 ```R
-install.packages('remotes')
-remotes::install_github("mlr-org/styler.mlr", dependencies=TRUE)
-install.packages("styler")
-styler::style_pkg(style = styler.mlr::mlr_style) # entire package
-styler::style_file(<file>, style = styler.mlr::mlr_style) # specific file
+install.packages("precommit")
+precommit::install_precommit() # installs the pre-commit CLI, once per machine
+precommit::use_precommit()     # installs the git hook, once per clone
 ```
+You can also run all hooks on demand, e.g. before opening a PR
+```sh
+pre-commit run --all-files
+```
+These checks are not currently enforced in CI (matching the [mlr3](https://github.com/mlr-org)
+ecosystem's own practice for the same tooling), so please run them locally
+before opening a PR.
 
 If your PR is still **work in progress**, please consider marking it a **draft PR**
 (see also [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)).

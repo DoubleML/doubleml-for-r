@@ -55,9 +55,10 @@
 #'
 #'
 #' @export
-fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
-  instrument = FALSE) {
-
+fetch_401k = function(
+  return_type = "DoubleMLData", polynomial_features = FALSE,
+  instrument = FALSE
+) {
   assert_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
   assert_logical(polynomial_features)
   assert_logical(instrument)
@@ -207,9 +208,10 @@ fetch_401k = function(return_type = "DoubleMLData", polynomial_features = FALSE,
 #' )
 #' obj_dml_data_bonus
 #' @export
-fetch_bonus = function(return_type = "DoubleMLData",
-  polynomial_features = FALSE) {
-
+fetch_bonus = function(
+  return_type = "DoubleMLData",
+  polynomial_features = FALSE
+) {
   assert_choice(return_type, c("data.table", "data.frame", "DoubleMLData"))
   url = "https://raw.githubusercontent.com/VC2015/DMLonGitHub/master/penn_jae.dat"
   raw_data = read.table(url, header = TRUE)
@@ -316,9 +318,10 @@ g = function(x) {
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
-  return_type = "DoubleMLData") {
-
+make_plr_CCDDHNR2018 = function(
+  n_obs = 500, dim_x = 20, alpha = 0.5,
+  return_type = "DoubleMLData"
+) {
   assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData")
@@ -413,9 +416,10 @@ make_plr_CCDDHNR2018 = function(n_obs = 500, dim_x = 20, alpha = 0.5,
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
-  return_type = "DoubleMLData", nu = 0, gamma = 1) {
-
+make_plr_turrell2018 = function(
+  n_obs = 100, dim_x = 20, theta = 0.5,
+  return_type = "DoubleMLData", nu = 0, gamma = 1
+) {
   assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData")
@@ -512,8 +516,10 @@ make_plr_turrell2018 = function(n_obs = 100, dim_x = 20, theta = 0.5,
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
-  return_type = "DoubleMLData") {
+make_pliv_CHS2015 = function(
+  n_obs, alpha = 1, dim_x = 200, dim_z = 150,
+  return_type = "DoubleMLData"
+) {
   # see https://assets.aeaweb.org/asset-server/articles-attachments/aer/app/10505/P2015_1022_app.pdf
 
   assert_choice(
@@ -630,8 +636,10 @@ make_pliv_CHS2015 = function(n_obs, alpha = 1, dim_x = 200, dim_z = 150,
 #' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #'
 #' @export
-make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
-  R2_y = 0.5, return_type = "DoubleMLData") {
+make_irm_data = function(
+  n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
+  R2_y = 0.5, return_type = "DoubleMLData"
+) {
   # inspired by https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA12723
   # (see supplement)
 
@@ -730,8 +738,10 @@ make_irm_data = function(n_obs = 500, dim_x = 20, theta = 0, R2_d = 0.5,
 #' Every entry in the list is a `matrix()` object.  Default is `"DoubleMLData"`.
 #'
 #' @export
-make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
-  return_type = "DoubleMLData") {
+make_iivm_data = function(
+  n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
+  return_type = "DoubleMLData"
+) {
   # inspired by https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3619201&download=yes
 
   assert_choice(
@@ -865,14 +875,17 @@ make_iivm_data = function(n_obs = 500, dim_x = 20, theta = 1, alpha_x = 0.2,
 #' @return A data object according to the choice of `return_type`.
 #'
 #' @export
-make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
+make_pliv_multiway_cluster_CKMS2021 = function(
+  # nolint: object_length_linter.
+  N = 25, M = 25, dim_X = 100,
   theta = 1.,
   return_type = "DoubleMLClusterData",
-  ...) {
-
+  ...
+) {
   assert_choice(
     return_type,
-    c("data.table", "matrix", "data.frame", "DoubleMLClusterData"))
+    c("data.table", "matrix", "data.frame", "DoubleMLClusterData")
+  )
   kwargs = list(...)
   pi_10 = if ("pi_10" %in% names(kwargs)) kwargs$pi_10 else 1.0
   zeta_0 = if ("zeta_0" %in% names(kwargs)) kwargs$zeta_0 else 0.5^(1:dim_X)
@@ -953,7 +966,9 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
         z_cols = "Z",
         cluster_cols = c(
           "cluster_var_i",
-          "cluster_var_j"))
+          "cluster_var_j"
+        )
+      )
       return(data)
     }
   }
@@ -970,7 +985,8 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #'
 #' \deqn{d_i = 1\lbrace x_i' \beta  + w_i > 0 \rbrace,}
 #'
-#' with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
+#' with \eqn{y_i} being observed if \eqn{s_i = 1} and covariates
+#' \eqn{x_i \sim \mathcal{N}(0, \Sigma^2_x)}, where
 #' \eqn{\Sigma^2_x} is a matrix with entries
 #' \eqn{\Sigma_{kj} = 0.5^{|j-k|}}.
 #' \eqn{\beta} is a \code{dim_x}-vector with entries \eqn{\beta_j=\frac{0.4}{j^2}}
@@ -978,8 +994,8 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' \eqn{(u_i,v_i) \sim \mathcal{N}(0, \Sigma^2_{u,v})},
 #' \eqn{w_i \sim \mathcal{N}(0, 1)}.
 #'
-#' The data generating process is inspired by a process used in the simulation study (see Appendix E) of Bia,
-#' Huber and Lafférs (2023).
+#' The data generating process is inspired by a process used in the
+#' simulation study (see Appendix E) of Bia, Huber and Lafférs (2023).
 #'
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate.
@@ -995,13 +1011,14 @@ make_pliv_multiway_cluster_CKMS2021 = function(N = 25, M = 25, dim_X = 100,
 #' If `"data.table"` returns a `data.table()`.
 #' Default is `"DoubleMLData"`.
 #'
-#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine Learning for Sample Selection Models,
-#' Journal of Business & Economic Statistics, DOI: 10.1080/07350015.2023.2271071
+#' @references Michela Bia, Martin Huber & Lukáš Lafférs (2023) Double Machine
+#' Learning for Sample Selection Models, Journal of Business & Economic
+#' Statistics, DOI: 10.1080/07350015.2023.2271071
 #'
 #' @return Depending on the `return_type`, returns an object or set of objects as specified.
 #' @export
-make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE, return_type = "DoubleMLData") {
-
+make_ssm_data = function(n_obs = 8000, dim_x = 100, theta = 1, mar = TRUE,
+                         return_type = "DoubleMLData") {
   assert_choice(
     return_type,
     c("data.table", "matrix", "data.frame", "DoubleMLData")

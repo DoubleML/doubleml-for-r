@@ -12,7 +12,8 @@ if (on_cran) {
     g_learner = "regr.rpart",
     dml_procedure = "dml2",
     score = "partialling out",
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases = expand.grid(
     l_learner = c("regr.rpart", "regr.lm"),
@@ -20,12 +21,14 @@ if (on_cran) {
     g_learner = c("regr.rpart", "regr.lm"),
     dml_procedure = "dml2",
     score = c("partialling out", "IV-type"),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 test_cases[".test_name"] = apply(test_cases, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for for the export of predictions:",
-  .cases = test_cases, {
+  .cases = test_cases,
+  {
     n_folds = 3
 
     set.seed(3141)
@@ -44,7 +47,8 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       n_folds = n_folds,
-      score = score)
+      score = score
+    )
     set.seed(3141)
     double_mlplr_obj$fit(store_predictions = TRUE, store_models = TRUE)
 
@@ -56,7 +60,8 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     resampling_smpls = rsmp("custom")$instantiate(
       task,
       double_mlplr_obj$smpls[[1]]$train_ids,
-      double_mlplr_obj$smpls[[1]]$test_ids)
+      double_mlplr_obj$smpls[[1]]$test_ids
+    )
     resampling_pred = resample(task, lrn(l_learner), resampling_smpls)
     preds_l = as.data.table(resampling_pred$prediction())
     data.table::setorder(preds_l, "row_ids")
@@ -68,7 +73,8 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
     resampling_smpls = rsmp("custom")$instantiate(
       task,
       double_mlplr_obj$smpls[[1]]$train_ids,
-      double_mlplr_obj$smpls[[1]]$test_ids)
+      double_mlplr_obj$smpls[[1]]$test_ids
+    )
     resampling_pred = resample(task, lrn(m_learner), resampling_smpls)
     preds_m = as.data.table(resampling_pred$prediction())
     data.table::setorder(preds_m, "row_ids")
@@ -87,35 +93,43 @@ patrick::with_parameters_test_that("Unit tests for for the export of predictions
       data = data_aux[, indx]
       task = mlr3::TaskRegr$new(
         id = "ml_g", backend = data,
-        target = "y_minus_theta_d")
+        target = "y_minus_theta_d"
+      )
       resampling_smpls = rsmp("custom")$instantiate(
         task,
         double_mlplr_obj$smpls[[1]]$train_ids,
-        double_mlplr_obj$smpls[[1]]$test_ids)
+        double_mlplr_obj$smpls[[1]]$test_ids
+      )
       resampling_pred = resample(task, lrn(g_learner), resampling_smpls)
       preds_g = as.data.table(resampling_pred$prediction())
       data.table::setorder(preds_g, "row_ids")
 
       expect_equal(as.vector(double_mlplr_obj$predictions$ml_g),
         as.vector(preds_g$response),
-        tolerance = 1e-8)
+        tolerance = 1e-8
+      )
       expect_class(
         double_mlplr_obj$models$ml_g$d[[1]][[1]],
-        "LearnerRegr")
+        "LearnerRegr"
+      )
     }
 
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_l),
       as.vector(preds_l$response),
-      tolerance = 1e-8)
+      tolerance = 1e-8
+    )
     expect_class(
       double_mlplr_obj$models$ml_l$d[[1]][[1]],
-      "LearnerRegr")
+      "LearnerRegr"
+    )
 
     expect_equal(as.vector(double_mlplr_obj$predictions$ml_m),
       as.vector(preds_m$response),
-      tolerance = 1e-8)
+      tolerance = 1e-8
+    )
     expect_class(
       double_mlplr_obj$models$ml_m$d[[1]][[1]],
-      "LearnerRegr")
+      "LearnerRegr"
+    )
   }
 )

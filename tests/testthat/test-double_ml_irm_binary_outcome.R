@@ -28,7 +28,7 @@ if (on_cran) {
 patrick::with_parameters_test_that("Unit tests for IRM:",
   .cases = test_cases,
   {
-    learner_pars = get_default_mlmethod_irm_binary(learner)
+    learner_pars = get_default_mlmethod_irm_bin(learner)
     n_rep_boot = 498
 
     set.seed(3141)

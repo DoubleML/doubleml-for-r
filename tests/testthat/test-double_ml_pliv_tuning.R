@@ -17,13 +17,15 @@ tune_settings = list(
   measure = list(
     "ml_l" = "regr.mse",
     "ml_r" = "regr.mse",
-    "ml_m" = "regr.mse"),
+    "ml_m" = "regr.mse"
+  ),
   terminator = mlr3tuning::trm("evals", n_evals = 2),
   algorithm = "grid_search",
   tuning_instance_l = NULL,
   tuning_instance_m = NULL,
   tuner = "grid_search",
-  resolution = 5)
+  resolution = 5
+)
 
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
@@ -32,14 +34,16 @@ if (on_cran) {
     score = "partialling out",
     n_rep = c(1),
     tune_on_folds = FALSE,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases_one_z = expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = c("partialling out", "IV-type"),
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 
 test_cases_one_z[".test_name"] = apply(test_cases_one_z, 1, paste, collapse = "_")
@@ -47,8 +51,8 @@ test_cases_one_z[".test_name"] = apply(test_cases_one_z, 1, paste, collapse = "_
 # skip('Skip tests for tuning')
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
-  .cases = test_cases_one_z, {
-
+  .cases = test_cases_one_z,
+  {
     # TBD: Functional Test Case
 
     set.seed(3141)
@@ -61,7 +65,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_cols = z_cols)
+      d_cols = "d", x_cols = Xnames, z_cols = z_cols
+    )
 
     if (score == "IV-type") {
       ml_g = learner
@@ -76,26 +81,34 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV",
       ml_g = ml_g,
       dml_procedure = dml_procedure,
       score = score,
-      n_rep = n_rep)
+      n_rep = n_rep
+    )
 
     param_grid = list(
       "ml_l" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_m" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_r" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)))
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      )
+    )
     if (score == "IV-type") {
       param_grid[["ml_g"]] = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2))
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      )
       tune_settings[["measure"]][["ml_g"]] = "regr.mse"
     }
 
-    double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds)
+    double_mlpliv_obj_tuned$tune(
+      param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds
+    )
     double_mlpliv_obj_tuned$fit()
 
     theta_obj_tuned = double_mlpliv_obj_tuned$coef
@@ -136,21 +149,23 @@ if (on_cran) {
     score = "partialling out",
     n_rep = c(1),
     tune_on_folds = FALSE,
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 } else {
   test_cases_multiple_z = expand.grid(
     dml_procedure = c("dml1", "dml2"),
     score = "partialling out",
     n_rep = c(1, 3),
     tune_on_folds = c(FALSE, TRUE),
-    stringsAsFactors = FALSE)
+    stringsAsFactors = FALSE
+  )
 }
 
 test_cases_multiple_z[".test_name"] = apply(test_cases_multiple_z, 1, paste, collapse = "_")
 
 patrick::with_parameters_test_that("Unit tests for tuning of PLIV (multiple Z)",
-  .cases = test_cases_multiple_z, {
-
+  .cases = test_cases_multiple_z,
+  {
     # TBD: Functional Test Case
 
     set.seed(3141)
@@ -163,7 +178,8 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV (multiple Z)",
     Xnames = names(df)[names(df) %in% c("y", "d", "z", "z2") == FALSE]
     data_ml = double_ml_data_from_data_frame(df,
       y_col = "y",
-      d_cols = "d", x_cols = Xnames, z_cols = z_cols)
+      d_cols = "d", x_cols = Xnames, z_cols = z_cols
+    )
 
     double_mlpliv_obj_tuned = DoubleMLPLIV$new(data_ml,
       n_folds = n_folds,
@@ -172,20 +188,27 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV (multiple Z)",
       ml_r = learner,
       dml_procedure = dml_procedure,
       score = score,
-      n_rep = n_rep)
+      n_rep = n_rep
+    )
 
     param_grid = list(
       "ml_l" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_m" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)),
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      ),
       "ml_r" = paradox::ps(
         cp = paradox::p_dbl(lower = 0.01, upper = 0.02),
-        minsplit = paradox::p_int(lower = 1, upper = 2)))
+        minsplit = paradox::p_int(lower = 1, upper = 2)
+      )
+    )
 
-    double_mlpliv_obj_tuned$tune(param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds)
+    double_mlpliv_obj_tuned$tune(
+      param_set = param_grid, tune_settings = tune_settings, tune_on_folds = tune_on_folds
+    )
     double_mlpliv_obj_tuned$fit()
 
     theta_obj_tuned = double_mlpliv_obj_tuned$coef
@@ -223,14 +246,16 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV (multiple Z)",
         ml_r = learner,
         dml_procedure = dml_procedure,
         score = score,
-        n_rep = n_rep)
+        n_rep = n_rep
+      )
 
       param_grid_r = list("ml_r" = param_grid[["ml_r"]])
       tune_settings_r = tune_settings
       tune_settings_r$measure$ml_l = tune_settings_r$measure$ml_m = NULL
       double_mlpliv_obj_tuned_Z$tune(
         param_set = param_grid_r, tune_on_folds = tune_on_folds,
-        tune_settings = tune_settings_r)
+        tune_settings = tune_settings_r
+      )
       double_mlpliv_obj_tuned_Z$fit()
 
       theta_obj_tuned_Z = double_mlpliv_obj_tuned_Z$coef
@@ -247,11 +272,13 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLIV (multiple Z)",
         ml_r = learner,
         dml_procedure = dml_procedure,
         score = score,
-        n_rep = n_rep)
+        n_rep = n_rep
+      )
 
       double_mlpliv_obj_tuned_XZ$tune(
         param_set = param_grid, tune_on_folds = tune_on_folds,
-        tune_settings = tune_settings)
+        tune_settings = tune_settings
+      )
       double_mlpliv_obj_tuned_XZ$fit()
 
       theta_obj_tuned_XZ = double_mlpliv_obj_tuned_XZ$coef
