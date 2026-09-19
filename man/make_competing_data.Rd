@@ -46,7 +46,8 @@ on cumulative incidence functions and restricted mean time lost.
 The data generating process is defined as:
 
 Treatment assignment:
-\deqn{ps_i = \frac{1}{1 + \exp(-(-1 + x_{i1} + 1.5x_{i2} + 1.5x_{i3} - x_{i4} - 1.5x_{i5} - x_{i6}))}}
+\deqn{ps_i = \frac{1}{1 + \exp(-(0.3 + 0.2 x_{i1} + 0.3 x_{i2} + 0.3 x_{i3}
+  - 0.2 x_{i4} - 0.3 x_{i5} - 0.2 x_{i6}))}}
 \deqn{a_i \sim \textstyle{Bernoulli}(ps_i)}
 
 Cause 1 event times under treatment and control:
@@ -83,5 +84,6 @@ Observed time and event indicator:
   2 & \text{if } T_2^{a_i}_i < \min(T_1^{a_i}_i, C_i) \text{ (cause 2)}
 \end{cases}}
 
-Time discretization is applied: \eqn{Y_i = \lceil Y_i / \text{time.grid} \rceil \times \text{time.grid}}.
+Time discretization is applied:
+\eqn{Y_i = \lceil Y_i / \text{time.grid} \rceil \times \text{time.grid}}.
 }

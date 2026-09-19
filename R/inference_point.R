@@ -11,6 +11,7 @@ NULL
 #'
 #' @param x Vector or matrix to fill missing values
 #' @return Object with missing values filled using last observation
+#' @noRd
 na.locf = function(x) {
   if (is.vector(x)) {
     for (i in 2:length(x)) {
@@ -39,6 +40,7 @@ na.locf = function(x) {
 #' @param xout Output time points for interpolation
 #' @param rule Integer specifying how to handle out-of-bounds values
 #' @return Data frame with interpolated values
+#' @noRd
 approxTime = function(object, xout, rule = 2) {
   time_col = object[, 1] # First column is time
   result = data.frame(t = xout)
@@ -64,6 +66,7 @@ approxTime = function(object, xout, rule = 2) {
 #' @param ueif.list List of K UEIF matrices, each n_k x length(time.list)
 #' @param time.list List of K time grid vectors
 #' @return List with: merged (n_total x n_union_times matrix), union.time (vector)
+#' @noRd
 merge_kfold_ueif = function(ueif.list, time.list) {
   union.time = sort(unique(unlist(time.list)))
   merged = data.frame(t = union.time)
@@ -83,6 +86,21 @@ merge_kfold_ueif = function(ueif.list, time.list) {
   return(list(ueif = ueif, union.time = union.time))
 }
 
+# Pointwise standard error of a mean influence-function curve, made monotone
+# in time with cummax (variance can only accumulate along the time grid)
+ueif_se = function(ueif, estimate) {
+  centered = ueif - matrix(estimate, nrow = nrow(ueif), ncol = ncol(ueif), byrow = TRUE)
+  cummax(sqrt(colMeans(centered^2)) / sqrt(nrow(ueif)))
+}
+
+# Least concave majorant ("lcm") or greatest convex minorant ("gcm") of the
+# mean curve over the time points with a finite mean; returns the knots
+monotone_hull = function(ueif, time, type) {
+  m = colMeans(ueif)
+  k = max(which(!is.na(m)))
+  gcmlcm(x = time[1:k], y = m[1:k], type = type)[c("x.knots", "y.knots")]
+}
+
 #' Extract Average Treatment Effect for Survival Probability at Tau
 #'
 #' Extracts point estimates, standard errors, and treatment effects for survival
@@ -94,6 +112,7 @@ merge_kfold_ueif = function(ueif.list, time.list) {
 #' @param time.list List of K time grid vectors (one per fold)
 #' @param tau Time point at which to extract the treatment effect
 #' @return Data frame with point estimates and standard errors at tau
+#' @noRd
 survival_prob_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -118,9 +137,9 @@ survival_prob_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, 
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error - using cummax for monotonic increasing variance over time
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(nrow(ueif.a1)))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   # Use <= for right-continuous step function (cadlag)
   tau.ind = max(which(ueif.df$t <= tau))
@@ -139,6 +158,7 @@ survival_prob_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, 
 #' @param time.list List of K time grid vectors (one per fold)
 #' @param tau Time point at which to extract the treatment effect
 #' @return Data frame with point estimates and standard errors at tau
+#' @noRd
 cifj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -163,9 +183,9 @@ cifj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error - using cummax for monotonic increasing variance over time
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(nrow(ueif.a1)))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   # Use < for left-continuous behavior, no interpolation
   tau.ind = max(which(ueif.df$t < tau))
@@ -184,6 +204,7 @@ cifj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
 #' @param time.list List of K time grid vectors (one per fold)
 #' @param tau Time point at which to extract the treatment effect
 #' @return Data frame with point estimates and standard errors at tau
+#' @noRd
 rmst_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -195,12 +216,12 @@ rmst_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
 
   ## point estimate
   # a=0
-  estimate.a0.lcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a0))))], y = colMeans(ueif.a0)[1:max(which(!is.na(colMeans(ueif.a0))))], type = "lcm")[c("x.knots", "y.knots")]
+  estimate.a0.lcm = monotone_hull(ueif.a0, union.time, "lcm")
   names(estimate.a0.lcm) = c("t", "estimate.a0")
   ueif.df = merge(data.frame(t = union.time), estimate.a0.lcm, all = TRUE, by = "t")
 
   # a=1
-  estimate.a1.lcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a1))))], y = colMeans(ueif.a1)[1:max(which(!is.na(colMeans(ueif.a1))))], type = "lcm")[c("x.knots", "y.knots")]
+  estimate.a1.lcm = monotone_hull(ueif.a1, union.time, "lcm")
   names(estimate.a1.lcm) = c("t", "estimate.a1")
   ueif.df = merge(ueif.df, estimate.a1.lcm, all = TRUE, by = "t")
 
@@ -208,12 +229,14 @@ rmst_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(nrow(ueif.a1)))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   tau.ind = max(which((tau - ueif.df$t) > 0))
-  ueif.df = ueif.df[tau.ind, ] + (tau - ueif.df$t[tau.ind]) * (ueif.df[tau.ind + 1, ] - ueif.df[tau.ind, ]) / (ueif.df$t[tau.ind + 1] - ueif.df$t[tau.ind])
+  ueif.df = ueif.df[tau.ind, ] +
+    (tau - ueif.df$t[tau.ind]) * (ueif.df[tau.ind + 1, ] - ueif.df[tau.ind, ]) /
+      (ueif.df$t[tau.ind + 1] - ueif.df$t[tau.ind])
   return(ueif.df[, -1])
 }
 
@@ -228,6 +251,7 @@ rmst_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
 #' @param time.list List of K time grid vectors (one per fold)
 #' @param tau Time point at which to extract the treatment effect
 #' @return Data frame with point estimates and standard errors at tau
+#' @noRd
 rmtlj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -239,12 +263,12 @@ rmtlj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
 
   ## point estimate
   # a=0
-  estimate.a0.lcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a0))))], y = colMeans(ueif.a0)[1:max(which(!is.na(colMeans(ueif.a0))))], type = "gcm")[c("x.knots", "y.knots")]
+  estimate.a0.lcm = monotone_hull(ueif.a0, union.time, "gcm")
   names(estimate.a0.lcm) = c("t", "estimate.a0")
   ueif.df = merge(data.frame(t = union.time), estimate.a0.lcm, all = TRUE, by = "t")
 
   # a=1
-  estimate.a1.lcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a1))))], y = colMeans(ueif.a1)[1:max(which(!is.na(colMeans(ueif.a1))))], type = "gcm")[c("x.knots", "y.knots")]
+  estimate.a1.lcm = monotone_hull(ueif.a1, union.time, "gcm")
   names(estimate.a1.lcm) = c("t", "estimate.a1")
   ueif.df = merge(ueif.df, estimate.a1.lcm, all = TRUE, by = "t")
 
@@ -252,11 +276,13 @@ rmtlj_extract_average = function(ueif.a1.list, ueif.a0.list, time.list, tau) {
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(nrow(ueif.a1)))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(nrow(ueif.a0)))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   tau.ind = max(which((tau - ueif.df$t) > 0))
-  ueif.df = ueif.df[tau.ind, ] + (tau - ueif.df$t[tau.ind]) * (ueif.df[tau.ind + 1, ] - ueif.df[tau.ind, ]) / (ueif.df$t[tau.ind + 1] - ueif.df$t[tau.ind])
+  ueif.df = ueif.df[tau.ind, ] +
+    (tau - ueif.df$t[tau.ind]) * (ueif.df[tau.ind + 1, ] - ueif.df[tau.ind, ]) /
+      (ueif.df$t[tau.ind + 1] - ueif.df$t[tau.ind])
   return(ueif.df[, -1])
 }

@@ -10,6 +10,7 @@ test_that("DoubleMLRMTLJ with n_folds=2 works", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("simsurv")
   skip_if_not_installed("fdrtool")
+  skip_if_not_installed("glmnet") # hard requirement of survSuperLearner
 
   cl = makeCluster(2)
   registerDoParallel(cl)
@@ -152,7 +153,8 @@ test_that("DoubleMLRMTLJ with n_folds=2 works", {
   # Verify diff = a1 - a0 for direct A*=1
   expect_equal(sep_direct_a1$estimate.diff,
     sep_direct_a1$estimate.a1 - sep_direct_a1$estimate.a0,
-    tolerance = 1e-6)
+    tolerance = 1e-6
+  )
 
   # Test inference curves with CBs for each separable effect
   curve_d1 = dml_rmtlj$get_inference_curve_sep_direct_astar1(npath = 100)
@@ -199,6 +201,7 @@ test_that("DoubleMLRMTLJ with multiple tau values works", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("simsurv")
   skip_if_not_installed("fdrtool")
+  skip_if_not_installed("glmnet") # hard requirement of survSuperLearner
 
   cl = makeCluster(2)
   registerDoParallel(cl)
@@ -318,7 +321,8 @@ test_that("DoubleMLRMTLJ with multiple tau values works", {
   # Verify diff = a1 - a0 for first tau in direct A*=1
   expect_equal(sep_direct_a1$estimate.diff[1],
     sep_direct_a1$estimate.a1[1] - sep_direct_a1$estimate.a0[1],
-    tolerance = 1e-6)
+    tolerance = 1e-6
+  )
 
   # Test get_inference_curve returns a data frame with correct structure
   curve = dml_rmtlj_multi$get_inference_curve(npath = 100)

@@ -2,6 +2,14 @@
 #' @importFrom foreach foreach %dopar%
 NULL
 
+# Influence functions centered at the estimate and scaled by its standard
+# error on grid columns tl:tu, the input of the multiplier bootstrap
+scaled_ueif = function(ueif, estimate, se, tl, tu) {
+  k = tu - tl + 1
+  (ueif[, tl:tu] - matrix(estimate[tl:tu], nrow = nrow(ueif), ncol = k, byrow = TRUE)) /
+    matrix(se[tl:tu], nrow = nrow(ueif), ncol = k, byrow = TRUE)
+}
+
 # These functions handle confidence intervals and confidence bands for survival outcomes
 # Based on the inference patterns from the original implementation
 
@@ -14,6 +22,7 @@ NULL
 #' @param ueif.a0.list List of K UEIF matrices for treatment a=0 (one per fold)
 #' @param time.list List of K time grid vectors (one per fold)
 #' @return Data frame with point estimates, confidence intervals, and confidence bands
+#' @noRd
 survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -37,9 +46,9 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   ueif.df$estimate.a0.lower.ci = ueif.df$estimate.a0 + qnorm(0.025) * ueif.df$estimate.a0.se
   ueif.df$estimate.a0.upper.ci = ueif.df$estimate.a0 + qnorm(0.975) * ueif.df$estimate.a0.se
@@ -52,7 +61,7 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
   tu = round(0.99 * nrow(ueif.df)) # row index
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
-  ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a0 = scaled_ueif(ueif.a0, ueif.df$estimate.a0, ueif.df$estimate.a0.se, tl, tu)
   c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
   }, probs = 0.95)
@@ -61,7 +70,7 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
-  ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a1 = scaled_ueif(ueif.a1, ueif.df$estimate.a1, ueif.df$estimate.a1.se, tl, tu)
   c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
   }, probs = 0.95)
@@ -71,12 +80,14 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
   # diff
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
-  ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.diff = scaled_ueif(ueif.diff, ueif.df$estimate.diff, ueif.df$estimate.diff.se, tl, tu)
   c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
   }, probs = 0.95)
-  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
-  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff -
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff +
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
 }
 
@@ -89,6 +100,7 @@ survival_prob_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list)
 #' @param ueif.a0.list List of K UEIF matrices for treatment a=0 (one per fold)
 #' @param time.list List of K time grid vectors (one per fold)
 #' @return Data frame with point estimates, confidence intervals, and confidence bands
+#' @noRd
 rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -102,12 +114,12 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 
   ## point estimate
   # a=0
-  estimate.a0.gcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a0))))], y = colMeans(ueif.a0)[1:max(which(!is.na(colMeans(ueif.a0))))], type = "gcm")[c("x.knots", "y.knots")]
+  estimate.a0.gcm = monotone_hull(ueif.a0, union.time, "gcm")
   names(estimate.a0.gcm) = c("t", "estimate.a0")
   ueif.df = merge(data.frame(t = union.time), estimate.a0.gcm, all = TRUE, by = "t")
 
   # a=1
-  estimate.a1.gcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a1))))], y = colMeans(ueif.a1)[1:max(which(!is.na(colMeans(ueif.a1))))], type = "gcm")[c("x.knots", "y.knots")]
+  estimate.a1.gcm = monotone_hull(ueif.a1, union.time, "gcm")
   names(estimate.a1.gcm) = c("t", "estimate.a1")
   ueif.df = merge(ueif.df, estimate.a1.gcm, all = TRUE, by = "t")
 
@@ -116,9 +128,9 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   ueif.df$estimate.a0.lower.ci = ueif.df$estimate.a0 + qnorm(0.025) * ueif.df$estimate.a0.se
   ueif.df$estimate.a0.upper.ci = ueif.df$estimate.a0 + qnorm(0.975) * ueif.df$estimate.a0.se
@@ -131,7 +143,7 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   tu = round(0.99 * nrow(ueif.df)) # row index
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
-  ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a0 = scaled_ueif(ueif.a0, ueif.df$estimate.a0, ueif.df$estimate.a0.se, tl, tu)
   c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
   }, probs = 0.95)
@@ -140,7 +152,7 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
-  ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a1 = scaled_ueif(ueif.a1, ueif.df$estimate.a1, ueif.df$estimate.a1.se, tl, tu)
   c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
   }, probs = 0.95)
@@ -150,12 +162,14 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   # diff
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
-  ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.diff = scaled_ueif(ueif.diff, ueif.df$estimate.diff, ueif.df$estimate.diff.se, tl, tu)
   c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
   }, probs = 0.95)
-  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
-  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff -
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff +
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
 }
 
@@ -168,6 +182,7 @@ rmtlj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 #' @param ueif.a0.list List of K UEIF matrices for treatment a=0 (one per fold)
 #' @param time.list List of K time grid vectors (one per fold)
 #' @return Data frame with point estimates, confidence intervals, and confidence bands
+#' @noRd
 cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -191,9 +206,9 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   ueif.df$estimate.a0.lower.ci = ueif.df$estimate.a0 + qnorm(0.025) * ueif.df$estimate.a0.se
   ueif.df$estimate.a0.upper.ci = ueif.df$estimate.a0 + qnorm(0.975) * ueif.df$estimate.a0.se
@@ -206,7 +221,7 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   tu = round(0.99 * nrow(ueif.df)) # row index
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
-  ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a0 = scaled_ueif(ueif.a0, ueif.df$estimate.a0, ueif.df$estimate.a0.se, tl, tu)
   c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
   }, probs = 0.95)
@@ -215,7 +230,7 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
-  ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a1 = scaled_ueif(ueif.a1, ueif.df$estimate.a1, ueif.df$estimate.a1.se, tl, tu)
   c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
   }, probs = 0.95)
@@ -225,12 +240,14 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   # diff
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
-  ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.diff = scaled_ueif(ueif.diff, ueif.df$estimate.diff, ueif.df$estimate.diff.se, tl, tu)
   c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
   }, probs = 0.95)
-  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
-  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff -
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff +
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
 }
 
@@ -243,6 +260,7 @@ cifj_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 #' @param ueif.a0.list List of K UEIF matrices for treatment a=0 (one per fold)
 #' @param time.list List of K time grid vectors (one per fold)
 #' @return Data frame with point estimates, confidence intervals, and confidence bands
+#' @noRd
 rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ## merge K-fold UEIFs onto union time grid
   res.a0 = merge_kfold_ueif(ueif.a0.list, time.list)
@@ -256,12 +274,12 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 
   ## point estimate
   # a=0
-  estimate.a0.lcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a0))))], y = colMeans(ueif.a0)[1:max(which(!is.na(colMeans(ueif.a0))))], type = "lcm")[c("x.knots", "y.knots")]
+  estimate.a0.lcm = monotone_hull(ueif.a0, union.time, "lcm")
   names(estimate.a0.lcm) = c("t", "estimate.a0")
   ueif.df = merge(data.frame(t = union.time), estimate.a0.lcm, all = TRUE, by = "t")
 
   # a=1
-  estimate.a1.lcm = gcmlcm(x = union.time[1:max(which(!is.na(colMeans(ueif.a1))))], y = colMeans(ueif.a1)[1:max(which(!is.na(colMeans(ueif.a1))))], type = "lcm")[c("x.knots", "y.knots")]
+  estimate.a1.lcm = monotone_hull(ueif.a1, union.time, "lcm")
   names(estimate.a1.lcm) = c("t", "estimate.a1")
   ueif.df = merge(ueif.df, estimate.a1.lcm, all = TRUE, by = "t")
 
@@ -270,9 +288,9 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   ueif.df$estimate.diff = ueif.df$estimate.a1 - ueif.df$estimate.a0
 
   ## standard error
-  ueif.df$estimate.a0.se = cummax(sqrt(colMeans((ueif.a0 - matrix(ueif.df$estimate.a0, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.a1.se = cummax(sqrt(colMeans((ueif.a1 - matrix(ueif.df$estimate.a1, nrow = nrow(ueif.a1), ncol = ncol(ueif.a1), byrow = TRUE))^2)) / sqrt(n))
-  ueif.df$estimate.diff.se = cummax(sqrt(colMeans(((ueif.a1 - ueif.a0) - matrix(ueif.df$estimate.diff, nrow = nrow(ueif.a0), ncol = ncol(ueif.a0), byrow = TRUE))^2)) / sqrt(n))
+  ueif.df$estimate.a0.se = ueif_se(ueif.a0, ueif.df$estimate.a0)
+  ueif.df$estimate.a1.se = ueif_se(ueif.a1, ueif.df$estimate.a1)
+  ueif.df$estimate.diff.se = ueif_se(ueif.a1 - ueif.a0, ueif.df$estimate.diff)
 
   ueif.df$estimate.a0.lower.ci = ueif.df$estimate.a0 + qnorm(0.025) * ueif.df$estimate.a0.se
   ueif.df$estimate.a0.upper.ci = ueif.df$estimate.a0 + qnorm(0.975) * ueif.df$estimate.a0.se
@@ -285,7 +303,7 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   tu = round(0.99 * nrow(ueif.df)) # row index
   # a=0
   tl = ifelse(sum(ueif.df$estimate.a0.se == 0), max(which(ueif.df$estimate.a0.se == 0)) + 1, 1)
-  ceif.a0 = (ueif.a0[, tl:tu] - matrix(ueif.df$estimate.a0[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a0.se[tl:tu], nrow = nrow(ueif.a0), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a0 = scaled_ueif(ueif.a0, ueif.df$estimate.a0, ueif.df$estimate.a0.se, tl, tu)
   c.a0 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a0))
   }, probs = 0.95)
@@ -294,7 +312,7 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
 
   # a=1
   tl = ifelse(sum(ueif.df$estimate.a1.se == 0), max(which(ueif.df$estimate.a1.se == 0)) + 1, 1)
-  ceif.a1 = (ueif.a1[, tl:tu] - matrix(ueif.df$estimate.a1[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.a1.se[tl:tu], nrow = nrow(ueif.a1), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.a1 = scaled_ueif(ueif.a1, ueif.df$estimate.a1, ueif.df$estimate.a1.se, tl, tu)
   c.a1 = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.a1))
   }, probs = 0.95)
@@ -304,11 +322,13 @@ rmst_inference = function(npath, ueif.a1.list, ueif.a0.list, time.list) {
   # diff
   tl = ifelse(sum(ueif.df$estimate.diff.se == 0), max(which(ueif.df$estimate.diff.se == 0)) + 1, 1)
   ueif.diff = ueif.a1 - ueif.a0
-  ceif.diff = (ueif.diff[, tl:tu] - matrix(ueif.df$estimate.diff[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)) / matrix(ueif.df$estimate.diff.se[tl:tu], nrow = nrow(ueif.diff), ncol = (tu - tl + 1), byrow = TRUE)
+  ceif.diff = scaled_ueif(ueif.diff, ueif.df$estimate.diff, ueif.df$estimate.diff.se, tl, tu)
   c.diff = quantile(foreach(i = 1:npath, .combine = c) %dopar% {
     max(abs(rbind(rnorm(n) / sqrt(n)) %*% ceif.diff))
   }, probs = 0.95)
-  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff - ueif.df$estimate.diff.se * c.diff / sqrt(n)
-  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff + ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.lower.cb = ueif.df$estimate.diff -
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
+  ueif.df$estimate.diff.upper.cb = ueif.df$estimate.diff +
+    ueif.df$estimate.diff.se * c.diff / sqrt(n)
   return(ueif.df)
 }

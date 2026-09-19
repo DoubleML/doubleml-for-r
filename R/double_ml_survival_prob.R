@@ -116,39 +116,35 @@ NULL
 #' outcome model (S,G) or the propensity model is correctly specified.
 #'
 #' @keywords internal
-double_ml_survival_prob = function(id, a, time, event, bw, tilt, G.a0, G.a1, S.a0, S.a1, freq.time = NULL, admin.cens)
-{
-  n = length(id)
-  causes = sort(unique(event[event != 0]))
-  ncauses = length(causes)
-  if (is.null(freq.time)) {
-    s = sort(unique(time))
-  } else {
-    s = seq(freq.time, admin.cens, freq.time)
-  }
-  ns = length(s)
-  ds = diff(c(0, s))
+double_ml_survival_prob = function(
+  id, a, time, event, bw, tilt, G.a0, G.a1, S.a0, S.a1,
+  freq.time = NULL, admin.cens
+) {
+  s = ueif_time_grid(time, freq.time, admin.cens)
 
-  S.a0 = t(na.locf(t(ifelse(S.a0 < 1e-3, 1e-3, S.a0))))
-  S.a1 = t(na.locf(t(ifelse(S.a1 < 1e-3, 1e-3, S.a1))))
-  G.a0 = t(na.locf(t(ifelse(G.a0 < 1e-3, 1e-3, G.a0))))
-  G.a1 = t(na.locf(t(ifelse(G.a1 < 1e-3, 1e-3, G.a1))))
-  G.dHazard.a0 = t(apply(cbind(0, -log(G.a0)), 1, diff))
-  G.dHazard.a1 = t(apply(cbind(0, -log(G.a1)), 1, diff))
+  S.a0 = floor_locf(S.a0)
+  S.a1 = floor_locf(S.a1)
+  G.a0 = floor_locf(G.a0)
+  G.a1 = floor_locf(G.a1)
+  G.dHazard.a0 = dhazard(G.a0)
+  G.dHazard.a1 = dhazard(G.a1)
 
-  Yt = do.call(cbind, lapply(1:ns, function(u) ifelse(time >= s[u], 1, 0)))
-  dNct = do.call(cbind, lapply(1:ns, function(u) (near(s[u], time)) * (event == 0)))
+  Yt = outer(time, s, ">=") * 1
+  dNct = outer(time, s, near) * (event == 0)
+  alive = outer(time, s, ">") * 1
+  w0 = bw * (a == 0)
+  w1 = bw * (a == 1)
 
-  cens.martingale.integral.a0 = t(apply((dNct - Yt * G.dHazard.a0) / (S.a0 * G.a0), 1, cumsum))
-  term1.a0 = matrix(bw * (a == 0), ncol = ns, nrow = n, byrow = FALSE) * do.call(cbind, lapply(1:ns, function(u) ifelse(time > s[u], 1, 0))) / G.a0 # cbind(1, G.a0[, 1:(ns-1)])
-  term2.a0 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * S.a0
-  term3.a0 = matrix(bw * (a == 0), ncol = ns, nrow = n, byrow = FALSE) * S.a0 * (cens.martingale.integral.a0 - 1)
+  cens.martingale.integral.a0 = row_cumsum((dNct - Yt * G.dHazard.a0) / (S.a0 * G.a0))
+  term1.a0 = w0 * alive / G.a0
+  term2.a0 = tilt * S.a0
+  term3.a0 = w0 * S.a0 * (cens.martingale.integral.a0 - 1)
   ueif.a0 = 1 / mean(tilt) * (term1.a0 + term2.a0 + term3.a0)
 
-  cens.martingale.integral.a1 = t(apply((dNct - Yt * G.dHazard.a1) / (S.a1 * G.a1), 1, cumsum))
-  term1.a1 = matrix(bw * (a == 1), ncol = ns, nrow = n, byrow = FALSE) * do.call(cbind, lapply(1:ns, function(u) ifelse(time > s[u], 1, 0))) / G.a1 # cbind(1, G.a1[, 1:(ns-1)])
-  term2.a1 = matrix(tilt, ncol = ns, nrow = n, byrow = FALSE) * S.a1
-  term3.a1 = matrix(bw * (a == 1), ncol = ns, nrow = n, byrow = FALSE) * S.a1 * (cens.martingale.integral.a1 - 1)
+  cens.martingale.integral.a1 = row_cumsum((dNct - Yt * G.dHazard.a1) / (S.a1 * G.a1))
+  term1.a1 = w1 * alive / G.a1
+  term2.a1 = tilt * S.a1
+  term3.a1 = w1 * S.a1 * (cens.martingale.integral.a1 - 1)
   ueif.a1 = 1 / mean(tilt) * (term1.a1 + term2.a1 + term3.a1)
   return(list(ueif.a1 = ueif.a1, ueif.a0 = ueif.a0))
 }
@@ -213,22 +209,21 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Whether to apply cross-fitting. Default is TRUE.
     initialize = function(data,
-      ml_g_surv,
-      ml_g_cens,
-      ml_m,
-      admin_cens,
-      time_col,
-      event_col,
-      tau = NULL,
-      freq_time = NULL,
-      ml_framework = "SuperLearner",
-      n_folds = 5,
-      n_rep = 1,
-      score = "ueif",
-      dml_procedure = "dml2",
-      draw_sample_splitting = TRUE,
-      apply_cross_fitting = TRUE) {
-
+                          ml_g_surv,
+                          ml_g_cens,
+                          ml_m,
+                          admin_cens,
+                          time_col,
+                          event_col,
+                          tau = NULL,
+                          freq_time = NULL,
+                          ml_framework = "SuperLearner",
+                          n_folds = 5,
+                          n_rep = 1,
+                          score = "ueif",
+                          dml_procedure = "dml2",
+                          draw_sample_splitting = TRUE,
+                          apply_cross_fitting = TRUE) {
       # Store survival-specific parameters
       private$admin_cens_ = admin_cens
       private$time_col_ = time_col
@@ -288,7 +283,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       )
     }
   ),
-
   active = list(
     #' @field coef Treatment effect estimate (from extract_average, not DML score).
     #' For multiple tau, returns the first tau's estimate; use survival_prob_estimates for all.
@@ -332,7 +326,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
     #' @field admin_cens Administrative censoring time
     admin_cens = function() private$admin_cens_
   ),
-
   private = list(
     admin_cens_ = NULL,
     freq_time_ = NULL,
@@ -350,7 +343,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
     ml_g_surv_ = NULL,
     ml_g_cens_ = NULL,
     ml_m_ = NULL,
-
     check_data = function(obj_dml_data) {
       # Check that required columns exist in the data
       if (!private$time_col_ %in% names(obj_dml_data$data)) {
@@ -361,7 +353,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       }
       invisible(NULL)
     },
-
     check_score = function(score) {
       valid_scores = "ueif"
       if (!score %in% valid_scores) {
@@ -369,7 +360,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       }
       return(invisible(NULL))
     },
-
     validate_tau = function() {
       if (any(private$tau_ <= 0)) {
         stop("tau must be positive")
@@ -379,7 +369,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       }
       invisible(NULL)
     },
-
     nuisance_est = function(smpls, ...) {
       full_data = self$data$data
       n_obs = self$data$n_obs
@@ -403,7 +392,8 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
         test_data = full_data[test_ids, ]
 
         ml_results = private$ml_nuisance_est_superlearner(
-          train_data, test_data, global_time_grid)
+          train_data, test_data, global_time_grid
+        )
 
         S_a0_pred[test_ids, ] = ml_results$S_a0
         S_a1_pred[test_ids, ] = ml_results$S_a1
@@ -426,7 +416,6 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       private$compute_effect()
       invisible(NULL)
     },
-
     compute_effect = function() {
       n_obs = self$data$n_obs
       time_grid = self$get_time_grid()
@@ -497,9 +486,7 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
 
       invisible(NULL)
     },
-
     ml_nuisance_est_superlearner = function(train_data, test_data, time_grid) {
-
       # Estimate propensity scores P(A=1|X) using SuperLearner
       propensity_raw = fit_propensity_score(
         data = train_data,
@@ -510,8 +497,10 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       )
 
       # Apply winsorization to propensity scores
-      propensity = winsorize_values(propensity_raw, lower = 1e-3,
-        upper = 1 - 1e-3)
+      propensity = winsorize_values(propensity_raw,
+        lower = 1e-3,
+        upper = 1 - 1e-3
+      )
 
       # Estimate both survival S(t|X,A) and censoring G(t|X,A) functions using survSuperLearner
       # Single call returns both event.SL.predict and cens.SL.predict
@@ -528,16 +517,24 @@ DoubleMLSurvivalProb = R6Class("DoubleMLSurvivalProb",
       )
 
       # Apply winsorization to survival functions
-      s_a0 = winsorize_values(surv_results$S_a0, lower = 1e-3,
-        upper = 1 - 1e-3)
-      s_a1 = winsorize_values(surv_results$S_a1, lower = 1e-3,
-        upper = 1 - 1e-3)
+      s_a0 = winsorize_values(surv_results$S_a0,
+        lower = 1e-3,
+        upper = 1 - 1e-3
+      )
+      s_a1 = winsorize_values(surv_results$S_a1,
+        lower = 1e-3,
+        upper = 1 - 1e-3
+      )
 
       # Apply winsorization to censoring functions
-      g_a0 = winsorize_values(surv_results$G_a0, lower = 1e-3,
-        upper = 1 - 1e-3)
-      g_a1 = winsorize_values(surv_results$G_a1, lower = 1e-3,
-        upper = 1 - 1e-3)
+      g_a0 = winsorize_values(surv_results$G_a0,
+        lower = 1e-3,
+        upper = 1 - 1e-3
+      )
+      g_a1 = winsorize_values(surv_results$G_a1,
+        lower = 1e-3,
+        upper = 1 - 1e-3
+      )
 
       list(
         G_a0 = g_a0,

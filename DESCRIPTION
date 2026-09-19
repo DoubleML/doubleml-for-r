@@ -58,7 +58,6 @@ Suggests:
     rpart,
     bbotk,
     mlr3pipelines,
-    mgcv,
     simsurv,
     MASS,
     doParallel

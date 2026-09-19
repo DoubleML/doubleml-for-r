@@ -12,7 +12,7 @@
 #' This is an abstract base class that provides common infrastructure for:
 #' - Survival probability estimation (DoubleMLSurvivalProb)
 #' - Restricted mean survival time (DoubleMLRMST)
-#' - Competing risks analysis (DoubleMLCIF, DoubleMLRMTL)
+#' - Competing risks analysis (DoubleMLCIFJ, DoubleMLRMTLJ)
 #'
 #' All survival analysis models handle:
 #' - Right-censored time-to-event data
@@ -27,8 +27,8 @@
 #' # This is an abstract class - use specific implementations:
 #' # - DoubleMLSurvivalProb for survival probability
 #' # - DoubleMLRMST for restricted mean survival time
-#' # - DoubleMLCIF for cumulative incidence functions
-#' # - DoubleMLRMTL for restricted mean time lost
+#' # - DoubleMLCIFJ for cumulative incidence functions
+#' # - DoubleMLRMTLJ for restricted mean time lost
 #' }
 #' @export
 DoubleMLSurvival = R6Class("DoubleMLSurvival",
@@ -83,24 +83,26 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Whether to apply cross-fitting. Default is TRUE.
     initialize = function(data,
-      ml_g_surv,
-      ml_g_cens,
-      ml_m,
-      admin_cens,
-      time_col,
-      event_col,
-      freq_time = NULL,
-      ml_framework = "SuperLearner",
-      n_folds = 5,
-      n_rep = 1,
-      score = "ueif",
-      dml_procedure = "dml2",
-      draw_sample_splitting = TRUE,
-      apply_cross_fitting = TRUE) {
-
+                          ml_g_surv,
+                          ml_g_cens,
+                          ml_m,
+                          admin_cens,
+                          time_col,
+                          event_col,
+                          freq_time = NULL,
+                          ml_framework = "SuperLearner",
+                          n_folds = 5,
+                          n_rep = 1,
+                          score = "ueif",
+                          dml_procedure = "dml2",
+                          draw_sample_splitting = TRUE,
+                          apply_cross_fitting = TRUE) {
       # Prevent direct instantiation of abstract base class
       if (identical(class(self)[1], "DoubleMLSurvival")) {
-        stop("DoubleMLSurvival is an abstract base class. Use specific implementations like DoubleMLSurvivalProb or DoubleMLRMST.")
+        stop(paste(
+          "DoubleMLSurvival is an abstract base class.",
+          "Use specific implementations like DoubleMLSurvivalProb or DoubleMLRMST."
+        ))
       }
 
       # Store survival-specific parameters
@@ -177,7 +179,10 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
 
       # Check time values
       results$negative_times = sum(data[[private$time_col_]] <= 0, na.rm = TRUE)
-      results$times_exceed_admin_cens = sum(data[[private$time_col_]] > private$admin_cens_, na.rm = TRUE)
+      results$times_exceed_admin_cens = sum(
+        data[[private$time_col_]] > private$admin_cens_,
+        na.rm = TRUE
+      )
 
       # Check event values
       unique_events = unique(data[[private$event_col_]])
@@ -217,7 +222,10 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
         errors = c(errors, "Treatment values must be 0 or 1")
       }
       if (results$censoring_rate > 0.8) {
-        warnings = c(warnings, paste("High censoring rate:", round(results$censoring_rate * 100, 1), "%"))
+        warnings = c(
+          warnings,
+          paste("High censoring rate:", round(results$censoring_rate * 100, 1), "%")
+        )
       }
       if (min(results$n_treated, results$n_control) < 50) {
         warnings = c(warnings, "Small treatment group sizes may affect performance")
@@ -265,7 +273,6 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
       invisible(self)
     }
   ),
-
   active = list(
     #' @field admin_cens Administrative censoring time
     admin_cens = function() private$admin_cens_,
@@ -279,7 +286,6 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
     #' @field ml_framework Machine learning framework
     ml_framework = function() private$ml_framework_
   ),
-
   private = list(
     admin_cens_ = NULL,
     freq_time_ = NULL,
@@ -289,7 +295,6 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
     ml_g_surv_ = NULL,
     ml_g_cens_ = NULL,
     ml_m_ = NULL,
-
     check_data = function(obj_dml_data) {
       # Check that required columns exist in the data
       if (!private$time_col_ %in% names(obj_dml_data$data)) {
@@ -304,7 +309,6 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
 
       return(invisible(NULL))
     },
-
     check_score = function(score) {
       valid_scores = "ueif"
       if (!score %in% valid_scores) {
@@ -315,7 +319,6 @@ DoubleMLSurvival = R6Class("DoubleMLSurvival",
 
     # Common nuisance estimation method for all survival classes
     ml_nuisance_est_superlearner = function(train_data, test_data, time_grid) {
-
       # Fit both survival and censoring functions using survSuperLearner
       # Single call returns both event.SL.predict and cens.SL.predict
       surv_results = fit_survival_functions(

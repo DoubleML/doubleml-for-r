@@ -25,59 +25,58 @@ this class and implement their own score functions.
 \link{DoubleML}, \link{DoubleMLSurvival}
 }
 \section{Super class}{
-\code{\link[DoubleML:DoubleML]{DoubleML::DoubleML}} -> \code{DoubleMLCompeting}
+\code{\link[DoubleML:DoubleML]{DoubleML}} -> \code{DoubleMLCompeting}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{admin_cens}}{Administrative censoring time.}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{admin_cens}}{Administrative censoring time.}
 
-\item{\code{time_col}}{Name of time column.}
+    \item{\code{time_col}}{Name of time column.}
 
-\item{\code{event_col}}{Name of event column.}
+    \item{\code{event_col}}{Name of event column.}
 
-\item{\code{cause}}{Cause of interest.}
+    \item{\code{cause}}{Cause of interest.}
 
-\item{\code{ml_framework}}{Machine learning framework.}
-}
-\if{html}{\out{</div>}}
+    \item{\code{ml_framework}}{Machine learning framework.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-DoubleMLCompeting-new}{\code{DoubleMLCompeting$new()}}
-\item \href{#method-DoubleMLCompeting-get_time_grid}{\code{DoubleMLCompeting$get_time_grid()}}
-\item \href{#method-DoubleMLCompeting-validate_data}{\code{DoubleMLCompeting$validate_data()}}
-\item \href{#method-DoubleMLCompeting-fit}{\code{DoubleMLCompeting$fit()}}
-\item \href{#method-DoubleMLCompeting-clone}{\code{DoubleMLCompeting$clone()}}
+  \itemize{
+    \item \href{#method-DoubleMLCompeting-initialize}{\code{DoubleMLCompeting$new()}}
+    \item \href{#method-DoubleMLCompeting-get_time_grid}{\code{DoubleMLCompeting$get_time_grid()}}
+    \item \href{#method-DoubleMLCompeting-validate_data}{\code{DoubleMLCompeting$validate_data()}}
+    \item \href{#method-DoubleMLCompeting-fit}{\code{DoubleMLCompeting$fit()}}
+    \item \href{#method-DoubleMLCompeting-clone}{\code{DoubleMLCompeting$clone()}}
+  }
 }
-}
-\if{html}{\out{
-<details><summary>Inherited methods</summary>
+\if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML::DoubleML$bootstrap()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML::DoubleML$confint()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML::DoubleML$get_params()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML::DoubleML$learner_names()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML::DoubleML$p_adjust()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML::DoubleML$params_names()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML::DoubleML$print()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_ml_nuisance_params'><code>DoubleML::DoubleML$set_ml_nuisance_params()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML::DoubleML$set_sample_splitting()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML::DoubleML$split_samples()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML::DoubleML$summary()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-tune'><code>DoubleML::DoubleML$tune()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="bootstrap"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-bootstrap'><code>DoubleML$bootstrap()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="confint"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-confint'><code>DoubleML$confint()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="get_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-get_params'><code>DoubleML$get_params()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="learner_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-learner_names'><code>DoubleML$learner_names()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="p_adjust"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-p_adjust'><code>DoubleML$p_adjust()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="params_names"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-params_names'><code>DoubleML$params_names()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="print"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-print'><code>DoubleML$print()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_ml_nuisance_params"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_ml_nuisance_params'><code>DoubleML$set_ml_nuisance_params()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="set_sample_splitting"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-set_sample_splitting'><code>DoubleML$set_sample_splitting()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="split_samples"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-split_samples'><code>DoubleML$split_samples()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="summary"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-summary'><code>DoubleML$summary()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="DoubleML" data-topic="DoubleML" data-id="tune"><a href='../../DoubleML/html/DoubleML.html#method-DoubleML-tune'><code>DoubleML$tune()</code></a></span></li>
 </ul>
-</details>
-}}
+</details>}}
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DoubleMLCompeting-new"></a>}}
-\if{latex}{\out{\hypertarget{method-DoubleMLCompeting-new}{}}}
-\subsection{Method \code{new()}}{
-Creates a new instance of this R6 class.
+\if{html}{\out{<a id="method-DoubleMLCompeting-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLCompeting-initialize}{}}}
+\subsection{\code{DoubleMLCompeting$new()}}{
+  Creates a new instance of this R6 class.
 Note: This is an abstract class - use specific implementations.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLCompeting$new(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLCompeting$new(
   data,
   ml_g_surv,
   ml_g_surv_j,
@@ -96,141 +95,133 @@ Note: This is an abstract class - use specific implementations.
   dml_procedure = "dml2",
   draw_sample_splitting = TRUE,
   apply_cross_fitting = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{(\code{DoubleMLData}) \cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{(\code{DoubleMLData}) \cr
 The \code{DoubleMLData} object providing the competing risks data.}
-
-\item{\code{ml_g_surv}}{(character vector) \cr
+      \item{\code{ml_g_surv}}{(character vector) \cr
 survSuperLearner library for overall event survival functions S(t|X,A).}
-
-\item{\code{ml_g_surv_j}}{(character vector) \cr
+      \item{\code{ml_g_surv_j}}{(character vector) \cr
 survSuperLearner library for cause-specific survival Sj(t|X,A).}
-
-\item{\code{ml_g_surv_jbar}}{(character vector) \cr
+      \item{\code{ml_g_surv_jbar}}{(character vector) \cr
 survSuperLearner library for complementary cause survival Sjbar(t|X,A).}
-
-\item{\code{ml_g_cens}}{(character vector) \cr
+      \item{\code{ml_g_cens}}{(character vector) \cr
 survSuperLearner library for censoring survival functions G(t|X,A).}
-
-\item{\code{ml_m}}{(character vector) \cr
+      \item{\code{ml_m}}{(character vector) \cr
 SuperLearner library for treatment propensity P(A=1|X).}
-
-\item{\code{admin_cens}}{(\code{numeric(1)}) \cr
+      \item{\code{admin_cens}}{(\code{numeric(1)}) \cr
 Administrative censoring time (restriction time for analysis).}
-
-\item{\code{time_col}}{(\code{character(1)}) \cr
+      \item{\code{time_col}}{(\code{character(1)}) \cr
 Name of the time column in the data.}
-
-\item{\code{event_col}}{(\code{character(1)}) \cr
+      \item{\code{event_col}}{(\code{character(1)}) \cr
 Name of the event column in the data (0=censored, 1=cause 1, 2=cause 2, ...).}
-
-\item{\code{cause}}{(\code{integer(1)}) \cr
+      \item{\code{cause}}{(\code{integer(1)}) \cr
 The cause of interest. Only \code{1} is currently supported: recode the event
 column so that the cause of interest is coded as \code{1}. Default is \code{1}.}
-
-\item{\code{freq_time}}{(\code{numeric(1)}, optional) \cr
+      \item{\code{freq_time}}{(\code{numeric(1)}, optional) \cr
 Time grid frequency. If NULL, uses unique event times.}
-
-\item{\code{ml_framework}}{(\code{character(1)}) \cr
+      \item{\code{ml_framework}}{(\code{character(1)}) \cr
 Machine learning framework to use. Only "SuperLearner" is supported.}
-
-\item{\code{n_folds}}{(\code{integer(1)}) \cr
+      \item{\code{n_folds}}{(\code{integer(1)}) \cr
 Number of folds for cross-fitting. Default is 5.}
-
-\item{\code{n_rep}}{(\code{integer(1)}) \cr
+      \item{\code{n_rep}}{(\code{integer(1)}) \cr
 Number of repetitions for sample splitting. Default is 1.}
-
-\item{\code{score}}{(\code{character(1)}) \cr
+      \item{\code{score}}{(\code{character(1)}) \cr
 Score function specification. Default is "ueif".}
-
-\item{\code{dml_procedure}}{(\code{character(1)}) \cr
+      \item{\code{dml_procedure}}{(\code{character(1)}) \cr
 DML procedure. Default is "dml2".}
-
-\item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
+      \item{\code{draw_sample_splitting}}{(\code{logical(1)}) \cr
 Whether to draw sample splitting. Default is TRUE.}
-
-\item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
+      \item{\code{apply_cross_fitting}}{(\code{logical(1)}) \cr
 Whether to apply cross-fitting. Default is TRUE.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLCompeting-get_time_grid"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLCompeting-get_time_grid}{}}}
-\subsection{Method \code{get_time_grid()}}{
-Get time grid for competing risks analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLCompeting$get_time_grid(data_subset = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLCompeting$get_time_grid()}}{
+  Get time grid for competing risks analysis.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLCompeting$get_time_grid(data_subset = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data_subset}}{Optional data subset to use for time points.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    Numeric vector of time points.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data_subset}}{Optional data subset to use for time points.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Numeric vector of time points.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLCompeting-validate_data"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLCompeting-validate_data}{}}}
-\subsection{Method \code{validate_data()}}{
-Validates competing risks data structure.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLCompeting$validate_data(print_messages = TRUE)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLCompeting$validate_data()}}{
+  Validates competing risks data structure.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLCompeting$validate_data(print_messages = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{print_messages}}{(\code{logical(1)}) \cr
+Whether to print validation messages. Default is TRUE.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    List with validation results.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{print_messages}}{(\code{logical(1)}) \cr
-Whether to print validation messages. Default is TRUE.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-List with validation results.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLCompeting-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLCompeting-fit}{}}}
-\subsection{Method \code{fit()}}{
-Fit the competing risks model. Overrides base class fit() to bypass
+\subsection{\code{DoubleMLCompeting$fit()}}{
+  Fit the competing risks model. Overrides base class fit() to bypass
 psi_a/psi_b score decomposition, which does not apply to competing risks.
 Estimation goes directly: UEIF -> extract_average -> coef/SE.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLCompeting$fit()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLCompeting$fit()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    self
+  }
 }
 
-\subsection{Returns}{
-self
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLCompeting-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLCompeting-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLCompeting$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{DoubleMLCompeting$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{DoubleMLCompeting$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

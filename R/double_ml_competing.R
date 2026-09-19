@@ -81,27 +81,29 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Whether to apply cross-fitting. Default is TRUE.
     initialize = function(data,
-      ml_g_surv,
-      ml_g_surv_j,
-      ml_g_surv_jbar,
-      ml_g_cens,
-      ml_m,
-      admin_cens,
-      time_col,
-      event_col,
-      cause = 1,
-      freq_time = NULL,
-      ml_framework = "SuperLearner",
-      n_folds = 5,
-      n_rep = 1,
-      score = "ueif",
-      dml_procedure = "dml2",
-      draw_sample_splitting = TRUE,
-      apply_cross_fitting = TRUE) {
-
+                          ml_g_surv,
+                          ml_g_surv_j,
+                          ml_g_surv_jbar,
+                          ml_g_cens,
+                          ml_m,
+                          admin_cens,
+                          time_col,
+                          event_col,
+                          cause = 1,
+                          freq_time = NULL,
+                          ml_framework = "SuperLearner",
+                          n_folds = 5,
+                          n_rep = 1,
+                          score = "ueif",
+                          dml_procedure = "dml2",
+                          draw_sample_splitting = TRUE,
+                          apply_cross_fitting = TRUE) {
       # Prevent direct instantiation of abstract base class
       if (identical(class(self)[1], "DoubleMLCompeting")) {
-        stop("DoubleMLCompeting is an abstract base class. Use specific implementations like DoubleMLCIFJ or DoubleMLRMTLJ.")
+        stop(paste(
+          "DoubleMLCompeting is an abstract base class.",
+          "Use specific implementations like DoubleMLCIFJ or DoubleMLRMTLJ."
+        ))
       }
 
       # Store competing risks-specific parameters
@@ -111,7 +113,8 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
       if (!identical(as.numeric(cause), 1)) {
         stop(paste(
           "Only cause = 1 is currently supported.",
-          "Recode the event column so that the cause of interest is 1."))
+          "Recode the event column so that the cause of interest is 1."
+        ))
       }
       private$cause_ = cause
       private$freq_time_ = freq_time
@@ -197,7 +200,6 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
       invisible(self)
     }
   ),
-
   active = list(
     #' @field admin_cens Administrative censoring time.
     admin_cens = function() {
@@ -220,7 +222,6 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
       private$ml_framework_
     }
   ),
-
   private = list(
     admin_cens_ = NULL,
     freq_time_ = NULL,
@@ -280,7 +281,10 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
         stop("Event column is empty")
       }
       if (!all(unique_events >= 0 & unique_events == floor(unique_events))) {
-        stop("Event column must contain non-negative integer values (0=censored, 1=cause 1, 2=cause 2, etc.)")
+        stop(paste(
+          "Event column must contain non-negative integer values",
+          "(0=censored, 1=cause 1, 2=cause 2, etc.)"
+        ))
       }
 
       # Check treatment values (must be 0 or 1)
@@ -370,7 +374,9 @@ DoubleMLCompeting = R6Class("DoubleMLCompeting",
 
       # Fit complementary cause survival functions Sjbar(t|X,A)
       train_data_jbar = data.table::copy(train_data)
-      train_data_jbar[[event_col]] = ifelse(train_data[[event_col]] != 0 & train_data[[event_col]] != private$cause_, 1, 0)
+      train_data_jbar[[event_col]] = ifelse(
+        train_data[[event_col]] != 0 & train_data[[event_col]] != private$cause_, 1, 0
+      )
 
       surv_jbar_result = fit_survival_functions(
         data = train_data_jbar,

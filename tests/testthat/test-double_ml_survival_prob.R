@@ -10,6 +10,7 @@ test_that("DoubleMLSurvivalProb with n_folds=2 works", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("simsurv")
   skip_if_not_installed("fdrtool")
+  skip_if_not_installed("glmnet") # hard requirement of survSuperLearner
 
   cl = makeCluster(2)
   registerDoParallel(cl)
@@ -114,6 +115,7 @@ test_that("DoubleMLSurvivalProb with multiple tau values works", {
   skip_if_not_installed("MASS")
   skip_if_not_installed("simsurv")
   skip_if_not_installed("fdrtool")
+  skip_if_not_installed("glmnet") # hard requirement of survSuperLearner
 
   cl = makeCluster(2)
   registerDoParallel(cl)

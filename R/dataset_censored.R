@@ -9,7 +9,8 @@
 #' The data generating process is defined as:
 #'
 #' Treatment assignment:
-#' \deqn{ps_i = \frac{1}{1 + \exp(-(-1 + x_{i1} + 1.5x_{i2} + 1.5x_{i3} - x_{i4} - 1.5x_{i5} - x_{i6}))}}
+#' \deqn{ps_i = \frac{1}{1 + \exp(-(0.3 + 0.2 x_{i1} + 0.3 x_{i2} + 0.3 x_{i3}
+#'   - 0.2 x_{i4} - 0.3 x_{i5} - 0.2 x_{i6}))}}
 #' \deqn{a_i \sim \textstyle{Bernoulli}(ps_i)}
 #'
 #' Event times under treatment and control:
@@ -35,7 +36,8 @@
 #' \deqn{Y_i = \min(T^{a_i}_i, C_i, \tau_{admin})}
 #' \deqn{\delta_i = 1\{T^{a_i}_i \leq C_i\}}
 #'
-#' Time discretization is applied: \eqn{Y_i = \lceil Y_i / \text{time.grid} \rceil \times \text{time.grid}}.
+#' Time discretization is applied:
+#' \eqn{Y_i = \lceil Y_i / \text{time.grid} \rceil \times \text{time.grid}}.
 #'
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate. Default is 2000.
@@ -60,9 +62,10 @@
 #' * x4, x5, x6: binary covariates
 #'
 #' @export
-make_survival_data = function(n_obs = 2000, admin_cens = 10, time_grid = 0.01,
-  return_type = "DoubleMLData") {
-
+make_survival_data = function(
+  n_obs = 2000, admin_cens = 10, time_grid = 0.01,
+  return_type = "DoubleMLData"
+) {
   assert_choice(
     return_type,
     c("data.table", "data.frame", "DoubleMLData")
@@ -188,7 +191,8 @@ make_survival_data = function(n_obs = 2000, admin_cens = 10, time_grid = 0.01,
 #' The data generating process is defined as:
 #'
 #' Treatment assignment:
-#' \deqn{ps_i = \frac{1}{1 + \exp(-(-1 + x_{i1} + 1.5x_{i2} + 1.5x_{i3} - x_{i4} - 1.5x_{i5} - x_{i6}))}}
+#' \deqn{ps_i = \frac{1}{1 + \exp(-(0.3 + 0.2 x_{i1} + 0.3 x_{i2} + 0.3 x_{i3}
+#'   - 0.2 x_{i4} - 0.3 x_{i5} - 0.2 x_{i6}))}}
 #' \deqn{a_i \sim \textstyle{Bernoulli}(ps_i)}
 #'
 #' Cause 1 event times under treatment and control:
@@ -225,7 +229,8 @@ make_survival_data = function(n_obs = 2000, admin_cens = 10, time_grid = 0.01,
 #'   2 & \text{if } T_2^{a_i}_i < \min(T_1^{a_i}_i, C_i) \text{ (cause 2)}
 #' \end{cases}}
 #'
-#' Time discretization is applied: \eqn{Y_i = \lceil Y_i / \text{time.grid} \rceil \times \text{time.grid}}.
+#' Time discretization is applied:
+#' \eqn{Y_i = \lceil Y_i / \text{time.grid} \rceil \times \text{time.grid}}.
 #'
 #' @param n_obs (`integer(1)`) \cr
 #' The number of observations to simulate. Default is 2000.
@@ -250,9 +255,10 @@ make_survival_data = function(n_obs = 2000, admin_cens = 10, time_grid = 0.01,
 #' * x4, x5, x6: binary covariates
 #'
 #' @export
-make_competing_data = function(n_obs = 2000, admin_cens = 10, time_grid = 0.01,
-  return_type = "DoubleMLData") {
-
+make_competing_data = function(
+  n_obs = 2000, admin_cens = 10, time_grid = 0.01,
+  return_type = "DoubleMLData"
+) {
   assert_choice(
     return_type,
     c("data.table", "data.frame", "DoubleMLData")
