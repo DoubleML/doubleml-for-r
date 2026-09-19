@@ -24,7 +24,7 @@ BugReports: https://github.com/DoubleML/doubleml-for-r/issues
 Encoding: UTF-8
 Depends: 
     R (>= 3.5.0)
-Imports: 
+Imports:
     R6 (>= 2.4.1),
     data.table (>= 1.12.8),
     stats,
@@ -36,9 +36,13 @@ Imports:
     clusterGeneration,
     readstata13,
     mlr3learners (>= 0.3.0),
-    mlr3misc
+    mlr3misc,
+    SuperLearner,
+    survSuperLearner,
+    fdrtool,
+    foreach
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-Suggests: 
+Suggests:
     knitr,
     rmarkdown,
     testthat,
@@ -53,8 +57,13 @@ Suggests:
     AER,
     rpart,
     bbotk,
-    mlr3pipelines
+    mlr3pipelines,
+    simsurv,
+    MASS,
+    doParallel
 VignetteBuilder: knitr
+Remotes:
+    tedwestling/survSuperLearner
 Collate:
     'double_ml.R'
     'double_ml_data.R'
@@ -65,5 +74,15 @@ Collate:
     'double_ml_plr.R'
     'helper.R'
     'datasets.R'
+    'dataset_censored.R'
+    'survival_nuisance.R'
+    'inference_point.R'
+    'inference_curve.R'
+    'double_ml_survival.R'
+    'double_ml_survival_prob.R'
+    'double_ml_rmst.R'
+    'double_ml_competing.R'
+    'double_ml_cifj.R'
+    'double_ml_rmtlj.R'
     'zzz.R'
 Config/roxygen2/version: 8.0.0
