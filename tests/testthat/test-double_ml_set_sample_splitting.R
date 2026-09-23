@@ -364,3 +364,81 @@ test_that("Unit tests for the method set_sample_splitting of class DoubleML (inv
     regexp = msg
   )
 })
+
+
+test_that("Unset sample splitting fails before fitting or fold-specific tuning", {
+  set.seed(117)
+  data = make_plr_CCDDHNR2018(n_obs = 80, dim_x = 5)
+  model = DoubleMLPLR$new(data, lrn("regr.rpart"), lrn("regr.rpart"),
+    n_folds = 2, draw_sample_splitting = FALSE
+  )
+  msg = paste(
+    "Sample splitting not specified. Either draw samples via",
+    "split_samples() or set external samples via set_sample_splitting()."
+  )
+  expect_null(model$smpls)
+  expect_error(model$fit(store_predictions = TRUE, store_models = TRUE), msg, fixed = TRUE)
+  expect_null(model$predictions)
+  expect_null(model$models)
+  expect_null(model$smpls)
+
+  param_set = list(
+    ml_l = paradox::ps(cp = paradox::p_dbl(lower = 0.01, upper = 0.02)),
+    ml_m = paradox::ps(cp = paradox::p_dbl(lower = 0.01, upper = 0.02))
+  )
+  tune_settings = list(
+    n_folds_tune = 2, rsmp_tune = rsmp("cv", folds = 2),
+    terminator = mlr3tuning::trm("evals", n_evals = 1),
+    algorithm = mlr3tuning::tnr("grid_search"), resolution = 1
+  )
+  params_before = model$params
+  tuning_before = model$tuning_res
+  expect_error(model$tune(param_set, tune_settings, tune_on_folds = TRUE), msg, fixed = TRUE)
+  expect_identical(model$params, params_before)
+  expect_identical(model$tuning_res, tuning_before)
+  expect_false(model$.__enclos_env__$private$fold_specific_params)
+
+  # Global tuning does not require a partition, including the PLIV partialZ path.
+  expect_error(model$tune(param_set, tune_settings, tune_on_folds = FALSE), NA)
+  expect_null(model$smpls)
+  pliv_data = make_pliv_CHS2015(n_obs = 80, dim_x = 5, dim_z = 2)
+  pliv = DoubleMLPLIV$new(pliv_data,
+    ml_r = lrn("regr.rpart"),
+    partialX = FALSE, partialZ = TRUE, n_folds = 2, draw_sample_splitting = FALSE
+  )
+  expect_error(pliv$tune(list(ml_r = param_set$ml_l), tune_settings, tune_on_folds = FALSE), NA)
+  expect_null(pliv$smpls)
+
+  irm = DoubleMLIRM$new(make_irm_data(n_obs = 80, dim_x = 5),
+    ml_g = lrn("regr.rpart"), ml_m = lrn("classif.rpart"),
+    n_folds = 2, draw_sample_splitting = FALSE
+  )
+  expect_error(irm$fit(), msg, fixed = TRUE)
+})
+
+test_that("Drawing or setting sample splitting recovers unchanged fitting results", {
+  set.seed(118)
+  data = make_plr_CCDDHNR2018(n_obs = 80, dim_x = 5)
+  new_model = function(draw) {
+    DoubleMLPLR$new(data, lrn("regr.rpart"), lrn("regr.rpart"),
+      n_folds = 2, draw_sample_splitting = draw
+    )
+  }
+  drawn = new_model(FALSE)
+  expect_error(drawn$fit(), "Sample splitting not specified", fixed = TRUE)
+  drawn$split_samples()
+  expect_error(drawn$fit(), NA)
+
+  supplied = new_model(FALSE)
+  expect_error(supplied$fit(), "Sample splitting not specified", fixed = TRUE)
+  supplied$set_sample_splitting(drawn$smpls)
+  expect_error(supplied$fit(), NA)
+
+  reference = new_model(TRUE)
+  reference$set_sample_splitting(drawn$smpls)
+  reference$fit()
+  expect_equal(drawn$coef, reference$coef, tolerance = 1e-12)
+  expect_equal(supplied$coef, reference$coef, tolerance = 1e-12)
+  expect_equal(drawn$se, reference$se, tolerance = 1e-12)
+  expect_equal(supplied$se, reference$se, tolerance = 1e-12)
+})

@@ -388,6 +388,8 @@ DoubleML = R6Class("DoubleML",
     #'
     #' @return self
     fit = function(store_predictions = FALSE, store_models = FALSE) {
+      private$assert_smpls_set()
+
       if (store_predictions) {
         private$initialize_predictions()
       }
@@ -853,6 +855,7 @@ DoubleML = R6Class("DoubleML",
       }
 
       if (tune_on_folds) {
+        private$assert_smpls_set()
         params_rep = vector("list", self$n_rep)
         private$tuning_res_ = rep(list(params_rep), self$data$n_treat)
         names(private$tuning_res_) = self$data$d_cols
@@ -1549,7 +1552,18 @@ DoubleML = R6Class("DoubleML",
     # The slicing is based on the two properties self._i_treat,
     # the index of the treatment variable, and
     # self._i_rep, the index of the cross-fitting sample.
-    get__smpls = function() self$smpls[[private$i_rep]],
+    assert_smpls_set = function() {
+      if (is.null(self$smpls)) {
+        stop(paste(
+          "Sample splitting not specified. Either draw samples via",
+          "split_samples() or set external samples via set_sample_splitting()."
+        ))
+      }
+    },
+    get__smpls = function() {
+      private$assert_smpls_set()
+      self$smpls[[private$i_rep]]
+    },
     get__smpls_cluster = function() self$smpls_cluster[[private$i_rep]],
     get__psi_a = function() self$psi_a[, private$i_rep, private$i_treat],
     get__psi_b = function() self$psi_b[, private$i_rep, private$i_treat],
