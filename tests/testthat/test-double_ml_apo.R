@@ -104,16 +104,13 @@ test_that("APO validates its data, labels, score and learner roles", {
   expect_error(DoubleMLAPO$new(data_multi, "regr.rpart", "classif.rpart", 1), "one treatment")
 })
 
-test_that("APO refits with learners after supplied predictions and defers normalization", {
+test_that("APO refits with learners after supplied predictions", {
   fixture = apo_fixed_fixture()
   fixture$obj$fit(external_predictions = fixture$predictions)
   fixture$obj$fit(store_predictions = TRUE)
   expect_true(all(is.finite(fixture$obj$predictions$ml_m)))
   expect_true(any(as.vector(fixture$obj$predictions$ml_m) !=
     as.vector(fixture$predictions$ml_m)))
-  obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
-    n_folds = 2, normalize_ipw = TRUE)
-  expect_error(obj$fit(external_predictions = fixture$predictions), "normalize_ipw.*not yet")
 })
 
 test_that("APO rejects clustered data", {
@@ -144,8 +141,119 @@ test_that("APO rejects zero untrimmed propensities before changing fitted result
 test_that("APO positive truncation accepts raw zero propensities", {
   fixture = apo_fixed_fixture()
   fixture$predictions$ml_m[1:2, 1] = 0
-  fixture$obj$fit(store_predictions = TRUE, external_predictions = fixture$predictions)
+  expect_warning(fixture$obj$fit(store_predictions = TRUE,
+    external_predictions = fixture$predictions), "treatment a")
   expect_equal(as.vector(fixture$obj$psi_b), c(201, 2, 3, 16, 5, 12))
   expect_true(all(is.finite(c(fixture$obj$coef, fixture$obj$se))))
   expect_equal(as.vector(fixture$obj$predictions$ml_m), c(0, 0, .5, .25, .5, .5))
+})
+
+# These literal weights catch normalization by selected rows or by individual folds.
+test_that("APO truncates exactly and normalizes weights over the scoring sample", {
+  fixture = apo_fixed_fixture(n_rep = 2)
+  fixture$predictions$ml_m[, 1] = c(0, .001, .5, .999, 1, .2)
+  fixture$predictions$ml_m[, 2] = .5
+  for (normalized in c(FALSE, TRUE)) {
+    obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+      n_folds = 2, n_rep = 2, trimming_threshold = .01, normalize_ipw = normalized,
+      draw_sample_splitting = FALSE)
+    obj$set_sample_splitting(fixture$obj$smpls)
+    expect_warning(obj$fit(store_predictions = TRUE,
+      external_predictions = fixture$predictions), "treatment a.*repetition 1")
+    weights = c(100, 0, 0, 1 / .99, 0, 5)
+    if (normalized) weights = weights / ((100 + 1 / .99 + 5) / 6)
+    expect_equal(as.vector(obj$psi_b[, 1, 1]), c(1, 2, 3, 4, 5, 6) +
+      weights * c(2, 6, 2, 3, -3, 3))
+    expect_equal(as.vector(obj$psi_b[, 2, 1]), c(5, 2, 3, 10, 5, 12))
+    expect_equal(as.vector(obj$predictions$ml_m[, 1, 1]), c(0, .001, .5, .999, 1, .2))
+    expect_length(obj$propensity_diagnostics, 2)
+    diagnostic = obj$propensity_diagnostics[[1]]
+    expect_identical(diagnostic$treatment_level, "a")
+    expect_equal(diagnostic$raw_min, 0)
+    expect_equal(unname(diagnostic$raw_quantiles), c(0, .05075, .35, .87425, 1))
+    expect_equal(diagnostic$fraction_trimmed, 4 / 6)
+    expect_equal(diagnostic$raw_propensity, c(0, .001, .5, .999, 1, .2))
+    expect_equal(diagnostic$effective_propensity, c(.01, .01, .5, .99, .99, .2))
+    expect_equal(diagnostic$effective_weight, weights)
+    expect_equal(diagnostic$fold_class_counts, data.frame(fold = 1:2,
+      train_selected = c(2L, 1L), train_complement = c(1L, 2L),
+      test_selected = c(1L, 2L), test_complement = c(2L, 1L)))
+    expect_equal(obj$propensity_diagnostics[[2]]$fraction_trimmed, 0)
+    obj$fit(external_predictions = list(ml_g = fixture$predictions$ml_g,
+      ml_m = matrix(.5, 6, 2)))
+    expect_equal(obj$propensity_diagnostics[[1]]$raw_min, .5)
+  }
+})
+
+# Exactly 5% is silent; 10% warns, including trimming outside the selected rows.
+test_that("APO trimming warns only when more than five percent change", {
+  fixture = make_apo_data(n_obs = 20L, treatment_levels = c("a", "b"))
+  obj = DoubleMLAPO$new(fixture$dml_data, "regr.rpart", "classif.rpart", "a",
+    n_folds = 2, draw_sample_splitting = FALSE)
+  obj$set_sample_splitting(fixture$smpls)
+  predictions = list(ml_g = matrix(0, 20, 1), ml_m = matrix(.5, 20, 1))
+  predictions$ml_m[2, 1] = 0
+  expect_no_warning(obj$fit(external_predictions = predictions))
+  expect_equal(obj$propensity_diagnostics[[1]]$fraction_trimmed, .05)
+  predictions$ml_m[4, 1] = 1
+  expect_warning(obj$fit(external_predictions = predictions), "treatment a")
+  expect_equal(obj$propensity_diagnostics[[1]]$fraction_trimmed, .1)
+  predictions$ml_m[, 1] = rep(c(.01, .99), 10)
+  expect_no_warning(obj$fit(external_predictions = predictions))
+  expect_equal(obj$propensity_diagnostics[[1]]$fraction_trimmed, 0)
+})
+
+test_that("APO validates truncation settings and permits zero without truncating", {
+  fixture = apo_fixed_fixture()
+  for (threshold in c(-.01, .5, Inf, NA_real_)) {
+    expect_error(DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+      trimming_threshold = threshold), "trimming_threshold")
+  }
+  expect_error(DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+    trimming_rule = "discard"), "truncate")
+  obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+    n_folds = 2, trimming_threshold = 0, normalize_ipw = TRUE,
+    draw_sample_splitting = FALSE)
+  obj$set_sample_splitting(fixture$obj$smpls)
+  obj$fit(external_predictions = fixture$predictions)
+  expect_equal(obj$propensity_diagnostics[[1]]$effective_propensity,
+    fixture$predictions$ml_m[, 1])
+  expect_equal(obj$propensity_diagnostics[[1]]$effective_weight, c(1.5, 0, 0, 3, 0, 1.5))
+})
+
+test_that("APO normalization uses only held-out observations without cross-fitting", {
+  fixture = make_apo_data(n_obs = 24L)
+  obj = DoubleMLAPO$new(fixture$dml_data, ApoLeakageRegr$new(), ApoLeakageClassif$new(),
+    "filter", n_folds = 2, dml_procedure = "dml1", normalize_ipw = TRUE,
+    apply_cross_fitting = FALSE, draw_sample_splitting = FALSE)
+  obj$set_sample_splitting(list(list(train_ids = list(1:12), test_ids = list(13:24))))
+  obj$fit(store_predictions = TRUE)
+  diagnostic = obj$propensity_diagnostics[[1]]
+  expect_true(all(is.na(diagnostic$effective_weight[1:12])))
+  expect_equal(mean(diagnostic$effective_weight[13:24]), 1)
+  expect_equal(diagnostic$fraction_trimmed, 0)
+  expect_equal(diagnostic$raw_min, .213)
+})
+
+test_that("APO external holdout normalization excludes predictions outside the score", {
+  fixture = apo_fixed_fixture()
+  obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+    n_folds = 2, dml_procedure = "dml1", normalize_ipw = TRUE,
+    apply_cross_fitting = FALSE, draw_sample_splitting = FALSE)
+  obj$set_sample_splitting(list(list(train_ids = list(1:3), test_ids = list(4:6))))
+  obj$fit(store_predictions = TRUE, external_predictions = fixture$predictions)
+  expect_equal(as.vector(obj$psi_b[4:6, 1, 1]), c(10, 5, 9))
+  expect_equal(unname(obj$coef), 8)
+  expect_equal(obj$propensity_diagnostics[[1]]$effective_weight, c(1, 0, 0, 2, 0, 1))
+  expect_equal(as.vector(obj$predictions$ml_m), c(.5, .25, .5, .25, .5, .5))
+})
+
+test_that("APO normalization rejects an evaluation sample with no selected observations", {
+  fixture = apo_fixed_fixture()
+  obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+    n_folds = 2, dml_procedure = "dml1", normalize_ipw = TRUE,
+    apply_cross_fitting = FALSE, draw_sample_splitting = FALSE)
+  obj$set_sample_splitting(list(list(train_ids = list(c(1, 4, 6)), test_ids = list(c(2, 3, 5)))))
+  expect_error(obj$fit(external_predictions = fixture$predictions),
+    "normalization.*positive finite mean.*treatment a.*repetition 1")
 })

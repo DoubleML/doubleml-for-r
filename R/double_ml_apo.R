@@ -14,7 +14,9 @@
 #' Nuisance learners are cross-fitted: the outcome model uses only training
 #' rows at the requested level, and the propensity model uses all treatment
 #' levels in a one-vs-rest task. Fixed nuisance predictions are also supported.
-#' Normalized weights and propensity diagnostics are introduced separately.
+#' Optional normalized weights divide inverse propensity weights by their mean
+#' over the scoring sample, separately for each repetition. Diagnostics retain
+#' raw and truncated propensities, scoring weights and fold class counts.
 #' @usage NULL
 #' @export
 DoubleMLAPO = R6Class("DoubleMLAPO",
@@ -39,14 +41,15 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       stop("can't set field trimming_threshold")
     },
     #' @field normalize_ipw (`logical(1)`) \cr
-    #' Whether inverse propensity weights should be normalized. Normalization
-    #' is not yet available.
+    #' Whether inverse propensity weights should be normalized to mean one.
     normalize_ipw = function(value) {
       if (missing(value)) return(private$normalize_ipw_)
       stop("can't set field normalize_ipw")
     },
     #' @field propensity_diagnostics (`list()`, `NULL`) \cr
-    #' Treatment-specific propensity diagnostics, currently `NULL`.
+    #' One treatment-specific entry per fitted repetition, containing raw minimum
+    #' and quartiles, fraction trimmed, raw/effective propensities, effective
+    #' weights and selected/complement class counts for each train/test fold.
     propensity_diagnostics = function(value) {
       if (missing(value)) return(private$propensity_diagnostics_)
       stop("can't set field propensity_diagnostics")
@@ -77,8 +80,7 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' @param trimming_threshold (`numeric(1)`) \cr
     #' Truncation threshold in `[0, 0.5)`. Default is `0.01`.
     #' @param normalize_ipw (`logical(1)`) \cr
-    #' Whether to normalize inverse propensity weights. Default is `FALSE`;
-    #' fitting with `TRUE` is not yet implemented.
+    #' Whether to normalize inverse propensity weights. Default is `FALSE`.
     #' @param draw_sample_splitting (`logical(1)`) \cr
     #' Whether to draw sample splits at initialization. Default is `TRUE`.
     #' @param apply_cross_fitting (`logical(1)`) \cr
@@ -138,7 +140,6 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
           "on every observation; supply positive probabilities or increase",
           "trimming_threshold above zero."))
       }
-      if (self$normalize_ipw) stop("normalize_ipw = TRUE is not yet implemented.")
       if (is.null(predictions)) {
         indicator = make_apo_indicator(self$data$data[[self$data$d_cols]], self$treatment_level)
         validate_apo_sample_splitting(self$smpls, indicator, self$treatment_level)
@@ -147,6 +148,7 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       on.exit({
         private$external_predictions_ = NULL
       }, add = TRUE)
+      private$propensity_diagnostics_ = vector("list", self$n_rep)
       super$fit(store_predictions = store_predictions, store_models = store_models)
       names(private$coef_) = names(private$se_) = names(private$t_stat_) =
         names(private$pval_) = as.character(self$treatment_level)
@@ -175,18 +177,8 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         data_model = data.table::copy(self$data$data_model)
         data_model[[self$data$treat_col]] = indicator
         cond_smpls = get_cond_samples(smpls, indicator)$smpls_1
-        m_result = dml_cv_predict(self$learner$ml_m,
-          self$data$x_cols, self$data$treat_col, data_model,
-          nuisance_id = "nuis_m", smpls = smpls,
-          est_params = self$get_params("ml_m"),
-          return_train_preds = FALSE, task_type = private$task_type$ml_m,
-          fold_specific_params = private$fold_specific_params)
-        g_result = dml_cv_predict(self$learner$ml_g,
-          self$data$x_cols, self$data$y_col, data_model,
-          nuisance_id = "nuis_g", smpls = cond_smpls,
-          est_params = self$get_params("ml_g"),
-          return_train_preds = FALSE, task_type = private$task_type$ml_g,
-          fold_specific_params = private$fold_specific_params)
+        m_result = private$predict_nuisance("ml_m", self$data$treat_col, data_model, smpls)
+        g_result = private$predict_nuisance("ml_g", self$data$y_col, data_model, cond_smpls)
         g_hat = g_result$preds
         m_hat = m_result$preds
         models = list(ml_g = g_result$models, ml_m = m_result$models)
@@ -203,17 +195,89 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         models = list(ml_g = NULL, ml_m = NULL)
       }
       y = self$data$data_model[[self$data$y_col]]
-      res = private$score_elements(y, indicator, g_hat, m_hat)
+      res = private$score_elements(y, indicator, g_hat, m_hat, smpls)
       res$preds = list(ml_g = g_hat, ml_m = m_hat)
       res$models = models
       res
     },
-    score_elements = function(y, indicator, g_hat, m_hat) {
+    predict_nuisance = function(key, target, data_model, smpls) {
+      params = self$get_params(key)
+      predict_fold = function(split, est_params) {
+        # The shared helper shallow-clones ParamSet; isolate it for APO only.
+        dml_cv_predict(self$learner[[key]]$clone(deep = TRUE),
+          self$data$x_cols, target, data_model,
+          nuisance_id = paste0("nuis_", substring(key, 4)), smpls = split,
+          est_params = est_params, return_train_preds = FALSE,
+          task_type = private$task_type[[key]], fold_specific_params = FALSE)
+      }
+      if (!private$fold_specific_params) return(predict_fold(smpls, params))
+      result = list(preds = rep(NA_real_, nrow(data_model)),
+        models = vector("list", length(smpls$train_ids)))
+      for (i_fold in seq_along(smpls$train_ids)) {
+        split = list(train_ids = smpls$train_ids[i_fold], test_ids = smpls$test_ids[i_fold])
+        fold_result = predict_fold(split, params[[i_fold]])
+        ids = smpls$test_ids[[i_fold]]
+        result$preds[ids] = fold_result$preds[ids]
+        result$models[[i_fold]] = fold_result$models[[1]]
+      }
+      result
+    },
+    nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...) {
+      indicator = make_apo_indicator(
+        self$data$data_model[[self$data$treat_col]], self$treatment_level)
+      data_model = data.table::copy(self$data$data_model)
+      data_model[[self$data$treat_col]] = indicator
+      data_m = if (tune_on_folds) {
+        lapply(smpls$train_ids, function(ids) extract_training_data(data_model, ids))
+      } else {
+        list(data_model)
+      }
+      data_g = lapply(data_m, function(data) data[data[[self$data$treat_col]] == 1, ])
+      result_m = dml_tune(self$learner$ml_m$clone(deep = TRUE),
+        self$data$x_cols, self$data$treat_col, data_m, nuisance_id = "nuis_m",
+        param_set$ml_m, tune_settings, tune_settings$measure$ml_m, private$task_type$ml_m)
+      result_g = dml_tune(self$learner$ml_g$clone(deep = TRUE),
+        self$data$x_cols, self$data$y_col, data_g, nuisance_id = "nuis_g",
+        param_set$ml_g, tune_settings, tune_settings$measure$ml_g, private$task_type$ml_g)
+      list(ml_g = list(result_g, params = result_g$params),
+        ml_m = list(result_m, params = result_m$params))
+    },
+    score_elements = function(y, indicator, g_hat, m_hat, smpls) {
+      raw_m_hat = m_hat
       if (self$trimming_rule == "truncate" && self$trimming_threshold > 0) {
         m_hat = pmin(pmax(m_hat, self$trimming_threshold), 1 - self$trimming_threshold)
       }
-      list(psi_a = rep(-1, length(y)),
-        psi_b = g_hat + indicator / m_hat * (y - g_hat))
+      weights = indicator / m_hat
+      if (self$normalize_ipw) {
+        evaluation_ids = unique(unlist(smpls$test_ids, use.names = FALSE))
+        denominator = mean(weights[evaluation_ids], na.rm = TRUE)
+        if (!is.finite(denominator) || denominator <= 0) {
+          stop(paste("APO weight normalization requires a positive finite mean for treatment",
+            as.character(self$treatment_level), "in repetition", private$i_rep))
+        }
+        weights = weights / denominator
+      }
+      fraction_trimmed = mean(raw_m_hat != m_hat, na.rm = TRUE)
+      fold_counts = lapply(seq_along(smpls$train_ids), function(i_fold) {
+        train = indicator[smpls$train_ids[[i_fold]]]
+        test = indicator[smpls$test_ids[[i_fold]]]
+        data.frame(fold = i_fold, train_selected = sum(train == 1),
+          train_complement = sum(train == 0), test_selected = sum(test == 1),
+          test_complement = sum(test == 0))
+      })
+      private$propensity_diagnostics_[[private$i_rep]] = list(
+        treatment_level = self$treatment_level,
+        raw_min = min(raw_m_hat, na.rm = TRUE),
+        raw_quantiles = stats::quantile(raw_m_hat, probs = c(0, .25, .5, .75, 1), na.rm = TRUE),
+        fraction_trimmed = fraction_trimmed,
+        raw_propensity = raw_m_hat, effective_propensity = m_hat,
+        effective_weight = weights, fold_class_counts = do.call(rbind, fold_counts))
+      if (fraction_trimmed > .05) {
+        warning(paste("APO propensity trimming for treatment", as.character(self$treatment_level),
+          "in repetition", private$i_rep, "changed more than 5 percent of predictions."),
+          call. = FALSE)
+      }
+      list(psi_a = rep(-1, length(y)), psi_b = g_hat + weights * (y - g_hat))
     }
   )
 )
