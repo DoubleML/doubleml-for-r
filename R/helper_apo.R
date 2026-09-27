@@ -70,6 +70,11 @@ validate_apo_sample_splitting = function(smpls, indicator, treatment_level) {
       if (!any(training_indicator == 0L)) {
         stop(context, ": missing indicator class 0 in propensity training.")
       }
+      if (length(intersect(smpls[[i_rep]]$train_ids[[i_fold]],
+        smpls[[i_rep]]$test_ids[[i_fold]])) > 0L) {
+        stop(context, ": training and test rows overlap; supply disjoint ",
+          "training/test splits for out-of-fold APO nuisance predictions.")
+      }
     }
   }
   invisible(NULL)

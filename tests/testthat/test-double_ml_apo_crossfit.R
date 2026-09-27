@@ -9,6 +9,7 @@ test_that("APO nuisance predictions are genuinely out of fold in every repetitio
     test_ids = rev(fixture$smpls[[1]]$test_ids))
   obj$set_sample_splitting(list(fixture$smpls[[1]], second))
   expect_identical(obj$fit(store_predictions = TRUE, store_models = TRUE), obj)
+  expect_true(all(is.finite(c(obj$coef, obj$se, obj$psi))))
   expect_named(obj$predictions, c("ml_g", "ml_m"))
   expect_named(obj$models, c("ml_g", "ml_m"))
   for (i_rep in 1:2) {
@@ -93,4 +94,47 @@ test_that("APO learned zero propensities require positive truncation", {
       expect_true(all(is.finite(c(obj$coef, obj$se, obj$psi_b))))
     }
   }
+})
+
+test_that("APO learner fitting rejects generated and custom in-sample splits", {
+  fixture = make_apo_data(n_obs = 24L)
+  for (source in c("generated", "custom_named", "custom_list")) {
+    obj = suppressMessages(DoubleMLAPO$new(fixture$dml_data, ApoLeakageRegr$new(),
+      ApoLeakageClassif$new(reject_training = TRUE), "filter", n_folds = 1,
+      draw_sample_splitting = source == "generated"))
+    if (source != "generated") {
+      split = list(train_ids = list(1:24), test_ids = list(1:24))
+      obj$set_sample_splitting(if (source == "custom_named") split else list(split))
+    }
+    expect_error(obj$fit(),
+      "treatment filter, repetition 1, fold 1.*overlap.*disjoint")
+    # Supplied out-of-fold nuisance values do not rely on training these splits.
+    predictions = list(ml_g = matrix(1, 24, 1), ml_m = matrix(.5, 24, 1))
+    expect_identical(obj$fit(store_predictions = TRUE,
+      external_predictions = predictions), obj)
+    expect_equal(as.vector(obj$predictions$ml_m), rep(.5, 24))
+  }
+})
+
+test_that("APO overlap checks cover later repetitions and folds", {
+  fixture = make_apo_data(n_obs = 24L)
+  later = fixture$smpls[[1]]
+  later$train_ids[[2]] = c(later$train_ids[[2]], later$test_ids[[2]][1])
+  expect_error(validate_apo_sample_splitting(list(fixture$smpls[[1]], later),
+    as.integer(fixture$df$d == "filter"), "filter"),
+    "treatment filter, repetition 2, fold 2.*overlap.*disjoint")
+})
+
+test_that("APO nuisance predictions preserve disjoint one-fold held-out samples", {
+  fixture = make_apo_data(n_obs = 24L)
+  obj = DoubleMLAPO$new(fixture$dml_data, ApoLeakageRegr$new(),
+    ApoLeakageClassif$new(), "filter", n_folds = 2, draw_sample_splitting = FALSE)
+  split = list(train_ids = fixture$smpls[[1]]$train_ids[1],
+    test_ids = fixture$smpls[[1]]$test_ids[1])
+  obj$set_sample_splitting(split)
+  expect_identical(obj$fit(store_predictions = TRUE), obj)
+  test_ids = split$test_ids[[1]]
+  expect_equal(as.vector(obj$predictions$ml_g[test_ids, 1, 1]), as.numeric(test_ids))
+  expect_equal(which(is.finite(obj$predictions$ml_g[, 1, 1])), test_ids)
+  expect_equal(which(is.finite(obj$predictions$ml_m[, 1, 1])), test_ids)
 })
