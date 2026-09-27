@@ -201,6 +201,73 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
       private$store_models_ = store_models
       invisible(self)
     },
+    #' @description Return jointly inferred causal contrasts without refitting.
+    #' @param reference (factor, character or numeric scalar, or NULL) One
+    #' requested treatment label in the treatment's type family. All other
+    #' requested levels are contrasted against it in estimation order.
+    #' @param contrast (numeric matrix or NULL) Finite K-by-J contrast matrix,
+    #' where J is the number of requested levels. Named columns must match all
+    #' treatment display labels uniquely and are reordered to estimation order.
+    #' Row names must be unique and nonblank; unnamed rows receive contrast1,
+    #' ..., contrastK. Supply exactly one of reference and contrast.
+    #' @return A new [DoubleMLFramework] retaining joint influence contributions
+    #' and covariance. Bootstrap this returned framework for joint inference.
+    causal_contrast = function(reference = NULL, contrast = NULL) {
+      private$require_fit()
+      if (is.null(reference) == is.null(contrast)) {
+        stop("Supply exactly one of reference and contrast.")
+      }
+      if (!is.null(reference)) {
+        if (length(reference) != 1L) stop("reference must contain exactly one treatment label.")
+        reference = get_apo_levels(self$treatment_levels, reference)
+        reference_index = match(reference, self$treatment_levels)
+        other = setdiff(seq_along(self$treatment_levels), reference_index)
+        if (!length(other)) {
+          stop("Reference contrasts require at least two requested treatment levels.")
+        }
+        labels = names(self$apo_models)
+        contrast = matrix(0, length(other), length(labels),
+          dimnames = list(paste(labels[other], "-", labels[reference_index]), labels))
+        contrast[cbind(seq_along(other), other)] = 1
+        contrast[, reference_index] = -1
+      }
+      self$framework$linear_transform(contrast)
+    },
+    #' @description Bootstrap the joint APOS framework using common multipliers.
+    #' @param method (character) One of "normal", "Bayes", or "wild".
+    #' @param n_rep_boot (integer) Positive number of bootstrap replications.
+    #' @return Invisibly returns the coordinator. Bootstrap results are stored
+    #' in its framework's boot_coef and boot_t_stat fields.
+    bootstrap = function(method = "normal", n_rep_boot = 500) {
+      private$require_fit()
+      self$framework$bootstrap(method, n_rep_boot)
+      invisible(self)
+    },
+    #' @description Compute marginal or joint APOS confidence intervals.
+    #' @param parm (numeric or character vector) Requested parameter positions
+    #' or display labels. Omit to include all requested treatment levels.
+    #' @param joint (logical) Use joint bootstrap intervals, default FALSE.
+    #' Requires bootstrap() first.
+    #' @param level (numeric) Confidence level strictly between zero and one.
+    #' @return A matrix with named rows and confidence-bound percentage columns.
+    confint = function(parm, joint = FALSE, level = 0.95) {
+      private$require_fit()
+      if (missing(parm)) {
+        self$framework$confint(joint = joint, level = level)
+      } else {
+        self$framework$confint(parm, joint, level)
+      }
+    },
+    #' @description Adjust APOS p-values with joint Romano-Wolf stepdown or
+    #' a method supported by stats::p.adjust(). Romano-Wolf requires bootstrap().
+    #' @param method (character) Adjustment method, default "romano-wolf".
+    #' @param return_matrix (logical) Return an estimates/p-values matrix
+    #' (default TRUE), or an adjusted p-value vector.
+    #' @return A named-row matrix or numeric vector in estimation order.
+    p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
+      private$require_fit()
+      self$framework$p_adjust(method, return_matrix)
+    },
     #' @description Tune each treatment-specific model on the shared outer splits.
     #' Results and tuned parameters are published only after every component
     #' succeeds. Successful tuning invalidates the joint fitted result.
