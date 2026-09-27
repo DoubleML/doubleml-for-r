@@ -9,7 +9,7 @@
 #' @format [R6::R6Class] object.
 #' @family DoubleML
 #' @export
-DoubleMLFramework <- R6Class("DoubleMLFramework",
+DoubleMLFramework = R6Class("DoubleMLFramework",
   active = list(
     #' @field coef (`numeric()`) Aggregated, named estimates.
     coef = function(value) {
@@ -118,30 +118,30 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
           stop("Estimand names must agree with coef_names in order.")
         }
       }
-      rep_names <- list(colnames(all_coef), colnames(all_se), dimnames(psi)[[3]])
-      rep_names <- Filter(Negate(is.null), rep_names)
+      rep_names = list(colnames(all_coef), colnames(all_se), dimnames(psi)[[3]])
+      rep_names = Filter(Negate(is.null), rep_names)
       if (length(rep_names) > 1L &&
         !all(vapply(rep_names, identical, logical(1), rep_names[[1]]))) {
         stop("Repetition names must agree in order.")
       }
       assert_flag(apply_cross_fitting)
-      private$apply_cross_fitting_ <- apply_cross_fitting
-      private$smpls_ <- private$check_splits(smpls, dim(psi)[1], ncol(all_coef))
-      rownames(all_coef) <- rownames(all_se) <- coef_names
-      dimnames(psi)[[2]] <- coef_names
+      private$apply_cross_fitting_ = apply_cross_fitting
+      private$smpls_ = private$check_splits(smpls, dim(psi)[1], ncol(all_coef))
+      rownames(all_coef) = rownames(all_se) = coef_names
+      dimnames(psi)[[2]] = coef_names
       if (length(rep_names)) {
-        colnames(all_coef) <- colnames(all_se) <- rep_names[[1]]
-        dimnames(psi)[[3]] <- rep_names[[1]]
+        colnames(all_coef) = colnames(all_se) = rep_names[[1]]
+        dimnames(psi)[[3]] = rep_names[[1]]
       }
-      private$all_coef_ <- all_coef
-      private$all_se_ <- all_se
-      private$psi_ <- psi
-      private$all_cov_ <- private$covariance(psi)
-      private$coef_ <- apply(all_coef, 1, median)
+      private$all_coef_ = all_coef
+      private$all_se_ = all_se
+      private$psi_ = psi
+      private$all_cov_ = private$covariance(psi)
+      private$coef_ = apply(all_coef, 1, median)
       # Use the common observation dimension for repeated-estimate aggregation;
       # covariance below uses each repetition's actual evaluation sample size.
-      n_obs <- dim(psi)[1]
-      private$se_ <- sqrt(apply(
+      n_obs = dim(psi)[1]
+      private$se_ = sqrt(apply(
         n_obs * all_se^2 + (all_coef - self$coef)^2,
         1, median
       ) / n_obs)
@@ -152,7 +152,7 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
     #' @return `summary()` invisibly returns the printed matrix. `print()`
     #' invisibly returns the framework.
     summary = function(digits = max(3L, getOption("digits") - 3L)) {
-      table <- cbind(
+      table = cbind(
         "Estimate." = self$coef, "Std. Error" = self$se,
         "t value" = self$t_stat, "Pr(>|t|)" = self$pval
       )
@@ -176,29 +176,29 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
       private$check_matrix(contrast, "contrast")
       if (ncol(contrast) != length(self$coef)) stop("contrast has incompatible dimensions.")
       if (!is.null(colnames(contrast))) {
-        labels <- colnames(contrast)
+        labels = colnames(contrast)
         if (anyDuplicated(labels) || !setequal(labels, names(self$coef))) {
           stop("contrast column names must match the estimand names uniquely.")
         }
-        contrast <- contrast[, names(self$coef), drop = FALSE]
+        contrast = contrast[, names(self$coef), drop = FALSE]
       }
-      if (is.null(coef_names)) coef_names <- rownames(contrast)
-      if (is.null(coef_names)) coef_names <- paste0("contrast", seq_len(nrow(contrast)))
+      if (is.null(coef_names)) coef_names = rownames(contrast)
+      if (is.null(coef_names)) coef_names = paste0("contrast", seq_len(nrow(contrast)))
       private$check_names(coef_names, nrow(contrast))
-      transformed_coef <- contrast %*% self$all_coef
-      rownames(transformed_coef) <- coef_names
-      psi <- array(0, c(dim(self$psi)[1], nrow(contrast), ncol(self$all_coef)),
+      transformed_coef = contrast %*% self$all_coef
+      rownames(transformed_coef) = coef_names
+      psi = array(0, c(dim(self$psi)[1], nrow(contrast), ncol(self$all_coef)),
         dimnames = list(dimnames(self$psi)[[1]], coef_names, colnames(self$all_coef))
       )
       for (i_rep in seq_len(ncol(self$all_coef))) {
-        psi[, , i_rep] <- matrix(self$psi[, , i_rep], nrow = dim(self$psi)[1]) %*% t(contrast)
+        psi[, , i_rep] = matrix(self$psi[, , i_rep], nrow = dim(self$psi)[1]) %*% t(contrast)
       }
-      cov <- private$covariance(psi)
-      se <- matrix(0, nrow(contrast), ncol(self$all_coef),
+      cov = private$covariance(psi)
+      se = matrix(0, nrow(contrast), ncol(self$all_coef),
         dimnames = list(coef_names, colnames(self$all_coef))
       )
       for (i_rep in seq_len(ncol(se))) {
-        se[, i_rep] <- sqrt(diag(matrix(cov[, , i_rep], nrow = nrow(contrast))))
+        se[, i_rep] = sqrt(diag(matrix(cov[, , i_rep], nrow = nrow(contrast))))
       }
       DoubleMLFramework$new(transformed_coef, se, psi, coef_names,
         smpls = private$smpls_, apply_cross_fitting = private$apply_cross_fitting_
@@ -212,7 +212,7 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
       if (!inherits(other, "DoubleMLFramework")) stop("other must be a DoubleMLFramework.")
       if (ncol(self$all_coef) != ncol(other$all_coef)) stop("Incompatible repetition counts.")
       if (dim(self$psi)[1] != dim(other$psi)[1]) stop("Incompatible observation counts.")
-      other_private <- other$.__enclos_env__$private
+      other_private = other$.__enclos_env__$private
       if (!identical(private$smpls_, other_private$smpls_) ||
         !identical(private$apply_cross_fitting_, other_private$apply_cross_fitting_)) {
         stop("Incompatible sample splits or cross-fitting settings.")
@@ -220,19 +220,19 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
       if (anyDuplicated(c(names(self$coef), names(other$coef)))) {
         stop("Concatenated coefficient names must be unique.")
       }
-      obs_names <- list(dimnames(self$psi)[[1]], dimnames(other$psi)[[1]])
+      obs_names = list(dimnames(self$psi)[[1]], dimnames(other$psi)[[1]])
       if (!identical(obs_names[[1]], obs_names[[2]])) stop("Incompatible observation names.")
-      rep_names <- list(colnames(self$all_coef), colnames(other$all_coef))
+      rep_names = list(colnames(self$all_coef), colnames(other$all_coef))
       if (!identical(rep_names[[1]], rep_names[[2]])) stop("Incompatible repetition names.")
-      psi <- array(0, c(
+      psi = array(0, c(
         dim(self$psi)[1], length(self$coef) + length(other$coef),
         ncol(self$all_coef)
       ))
-      left <- seq_along(self$coef)
-      right <- length(left) + seq_along(other$coef)
-      psi[, left, ] <- self$psi
-      psi[, right, ] <- other$psi
-      dimnames(psi) <- list(obs_names[[1]], NULL, rep_names[[1]])
+      left = seq_along(self$coef)
+      right = length(left) + seq_along(other$coef)
+      psi[, left, ] = self$psi
+      psi[, right, ] = other$psi
+      dimnames(psi) = list(obs_names[[1]], NULL, rep_names[[1]])
       DoubleMLFramework$new(rbind(self$all_coef, other$all_coef),
         rbind(self$all_se, other$all_se), psi, c(names(self$coef), names(other$coef)),
         smpls = private$smpls_, apply_cross_fitting = private$apply_cross_fitting_
@@ -270,22 +270,22 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
       if (!is.list(smpls) || length(smpls) != n_rep) {
         stop("smpls must contain one split per repetition.")
       }
-      n_folds <- NULL
+      n_folds = NULL
       for (i_rep in seq_len(n_rep)) {
-        split <- smpls[[i_rep]]
+        split = smpls[[i_rep]]
         if (!is.list(split) || !setequal(names(split), c("train_ids", "test_ids")) ||
           length(split) != 2L || !is.list(split$train_ids) || !is.list(split$test_ids) ||
           length(split$test_ids) < 1L || length(split$train_ids) != length(split$test_ids)) {
           stop("Each sample split must contain matching train_ids and test_ids lists.")
         }
-        if (is.null(n_folds)) n_folds <- length(split$test_ids)
+        if (is.null(n_folds)) n_folds = length(split$test_ids)
         if (n_folds != length(split$test_ids)) stop("Sample splits must have matching fold counts.")
         if (!private$apply_cross_fitting_ && n_folds != 1L) {
           stop("Without cross-fitting each repetition must have a single evaluation set.")
         }
         for (i_fold in seq_len(n_folds)) {
           for (field in c("train_ids", "test_ids")) {
-            ids <- split[[field]][[i_fold]]
+            ids = split[[field]][[i_fold]]
             if (!is.numeric(ids) || !is.null(dim(ids)) || !length(ids) || anyNA(ids) ||
               any(!is.finite(ids)) || any(ids != floor(ids)) ||
               any(ids < 1 | ids > n_obs) || anyDuplicated(ids)) {
@@ -294,11 +294,11 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
                 "in the observation range."
               ))
             }
-            split[[field]][[i_fold]] <- sort(as.integer(ids))
+            split[[field]][[i_fold]] = sort(as.integer(ids))
           }
-          train <- split$train_ids[[i_fold]]
-          test <- split$test_ids[[i_fold]]
-          full_sample <- identical(train, seq_len(n_obs)) && identical(test, seq_len(n_obs))
+          train = split$train_ids[[i_fold]]
+          test = split$test_ids[[i_fold]]
+          full_sample = identical(train, seq_len(n_obs)) && identical(test, seq_len(n_obs))
           if (length(intersect(train, test)) && !full_sample) {
             stop("Train and test indices overlap.")
           }
@@ -307,7 +307,7 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
           !identical(sort(unlist(split$test_ids, use.names = FALSE)), seq_len(n_obs))) {
           stop("Cross-fitting test sets must partition the observations.")
         }
-        smpls[[i_rep]] <- list(
+        smpls[[i_rep]] = list(
           train_ids = unname(split$train_ids),
           test_ids = unname(split$test_ids)
         )
@@ -315,19 +315,19 @@ DoubleMLFramework <- R6Class("DoubleMLFramework",
       unname(smpls)
     },
     covariance = function(psi) {
-      n_obs <- dim(psi)[1]
-      n_coef <- dim(psi)[2]
-      cov <- array(0, c(n_coef, n_coef, dim(psi)[3]),
+      n_obs = dim(psi)[1]
+      n_coef = dim(psi)[2]
+      cov = array(0, c(n_coef, n_coef, dim(psi)[3]),
         dimnames = list(dimnames(psi)[[2]], dimnames(psi)[[2]], dimnames(psi)[[3]])
       )
       for (i_rep in seq_len(dim(psi)[3])) {
-        ids <- if (private$apply_cross_fitting_) {
+        ids = if (private$apply_cross_fitting_) {
           seq_len(n_obs)
         } else {
           private$smpls_[[i_rep]]$test_ids[[1]]
         }
-        contributions <- matrix(psi[ids, , i_rep, drop = FALSE], nrow = length(ids))
-        cov[, , i_rep] <- crossprod(contributions) / length(ids)^2
+        contributions = matrix(psi[ids, , i_rep, drop = FALSE], nrow = length(ids))
+        cov[, , i_rep] = crossprod(contributions) / length(ids)^2
       }
       cov
     }
