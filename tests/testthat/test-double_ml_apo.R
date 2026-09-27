@@ -119,3 +119,30 @@ test_that("APO rejects clustered data", {
     cluster_cols = "cluster", x_cols = "x")
   expect_error(DoubleMLAPO$new(data, "regr.rpart", "classif.rpart", 1), "Cluster")
 })
+
+# A zero in an unselected row must not introduce 0 / 0 into the APO score.
+test_that("APO rejects zero untrimmed propensities before changing fitted results", {
+  fixture = apo_fixed_fixture(n_rep = 2)
+  obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
+    n_folds = 2, n_rep = 2, trimming_threshold = 0, draw_sample_splitting = FALSE)
+  obj$set_sample_splitting(fixture$obj$smpls)
+  obj$fit(store_predictions = TRUE, external_predictions = fixture$predictions)
+  previous = list(coef = obj$coef, se = obj$se, psi_b = obj$psi_b, predictions = obj$predictions)
+  for (row in c(1, 2)) {
+    bad = fixture$predictions
+    bad$ml_m[row, 2] = 0
+    expect_error(obj$fit(store_predictions = TRUE, external_predictions = bad),
+      "positivity.*strictly positive.*trimming_threshold")
+    expect_identical(list(coef = obj$coef, se = obj$se, psi_b = obj$psi_b,
+      predictions = obj$predictions), previous)
+  }
+})
+
+test_that("APO positive truncation accepts raw zero propensities", {
+  fixture = apo_fixed_fixture()
+  fixture$predictions$ml_m[1:2, 1] = 0
+  fixture$obj$fit(store_predictions = TRUE, external_predictions = fixture$predictions)
+  expect_equal(as.vector(fixture$obj$psi_b), c(201, 2, 3, 16, 5, 12))
+  expect_true(all(is.finite(c(fixture$obj$coef, fixture$obj$se))))
+  expect_equal(as.vector(fixture$obj$predictions$ml_m), c(0, 0, .5, .25, .5, .5))
+})

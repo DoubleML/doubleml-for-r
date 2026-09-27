@@ -123,12 +123,20 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' @param external_predictions (`list()`, `NULL`) \cr
     #' Named list with `ml_g` and `ml_m` numeric observation-by-repetition
     #' matrices. All values must be finite and raw `ml_m` probabilities must
-    #' lie in `[0, 1]`. Predictions should be obtained out of fold.
+    #' lie in `[0, 1]`. With `trimming_threshold = 0`, probabilities must be
+    #' strictly positive on every observation. Predictions should be obtained
+    #' out of fold.
     #' `NULL` requests the learner path, which is not yet implemented.
     #' @return self
     fit = function(store_predictions = FALSE, store_models = FALSE, external_predictions = NULL) {
       predictions = validate_apo_external_predictions(
         external_predictions, self$data$n_obs, self$n_rep)
+      if (!is.null(predictions) && self$trimming_threshold == 0 && any(predictions$ml_m == 0)) {
+        stop(paste("APO positivity requires strictly positive propensities for treatment",
+          as.character(self$treatment_level),
+          "on every observation; supply positive probabilities or increase",
+          "trimming_threshold above zero."))
+      }
       if (self$normalize_ipw) stop("normalize_ipw = TRUE is not yet implemented.")
       private$external_predictions_ = predictions
       on.exit({
