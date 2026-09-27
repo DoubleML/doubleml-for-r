@@ -68,14 +68,14 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
       }
       stop("can't set field all_cov")
     },
-    #' @field boot_coef (`NULL`) Bootstrap estimates, initially unset.
+    #' @field boot_coef (`matrix()` or `NULL`) Bootstrap perturbations, initially unset.
     boot_coef = function(value) {
       if (missing(value)) {
         return(private$boot_coef_)
       }
       stop("can't set field boot_coef")
     },
-    #' @field boot_t_stat (`NULL`) Bootstrap t-statistics, initially unset.
+    #' @field boot_t_stat (`matrix()` or `NULL`) Bootstrap t-statistics, initially unset.
     boot_t_stat = function(value) {
       if (missing(value)) {
         return(private$boot_t_stat_)
@@ -164,6 +164,104 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
       cat("================== DoubleMLFramework ==================\n")
       self$summary()
       invisible(self)
+    },
+    #' @description Multiplier bootstrap with common weights across estimands.
+    #' @param method (`character(1)`) One of `"normal"`, `"Bayes"`, or `"wild"`.
+    #' @param n_rep_boot (`integer(1)`) Positive number of bootstrap replications.
+    #' @return Invisibly returns the framework. Bootstrap matrices have one row
+    #' per estimand and `n_rep_boot` columns per repetition, in repetition order.
+    bootstrap = function(method = "normal", n_rep_boot = 500) {
+      assert_choice(method, c("normal", "Bayes", "wild"))
+      assert_count(n_rep_boot, positive = TRUE)
+      n_rep = ncol(self$all_coef)
+      boot_coef = boot_t_stat = matrix(NA_real_, length(self$coef), n_rep_boot * n_rep,
+        dimnames = list(names(self$coef), NULL)
+      )
+      for (i_rep in seq_len(n_rep)) {
+        ids = if (private$apply_cross_fitting_) {
+          seq_len(dim(self$psi)[1])
+        } else {
+          private$smpls_[[i_rep]]$test_ids[[1]]
+        }
+        weights = draw_weights(method, n_rep_boot, length(ids))
+        contributions = matrix(self$psi[ids, , i_rep, drop = FALSE], nrow = length(ids))
+        columns = (i_rep - 1) * n_rep_boot + seq_len(n_rep_boot)
+        perturbations = t(weights %*% contributions) / length(ids)
+        boot_coef[, columns] = perturbations
+        boot_t_stat[, columns] = perturbations / self$all_se[, i_rep]
+      }
+      private$boot_coef_ = boot_coef
+      private$boot_t_stat_ = boot_t_stat
+      invisible(self)
+    },
+    #' @description Compute marginal normal or joint bootstrap confidence intervals.
+    #' @param parm (`numeric()` or `character()`) Parameter positions or names.
+    #' Defaults to all parameters.
+    #' @param joint (`logical(1)`) Use a simultaneous critical value over all
+    #' framework estimands. Requires `bootstrap()` even when selecting parameters.
+    #' @param level (`numeric(1)`) Confidence level strictly between zero and one.
+    #' @return A matrix with named rows and confidence-bound percentage columns.
+    confint = function(parm, joint = FALSE, level = 0.95) {
+      assert_flag(joint)
+      assert_number(level, finite = TRUE)
+      if (level <= 0 || level >= 1) stop("'level' must be > 0 and < 1.")
+      if (missing(parm)) {
+        parm = names(self$coef)
+      } else if (is.numeric(parm) && is.null(dim(parm))) {
+        if (anyNA(parm) || any(!is.finite(parm)) || any(parm != floor(parm)) ||
+          any(parm < 1 | parm > length(self$coef)) || length(parm) > length(self$coef)) {
+          stop("parm must contain valid parameter positions.")
+        }
+        parm = names(self$coef)[parm]
+      } else if (!is.character(parm) || !is.null(dim(parm)) || anyNA(parm) ||
+        any(!parm %in% names(self$coef)) || length(parm) > length(self$coef)) {
+        stop("parm must contain valid parameter names or positions.")
+      }
+      probabilities = c((1 - level) / 2, (1 + level) / 2)
+      critical = if (joint) {
+        if (is.null(self$boot_t_stat)) stop("Apply bootstrap() before joint confint().")
+        unname(quantile(apply(abs(self$boot_t_stat), 2, max), probs = level))
+      } else {
+        qnorm(probabilities[2])
+      }
+      ci = cbind(
+        self$coef[parm] - critical * self$se[parm],
+        self$coef[parm] + critical * self$se[parm]
+      )
+      dimnames(ci) = list(parm, format_perc(probabilities, 3))
+      ci
+    },
+    #' @description Adjust p-values with Romano-Wolf stepdown or `stats::p.adjust()`.
+    #' @param method (`character(1)`) `"romano-wolf"` (or `"rw"`), requiring a
+    #' bootstrap, or any method supported by `stats::p.adjust()`.
+    #' @param return_matrix (`logical(1)`) Return estimates and adjusted p-values
+    #' as a matrix rather than a numeric vector.
+    #' @return Adjusted p-values in original estimand order, optionally in a
+    #' matrix with columns `"Estimate."` and `"pval"`.
+    p_adjust = function(method = "romano-wolf", return_matrix = TRUE) {
+      assert_string(method)
+      assert_flag(return_matrix)
+      if (tolower(method) %in% c("rw", "romano-wolf")) {
+        if (is.null(self$boot_t_stat)) stop("Apply bootstrap() before Romano-Wolf p_adjust().")
+        ordered = order(abs(self$t_stat), decreasing = TRUE)
+        raw = numeric(length(ordered))
+        for (i_coef in seq_along(ordered)) {
+          remaining = ordered[i_coef:length(ordered)]
+          maxima = apply(abs(self$boot_t_stat[remaining, , drop = FALSE]), 2, max)
+          raw[i_coef] = mean(maxima > abs(self$t_stat[ordered[i_coef]]))
+        }
+        p_val = cummax(raw)[order(ordered)]
+      } else {
+        assert_choice(method, p.adjust.methods)
+        p_val = p.adjust(self$pval, method = method, n = length(self$coef))
+      }
+      if (return_matrix) {
+        result = cbind(self$coef, p_val)
+        colnames(result) = c("Estimate.", "pval")
+        result
+      } else {
+        p_val
+      }
     },
     #' @description Apply linear contrasts jointly to each repetition.
     #' @param contrast (`matrix()`) Finite K-by-J numeric matrix. Named columns

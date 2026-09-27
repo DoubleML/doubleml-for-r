@@ -8,6 +8,133 @@ framework_fixture = function() {
   )
 }
 
+# Seeded independent multipliers catch drawing separate weights per estimand.
+test_that("bootstrap shares multipliers within each repetition for every method", {
+  obj = do.call(DoubleMLFramework$new, framework_fixture())
+  for (method in c("normal", "Bayes", "wild")) {
+    set.seed(17)
+    expected = matrix(0, 2, 14)
+    for (i_rep in 1:2) {
+      draws = switch(method,
+        normal = rnorm(28),
+        Bayes = rexp(28) - 1,
+        wild = rnorm(28) / sqrt(2) + (rnorm(28)^2 - 1) / 2
+      )
+      weights = matrix(draws, 7, byrow = TRUE)
+      expected[, (i_rep - 1) * 7 + 1:7] = t(weights %*% obj$psi[, , i_rep]) / 4
+    }
+    set.seed(17)
+    expect_identical(obj$bootstrap(method, 7), obj)
+    expect_equal(dim(obj$boot_coef), c(2L, 14L))
+    expect_equal(unname(obj$boot_coef), expected)
+    expected_t = expected / obj$all_se[, rep(1:2, each = 7)]
+    expect_equal(unname(obj$boot_t_stat), unname(expected_t))
+    expect_identical(rownames(obj$boot_t_stat), c("a", "b"))
+  }
+})
+
+test_that("bootstrap uses only each repetition's evaluation observations", {
+  args = framework_fixture()
+  args$apply_cross_fitting = FALSE
+  args$smpls = list(
+    list(train_ids = list(1:2), test_ids = list(3:4)),
+    list(train_ids = list(1), test_ids = list(2:4))
+  )
+  obj = do.call(DoubleMLFramework$new, args)
+  set.seed(23)
+  w1 = matrix(rnorm(10), 5, byrow = TRUE)
+  w2 = matrix(rnorm(15), 5, byrow = TRUE)
+  expected = cbind(
+    t(w1 %*% args$psi[3:4, , 1]) / 2,
+    t(w2 %*% args$psi[2:4, , 2]) / 3
+  )
+  set.seed(23)
+  obj$bootstrap(n_rep_boot = 5)
+  expect_equal(unname(obj$boot_coef), expected)
+  expect_equal(unname(obj$boot_t_stat), unname(expected / obj$all_se[, rep(1:2, each = 5)]))
+})
+
+test_that("confidence intervals use normal or simultaneous bootstrap critical values", {
+  obj = do.call(DoubleMLFramework$new, framework_fixture())
+  marginal = obj$confint(level = .9)
+  expected = cbind(obj$coef - qnorm(.95) * obj$se, obj$coef + qnorm(.95) * obj$se)
+  expect_equal(unname(marginal), unname(expected))
+  expect_identical(colnames(marginal), c("5 %", "95 %"))
+  expect_equal(obj$confint("b", level = .9), marginal["b", , drop = FALSE])
+  expect_equal(obj$confint(2:1, level = .9), marginal[2:1, , drop = FALSE])
+  set.seed(31)
+  obj$bootstrap(n_rep_boot = 20)
+  critical = unname(quantile(apply(abs(obj$boot_t_stat), 2, max), .9))
+  expected = cbind(obj$coef - critical * obj$se, obj$coef + critical * obj$se)
+  joint = obj$confint(joint = TRUE, level = .9)
+  expect_equal(unname(joint), unname(expected))
+  expect_equal(obj$confint("b", joint = TRUE, level = .9), joint["b", , drop = FALSE])
+})
+
+# Hand-checked seed 11 yields ordered raw p-values .08, .22, .18.
+# Removing cummax, keeping rejected hypotheses, or losing original order fails.
+test_that("Romano-Wolf drops rejected hypotheses and enforces stepdown monotonicity", {
+  psi = array(c(-3, -1, 1, 3, -2, 0, 0, 2, 1, -1, -1, 1), c(4, 3, 1))
+  se = matrix(c(sqrt(1.25), sqrt(.5), .5), 3)
+  obj = DoubleMLFramework$new(se * c(1, 2, 1.5), se, psi, c("a", "b", "c"))
+  set.seed(11)
+  obj$bootstrap(n_rep_boot = 50)
+  adjusted = obj$p_adjust(return_matrix = FALSE)
+  expect_equal(unname(adjusted), c(.22, .08, .22))
+  expect_true(all(diff(adjusted[order(abs(obj$t_stat), decreasing = TRUE)]) >= 0))
+  expect_equal(obj$p_adjust("RW", FALSE), adjusted)
+  table = obj$p_adjust()
+  expect_identical(colnames(table), c("Estimate.", "pval"))
+  expect_identical(rownames(table), c("a", "b", "c"))
+  expect_equal(unname(table[, 2]), unname(adjusted))
+  expect_equal(table[, 1], obj$coef)
+})
+
+test_that("standard p-value adjustments do not require bootstrap", {
+  obj = do.call(DoubleMLFramework$new, framework_fixture())
+  for (method in p.adjust.methods) {
+    expect_equal(unname(obj$p_adjust(method, FALSE)), unname(p.adjust(obj$pval, method)))
+  }
+})
+
+test_that("single-estimand bootstrap and inference preserve matrix dimensions", {
+  obj = do.call(DoubleMLFramework$new, framework_fixture())
+  obj = obj$linear_transform(matrix(c(1, 0), 1), "a")
+  set.seed(3)
+  obj$bootstrap(n_rep_boot = 1)
+  expect_equal(dim(obj$boot_coef), c(1L, 2L))
+  expect_equal(dim(obj$confint(joint = TRUE)), c(1L, 2L))
+  expect_equal(
+    unname(obj$p_adjust(return_matrix = FALSE)),
+    mean(abs(obj$boot_t_stat) > abs(obj$t_stat))
+  )
+})
+
+test_that("inference validates arguments and bootstrap prerequisites", {
+  obj = do.call(DoubleMLFramework$new, framework_fixture())
+  expect_error(obj$confint(joint = TRUE), "bootstrap")
+  expect_error(obj$p_adjust(), "bootstrap")
+  expect_error(obj$bootstrap("invalid"), "method")
+  for (count in list(0, -1, 1.5, NA_real_, Inf, c(1, 2))) {
+    expect_error(obj$bootstrap(n_rep_boot = count), "n_rep_boot")
+  }
+  for (level in list(0, 1, -1, NA_real_, Inf, c(.9, .95))) {
+    expect_error(obj$confint(level = level), "level")
+  }
+  for (parm in list("missing", c("a", "missing"), 0, 3, 1.5, NA_real_, TRUE)) {
+    expect_error(obj$confint(parm), "parm|parameter")
+  }
+  expect_error(obj$confint(joint = NA), "joint")
+  expect_error(obj$p_adjust("invalid"), "method")
+  expect_error(obj$p_adjust(return_matrix = NA), "return_matrix")
+  set.seed(1)
+  obj$bootstrap(n_rep_boot = 3)
+  before = obj$boot_t_stat
+  expect_error(obj$bootstrap("invalid"), "method")
+  expect_identical(obj$boot_t_stat, before)
+  expect_null(obj$linear_transform(diag(2))$boot_t_stat)
+})
+
 test_that("framework aggregates repeated estimates and joint covariance", {
   obj = do.call(DoubleMLFramework$new, framework_fixture())
   expect_equal(unname(obj$coef), c(2, 4))
