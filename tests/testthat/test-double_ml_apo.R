@@ -104,10 +104,13 @@ test_that("APO validates its data, labels, score and learner roles", {
   expect_error(DoubleMLAPO$new(data_multi, "regr.rpart", "classif.rpart", 1), "one treatment")
 })
 
-test_that("APO staged paths fail explicitly without reusing fixed predictions", {
+test_that("APO refits with learners after supplied predictions and defers normalization", {
   fixture = apo_fixed_fixture()
   fixture$obj$fit(external_predictions = fixture$predictions)
-  expect_error(fixture$obj$fit(), "Learner-based")
+  fixture$obj$fit(store_predictions = TRUE)
+  expect_true(all(is.finite(fixture$obj$predictions$ml_m)))
+  expect_true(any(as.vector(fixture$obj$predictions$ml_m) !=
+    as.vector(fixture$predictions$ml_m)))
   obj = DoubleMLAPO$new(fixture$data, "regr.rpart", "classif.rpart", "a",
     n_folds = 2, normalize_ipw = TRUE)
   expect_error(obj$fit(external_predictions = fixture$predictions), "normalize_ipw.*not yet")

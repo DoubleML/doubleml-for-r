@@ -11,9 +11,10 @@
 #' The orthogonal score is \eqn{g_d(X) + T_d (Y-g_d(X))/p_d(X) - \theta_d}.
 #' Identification requires conditional exchangeability and positive treatment
 #' probabilities. Numeric treatment values are labels, without a dose ordering.
-#' This initial implementation fits supplied nuisance predictions only;
-#' learner estimation, normalized weights and propensity diagnostics are
-#' introduced separately.
+#' Nuisance learners are cross-fitted: the outcome model uses only training
+#' rows at the requested level, and the propensity model uses all treatment
+#' levels in a one-vs-rest task. Fixed nuisance predictions are also supported.
+#' Normalized weights and propensity diagnostics are introduced separately.
 #' @usage NULL
 #' @export
 DoubleMLAPO = R6Class("DoubleMLAPO",
@@ -39,7 +40,7 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     },
     #' @field normalize_ipw (`logical(1)`) \cr
     #' Whether inverse propensity weights should be normalized. Normalization
-    #' is not yet available in this initial fixed-prediction implementation.
+    #' is not yet available.
     normalize_ipw = function(value) {
       if (missing(value)) return(private$normalize_ipw_)
       stop("can't set field normalize_ipw")
@@ -113,20 +114,20 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       private$initialize_ml_nuisance_params()
     },
     #' @description
-    #' Fits the APO model using validated fixed nuisance predictions and the
-    #' inherited DoubleML fitting, aggregation and inference methods.
+    #' Fits the APO model using cross-fitted learners or validated fixed nuisance
+    #' predictions and the inherited fitting, aggregation and inference methods.
     #' @param store_predictions (`logical(1)`) \cr
     #' Whether to store nuisance predictions. Default is `FALSE`.
     #' @param store_models (`logical(1)`) \cr
-    #' Whether to initialize model storage. No models are trained from external
-    #' predictions, so the stored fold entries remain `NULL`.
+    #' Whether to store fitted nuisance models for each fold. With external
+    #' predictions, the stored fold entries remain `NULL`.
     #' @param external_predictions (`list()`, `NULL`) \cr
     #' Named list with `ml_g` and `ml_m` numeric observation-by-repetition
     #' matrices. All values must be finite and raw `ml_m` probabilities must
     #' lie in `[0, 1]`. With `trimming_threshold = 0`, probabilities must be
     #' strictly positive on every observation. Predictions should be obtained
     #' out of fold.
-    #' `NULL` requests the learner path, which is not yet implemented.
+    #' `NULL` fits the nuisance learners with the model's sample splits.
     #' @return self
     fit = function(store_predictions = FALSE, store_models = FALSE, external_predictions = NULL) {
       predictions = validate_apo_external_predictions(
@@ -138,6 +139,10 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
           "trimming_threshold above zero."))
       }
       if (self$normalize_ipw) stop("normalize_ipw = TRUE is not yet implemented.")
+      if (is.null(predictions)) {
+        indicator = make_apo_indicator(self$data$data[[self$data$d_cols]], self$treatment_level)
+        validate_apo_sample_splitting(self$smpls, indicator, self$treatment_level)
+      }
       private$external_predictions_ = predictions
       on.exit({
         private$external_predictions_ = NULL
@@ -163,18 +168,44 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       invisible(self)
     },
     nuisance_est = function(smpls, ...) {
-      if (is.null(private$external_predictions_)) {
-        stop(paste("Learner-based APO nuisance estimation is not yet implemented;",
-          "supply external_predictions."))
-      }
-      g_hat = private$external_predictions_$ml_g[, private$i_rep]
-      m_hat = private$external_predictions_$ml_m[, private$i_rep]
       indicator = make_apo_indicator(
         self$data$data_model[[self$data$treat_col]], self$treatment_level)
+      if (is.null(private$external_predictions_)) {
+        # The local target preserves every nominal level in the complement.
+        data_model = data.table::copy(self$data$data_model)
+        data_model[[self$data$treat_col]] = indicator
+        cond_smpls = get_cond_samples(smpls, indicator)$smpls_1
+        m_result = dml_cv_predict(self$learner$ml_m,
+          self$data$x_cols, self$data$treat_col, data_model,
+          nuisance_id = "nuis_m", smpls = smpls,
+          est_params = self$get_params("ml_m"),
+          return_train_preds = FALSE, task_type = private$task_type$ml_m,
+          fold_specific_params = private$fold_specific_params)
+        g_result = dml_cv_predict(self$learner$ml_g,
+          self$data$x_cols, self$data$y_col, data_model,
+          nuisance_id = "nuis_g", smpls = cond_smpls,
+          est_params = self$get_params("ml_g"),
+          return_train_preds = FALSE, task_type = private$task_type$ml_g,
+          fold_specific_params = private$fold_specific_params)
+        g_hat = g_result$preds
+        m_hat = m_result$preds
+        models = list(ml_g = g_result$models, ml_m = m_result$models)
+        if (self$trimming_threshold == 0 && any(m_hat == 0, na.rm = TRUE)) {
+          stop(paste("APO positivity requires strictly positive propensities for treatment",
+            as.character(self$treatment_level),
+            "on every observation; supply positive probabilities or increase",
+            "trimming_threshold above zero."))
+        }
+
+      } else {
+        g_hat = private$external_predictions_$ml_g[, private$i_rep]
+        m_hat = private$external_predictions_$ml_m[, private$i_rep]
+        models = list(ml_g = NULL, ml_m = NULL)
+      }
       y = self$data$data_model[[self$data$y_col]]
       res = private$score_elements(y, indicator, g_hat, m_hat)
       res$preds = list(ml_g = g_hat, ml_m = m_hat)
-      res$models = list(ml_g = NULL, ml_m = NULL)
+      res$models = models
       res
     },
     score_elements = function(y, indicator, g_hat, m_hat) {

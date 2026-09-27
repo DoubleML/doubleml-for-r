@@ -70,3 +70,53 @@ apo_score_from_predictions = function(
   )
 }
 # nolint end: object_usage_linter.
+
+# Small mlr3 learners expose APO's training/prediction boundary without fitting noise.
+ApoLeakageRegr = R6::R6Class("ApoLeakageRegr",
+  inherit = mlr3::LearnerRegr,
+  public = list(
+    initialize = function() {
+      super$initialize(id = "regr.apo_leakage", feature_types = "numeric",
+        predict_types = "response")
+    }
+  ),
+  private = list(
+    .train = function(task) {
+      list(train_ids = task$row_ids, log = new.env(parent = emptyenv()))
+    },
+    .predict = function(task) {
+      if (any(task$row_ids %in% self$model$train_ids)) stop("In-sample APO prediction.")
+      self$model$log$test_ids = c(self$model$log$test_ids, task$row_ids)
+      list(response = as.numeric(task$row_ids))
+    }
+  )
+)
+
+ApoLeakageClassif = R6::R6Class("ApoLeakageClassif",
+  inherit = mlr3::LearnerClassif,
+  public = list(
+    reject_training = FALSE,
+    zero_propensity = FALSE,
+    initialize = function(reject_training = FALSE, zero_propensity = FALSE) {
+      self$reject_training = reject_training
+      self$zero_propensity = zero_propensity
+      super$initialize(id = "classif.apo_leakage", feature_types = "numeric",
+        predict_types = "prob", properties = "twoclass")
+    }
+  ),
+  private = list(
+    .train = function(task) {
+      if (self$reject_training) stop("APO training was reached before support validation.")
+      if (!identical(task$positive, "1")) stop("Wrong positive APO class.")
+      list(train_ids = task$row_ids, target = task$truth(),
+        log = new.env(parent = emptyenv()))
+    },
+    .predict = function(task) {
+      if (any(task$row_ids %in% self$model$train_ids)) stop("In-sample APO prediction.")
+      self$model$log$test_ids = c(self$model$log$test_ids, task$row_ids)
+      p = if (self$zero_propensity) rep(0, task$nrow) else .2 + task$row_ids / 1000
+      # Return class 0 first to catch selection by position instead of class name.
+      list(prob = cbind("0" = 1 - p, "1" = p))
+    }
+  )
+)
