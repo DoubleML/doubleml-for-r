@@ -212,6 +212,21 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       names(private$coef_) = names(private$se_) = names(private$t_stat_) =
         names(private$pval_) = as.character(self$treatment_level)
       invisible(self)
+    },
+    #' @description
+    #' Calculates group-specific average potential outcomes from the fitted
+    #' orthogonal APO signal without refitting nuisance learners. The initial
+    #' group API requires fully cross-fitted DML2 estimation.
+    #' @param groups (`factor`, `character`, `logical`, `numeric`) \cr
+    #' A categorical group label for every observation, in data-row order.
+    #' @return A fitted [DoubleMLFramework] with one GAPO per observed group.
+    gapo = function(groups) {
+      if (any(!is.finite(self$all_coef))) {
+        stop("Fit the DoubleMLAPO object before calling gapo().")
+      }
+      apo_models = list(self)
+      names(apo_models) = as.character(self$treatment_level)
+      make_apo_group_framework(apo_models, groups)
     }
   ),
   private = list(
