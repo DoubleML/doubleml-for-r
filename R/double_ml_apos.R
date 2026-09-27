@@ -30,7 +30,8 @@
 #' unfitted; a failed refit retains the previous complete result. Changing sample
 #' splits or successfully tuning clears the published joint result.
 #' Components are accessible for inspection, but changing their data or splits
-#' directly can break synchronization; use coordinator methods for these tasks.
+#' directly can break synchronization. Use `set_sample_splitting()` to change
+#' splits. Construct a new coordinator when changing the data.
 #'
 #' Clustered data and instruments are rejected. Learner fitting requires disjoint
 #' training/test rows with treatment support in every training fold. Without
