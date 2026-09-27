@@ -120,3 +120,86 @@ ApoLeakageClassif = R6::R6Class("ApoLeakageClassif",
     }
   )
 )
+
+# nolint start: object_usage_linter.
+# The package harness loads model classes; R6 supplies self and super bindings.
+# Deterministic nuisances vary across folds and repetitions. Feature x is a
+# stable observation ID, exposing conditional training and complement coding.
+apo_irm_equivalence_fixture = function(threshold) {
+  outcome = R6::R6Class("ApoIrmEquivalenceRegr",
+    inherit = mlr3::LearnerRegr,
+    public = list(
+      initialize = function() {
+        super$initialize(id = "regr.apo_irm_equivalence", feature_types = c("numeric", "integer"),
+          predict_types = "response")
+      }
+    ),
+    private = list(
+      .train = function(task) {
+        x = task$data(cols = "x")$x
+        level = unique((x - 1) %% 2)
+        if (length(level) != 1L) stop("Outcome training must be conditional on treatment.")
+        list(level = level, offset = mean(x) / 100, train_ids = x)
+      },
+      .predict = function(task) {
+        x = task$data(cols = "x")$x
+        if (any(x %in% self$model$train_ids)) stop("In-sample outcome prediction.")
+        list(response = .3 + x / 20 + self$model$level * (1 + x / 10) +
+          self$model$offset)
+      }
+    )
+  )
+  propensity = R6::R6Class("ApoIrmEquivalenceClassif",
+    inherit = mlr3::LearnerClassif,
+    public = list(
+      initialize = function() {
+        super$initialize(id = "classif.apo_irm_equivalence",
+          feature_types = c("numeric", "integer"), predict_types = "prob", properties = "twoclass")
+      }
+    ),
+    private = list(
+      .train = function(task) {
+        x = task$data(cols = "x")$x
+        d = (x - 1) %% 2
+        target = as.integer(as.character(task$truth()))
+        if (!all(target == d) && !all(target == 1 - d)) stop("Unexpected treatment coding.")
+        list(complement = all(target == 1 - d), offset = mean(x) / 1000, train_ids = x)
+      },
+      .predict = function(task) {
+        x = task$data(cols = "x")$x
+        if (any(x %in% self$model$train_ids)) stop("In-sample propensity prediction.")
+        p = .3 + .1 * ((x - 1) %% 5) + self$model$offset
+        p[x == 1] = .02
+        p[x == 2] = .98
+        if (self$model$complement) p = 1 - p
+        list(prob = cbind("0" = 1 - p, "1" = p))
+      }
+    )
+  )
+  x = seq_len(48L)
+  d = rep(0:1, 24L)
+  data = DoubleMLData$new(data.frame(
+    y = .5 + x / 17 + d * (2 + x / 30) + cos(x) / 3, d = d, x = x
+  ), y_col = "y", d_cols = "d", x_cols = "x")
+  smpls = lapply(c(2L, 4L), function(block_size) {
+    fold = ((x - 1L) %/% block_size) %% 2L
+    tests = lapply(0:1, function(k) which(fold == k))
+    list(train_ids = lapply(tests, function(ids) setdiff(x, ids)), test_ids = tests)
+  })
+  ml_g = outcome$new()
+  ml_m = propensity$new()
+  irm = DoubleMLIRM$new(data, ml_g$clone(deep = TRUE), ml_m$clone(deep = TRUE),
+    n_folds = 2, n_rep = 2, score = "ATE", dml_procedure = "dml2",
+    trimming_threshold = threshold, draw_sample_splitting = FALSE)
+  apos = lapply(0:1, function(level) {
+    DoubleMLAPO$new(data, ml_g$clone(deep = TRUE), ml_m$clone(deep = TRUE), level,
+      n_folds = 2, n_rep = 2, dml_procedure = "dml2", normalize_ipw = FALSE,
+      trimming_threshold = threshold, draw_sample_splitting = FALSE)
+  })
+  for (obj in c(list(irm), apos)) {
+    obj$set_sample_splitting(smpls)
+    obj$fit(store_predictions = TRUE)
+  }
+  list(irm = irm, apo0 = apos[[1]], apo1 = apos[[2]], smpls = smpls)
+}
+# nolint end: object_usage_linter.
