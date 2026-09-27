@@ -263,25 +263,53 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' and covariance. Bootstrap this returned framework for joint inference.
     causal_contrast = function(reference = NULL, contrast = NULL) {
       private$require_fit()
-      if (is.null(reference) == is.null(contrast)) {
-        stop("Supply exactly one of reference and contrast.")
-      }
-      if (!is.null(reference)) {
-        if (length(reference) != 1L) stop("reference must contain exactly one treatment label.")
-        reference = get_apo_levels(self$treatment_levels, reference)
-        reference_index = match(reference, self$treatment_levels)
-        other = setdiff(seq_along(self$treatment_levels), reference_index)
-        if (!length(other)) {
-          stop("Reference contrasts require at least two requested treatment levels.")
-        }
-        labels = names(self$apo_models)
-        contrast = matrix(0, length(other), length(labels),
-          dimnames = list(paste(labels[other], "-", labels[reference_index]), labels)
-        )
-        contrast[cbind(seq_along(other), other)] = 1
-        contrast[, reference_index] = -1
-      }
+      contrast = private$prepare_contrast(reference, contrast)
       self$framework$linear_transform(contrast)
+    },
+    #' @description Return jointly inferred within-group treatment contrasts.
+    #' Group means are built from the fitted APO orthogonal signals without
+    #' refitting nuisances. The initial API requires fully cross-fitted DML2.
+    #' @param groups (factor, character, logical or numeric vector) One fixed
+    #' categorical label per observation, aligned with the fitted data rows.
+    #' @param reference (factor, character or numeric scalar, or NULL) One
+    #' requested treatment label. Every other treatment is contrasted with it.
+    #' @param contrast (numeric matrix or NULL) Finite K-by-J treatment contrast
+    #' matrix. Every nonzero row must sum to zero within numerical tolerance.
+    #' Supply exactly one of reference and contrast.
+    #' @return A new [DoubleMLFramework] ordered group-major, contrast-minor.
+    gate = function(groups, reference = NULL, contrast = NULL) {
+      private$require_fit()
+      contrast = private$prepare_contrast(reference, contrast)
+      validated = self$framework$linear_transform(contrast)
+      contrast_names = names(validated$coef)
+      if (!is.null(colnames(contrast))) {
+        contrast = contrast[, names(self$apo_models), drop = FALSE]
+      }
+      if (any(rowSums(abs(contrast)) == 0)) {
+        stop("Every GATE contrast row must be nonzero.")
+      }
+      if (any(abs(rowSums(contrast)) > sqrt(.Machine$double.eps))) {
+        stop("Every GATE contrast row must sum to zero within numerical tolerance.")
+      }
+
+      prepared = prepare_apo_groups(groups, private$data_$n_obs)
+      group_framework = make_apo_group_framework(self$apo_models, groups)
+      transform = kronecker(diag(length(prepared$labels)), contrast)
+      group_names = encode_apo_group_label(prepared$labels)
+      encoded_contrasts = encode_apo_group_label(contrast_names)
+      coef_names = unlist(lapply(group_names, function(group) {
+        paste0("GATE[contrast=", encoded_contrasts, ";group=", group, "]")
+      }), use.names = FALSE)
+      rownames(transform) = coef_names
+      colnames(transform) = rownames(group_framework$all_coef)
+      result = group_framework$linear_transform(transform, coef_names)
+      invalid = which(result$all_se <= 0, arr.ind = TRUE)
+      if (nrow(invalid)) {
+        first = invalid[1L, ]
+        stop("GATE inference requires a positive standard error for ",
+          rownames(result$all_se)[first[1L]], ", repetition ", first[2L], ".")
+      }
+      result
     },
     #' @description Bootstrap the joint APOS framework using common multipliers.
     #' @param method (character) One of "normal", "Bayes", or "wild".
@@ -369,6 +397,29 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     store_models_ = FALSE,
     require_fit = function() {
       if (is.null(self$framework)) stop("Call fit() before accessing APOS fitted results.")
+    },
+    prepare_contrast = function(reference = NULL, contrast = NULL) {
+      if (is.null(reference) == is.null(contrast)) {
+        stop("Supply exactly one of reference and contrast.")
+      }
+      if (!is.null(reference)) {
+        if (length(reference) != 1L) {
+          stop("reference must contain exactly one treatment label.")
+        }
+        reference = get_apo_levels(self$treatment_levels, reference)
+        reference_index = match(reference, self$treatment_levels)
+        other = setdiff(seq_along(self$treatment_levels), reference_index)
+        if (!length(other)) {
+          stop("Reference contrasts require at least two requested treatment levels.")
+        }
+        labels = names(self$apo_models)
+        contrast = matrix(0, length(other), length(labels),
+          dimnames = list(paste(labels[other], "-", labels[reference_index]), labels)
+        )
+        contrast[cbind(seq_along(other), other)] = 1
+        contrast[, reference_index] = -1
+      }
+      contrast
     },
     check_components = function(components) {
       if (is.null(self$smpls)) stop("Set sample splitting before fitting or tuning APOS.")
