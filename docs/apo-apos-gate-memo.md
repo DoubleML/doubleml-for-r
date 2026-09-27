@@ -198,10 +198,12 @@ $$
 
 They obey $\sum_{i\in I_r}\hat\phi_{i,dg,r}=0$ exactly. Outside $I_r$
 store finite zeros, preserving the original $N$-row layout; do not count
-those rows in $n_{gr}$, $m_r$ or covariance. No-cross-fitting support is
-limited to the already supported single repetition with honest held-out
-predictions and representative evaluation sampling. Arbitrary selective
-holdout sampling can change the target population.
+those rows in $n_{gr}$, $m_r$ or covariance. These formulas describe an
+honest single-repetition held-out sample with representative evaluation
+sampling, but the initial public group API does not expose that case: the
+base class routes no-cross-fitting to DML1, whose group fold weighting needs
+a separate derivation. Arbitrary selective holdout sampling can also change
+the target population.
 
 The canonical signal source is `apo$psi_b[, r, 1]`, available even when
 optional prediction storage is disabled. On evaluation rows it can also be
@@ -467,9 +469,9 @@ The proposed first implementation has these explicit boundaries:
   Actual population overlap and positive limiting group prevalence remain
   required. Core nuisance-training support errors still apply.
 - Require successful fitted built-in APO models, synchronized rows/splits,
-  DML2, finite evaluation signals and positive per-repetition marginal SEs
-  for returned estimands. Support repeated full cross-fitting and the existing honest
-  single-repetition held-out mode. Reject DML1, repeated no-cross-fitting,
+  fully cross-fitted DML2, finite evaluation signals and positive
+  per-repetition marginal SEs for returned estimands. Reject DML1 and every
+  no-cross-fitting mode,
   clustered data, instruments, survey weights, in-sample learned or soft membership
   and a custom-score extension. No group-specific nuisance refitting or
   alteration of fitted trimming/normalization is performed.
