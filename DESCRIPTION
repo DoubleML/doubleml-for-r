@@ -64,6 +64,7 @@ Collate:
     'double_ml_pliv.R'
     'double_ml_plr.R'
     'helper.R'
+    'helper_apo.R'
     'datasets.R'
     'zzz.R'
 Config/roxygen2/version: 8.0.0
