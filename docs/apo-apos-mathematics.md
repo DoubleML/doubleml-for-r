@@ -201,13 +201,91 @@ also changes the finite-sample score and is excluded from this identity.
 Bootstrap draws need not match bit-for-bit across class implementations; this
 identity concerns the score, estimates and covariance-aware standard errors.
 
-## Boundaries and pending memo gates
+## Group-specific APOs and GATEs
+
+Let $G=h(X)$ be a fixed finite categorical partition defined from baseline
+information, with $S_{ig}=1\{G_i=g\}$ and $q_g=E[S_g]>0$. Group labels are
+nominal. For treatment label $d$, the group average potential outcome is
+
+$$
+\theta_d(g)=E[Y(d)\mid G=g]
+=\frac{E[S_g A_d]}{q_g},
+$$
+
+where $A_d$ is the APO augmented signal defined above. Because $S_g$ is
+measurable with respect to baseline $X$, the APO orthogonality argument remains
+valid after multiplication by $S_g$. Estimating the prevalence is part of the
+ratio target. Its centered influence contribution is
+
+$$
+\phi_{dg}(W)=\frac{S_g}{q_g}\{A_d-\theta_d(g)\},
+$$
+
+not $S_g A_d/q_g-\theta_d(g)$ and not the globally centered APO contribution
+multiplied by $S_g/q_g$.
+
+The implemented group API is restricted to fully cross-fitted DML2, so every
+repetition evaluates all $N$ observations. With
+$n_g=\sum_i S_{ig}$ and $\hat q_g=n_g/N$, it uses the stored APO `psi_b`
+signal $A_{idr}$ directly:
+
+$$
+\hat\theta_{dr}(g)=\frac{1}{n_g}\sum_{i:G_i=g}A_{idr},\qquad
+\hat\phi_{i,dg,r}=\frac{S_{ig}}{\hat q_g}
+\{A_{idr}-\hat\theta_{dr}(g)\}.
+$$
+
+Stack columns in group-major, treatment-minor order. For repetition $r$ the
+joint covariance of all GAPOs is
+
+$$
+\widehat V_r^{\mathrm{GAPO}}
+=\frac{1}{N^2}\sum_{i=1}^N
+\hat\phi_{ir}^{\mathrm{GAPO}}
+(\hat\phi_{ir}^{\mathrm{GAPO}})^{\mathsf T}.
+$$
+
+Contributions from two disjoint groups have zero cross-product, while
+cross-treatment covariance within a group is retained. A marginal GAPO is an
+outcome level, not a treatment effect.
+
+Let $C$ be a $K\times J$ treatment-contrast matrix whose nonzero rows sum to
+zero. These rows define within-group treatment effects and therefore qualify as
+GATEs. With $H$ groups, the block transform is
+
+$$
+L=I_H\otimes C,\qquad
+\hat\delta_r=L\hat\theta_r^{\mathrm{GAPO}},\qquad
+\hat\phi_{ir}^{\delta}=L\hat\phi_{ir}^{\mathrm{GAPO}},\qquad
+\widehat V_r^{\delta}=L\widehat V_r^{\mathrm{GAPO}}L^{\mathsf T}.
+$$
+
+`DoubleMLAPO$gapo()` returns the GAPO framework. `DoubleMLAPOS$gate()` applies
+this block transform and returns one framework ordered group-major and
+contrast-minor. Both inherit the repeated-split aggregation, common-multiplier
+bootstrap, joint intervals and Romano-Wolf procedure described above. The
+binary contrast $A_1-A_0$ also implies that grouped APOS GATEs reduce to group
+means of the matched IRM ATE signal under the same conditions as the global
+binary reduction.
+
+Every observed group must contain at least two evaluation rows; counts two
+through five warn. Missing observed group-treatment cells and more than five
+percent group-specific trimming also warn. Nonfinite signals and nonpositive
+marginal standard errors fail. These finite-sample checks do not replace the
+population requirements of positive limiting group prevalence, within-group
+overlap, moments and nuisance rates.
+
+## Boundaries and pending sensitivity gate
 
 APOS publishes results only after all cloned component fits and joint covariance
 construction succeed. Failed refits retain the previous complete result; new
 splits and successful tuning invalidate it. Clustered data and instruments are
 rejected: the formulas above are for independent observations.
 
-GATE is pending its separate reviewed memo gate. Sensitivity theory and its
-section are to be completed only by Task 13 after review. No GATE or sensitivity
-API, bound, Riesz formula or other unproved extension is specified here.
+Group membership must be a fixed, exhaustive categorical baseline partition
+aligned position-for-position with the fitted rows. DML1, no-cross-fitting,
+post-treatment or outcome-adaptive groups, soft or overlapping membership,
+clusters, instruments, survey weights and custom scores are outside the group
+API. Sensitivity theory and its section remain a separate mandatory memo gate;
+no sensitivity bound, Riesz formula or other unreviewed extension is specified
+here.

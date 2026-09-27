@@ -43,8 +43,21 @@ training/test rows with treatment support in every training fold. Without
 cross-fitting, only one repetition is supported, with one held-out set;
 full-sample one-fold splits require external predictions. Binary unnormalized
 contrasts equal the IRM ATE under the matched-nuisance conditions in
-\link{DoubleMLAPO}. GATE and sensitivity analysis are pending separate reviewed
-memo gates and have no methods in this core API.
+\link{DoubleMLAPO}.
+
+After a fully cross-fitted DML2 fit, \code{gate(groups, reference, contrast)} builds
+one joint family of within-group treatment contrasts from the stored APO
+signals. Exactly one of \code{reference} and \code{contrast} is required, and every
+nonzero contrast row must sum to zero within numerical tolerance. Group labels
+follow the positional, categorical ordering rules of \link{DoubleMLAPO} \code{gapo()};
+results are ordered group-major and contrast-minor. The returned
+\link{DoubleMLFramework} retains all cross-treatment covariance and must be
+bootstrapped separately for joint intervals or Romano-Wolf adjustment.
+Groups must be fixed baseline partitions, not post-treatment, overlapping,
+soft or learned from this estimation sample. Rare support warns; singleton
+groups and nonpositive marginal standard errors fail. DML1, no-cross-fitting,
+clusters, instruments and survey weights are unsupported. Sensitivity analysis
+remains pending its separate reviewed memo gate.
 }
 \examples{
 \donttest{
@@ -66,6 +79,10 @@ apos$confint(joint = TRUE)
 effects = apos$causal_contrast(reference = "control")
 effects$bootstrap(n_rep_boot = 199)
 effects$confint(joint = TRUE)
+groups = ifelse(x <= 0, "lower x", "higher x")
+gates = apos$gate(groups, reference = "control")
+gates$bootstrap(n_rep_boot = 99)
+gates$confint(joint = TRUE)
 }
 }
 \seealso{
@@ -113,6 +130,7 @@ NULL when splitting was deferred and has not yet been supplied.}
 \item \href{#method-DoubleMLAPOS-set_sample_splitting}{\code{DoubleMLAPOS$set_sample_splitting()}}
 \item \href{#method-DoubleMLAPOS-fit}{\code{DoubleMLAPOS$fit()}}
 \item \href{#method-DoubleMLAPOS-causal_contrast}{\code{DoubleMLAPOS$causal_contrast()}}
+\item \href{#method-DoubleMLAPOS-gate}{\code{DoubleMLAPOS$gate()}}
 \item \href{#method-DoubleMLAPOS-bootstrap}{\code{DoubleMLAPOS$bootstrap()}}
 \item \href{#method-DoubleMLAPOS-confint}{\code{DoubleMLAPOS$confint()}}
 \item \href{#method-DoubleMLAPOS-p_adjust}{\code{DoubleMLAPOS$p_adjust()}}
@@ -268,6 +286,36 @@ Row names must be unique and nonblank; unnamed rows receive contrast1,
 \subsection{Returns}{
 A new \link{DoubleMLFramework} retaining joint influence contributions
 and covariance. Bootstrap this returned framework for joint inference.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DoubleMLAPOS-gate"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLAPOS-gate}{}}}
+\subsection{Method \code{gate()}}{
+Return jointly inferred within-group treatment contrasts.
+Group means are built from the fitted APO orthogonal signals without
+refitting nuisances. The initial API requires fully cross-fitted DML2.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLAPOS$gate(groups, reference = NULL, contrast = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{(factor, character, logical or numeric vector) One fixed
+categorical label per observation, aligned with the fitted data rows.}
+
+\item{\code{reference}}{(factor, character or numeric scalar, or NULL) One
+requested treatment label. Every other treatment is contrasted with it.}
+
+\item{\code{contrast}}{(numeric matrix or NULL) Finite K-by-J treatment contrast
+matrix. Every nonzero row must sum to zero within numerical tolerance.
+Supply exactly one of reference and contrast.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new \link{DoubleMLFramework} ordered group-major, contrast-minor.
 }
 }
 \if{html}{\out{<hr>}}

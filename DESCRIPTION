@@ -13,7 +13,8 @@ Description: Implementation of the double/debiased machine learning framework of
     regression models, partially linear instrumental variable regression models,
     interactive regression models and interactive instrumental variable
     regression models, and average potential outcomes for nominal treatments
-    with joint inference and linear causal contrasts.
+    with joint inference, linear causal contrasts, group-specific outcomes and
+    within-group treatment contrasts.
     'DoubleML' allows estimation of the nuisance parts in
     these models by machine learning methods and computation of the Neyman
     orthogonal score functions. 'DoubleML' is built on top of 'mlr3' and the

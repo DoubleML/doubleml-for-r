@@ -1,4 +1,6 @@
 ^.*\.Rproj$
+^\.git$
+^\.superpowers$
 ^CODE_OF_CONDUCT.md
 ^CONTRIBUTING.md
 ^Meta$

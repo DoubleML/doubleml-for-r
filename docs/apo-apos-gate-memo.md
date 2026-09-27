@@ -1,7 +1,9 @@
 # APO group outcomes and GATE: theory and API review memo
 
-Date: 2026-09-27. Status: proposed group-effect contract for user review;
-no group-effect implementation or follow-up implementation plan is included.
+Date: 2026-09-27. Status: reviewed and implemented on `feature/apo-apos`
+through `84508c0`, with documentation and package verification finalized by
+the current documentation commit; sensitivity analysis remains a separate
+pending memo gate.
 R audit base: `bc2cf570fb4231168bb67e9e8321b1451602e9a1`.
 
 This four-part memo answers original specification section 26 and the
@@ -425,9 +427,10 @@ because observation multipliers need no matrix inverse; zero marginal SEs
 are not suitable for studentization and the group methods should reject
 such inference results with an estimand-specific error.
 
-### Proposed public contract and unsupported inputs
+### Implemented public contract and unsupported inputs
 
-Propose `DoubleMLAPO$gapo(groups)` returning a `DoubleMLFramework` with one
+The implementation provides `DoubleMLAPO$gapo(groups)` returning a
+`DoubleMLFramework` with one
 GAPO per observed group, and
 `DoubleMLAPOS$gate(groups, reference = NULL, contrast = NULL)` returning a
 `DoubleMLFramework` for within-group treatment contrasts. Exactly one of
@@ -443,7 +446,7 @@ is necessary. Existing `coef`, `se`, `all_coef`, `all_se`, `psi`, `all_cov`,
 `summary()`, `confint()`, `bootstrap()`, `p_adjust()`, and
 `linear_transform()` supply the requested inference surface.
 
-The proposed first implementation has these explicit boundaries:
+The first implementation has these explicit boundaries:
 
 - `groups` is one atomic categorical vector of length $N$: factor, character,
   logical or finite numeric labels. Numeric values are labels, not cutpoints.
@@ -482,6 +485,35 @@ The proposed first implementation has these explicit boundaries:
   is the fixed convention above. Cross-group contrasts can then select
   named columns with `linear_transform()`.
 
+### Implementation record
+
+The reviewed design was implemented in four focused commits:
+
+- `a95a6bb` builds categorical-group validation, stable encoded names and the
+  joint prevalence-centered GAPO framework.
+- `5bd89d1` adds `DoubleMLAPO$gapo()` without refitting or mutating the APO.
+- `ce7f819` adds covariance-aware `DoubleMLAPOS$gate()` and shares APOS contrast
+  validation between global and group contrasts.
+- `84508c0` adds direct-signal, repeated-split, common-multiplier, singular
+  contrast and binary IRM-reduction regression tests.
+
+The focused `apo|framework|double_ml_irm` suite completed with no failures and
+one pre-existing, explicitly asserted APO trimming warning. Deterministic tests
+verify every repetition's coefficients, influence contributions, covariance and
+standard errors, plus framework aggregation, joint intervals and Romano-Wolf
+adjustment. The package-wide test suite also completed with no failures, four
+documented SSM skips, 440 existing `glmnet` warnings and the asserted APO
+trimming warning. `R CMD build .` produced
+`DoubleML_1.0.1.9000.tar.gz`; local `R CMD check --as-cran` on that exact
+artifact completed with zero errors and zero warnings. Its two notes were
+`Version contains large components (1.0.1.9000)` and skipped HTML validation
+because the optional `tidy` executable was unavailable. Remote CRAN URL/version
+lookups were disabled after an earlier run documented the already-published
+version and an unrelated historical URL certificate mismatch. The repository's
+`pre-commit` executable was unavailable, so the hook was not claimed as passed;
+native style, parse, lint, whitespace, Rd, example, vignette, build and PDF
+manual checks passed instead.
+
 ### Review conclusions and verification obligations
 
 All four section 26 questions are resolved: (1) Python IRM GATE uses
@@ -500,10 +532,10 @@ off-group blocks, direct versus stacked treatment and cross-group contrasts,
 binary IRM signal reduction, unequal group sizes, repetitions and held-out
 evaluation scaling. Common-multiplier perturbations must reproduce the
 matrix formula under a fixed seed; invalid group inputs and every unsupported
-fit mode must fail informatively. These are acceptance obligations for a
-later plan, not implementation steps or claims of implemented group methods.
+fit mode must fail informatively. These obligations are covered by the
+implementation and stress tests listed above; the documentation task completed
+the package build and check evidence recorded above.
 
-This memo is the required review checkpoint. Stop here for user review;
-only after approval should a separate GATE TDD implementation plan be
-written and execution approval obtained. Sensitivity remains a separate
-theory gate.
+This memo was the required review checkpoint and was approved before the GATE
+TDD plan was executed. Sensitivity remains a separate mandatory theory gate;
+no sensitivity formulas or API are approved by this implementation record.

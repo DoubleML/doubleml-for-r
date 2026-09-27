@@ -38,8 +38,21 @@
 #' cross-fitting, only one repetition is supported, with one held-out set;
 #' full-sample one-fold splits require external predictions. Binary unnormalized
 #' contrasts equal the IRM ATE under the matched-nuisance conditions in
-#' [DoubleMLAPO]. GATE and sensitivity analysis are pending separate reviewed
-#' memo gates and have no methods in this core API.
+#' [DoubleMLAPO].
+#'
+#' After a fully cross-fitted DML2 fit, `gate(groups, reference, contrast)` builds
+#' one joint family of within-group treatment contrasts from the stored APO
+#' signals. Exactly one of `reference` and `contrast` is required, and every
+#' nonzero contrast row must sum to zero within numerical tolerance. Group labels
+#' follow the positional, categorical ordering rules of [DoubleMLAPO] `gapo()`;
+#' results are ordered group-major and contrast-minor. The returned
+#' [DoubleMLFramework] retains all cross-treatment covariance and must be
+#' bootstrapped separately for joint intervals or Romano-Wolf adjustment.
+#' Groups must be fixed baseline partitions, not post-treatment, overlapping,
+#' soft or learned from this estimation sample. Rare support warns; singleton
+#' groups and nonpositive marginal standard errors fail. DML1, no-cross-fitting,
+#' clusters, instruments and survey weights are unsupported. Sensitivity analysis
+#' remains pending its separate reviewed memo gate.
 #' @examples
 #' \donttest{
 #' set.seed(42)
@@ -60,6 +73,10 @@
 #' effects = apos$causal_contrast(reference = "control")
 #' effects$bootstrap(n_rep_boot = 199)
 #' effects$confint(joint = TRUE)
+#' groups = ifelse(x <= 0, "lower x", "higher x")
+#' gates = apos$gate(groups, reference = "control")
+#' gates$bootstrap(n_rep_boot = 99)
+#' gates$confint(joint = TRUE)
 #' }
 #' @usage NULL
 #' @export
@@ -306,8 +323,10 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
       invalid = which(result$all_se <= 0, arr.ind = TRUE)
       if (nrow(invalid)) {
         first = invalid[1L, ]
-        stop("GATE inference requires a positive standard error for ",
-          rownames(result$all_se)[first[1L]], ", repetition ", first[2L], ".")
+        stop(
+          "GATE inference requires a positive standard error for ",
+          rownames(result$all_se)[first[1L]], ", repetition ", first[2L], "."
+        )
       }
       result
     },

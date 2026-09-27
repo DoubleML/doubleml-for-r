@@ -51,9 +51,19 @@ truncation and unnormalized weights agree. Use \link{DoubleMLAPOS} for
 covariance-aware contrasts; marginal standard errors alone are insufficient.
 Separate binary fits need not produce complementary probabilities.
 
-Clustered data and instrumental variables are not supported. Group average
-treatment effects (GATE) and sensitivity analysis remain pending their
-separate reviewed memo gates; neither is part of this core API.
+After a fully cross-fitted DML2 fit, \code{gapo(groups)} averages the stored
+orthogonal APO signal within a fixed categorical baseline partition. \code{groups}
+is aligned position-for-position with the fitted rows and may be a factor,
+character, logical or finite numeric vector. Observed factor levels determine
+group order; other vectors use first appearance. Numeric values remain labels.
+The returned \link{DoubleMLFramework} contains one group average potential outcome
+(GAPO) per group, with prevalence-scaled centered contributions. Its
+\code{summary()}, \code{confint()}, \code{bootstrap()} and \code{p_adjust()} methods provide
+marginal and joint inference. Groups of two through five rows warn; singleton
+groups, nonpositive standard errors, DML1 and no-cross-fitting are rejected.
+Group rules learned from this estimation sample, post-treatment groups,
+overlapping/soft membership, clusters, instruments and survey weights are
+outside this API. Sensitivity analysis remains pending its reviewed memo gate.
 }
 \examples{
 set.seed(42)
@@ -70,6 +80,9 @@ apo$fit()
 apo$summary()
 apo$confint()
 apo$propensity_diagnostics[[1]]$fold_class_counts
+groups = ifelse(x <= 0, "lower x", "higher x")
+gapo = apo$gapo(groups)
+gapo$summary()
 }
 \seealso{
 \link{DoubleML}, \link{DoubleMLAPOS}, \link{DoubleMLFramework}, \link{DoubleMLIRM}
@@ -104,6 +117,7 @@ weights and selected/complement class counts for each train/test fold.}
 \itemize{
 \item \href{#method-DoubleMLAPO-new}{\code{DoubleMLAPO$new()}}
 \item \href{#method-DoubleMLAPO-fit}{\code{DoubleMLAPO$fit()}}
+\item \href{#method-DoubleMLAPO-gapo}{\code{DoubleMLAPO$gapo()}}
 \item \href{#method-DoubleMLAPO-clone}{\code{DoubleMLAPO$clone()}}
 }
 }
@@ -236,6 +250,29 @@ by repetition by one treatment; diagnostics expose effective values.
 }
 \subsection{Returns}{
 Invisibly returns the fitted model.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DoubleMLAPO-gapo"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLAPO-gapo}{}}}
+\subsection{Method \code{gapo()}}{
+Calculates group-specific average potential outcomes from the fitted
+orthogonal APO signal without refitting nuisance learners. The initial
+group API requires fully cross-fitted DML2 estimation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLAPO$gapo(groups)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{groups}}{(\code{factor}, \code{character}, \code{logical}, \code{numeric}) \cr
+A categorical group label for every observation, in data-row order.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A fitted \link{DoubleMLFramework} with one GAPO per observed group.
 }
 }
 \if{html}{\out{<hr>}}
