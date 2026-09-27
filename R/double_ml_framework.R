@@ -7,7 +7,55 @@
 #' use coordinate-wise medians and the same aggregation as DoubleML models.
 #'
 #' @format [R6::R6Class] object.
-#' @family DoubleML
+#' @seealso [DoubleMLAPO], [DoubleMLAPOS]
+#' @details
+#' This class does not fit nuisance models or establish causal identification.
+#' Inputs must refer to the same observations, estimands and sample splits.
+#' Influence contributions must include the negative inverse score derivative;
+#' for APO they are the augmented outcome minus its estimate.
+#' For evaluation rows \eqn{I_r} in repetition \eqn{r}, covariance is
+#' \deqn{\widehat V_r = |I_r|^{-2}\sum_{i \in I_r}\phi_{ir}\phi_{ir}^T.}
+#' This is the covariance of estimates, not the unscaled covariance of scores.
+#' Supplied standard errors are checked for shape and nonnegativity; callers
+#' must ensure they agree with the influence contributions. Linear transforms
+#' recompute standard errors from the transformed covariance.
+#'
+#' Let \eqn{N} be the observation dimension of `psi`. Each coefficient is the
+#' median across repetitions, with squared standard error
+#' \eqn{\operatorname{median}_r\{N s_{jr}^2 +
+#' (\widehat\theta_{jr}-\widetilde\theta_j)^2\}/N}.
+#' Without cross-fitting, covariance uses the actual evaluation size but
+#' aggregation still uses \eqn{N}. APOS supports only one such repetition.
+#' There is no aggregated covariance: `all_cov` retains each repetition.
+#'
+#' `linear_transform()` applies a matrix to each repetition before aggregation
+#' and retains off-diagonal covariance. `concat()` requires aligned observations,
+#' repetitions and splits; callers must establish observation identity when row
+#' names are absent. Both return fresh, unbootstrapped objects. Bootstrap
+#' multipliers are common to all estimands within each repetition. Joint
+#' intervals use the quantile of the maximum absolute bootstrap statistic over
+#' the full estimand family, pooling columns across repetitions.
+#' No cluster-robust inference, GATE or sensitivity methods are provided; GATE
+#' and sensitivity extensions remain pending separate reviewed memo gates.
+#' @usage NULL
+#' @examples
+#' set.seed(42)
+#' outcomes = cbind(control = rnorm(40), filter = rnorm(40, mean = 1))
+#' means = colMeans(outcomes)
+#' influence = sweep(outcomes, 2, means)
+#' framework = DoubleMLFramework$new(
+#'   all_coef = matrix(means, ncol = 1),
+#'   all_se = matrix(sqrt(colSums(influence^2)) / 40, ncol = 1),
+#'   psi = array(influence, c(40, 2, 1)), coef_names = colnames(outcomes)
+#' )
+#' contrast = matrix(c(-1, 1),
+#'   nrow = 1,
+#'   dimnames = list("filter - control", colnames(outcomes))
+#' )
+#' effects = framework$linear_transform(contrast)
+#' effects$summary()
+#' effects$bootstrap(n_rep_boot = 199)
+#' effects$confint(joint = TRUE)
 #' @export
 DoubleMLFramework = R6Class("DoubleMLFramework",
   active = list(
@@ -97,6 +145,7 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
     #' @param apply_cross_fitting (`logical(1)`) Whether all observations are
     #' evaluation observations. Without cross-fitting, splits are required and
     #' each repetition must have exactly one evaluation set.
+    #' @return A new `DoubleMLFramework` object.
     initialize = function(all_coef, all_se, psi, coef_names, smpls = NULL,
                           apply_cross_fitting = TRUE) {
       private$check_matrix(all_coef, "all_coef")
@@ -160,6 +209,7 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
       invisible(table)
     },
     #' @description Print the framework and its summary.
+    #' @return Invisibly returns the framework.
     print = function() {
       cat("================== DoubleMLFramework ==================\n")
       self$summary()

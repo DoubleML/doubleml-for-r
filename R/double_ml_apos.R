@@ -5,8 +5,22 @@
 #' sample splits. Joint covariance retains dependence between all potential
 #' outcome estimates through their observation-level influence contributions.
 #' @format [R6::R6Class] object.
-#' @family DoubleML
+#' @seealso [DoubleMLAPO], [DoubleMLFramework], [DoubleMLIRM]
 #' @details
+#' Each component targets \eqn{E[Y(d)]}, under consistency, conditional
+#' exchangeability and positivity for that label. See [DoubleMLAPO] for the
+#' nuisance functions, orthogonal score, trimming, normalization and regularity
+#' conditions. Components use selected-level outcome regressions and separate
+#' one-vs-rest propensity classifiers on all rows; estimated probabilities need
+#' not sum to one. Requesting a subset does not restrict the data to that subset.
+#'
+#' Reference contrasts are other level minus reference. General contrast matrices
+#' transform each repetition's estimates and influence contributions before
+#' aggregation. With repeated splits, this can differ from transforming the
+#' aggregated APO coefficients. Bootstrap draws share multipliers across all
+#' estimands. Bootstrap a returned contrast framework separately before requesting
+#' its joint intervals. Selecting `parm` still uses the full framework family.
+#'
 #' Treatment values are nominal labels. Inferred levels follow observed factor
 #' level order (excluding unused levels), or first appearance for character and
 #' numeric treatments. Explicit subsets retain the requested order.
@@ -15,6 +29,37 @@
 #' covariance calculation succeeds. A failed first fit leaves the coordinator
 #' unfitted; a failed refit retains the previous complete result. Changing sample
 #' splits or successfully tuning clears the published joint result.
+#' Components are accessible for inspection, but changing their data or splits
+#' directly can break synchronization; use coordinator methods for these tasks.
+#'
+#' Clustered data and instruments are rejected. Learner fitting requires disjoint
+#' training/test rows with treatment support in every training fold. Without
+#' cross-fitting, only one repetition is supported, with one held-out set;
+#' full-sample one-fold splits require external predictions. Binary unnormalized
+#' contrasts equal the IRM ATE under the matched-nuisance conditions in
+#' [DoubleMLAPO]. GATE and sensitivity analysis are pending separate reviewed
+#' memo gates and have no methods in this core API.
+#' @examples
+#' \donttest{
+#' set.seed(42)
+#' labels = c("control", "chlorine", "filter", "boiling")
+#' n = 160
+#' x = rnorm(n)
+#' d = factor(rep(labels, length.out = n), levels = labels)
+#' y = x + (d == "filter") + rnorm(n)
+#' data = DoubleMLData$new(data.frame(y, d, x), "y", "d", x_cols = "x")
+#' apos = DoubleMLAPOS$new(data, mlr3::lrn("regr.lm"),
+#'   mlr3::lrn("classif.featureless"),
+#'   n_folds = 2, n_rep = 2
+#' )
+#' apos$fit()
+#' apos$summary()
+#' apos$bootstrap(n_rep_boot = 199)
+#' apos$confint(joint = TRUE)
+#' effects = apos$causal_contrast(reference = "control")
+#' effects$bootstrap(n_rep_boot = 199)
+#' effects$confint(joint = TRUE)
+#' }
 #' @usage NULL
 #' @export
 DoubleMLAPOS = R6Class("DoubleMLAPOS",
@@ -109,6 +154,7 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' @param draw_sample_splitting (logical) Draw one component's splits and
     #' propagate them to all components. Otherwise use set_sample_splitting().
     #' @param apply_cross_fitting (logical) Apply cross-fitting, default TRUE.
+    #' @return A new `DoubleMLAPOS` coordinator.
     initialize = function(data, ml_g, ml_m, treatment_levels = NULL,
                           n_folds = 5, n_rep = 1, score = "APO",
                           dml_procedure = "dml2", trimming_rule = "truncate",
@@ -133,7 +179,8 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
           levels[j], n_folds, n_rep, score, dml_procedure, trimming_rule,
           trimming_threshold, normalize_ipw,
           draw_sample_splitting = draw_sample_splitting && j == 1L,
-          apply_cross_fitting = apply_cross_fitting)
+          apply_cross_fitting = apply_cross_fitting
+        )
       }), labels)
       if (draw_sample_splitting) {
         self$set_sample_splitting(private$apo_models_[[1]]$smpls)
@@ -160,7 +207,7 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' @param external_predictions (named list or NULL) When supplied, exactly one
     #' entry for every requested display label, each containing ml_g and ml_m
     #' numeric observation-by-repetition matrices. Entries cannot be NULL.
-    #' All entries must be finite; propensities must lie in [0, 1] and be strictly
+    #' All entries must be finite; propensities must lie in `[0, 1]` and be strictly
     #' positive when trimming_threshold is zero. NULL fits all nuisance learners.
     #' @return Invisibly returns the coordinator after every component succeeds.
     fit = function(store_predictions = FALSE, store_models = FALSE, external_predictions = NULL) {
@@ -192,7 +239,8 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
         }
         dimnames(psi)[[2]] = label
         DoubleMLFramework$new(all_coef, all_se, psi, label,
-          smpls = model$smpls, apply_cross_fitting = model$apply_cross_fitting)
+          smpls = model$smpls, apply_cross_fitting = model$apply_cross_fitting
+        )
       })
       framework = Reduce(function(left, right) left$concat(right), frameworks)
       private$apo_models_ = components
@@ -227,7 +275,8 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
         }
         labels = names(self$apo_models)
         contrast = matrix(0, length(other), length(labels),
-          dimnames = list(paste(labels[other], "-", labels[reference_index]), labels))
+          dimnames = list(paste(labels[other], "-", labels[reference_index]), labels)
+        )
         contrast[cbind(seq_along(other), other)] = 1
         contrast[, reference_index] = -1
       }
@@ -349,10 +398,13 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
       for (j in seq_along(predictions)) {
         if (is.null(predictions[[j]])) stop("external_predictions entries cannot be NULL.")
         predictions[[j]] = validate_apo_external_predictions(
-          predictions[[j]], private$data_$n_obs, length(self$smpls))
+          predictions[[j]], private$data_$n_obs, length(self$smpls)
+        )
         if (self$apo_models[[j]]$trimming_threshold == 0 && any(predictions[[j]]$ml_m == 0)) {
-          stop("APO positivity requires strictly positive propensities for treatment ",
-            labels[j], ".")
+          stop(
+            "APO positivity requires strictly positive propensities for treatment ",
+            labels[j], "."
+          )
         }
       }
       predictions

@@ -1,0 +1,167 @@
+---
+title: "Average potential outcomes for nominal treatments"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Average potential outcomes for nominal treatments}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+`DoubleMLAPO` estimates the mean outcome if everyone received one treatment
+label. `DoubleMLAPOS` estimates several such means on shared sample splits and
+keeps their covariance for treatment comparisons. Labels may be factors,
+characters or numbers; numeric labels have no dose interpretation.
+
+## A four-label example
+
+Consider a simulated water-treatment study with control, chlorine, filter and
+boiling groups. The outcome is a continuous contamination score; lower is
+better. These are illustrative simulated observations, not empirical findings.
+Assignment is randomized here, so a constant propensity learner is appropriate.
+For observational data, choose nuisance learners suited to the covariates and
+assignment process.
+
+```{r data}
+library(DoubleML)
+set.seed(2026)
+n = 400
+labels = c("control", "chlorine", "filter", "boiling")
+x = rnorm(n)
+d = factor(sample(rep(labels, each = n / 4)), levels = labels)
+effect = c(control = 0, chlorine = -0.5, filter = -1, boiling = -1.5)
+y = 5 + x + unname(effect[as.character(d)]) + rnorm(n)
+data = DoubleMLData$new(data.frame(y, d, x),
+  y_col = "y", d_cols = "d", x_cols = "x"
+)
+```
+
+For each label $d$, the target is $\theta_d = E[Y(d)]$. Consistency,
+conditional exchangeability $Y(d) \perp D \mid X$, and positivity
+$P(D=d \mid X)>0$ identify it as $E[g_d(X)]$, where
+$g_d(X)=E[Y\mid D=d,X]$. The propensity is $p_d(X)=P(D=d\mid X)$.
+The orthogonal score is
+
+$$
+g_d(X) + \frac{1\{D=d\}}{p_d(X)}\{Y-g_d(X)\} - \theta_d.
+$$
+
+The outcome learner trains only on the selected label in each training fold.
+The propensity learner uses every training row in a binary one-vs-rest task.
+Other treatments remain in the complement. These separate classifiers need
+not yield probabilities summing to one. Selecting a subset of labels changes
+the requested estimands, not the population or the rows used for estimation.
+
+```{r fit}
+apos = DoubleMLAPOS$new(data,
+  ml_g = mlr3::lrn("regr.lm"),
+  ml_m = mlr3::lrn("classif.featureless"),
+  n_folds = 2, n_rep = 2, trimming_threshold = 0.01
+)
+apos$fit(store_predictions = TRUE)
+apos$summary()
+apos$treatment_levels
+```
+
+Factor levels determine the default ordering, excluding unused levels. Character
+and numeric labels follow first appearance. An explicit `treatment_levels`
+vector keeps its requested order. Use the original label type, for example
+`reference = 10` for numeric labels rather than `reference = "10"`.
+
+## Contrasts and simultaneous inference
+
+Positive contrasts mean higher contamination relative to the reference.
+The reference itself is omitted, and the remaining levels keep estimation order.
+
+```{r contrasts}
+effects = apos$causal_contrast(reference = "control")
+effects$summary()
+effects$confint()
+```
+
+The returned `DoubleMLFramework` transforms the per-repetition estimates and
+influence contributions. Its variance includes covariance between the APOs:
+$\operatorname{Var}(\hat\theta_d-\hat\theta_c)=V_{dd}+V_{cc}-2V_{dc}$.
+Do not combine the marginal standard errors as if the estimates were independent.
+With repeated splits, differences of median APOs can differ from the median
+of their differences; use `causal_contrast()` to preserve the convention.
+
+Bootstrap the family for which simultaneous coverage is desired. Common random
+multipliers across its estimands retain dependence. Here 199 draws keep the
+example fast; use more draws for stable tail quantiles in an analysis.
+
+```{r joint-inference}
+apos$bootstrap(method = "normal", n_rep_boot = 199)
+apos$confint(joint = TRUE)
+effects$bootstrap(method = "normal", n_rep_boot = 199)
+effects$confint(joint = TRUE)
+effects$p_adjust(method = "romano-wolf")
+```
+
+The APO bootstrap is not inherited by the returned contrast object. Joint
+intervals cover the entire object's estimand family even when `parm` selects
+fewer rows to display. `all_cov` contains one covariance matrix per repetition;
+there is no single aggregated covariance matrix.
+
+A named matrix can express another comparison. Columns are matched to labels.
+
+```{r matrix-contrast}
+comparison = matrix(c(0, -1, 0.5, 0.5),
+  nrow = 1,
+  dimnames = list("filter/boiling average - chlorine", labels)
+)
+apos$causal_contrast(contrast = comparison)$summary()
+```
+
+## Overlap, storage and fitting safeguards
+
+Truncation clips probabilities to $[0.01,0.99]$ here; it does not drop rows.
+It can stabilize residual weights but does not fix lack of population overlap
+and can introduce bias. More than 5 percent changed predictions triggers a
+warning. Inspect each label's diagnostics, especially with rare treatments.
+
+```{r diagnostics}
+diagnostic = apos$apo_models$filter$propensity_diagnostics[[1]]
+diagnostic$raw_quantiles
+diagnostic$fraction_trimmed
+diagnostic$fold_class_counts
+dim(apos$predictions$filter$ml_m)
+```
+
+Stored propensity predictions are raw; diagnostics also contain the effective
+truncated propensities and weights. `normalize_ipw = TRUE` divides selected-level
+inverse propensity weights by their scoring-sample mean in each repetition.
+It changes the finite-sample score; the default is `FALSE`.
+
+Each training fold needs selected-level outcome rows and both binary propensity
+classes. Random splits are not stratified. Use `set_sample_splitting()` to supply
+valid shared splits when needed. Learner fitting requires disjoint train/test
+rows. Without cross-fitting, use one repetition and a single disjoint held-out
+set; the inherited full-sample one-fold convention requires external nuisance
+predictions. Those predictions must be obtained out of sample by the caller.
+External predictions use one named entry per requested label, containing finite
+`ml_g` and `ml_m` matrices with dimensions observation by repetition, covering
+every row. Propensities must be in $[0,1]$ and strictly positive if truncation
+is disabled. Both learner arguments are still required.
+
+APOS fits and tunes cloned components. A failed first fit leaves it unfitted;
+a failed refit preserves the previous complete result. Successful tuning or
+replacement of sample splits invalidates joint results and requires a new fit.
+Use coordinator methods to maintain synchronization across components.
+
+## Binary treatment and current scope
+
+With binary treatment, level 1 minus level 0 equals the IRM ATE score when
+outcome predictions, complementary propensities, splits and truncation agree,
+and `normalize_ipw = FALSE`. This also gives the same per-repetition estimates,
+covariance-aware standard errors and repeated-split aggregation. Independently
+trained propensity classifiers need not satisfy the complement identity.
+
+The core assumes independent observations and rejects `DoubleMLClusterData`
+and instruments. Valid inference also requires overlap, suitable moments and
+sufficient nuisance accuracy; cross-fitting alone does not establish causality.
+GATE and sensitivity analysis remain pending their separate reviewed memo gates.
+They have no methods in this core release.

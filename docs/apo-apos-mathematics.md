@@ -1,0 +1,213 @@
+# APO/APOS core mathematics and implementation contract
+
+This note covers reviewed core behavior in `DoubleMLAPO`, `DoubleMLAPOS` and
+`DoubleMLFramework`. It is a derivation and implementation reference, not a
+claim that arbitrary nuisance learners satisfy asymptotic assumptions.
+
+## Target and identification
+
+Let independent observations be $W_i=(Y_i,D_i,X_i)$, $i=1,\ldots,N$, with
+nominal treatment labels in a finite set $\mathcal D$. Numeric labels do not
+encode a dose. For a requested label $d$, write $T_d=1\{D=d\}$ and
+
+$$
+\theta_d=E[Y(d)],\qquad g_d(x)=E[Y\mid D=d,X=x],\qquad
+p_d(x)=P(D=d\mid X=x).
+$$
+
+Assume consistency $Y=Y(D)$, conditional exchangeability
+$Y(d)\perp D\mid X$, and positivity $p_d(X)>0$ almost surely for the requested
+labels. Then iterated expectation gives
+
+$$
+E[Y(d)]=E[E[Y(d)\mid X]]=E[E[Y\mid D=d,X]]=E[g_d(X)].
+$$
+
+Population positivity is an identification condition. Root-$N$ inference
+requires stronger regularity, such as probabilities bounded away from zero,
+finite suitable moments and nuisance convergence/product-rate conditions.
+Restricting the requested labels does not condition the target population on
+membership in those labels. A propensity learner uses a binary $d$-versus-rest
+target, with every other observed label in the complement.
+
+## Orthogonal score
+
+For candidate nuisances $(g,p)$ define
+
+$$
+\psi_d(W;\theta,g,p)=g(X)+\frac{T_d}{p(X)}[Y-g(X)]-\theta.
+$$
+
+At the truth, $E[T_d(Y-g_d(X))\mid X]=0$, so $E[\psi_d]=0$ and
+$J_d=\partial_\theta E[\psi_d]=-1$. Consider paths
+$g_t=g_d+t h_g$, $p_t=p_d+t h_p$ with denominators bounded away from zero
+and sufficient integrability to differentiate under expectation. The derivative is
+
+$$
+\left.\frac{d}{dt}E[\psi_d(W;\theta_d,g_t,p_t)]\right|_{t=0}
+=E\left[\left(1-\frac{T_d}{p_d(X)}\right)h_g(X)
+-\frac{T_d(Y-g_d(X))}{p_d(X)^2}h_p(X)\right]=0.
+$$
+
+The two terms vanish by conditioning on $X$. More explicitly, for fixed candidate
+nuisances the population bias of the augmented outcome is
+
+$$
+E\left[g(X)+\frac{T_d}{p(X)}(Y-g(X))\right]-\theta_d
+=E\left[\frac{p(X)-p_d(X)}{p(X)}(g(X)-g_d(X))\right].
+$$
+
+Thus the leading nuisance bias is a product. Cross-fitting estimates nuisances
+on training rows and evaluates scores on disjoint rows. Typical sufficient
+conditions include $L_2$ consistency and
+$\|\hat g_d-g_d\|_2\|\hat p_d-p_d\|_2=o_p(N^{-1/2})$, together with
+overlap and moment assumptions controlling the empirical remainder.
+
+## Fitted scores, truncation and normalization
+
+For repetition $r$ and evaluation set $I_r$ of size $m_r$, define
+$\bar p_{idr}=\min(\max(\hat p_{idr},\tau),1-\tau)$ for $\tau>0$;
+with $\tau=0$ use the raw probability, which must be strictly positive.
+Default residual weights and augmented outcomes are
+
+$$
+w_{idr}=T_{id}/\bar p_{idr},\qquad
+A_{idr}=\hat g_{idr}+w_{idr}(Y_i-\hat g_{idr}).
+$$
+
+`normalize_ipw = TRUE` replaces $w_{idr}$ by
+$w_{idr}/[m_r^{-1}\sum_{i\in I_r}w_{idr}]$, requiring a positive finite
+denominator. This is a finite-sample alternative; the preceding exact bias and
+orthogonality identities describe the population score at the true propensity.
+Fixed truncation may bias the target score if it binds in the limit. Truncation
+does not prove overlap and does not discard observations. Diagnostics retain
+raw and effective propensities, effective weights and fold support counts.
+
+For DML2, $\hat\theta_{dr}=m_r^{-1}\sum_{i\in I_r}A_{idr}$.
+For DML1, the implementation averages fold means with equal fold weights.
+Equal-sized folds give the same estimate; unequal fold sizes can differ.
+The stored contribution is always
+
+$$
+\hat\phi_{idr}=-J_d^{-1}\psi_d(W_i;\hat\theta_{dr},\hat\eta_{dr})
+=A_{idr}-\hat\theta_{dr}.
+$$
+
+For unequal-fold DML1 this need not have zero unweighted sample mean; the
+framework preserves the base model's score and variance convention without
+additional recentering or unequal-fold reweighting. The usual root-$N$
+interpretation uses balanced folds; do not interpret this convention as a
+new derivation for arbitrary unequal fold designs.
+
+## Joint covariance and linear contrasts
+
+Stack the $J$ requested contributions as a column vector $\hat\phi_{ir}$.
+For DML2 with cross-fitting, the asymptotic linear representation is
+$\sqrt N(\hat\theta_r-\theta)=N^{-1/2}\sum_i\phi_i+o_p(1)$ under the
+conditions above. Consequently the estimated covariance of the estimates is
+
+$$
+\widehat V_r=\frac{1}{m_r^2}\sum_{i\in I_r}
+\hat\phi_{ir}\hat\phi_{ir}^{\mathsf T}.
+$$
+
+The two powers of $m_r$ matter: one averages score products, the other scales
+to the variance of a mean. There is no Bessel correction or extra recentering.
+Cross-fitting uses all $N$ observations, hence $m_r=N$. Without cross-fitting,
+only the actual held-out evaluation rows enter covariance and bootstrap.
+`all_cov` has dimensions estimand by estimand by repetition, while `psi` has
+dimensions observation by estimand by repetition. The component APO's `psi`
+instead has observation by repetition by one treatment dimensions.
+
+For a finite $K\times J$ contrast matrix $C$,
+
+$$
+\hat\delta_r=C\hat\theta_r,\qquad
+\hat\phi^\delta_{ir}=C\hat\phi_{ir},\qquad
+\widehat V_r^\delta=C\widehat V_r C^{\mathsf T}.
+$$
+
+`linear_transform()` implements these operations before aggregation and
+recomputes each standard error from $\operatorname{diag}(\widehat V_r^\delta)$.
+A reference contrast has $+1$ on the other label and $-1$ on the reference.
+In particular, $\widehat{\operatorname{Var}}(\hat\theta_d-\hat\theta_c)
+=V_{dd}+V_{cc}-2V_{dc}$. Concatenation retains the observation alignment so
+that cross-products include cross-covariance between all component APOs.
+
+## Repeated-split aggregation
+
+For $R$ repetitions, the implementation uses coordinate-wise medians:
+
+$$
+\widetilde\theta_j=\operatorname{median}_r\hat\theta_{jr},\qquad
+\widetilde s_j^2=\frac{1}{N}\operatorname{median}_r
+\left\{N\hat s_{jr}^2+(\hat\theta_{jr}-\widetilde\theta_j)^2\right\}.
+$$
+
+This is the repository's existing convention: the dispersion term is divided
+by $N$ after the median. The framework uses the full observation dimension $N$
+for aggregation, even though its covariance uses $m_r$. APO/APOS support only
+one repetition without cross-fitting, so the dispersion term is then zero.
+Learner fitting requires a disjoint held-out set. Full-sample one-fold splits
+are supported only with externally supplied predictions; the caller must
+establish their out-of-sample provenance. Repeated no-cross-fitting inference
+is not an APO/APOS feature.
+
+For contrasts, replace $\hat\theta_{jr}$ and $\hat s_{jr}$ by the transformed
+values in this same formula. Generally $C\operatorname{median}_r\hat\theta_r
+\ne\operatorname{median}_r(C\hat\theta_r)$. Thus subtracting aggregated APO
+coefficients is not a replacement for transforming each repetition. There is
+no aggregated joint covariance field.
+
+## Common-multiplier bootstrap
+
+For draw $b$ within repetition $r$, draw a multiplier $\xi_{ibr}$ for every
+evaluation observation, shared across all estimands, and compute
+
+$$
+\Delta_{jbr}=\frac{1}{m_r}\sum_{i\in I_r}\xi_{ibr}\hat\phi_{ijr},\qquad
+t^*_{jbr}=\Delta_{jbr}/\hat s_{jr}.
+$$
+
+The supported multiplier methods are `normal`, `Bayes` and `wild`, following
+the repository's `draw_weights()` helper. Bootstrap columns are stored in
+repetition blocks. Joint intervals use the empirical level-$1-\alpha$
+quantile $c$ of $\max_j|t^*_{jbr}|$, pooling columns over repetitions, and
+report $\widetilde\theta_j\pm c\widetilde s_j$. Selecting displayed parameters
+does not change the family used for the maximum. Romano-Wolf stepdown uses
+the maxima over remaining hypotheses and a cumulative maximum of the ordered
+tail proportions. A transformed or concatenated framework starts without
+bootstrap draws and must be bootstrapped for its own family.
+
+## Binary reduction to IRM ATE
+
+Let $D\in\{0,1\}$, $p_1=m$, $p_0=1-m$, and use the same folds, outcome
+predictions and symmetric truncation rule. Truncation obeys
+$\operatorname{clip}(1-m)=1-\operatorname{clip}(m)$. With unnormalized weights,
+
+$$
+A_{i1r}-A_{i0r}=\hat g_{1ir}-\hat g_{0ir}
++\frac{D_i(Y_i-\hat g_{1ir})}{\bar m_{ir}}
+-\frac{(1-D_i)(Y_i-\hat g_{0ir})}{1-\bar m_{ir}}.
+$$
+
+This is the IRM ATE augmented score. The APO contrast and IRM therefore have
+identical per-repetition estimates under the same DML procedure, and identical
+centered contributions $\hat\phi_{i1r}-\hat\phi_{i0r}$. Their covariance-aware
+variances, standard errors and repeated-split aggregation agree. Independently
+trained one-vs-rest classifiers need not produce complementary probabilities;
+learner names alone do not establish this equivalence. Separate normalization
+also changes the finite-sample score and is excluded from this identity.
+Bootstrap draws need not match bit-for-bit across class implementations; this
+identity concerns the score, estimates and covariance-aware standard errors.
+
+## Boundaries and pending memo gates
+
+APOS publishes results only after all cloned component fits and joint covariance
+construction succeed. Failed refits retain the previous complete result; new
+splits and successful tuning invalidate it. Clustered data and instruments are
+rejected: the formulas above are for independent observations.
+
+GATE is pending its separate reviewed memo gate. Sensitivity theory and its
+section are to be completed only by Task 13 after review. No GATE or sensitivity
+API, bound, Riesz formula or other unproved extension is specified here.

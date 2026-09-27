@@ -4,10 +4,18 @@
 #' Estimates the average potential outcome at one nominal treatment level.
 #'
 #' @format [R6::R6Class] object inheriting from [DoubleML].
-#' @family DoubleML
+#' @seealso [DoubleML], [DoubleMLAPOS], [DoubleMLFramework], [DoubleMLIRM]
 #' @details
 #' For the indicator \eqn{T_d = 1\{D = d\}}, the nuisance functions are
 #' \eqn{g_d(X) = E[Y|D=d,X]} and \eqn{p_d(X) = P(D=d|X)}.
+#' The target is \eqn{\theta_d = E[Y(d)]}, the population mean outcome if
+#' everyone received label \eqn{d}. Under consistency, conditional
+#' exchangeability \eqn{Y(d) \perp D \mid X}, and positivity
+#' \eqn{P(D=d \mid X)>0}, it is identified by \eqn{E[g_d(X)]}.
+#' Inference additionally requires independent observations, suitable moments,
+#' overlap and sufficiently accurate nuisance estimates, including a vanishing
+#' product of outcome and propensity errors at the root-sample-size scale.
+#'
 #' The orthogonal score is \eqn{g_d(X) + T_d (Y-g_d(X))/p_d(X) - \theta_d}.
 #' Identification requires conditional exchangeability and positive treatment
 #' probabilities. Numeric treatment values are labels, without a dose ordering.
@@ -17,6 +25,46 @@
 #' Optional normalized weights divide inverse propensity weights by their mean
 #' over the scoring sample, separately for each repetition. Diagnostics retain
 #' raw and truncated propensities, scoring weights and fold class counts.
+#' Selecting one level does not discard the remaining levels. Training folds
+#' need both indicator classes and at least one selected-level outcome. Splits
+#' are not automatically stratified; inspect rare-level support or supply splits.
+#' Learner fitting rejects overlapping train/test rows. For no cross-fitting,
+#' use one disjoint held-out evaluation set and `n_rep = 1`. The inherited
+#' full-sample one-fold split is usable only with external nuisance predictions;
+#' their out-of-sample provenance is the caller's responsibility.
+#'
+#' Truncation bounds probabilities by `trimming_threshold` and one minus it;
+#' observations are not removed. It stabilizes weights but cannot establish
+#' population overlap and may introduce bias. A warning is issued when more
+#' than 5 percent of predictions change in a repetition.
+#' With `"dml2"`, the estimate is the scoring-sample mean of the augmented
+#' outcome. With `"dml1"`, it is the unweighted mean of fold estimates.
+#' Repeated-split estimates and standard errors follow [DoubleML] aggregation.
+#'
+#' For binary treatment, level 1 minus level 0 reduces to the [DoubleMLIRM]
+#' ATE score when splits, outcome predictions, complementary propensities,
+#' truncation and unnormalized weights agree. Use [DoubleMLAPOS] for
+#' covariance-aware contrasts; marginal standard errors alone are insufficient.
+#' Separate binary fits need not produce complementary probabilities.
+#'
+#' Clustered data and instrumental variables are not supported. Group average
+#' treatment effects (GATE) and sensitivity analysis remain pending their
+#' separate reviewed memo gates; neither is part of this core API.
+#' @examples
+#' set.seed(42)
+#' n = 120
+#' x = rnorm(n)
+#' d = rep(c("control", "filter", "boiling"), length.out = n)
+#' y = x + (d == "filter") + rnorm(n)
+#' data = DoubleMLData$new(data.frame(y, d, x), "y", "d", x_cols = "x")
+#' apo = DoubleMLAPO$new(data, mlr3::lrn("regr.lm"),
+#'   mlr3::lrn("classif.featureless"),
+#'   treatment_level = "filter", n_folds = 2
+#' )
+#' apo$fit()
+#' apo$summary()
+#' apo$confint()
+#' apo$propensity_diagnostics[[1]]$fold_class_counts
 #' @usage NULL
 #' @export
 DoubleMLAPO = R6Class("DoubleMLAPO",
@@ -85,6 +133,7 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' Whether to draw sample splits at initialization. Default is `TRUE`.
     #' @param apply_cross_fitting (`logical(1)`) \cr
     #' Whether to apply cross-fitting. Default is `TRUE`.
+    #' @return A new `DoubleMLAPO` object.
     initialize = function(data, ml_g, ml_m, treatment_level,
                           n_folds = 5, n_rep = 1, score = "APO",
                           dml_procedure = "dml2", trimming_rule = "truncate",
@@ -108,8 +157,10 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       private$trimming_threshold_ = trimming_threshold
       private$normalize_ipw_ = normalize_ipw
 
-      super$initialize_double_ml(data, n_folds, n_rep, score, dml_procedure,
-        draw_sample_splitting, apply_cross_fitting)
+      super$initialize_double_ml(
+        data, n_folds, n_rep, score, dml_procedure,
+        draw_sample_splitting, apply_cross_fitting
+      )
       ml_g = private$assert_learner(ml_g, "ml_g", Regr = TRUE, Classif = FALSE)
       ml_m = private$assert_learner(ml_m, "ml_m", Regr = FALSE, Classif = TRUE)
       private$learner_ = list(ml_g = ml_g, ml_m = ml_m)
@@ -128,26 +179,34 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' matrices. All values must be finite and raw `ml_m` probabilities must
     #' lie in `[0, 1]`. With `trimming_threshold = 0`, probabilities must be
     #' strictly positive on every observation. Predictions should be obtained
-    #' out of fold.
+    #' out of fold. Matrices cover all rows, even for held-out estimation.
+    #' Stored predictions retain raw propensities and have dimensions observation
+    #' by repetition by one treatment; diagnostics expose effective values.
     #' `NULL` fits the nuisance learners with the model's sample splits.
-    #' @return self
+    #' @return Invisibly returns the fitted model.
     fit = function(store_predictions = FALSE, store_models = FALSE, external_predictions = NULL) {
       predictions = validate_apo_external_predictions(
-        external_predictions, self$data$n_obs, self$n_rep)
+        external_predictions, self$data$n_obs, self$n_rep
+      )
       if (!is.null(predictions) && self$trimming_threshold == 0 && any(predictions$ml_m == 0)) {
-        stop(paste("APO positivity requires strictly positive propensities for treatment",
+        stop(paste(
+          "APO positivity requires strictly positive propensities for treatment",
           as.character(self$treatment_level),
           "on every observation; supply positive probabilities or increase",
-          "trimming_threshold above zero."))
+          "trimming_threshold above zero."
+        ))
       }
       if (is.null(predictions)) {
         indicator = make_apo_indicator(self$data$data[[self$data$d_cols]], self$treatment_level)
         validate_apo_sample_splitting(self$smpls, indicator, self$treatment_level)
       }
       private$external_predictions_ = predictions
-      on.exit({
-        private$external_predictions_ = NULL
-      }, add = TRUE)
+      on.exit(
+        {
+          private$external_predictions_ = NULL
+        },
+        add = TRUE
+      )
       private$propensity_diagnostics_ = vector("list", self$n_rep)
       super$fit(store_predictions = store_predictions, store_models = store_models)
       names(private$coef_) = names(private$se_) = names(private$t_stat_) =
@@ -171,7 +230,8 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     },
     nuisance_est = function(smpls, ...) {
       indicator = make_apo_indicator(
-        self$data$data_model[[self$data$treat_col]], self$treatment_level)
+        self$data$data_model[[self$data$treat_col]], self$treatment_level
+      )
       if (is.null(private$external_predictions_)) {
         # The local target preserves every nominal level in the complement.
         data_model = data.table::copy(self$data$data_model)
@@ -183,12 +243,13 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         m_hat = m_result$preds
         models = list(ml_g = g_result$models, ml_m = m_result$models)
         if (self$trimming_threshold == 0 && any(m_hat == 0, na.rm = TRUE)) {
-          stop(paste("APO positivity requires strictly positive propensities for treatment",
+          stop(paste(
+            "APO positivity requires strictly positive propensities for treatment",
             as.character(self$treatment_level),
             "on every observation; supply positive probabilities or increase",
-            "trimming_threshold above zero."))
+            "trimming_threshold above zero."
+          ))
         }
-
       } else {
         g_hat = private$external_predictions_$ml_g[, private$i_rep]
         m_hat = private$external_predictions_$ml_m[, private$i_rep]
@@ -208,11 +269,14 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
           self$data$x_cols, target, data_model,
           nuisance_id = paste0("nuis_", substring(key, 4)), smpls = split,
           est_params = est_params, return_train_preds = FALSE,
-          task_type = private$task_type[[key]], fold_specific_params = FALSE)
+          task_type = private$task_type[[key]], fold_specific_params = FALSE
+        )
       }
       if (!private$fold_specific_params) return(predict_fold(smpls, params))
-      result = list(preds = rep(NA_real_, nrow(data_model)),
-        models = vector("list", length(smpls$train_ids)))
+      result = list(
+        preds = rep(NA_real_, nrow(data_model)),
+        models = vector("list", length(smpls$train_ids))
+      )
       for (i_fold in seq_along(smpls$train_ids)) {
         split = list(train_ids = smpls$train_ids[i_fold], test_ids = smpls$test_ids[i_fold])
         fold_result = predict_fold(split, params[[i_fold]])
@@ -224,7 +288,8 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     },
     nuisance_tuning = function(smpls, param_set, tune_settings, tune_on_folds, ...) {
       indicator = make_apo_indicator(
-        self$data$data_model[[self$data$treat_col]], self$treatment_level)
+        self$data$data_model[[self$data$treat_col]], self$treatment_level
+      )
       data_model = data.table::copy(self$data$data_model)
       data_model[[self$data$treat_col]] = indicator
       data_m = if (tune_on_folds) {
@@ -234,13 +299,19 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       }
       data_g = lapply(data_m, function(data) data[data[[self$data$treat_col]] == 1, ])
       result_m = dml_tune(self$learner$ml_m$clone(deep = TRUE),
-        self$data$x_cols, self$data$treat_col, data_m, nuisance_id = "nuis_m",
-        param_set$ml_m, tune_settings, tune_settings$measure$ml_m, private$task_type$ml_m)
+        self$data$x_cols, self$data$treat_col, data_m,
+        nuisance_id = "nuis_m",
+        param_set$ml_m, tune_settings, tune_settings$measure$ml_m, private$task_type$ml_m
+      )
       result_g = dml_tune(self$learner$ml_g$clone(deep = TRUE),
-        self$data$x_cols, self$data$y_col, data_g, nuisance_id = "nuis_g",
-        param_set$ml_g, tune_settings, tune_settings$measure$ml_g, private$task_type$ml_g)
-      list(ml_g = list(result_g, params = result_g$params),
-        ml_m = list(result_m, params = result_m$params))
+        self$data$x_cols, self$data$y_col, data_g,
+        nuisance_id = "nuis_g",
+        param_set$ml_g, tune_settings, tune_settings$measure$ml_g, private$task_type$ml_g
+      )
+      list(
+        ml_g = list(result_g, params = result_g$params),
+        ml_m = list(result_m, params = result_m$params)
+      )
     },
     score_elements = function(y, indicator, g_hat, m_hat, smpls) {
       raw_m_hat = m_hat
@@ -252,8 +323,10 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         evaluation_ids = unique(unlist(smpls$test_ids, use.names = FALSE))
         denominator = mean(weights[evaluation_ids], na.rm = TRUE)
         if (!is.finite(denominator) || denominator <= 0) {
-          stop(paste("APO weight normalization requires a positive finite mean for treatment",
-            as.character(self$treatment_level), "in repetition", private$i_rep))
+          stop(paste(
+            "APO weight normalization requires a positive finite mean for treatment",
+            as.character(self$treatment_level), "in repetition", private$i_rep
+          ))
         }
         weights = weights / denominator
       }
@@ -261,9 +334,11 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       fold_counts = lapply(seq_along(smpls$train_ids), function(i_fold) {
         train = indicator[smpls$train_ids[[i_fold]]]
         test = indicator[smpls$test_ids[[i_fold]]]
-        data.frame(fold = i_fold, train_selected = sum(train == 1),
+        data.frame(
+          fold = i_fold, train_selected = sum(train == 1),
           train_complement = sum(train == 0), test_selected = sum(test == 1),
-          test_complement = sum(test == 0))
+          test_complement = sum(test == 0)
+        )
       })
       private$propensity_diagnostics_[[private$i_rep]] = list(
         treatment_level = self$treatment_level,
@@ -271,11 +346,16 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         raw_quantiles = stats::quantile(raw_m_hat, probs = c(0, .25, .5, .75, 1), na.rm = TRUE),
         fraction_trimmed = fraction_trimmed,
         raw_propensity = raw_m_hat, effective_propensity = m_hat,
-        effective_weight = weights, fold_class_counts = do.call(rbind, fold_counts))
+        effective_weight = weights, fold_class_counts = do.call(rbind, fold_counts)
+      )
       if (fraction_trimmed > .05) {
-        warning(paste("APO propensity trimming for treatment", as.character(self$treatment_level),
-          "in repetition", private$i_rep, "changed more than 5 percent of predictions."),
-          call. = FALSE)
+        warning(
+          paste(
+            "APO propensity trimming for treatment", as.character(self$treatment_level),
+            "in repetition", private$i_rep, "changed more than 5 percent of predictions."
+          ),
+          call. = FALSE
+        )
       }
       list(psi_a = rep(-1, length(y)), psi_b = g_hat + weights * (y - g_hat))
     }
