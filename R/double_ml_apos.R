@@ -100,6 +100,26 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
       if (missing(value)) return(private$framework_)
       stop("can't set field framework")
     },
+    #' @field sensitivity_elements (`list()` or `NULL`) Canonical sensitivity
+    #' components for the fitted potential-outcome family, when available.
+    sensitivity_elements = function(value) {
+      if (!missing(value)) stop("can't set field sensitivity_elements")
+      private$require_fit()
+      self$framework$sensitivity_elements
+    },
+    #' @field sensitivity_params (`list()` or `NULL`) Most recently evaluated
+    #' sensitivity scenario.
+    sensitivity_params = function(value) {
+      if (!missing(value)) stop("can't set field sensitivity_params")
+      private$require_fit()
+      self$framework$sensitivity_params
+    },
+    #' @field sensitivity_summary (`character(1)`) Formatted sensitivity results.
+    sensitivity_summary = function(value) {
+      if (!missing(value)) stop("can't set field sensitivity_summary")
+      private$require_fit()
+      self$framework$sensitivity_summary
+    },
     #' @field coef (numeric vector) Named average potential outcomes after fit().
     coef = function(value) {
       if (!missing(value)) stop("can't set field coef")
@@ -243,28 +263,30 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
       }
       private$check_components(components)
       frameworks = lapply(seq_along(components), function(j) {
-        model = components[[j]]
-        all_coef = model$all_coef
-        all_se = model$all_se
-        label = names(components)[j]
-        rownames(all_coef) = rownames(all_se) = label
-        # APO has constant score derivative -1, hence its centered score is
-        # already the influence contribution. Framework uses a different axis order.
-        psi = aperm(model$psi, c(1, 3, 2))
-        if (!model$apply_cross_fitting) {
-          ids = model$smpls[[1]]$test_ids[[1]]
-          psi[setdiff(seq_len(model$data$n_obs), ids), , ] = 0
-        }
-        dimnames(psi)[[2]] = label
-        DoubleMLFramework$new(all_coef, all_se, psi, label,
-          smpls = model$smpls, apply_cross_fitting = model$apply_cross_fitting
-        )
+        private$component_framework(components[[j]], names(components)[j])
       })
       framework = Reduce(function(left, right) left$concat(right), frameworks)
       private$apo_models_ = components
       private$framework_ = framework
       private$store_predictions_ = store_predictions
       private$store_models_ = store_models
+      invisible(self)
+    },
+    #' @description Evaluate omitted-confounding sensitivity bounds jointly for
+    #' the fitted potential-outcome family.
+    #' @param cf_y (numeric) Residual outcome variation share in `[0, 1)`.
+    #' @param cf_d (numeric) Riesz variation gain share in `[0, 1)`.
+    #' @param rho (numeric) Alignment in `[-1, 1]`.
+    #' @param level (numeric) One-sided confidence level in `(0, 1)`.
+    #' @param null_hypothesis (numeric) One null per level, or one shared null.
+    #' @return Invisibly returns the coordinator.
+    sensitivity_analysis = function(cf_y = 0.03, cf_d = 0.03, rho = 1,
+                                    level = 0.95, null_hypothesis = 0) {
+      private$require_fit()
+      self$framework$sensitivity_analysis(
+        cf_y = cf_y, cf_d = cf_d, rho = rho, level = level,
+        null_hypothesis = null_hypothesis
+      )
       invisible(self)
     },
     #' @description Return jointly inferred causal contrasts without refitting.
@@ -280,8 +302,16 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' and covariance. Bootstrap this returned framework for joint inference.
     causal_contrast = function(reference = NULL, contrast = NULL) {
       private$require_fit()
-      contrast = private$prepare_contrast(reference, contrast)
-      self$framework$linear_transform(contrast)
+      prepared = private$validate_contrast(private$prepare_contrast(reference, contrast))
+      elements = if (is.null(self$sensitivity_elements)) {
+        NULL
+      } else {
+        private$contrast_sensitivity(prepared$contrast)
+      }
+      self$framework$linear_transform(
+        prepared$contrast, prepared$coef_names,
+        sensitivity_elements = elements
+      )
     },
     #' @description Return jointly inferred within-group treatment contrasts.
     #' Group means are built from the fitted APO orthogonal signals without
@@ -296,15 +326,9 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' @return A new [DoubleMLFramework] ordered group-major, contrast-minor.
     gate = function(groups, reference = NULL, contrast = NULL) {
       private$require_fit()
-      contrast = private$prepare_contrast(reference, contrast)
-      validated = self$framework$linear_transform(contrast)
-      contrast_names = names(validated$coef)
-      if (!is.null(colnames(contrast))) {
-        contrast = contrast[, names(self$apo_models), drop = FALSE]
-      }
-      if (any(rowSums(abs(contrast)) == 0)) {
-        stop("Every GATE contrast row must be nonzero.")
-      }
+      validated = private$validate_contrast(private$prepare_contrast(reference, contrast))
+      contrast = validated$contrast
+      contrast_names = validated$coef_names
       if (any(abs(rowSums(contrast)) > sqrt(.Machine$double.eps))) {
         stop("Every GATE contrast row must sum to zero within numerical tolerance.")
       }
@@ -417,6 +441,29 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     require_fit = function() {
       if (is.null(self$framework)) stop("Call fit() before accessing APOS fitted results.")
     },
+    component_framework = function(model, label) {
+      if (!is.null(model$framework)) return(model$framework)
+      all_coef = model$all_coef
+      all_se = model$all_se
+      rownames(all_coef) = rownames(all_se) = label
+      psi = aperm(model$psi, c(1, 3, 2))
+      if (!model$apply_cross_fitting) {
+        ids = model$smpls[[1]]$test_ids[[1]]
+        psi[setdiff(seq_len(model$data$n_obs), ids), , ] = 0
+      }
+      dimnames(psi)[[2]] = label
+      reason = if (!identical(model$dml_procedure, "dml2") ||
+        !model$apply_cross_fitting) {
+        "APO sensitivity analysis initially requires a fully cross-fitted DML2 fit."
+      } else {
+        "Sensitivity analysis is not available for this APO component."
+      }
+      DoubleMLFramework$new(
+        all_coef, all_se, psi, label,
+        smpls = model$smpls, apply_cross_fitting = model$apply_cross_fitting,
+        sensitivity_unavailable_reason = reason
+      )
+    },
     prepare_contrast = function(reference = NULL, contrast = NULL) {
       if (is.null(reference) == is.null(contrast)) {
         stop("Supply exactly one of reference and contrast.")
@@ -439,6 +486,62 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
         contrast[, reference_index] = -1
       }
       contrast
+    },
+    validate_contrast = function(contrast) {
+      if (!is.matrix(contrast) || !is.numeric(contrast) || any(dim(contrast) < 1L)) {
+        stop("contrast must be a nonempty numeric matrix.")
+      }
+      if (any(!is.finite(contrast))) stop("contrast must contain only finite values.")
+      labels = names(self$apo_models)
+      if (ncol(contrast) != length(labels)) {
+        stop("contrast has incompatible dimensions.")
+      }
+      if (!is.null(colnames(contrast))) {
+        column_names = colnames(contrast)
+        if (anyDuplicated(column_names) || !setequal(column_names, labels)) {
+          stop("contrast column names must match the estimand names uniquely.")
+        }
+        contrast = contrast[, labels, drop = FALSE]
+      }
+      coef_names = rownames(contrast)
+      if (is.null(coef_names)) coef_names = paste0("contrast", seq_len(nrow(contrast)))
+      if (!is.character(coef_names) || length(coef_names) != nrow(contrast) ||
+        anyNA(coef_names) || any(!nzchar(trimws(coef_names))) || anyDuplicated(coef_names)) {
+        stop("contrast row names must contain one unique, nonempty name per contrast.")
+      }
+      if (any(rowSums(abs(contrast)) == 0)) {
+        stop("Every contrast row must be nonzero.")
+      }
+      rownames(contrast) = coef_names
+      list(contrast = contrast, coef_names = coef_names)
+    },
+    contrast_sensitivity = function(contrast) {
+      source = self$sensitivity_elements
+      squared = contrast^2
+      residual_weights = squared / rowSums(squared)
+      sigma2 = residual_weights %*% source$sigma2
+      nu2 = squared %*% source$nu2
+      n_obs = dim(source$riesz_rep)[1]
+      n_contrast = nrow(contrast)
+      n_rep = ncol(source$sigma2)
+      psi_sigma2 = psi_nu2 = riesz_rep = array(
+        0, c(n_obs, n_contrast, n_rep)
+      )
+      for (i_rep in seq_len(n_rep)) {
+        source_sigma = matrix(source$psi_sigma2[, , i_rep], nrow = n_obs)
+        source_nu = matrix(source$psi_nu2[, , i_rep], nrow = n_obs)
+        source_riesz = matrix(source$riesz_rep[, , i_rep], nrow = n_obs)
+        psi_sigma2[, , i_rep] = source_sigma %*% t(residual_weights)
+        psi_nu2[, , i_rep] = source_nu %*% t(squared)
+        riesz_rep[, , i_rep] = source_riesz %*% t(contrast)
+      }
+      bias = compute_sensitivity_bias(sigma2, nu2, psi_sigma2, psi_nu2)
+      list(
+        sigma2 = sigma2, nu2 = nu2,
+        psi_sigma2 = psi_sigma2, psi_nu2 = psi_nu2,
+        riesz_rep = riesz_rep, max_bias = bias$max_bias,
+        psi_max_bias = bias$psi_max_bias
+      )
     },
     check_components = function(components) {
       if (is.null(self$smpls)) stop("Set sample splitting before fitting or tuning APOS.")

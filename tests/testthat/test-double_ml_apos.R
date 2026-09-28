@@ -96,7 +96,10 @@ test_that("APOS guards unavailable results and rejects invalid labels and data",
   fixture = make_apo_data()
   obj = new_apos(fixture)
   expect_null(obj$framework)
-  for (field in c("coef", "se", "t_stat", "pval", "predictions", "models")) {
+  for (field in c(
+    "coef", "se", "t_stat", "pval", "predictions", "models",
+    "sensitivity_elements", "sensitivity_params", "sensitivity_summary"
+  )) {
     expect_error(obj[[field]], "fit")
   }
   expect_error(obj$summary(), "fit")

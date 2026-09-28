@@ -96,6 +96,7 @@ test_that("contrast validation rejects ambiguous arguments and malformed matrice
     matrix(c(NA, 1, 0, 0), 1))) {
     expect_error(obj$causal_contrast(contrast = invalid), "contrast|matrix|finite")
   }
+  expect_error(obj$causal_contrast(contrast = matrix(0, 1, 4)), "nonzero")
   for (labels in list(c("control", "chlorine", "filter", "extra"),
     c("control", "chlorine", "filter", "filter"),
     c("control", "chlorine", "filter", NA_character_))) {
