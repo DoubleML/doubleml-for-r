@@ -117,9 +117,21 @@ n\widehat{se}_{\pm,r}^2+
 (\widehat\theta_{\pm,r}-\widehat\theta_\pm)^2\right)}.
 $$
 
-The confidence bounds are one-sided:
-$\widehat\theta_- - z_{\text{level}}\widehat{se}_-$ and
-$\widehat\theta_+ + z_{\text{level}}\widehat{se}_+$. The robustness value
+Following the official repeated-split implementation, confidence bounds are
+formed within each repetition and then aggregated:
+
+$$
+\widehat{CI}_-
+=\operatorname{median}_r\left(
+\widehat\theta_{-,r}-z_{\text{level}}\widehat{se}_{-,r}\right),
+\qquad
+\widehat{CI}_+
+=\operatorname{median}_r\left(
+\widehat\theta_{+,r}+z_{\text{level}}\widehat{se}_{+,r}\right).
+$$
+
+They are not reconstructed from the separately aggregated point bound and
+standard error. The robustness value
 `RV` is the smallest $r\in[0,1)$ with `cf_y = cf_d = r` for which a point
 bound reaches the requested null; `RVa` is defined analogously using the
 confidence bound. Both keep the requested $\rho$ fixed.
