@@ -1,4 +1,4 @@
-make_sensitivity_helper_fixture = function() {
+make_sensitivity_fixture = function() {
   psi_sigma2 = array(c(-3, -1, 1, 3), c(4, 1, 1))
   psi_nu2 = array(c(-1, 1, -1, 1), c(4, 1, 1))
   list(
@@ -13,7 +13,7 @@ make_sensitivity_helper_fixture = function() {
 }
 
 test_that("sensitivity bias helper implements the orthogonal product rule", {
-  fixture = make_sensitivity_helper_fixture()
+  fixture = make_sensitivity_fixture()
   result = compute_sensitivity_bias(
     fixture$sigma2, fixture$nu2,
     fixture$psi_sigma2, fixture$psi_nu2
@@ -24,7 +24,7 @@ test_that("sensitivity bias helper implements the orthogonal product rule", {
 })
 
 test_that("sensitivity elements are validated and canonically named", {
-  fixture = make_sensitivity_helper_fixture()
+  fixture = make_sensitivity_fixture()
   result = validate_sensitivity_elements(
     fixture, n_obs = 4, n_coef = 1, n_rep = 1,
     coef_names = "filter", rep_names = "rep1"
@@ -44,7 +44,7 @@ test_that("sensitivity elements are validated and canonically named", {
 })
 
 test_that("sensitivity elements reject malformed or inconsistent inputs", {
-  fixture = make_sensitivity_helper_fixture()
+  fixture = make_sensitivity_fixture()
   validate = function(x) {
     validate_sensitivity_elements(x, 4, 1, 1, "filter", "rep1")
   }
