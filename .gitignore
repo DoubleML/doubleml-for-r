@@ -1,3 +1,6 @@
+# Local Git worktrees
+.worktrees/
+
 Meta
 # History files
 .Rhistory
