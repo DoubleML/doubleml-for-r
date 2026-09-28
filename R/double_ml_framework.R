@@ -129,6 +129,23 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
         return(private$boot_t_stat_)
       }
       stop("can't set field boot_t_stat")
+    },
+    #' @field sensitivity_elements (`list()` or `NULL`) Canonical sensitivity
+    #' components, when available.
+    sensitivity_elements = function(value) {
+      if (missing(value)) return(private$sensitivity_elements_)
+      stop("can't set field sensitivity_elements")
+    },
+    #' @field sensitivity_params (`list()` or `NULL`) Most recently evaluated
+    #' sensitivity scenario.
+    sensitivity_params = function(value) {
+      if (missing(value)) return(private$sensitivity_params_)
+      stop("can't set field sensitivity_params")
+    },
+    #' @field sensitivity_summary (`character(1)`) Formatted sensitivity results.
+    sensitivity_summary = function(value) {
+      if (missing(value)) return(private$format_sensitivity_summary())
+      stop("can't set field sensitivity_summary")
     }
   ),
   public = list(
@@ -147,7 +164,8 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
     #' each repetition must have exactly one evaluation set.
     #' @return A new `DoubleMLFramework` object.
     initialize = function(all_coef, all_se, psi, coef_names, smpls = NULL,
-                          apply_cross_fitting = TRUE) {
+                          apply_cross_fitting = TRUE, sensitivity_elements = NULL,
+                          sensitivity_unavailable_reason = NULL) {
       private$check_matrix(all_coef, "all_coef")
       private$check_matrix(all_se, "all_se")
       if (!identical(dim(all_coef), dim(all_se))) {
@@ -182,6 +200,17 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
         colnames(all_coef) = colnames(all_se) = rep_names[[1]]
         dimnames(psi)[[3]] = rep_names[[1]]
       }
+      if (!is.null(sensitivity_unavailable_reason)) {
+        if (!is.character(sensitivity_unavailable_reason) ||
+          length(sensitivity_unavailable_reason) != 1L ||
+          is.na(sensitivity_unavailable_reason) ||
+          !nzchar(trimws(sensitivity_unavailable_reason))) {
+          stop("sensitivity_unavailable_reason must be one nonempty string or NULL.")
+        }
+      }
+      if (!is.null(sensitivity_elements) && !is.null(sensitivity_unavailable_reason)) {
+        stop("Supply sensitivity_elements or sensitivity_unavailable_reason, not both.")
+      }
       private$all_coef_ = all_coef
       private$all_se_ = all_se
       private$psi_ = psi
@@ -194,6 +223,16 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
         n_obs * all_se^2 + (all_coef - self$coef)^2,
         1, median
       ) / n_obs)
+      private$sensitivity_elements_ = if (is.null(sensitivity_elements)) {
+        NULL
+      } else {
+        validate_sensitivity_elements(
+          sensitivity_elements, n_obs, nrow(all_coef), ncol(all_coef),
+          coef_names, if (length(rep_names)) rep_names[[1]] else NULL
+        )
+      }
+      private$sensitivity_unavailable_reason_ = sensitivity_unavailable_reason
+      private$sensitivity_params_ = NULL
       invisible(self)
     },
     #' @description Print an estimates and significance table.
@@ -313,6 +352,49 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
         p_val
       }
     },
+    #' @description Evaluate omitted-confounding sensitivity bounds.
+    #' @param cf_y (`numeric(1)`) Residual outcome variation share in `[0, 1)`.
+    #' @param cf_d (`numeric(1)`) Riesz variation gain share in `[0, 1)`.
+    #' @param rho (`numeric(1)`) Alignment in `[-1, 1]`.
+    #' @param level (`numeric(1)`) One-sided confidence level in `(0, 1)`.
+    #' @param null_hypothesis (`numeric()`) One null per estimand, or one shared null.
+    #' @return Invisibly returns the framework and stores results in
+    #' `sensitivity_params`.
+    sensitivity_analysis = function(cf_y = 0.03, cf_d = 0.03, rho = 1,
+                                    level = 0.95, null_hypothesis = 0) {
+      if (is.null(self$sensitivity_elements)) {
+        reason = private$sensitivity_unavailable_reason_
+        if (is.null(reason)) reason = "Sensitivity analysis is not available for this framework."
+        stop(reason)
+      }
+      private$check_sensitivity_scalar(cf_y, "cf_y", 0, 1, include_lower = TRUE)
+      private$check_sensitivity_scalar(cf_d, "cf_d", 0, 1, include_lower = TRUE)
+      private$check_sensitivity_scalar(
+        rho, "rho", -1, 1, include_lower = TRUE, include_upper = TRUE
+      )
+      private$check_sensitivity_scalar(level, "level", 0, 1)
+      null_hypothesis = private$check_null_hypothesis(null_hypothesis)
+
+      result = private$calculate_sensitivity(cf_y, cf_d, rho, level)
+      rv = rva = numeric(length(self$coef))
+      for (i_coef in seq_along(self$coef)) {
+        rv[i_coef] = private$robustness_value(
+          null_hypothesis[i_coef], level, rho, i_coef, "theta"
+        )
+        rva[i_coef] = private$robustness_value(
+          null_hypothesis[i_coef], level, rho, i_coef, "ci"
+        )
+      }
+      names(rv) = names(rva) = names(self$coef)
+      result$rv = rv
+      result$rva = rva
+      result$input = list(
+        cf_y = cf_y, cf_d = cf_d, rho = rho, level = level,
+        null_hypothesis = null_hypothesis
+      )
+      private$sensitivity_params_ = result
+      invisible(self)
+    },
     #' @description Apply linear contrasts jointly to each repetition.
     #' @param contrast (`matrix()`) Finite K-by-J numeric matrix. Named columns
     #' are reordered to match the framework's estimand names.
@@ -320,7 +402,9 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
     #' contrast row names, or `contrast1`, ..., `contrastK`.
     #' @return A new `DoubleMLFramework` with transformed influence contributions
     #' and standard errors recomputed from their joint covariance.
-    linear_transform = function(contrast, coef_names = NULL) {
+    linear_transform = function(contrast, coef_names = NULL,
+                                sensitivity_elements = NULL,
+                                sensitivity_unavailable_reason = NULL) {
       private$check_matrix(contrast, "contrast")
       if (ncol(contrast) != length(self$coef)) stop("contrast has incompatible dimensions.")
       if (!is.null(colnames(contrast))) {
@@ -348,8 +432,19 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
       for (i_rep in seq_len(ncol(se))) {
         se[, i_rep] = sqrt(diag(matrix(cov[, , i_rep], nrow = nrow(contrast))))
       }
+      if (is.null(sensitivity_elements) && is.null(sensitivity_unavailable_reason)) {
+        sensitivity_unavailable_reason = private$sensitivity_unavailable_reason_
+        if (is.null(sensitivity_unavailable_reason)) {
+          sensitivity_unavailable_reason = paste(
+            "Sensitivity elements are not propagated through generic linear_transform();",
+            "supply independently derived elements."
+          )
+        }
+      }
       DoubleMLFramework$new(transformed_coef, se, psi, coef_names,
-        smpls = private$smpls_, apply_cross_fitting = private$apply_cross_fitting_
+        smpls = private$smpls_, apply_cross_fitting = private$apply_cross_fitting_,
+        sensitivity_elements = sensitivity_elements,
+        sensitivity_unavailable_reason = sensitivity_unavailable_reason
       )
     },
     #' @description Concatenate compatible frameworks, retaining cross-covariance.
@@ -381,9 +476,29 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
       psi[, left, ] = self$psi
       psi[, right, ] = other$psi
       dimnames(psi) = list(obs_names[[1]], NULL, rep_names[[1]])
+      sensitivity_elements = NULL
+      sensitivity_unavailable_reason = NULL
+      if (!is.null(private$sensitivity_elements_) &&
+        !is.null(other_private$sensitivity_elements_)) {
+        sensitivity_elements = private$concat_sensitivity_elements(
+          private$sensitivity_elements_, other_private$sensitivity_elements_
+        )
+      } else {
+        reasons = Filter(Negate(is.null), list(
+          private$sensitivity_unavailable_reason_,
+          other_private$sensitivity_unavailable_reason_
+        ))
+        sensitivity_unavailable_reason = if (length(reasons)) {
+          reasons[[1]]
+        } else {
+          "Sensitivity analysis is not available for all concatenated estimands."
+        }
+      }
       DoubleMLFramework$new(rbind(self$all_coef, other$all_coef),
         rbind(self$all_se, other$all_se), psi, c(names(self$coef), names(other$coef)),
-        smpls = private$smpls_, apply_cross_fitting = private$apply_cross_fitting_
+        smpls = private$smpls_, apply_cross_fitting = private$apply_cross_fitting_,
+        sensitivity_elements = sensitivity_elements,
+        sensitivity_unavailable_reason = sensitivity_unavailable_reason
       )
     }
   ),
@@ -398,6 +513,9 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
     boot_t_stat_ = NULL,
     smpls_ = NULL,
     apply_cross_fitting_ = NULL,
+    sensitivity_elements_ = NULL,
+    sensitivity_params_ = NULL,
+    sensitivity_unavailable_reason_ = NULL,
     check_matrix = function(x, label) {
       if (!is.matrix(x) || !is.numeric(x) || any(dim(x) < 1L)) {
         stop(paste0(label, " must be a nonempty numeric matrix."))
@@ -478,6 +596,162 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
         cov[, , i_rep] = crossprod(contributions) / length(ids)^2
       }
       cov
+    },
+    check_sensitivity_scalar = function(value, label, lower, upper,
+                                        include_lower = FALSE,
+                                        include_upper = FALSE) {
+      if (!is.numeric(value) || length(value) != 1L || is.na(value) ||
+        !is.finite(value)) {
+        stop(label, " must be one finite numeric value.")
+      }
+      lower_invalid = if (include_lower) value < lower else value <= lower
+      upper_invalid = if (include_upper) value > upper else value >= upper
+      if (lower_invalid || upper_invalid) {
+        left = if (include_lower) "[" else "("
+        right = if (include_upper) "]" else ")"
+        stop(label, " must lie in ", left, lower, ", ", upper, right, ".")
+      }
+      invisible(NULL)
+    },
+    check_null_hypothesis = function(value) {
+      if (!is.numeric(value) || !is.null(dim(value)) || !length(value) ||
+        anyNA(value) || any(!is.finite(value)) ||
+        !(length(value) %in% c(1L, length(self$coef)))) {
+        stop(
+          "null_hypothesis must be a finite numeric scalar or contain one value per estimand."
+        )
+      }
+      if (length(value) == 1L) value = rep(value, length(self$coef))
+      if (!is.null(names(value))) {
+        if (anyDuplicated(names(value)) || !setequal(names(value), names(self$coef))) {
+          stop("Named null_hypothesis values must match the estimand names uniquely.")
+        }
+        value = value[names(self$coef)]
+      }
+      names(value) = names(self$coef)
+      value
+    },
+    calculate_sensitivity = function(cf_y, cf_d, rho, level) {
+      strength = abs(rho) * sqrt(cf_y * cf_d / (1 - cf_d))
+      max_bias = self$sensitivity_elements$max_bias
+      all_theta_lower = self$all_coef - strength * max_bias
+      all_theta_upper = self$all_coef + strength * max_bias
+      psi_lower = self$psi - strength * self$sensitivity_elements$psi_max_bias
+      psi_upper = self$psi + strength * self$sensitivity_elements$psi_max_bias
+      all_se_lower = private$influence_se(psi_lower)
+      all_se_upper = private$influence_se(psi_upper)
+      lower = private$aggregate_bounds(all_theta_lower, all_se_lower)
+      upper = private$aggregate_bounds(all_theta_upper, all_se_upper)
+      quantile = qnorm(level)
+      ci_lower = apply(all_theta_lower - quantile * all_se_lower, 1, median)
+      ci_upper = apply(all_theta_upper + quantile * all_se_upper, 1, median)
+      names(ci_lower) = names(ci_upper) = names(self$coef)
+      list(
+        theta = list(lower = lower$theta, upper = upper$theta),
+        se = list(lower = lower$se, upper = upper$se),
+        ci = list(lower = ci_lower, upper = ci_upper)
+      )
+    },
+    influence_se = function(psi) {
+      result = matrix(0, dim(psi)[2], dim(psi)[3],
+        dimnames = list(dimnames(psi)[[2]], dimnames(psi)[[3]])
+      )
+      for (i_rep in seq_len(dim(psi)[3])) {
+        ids = if (private$apply_cross_fitting_) {
+          seq_len(dim(psi)[1])
+        } else {
+          private$smpls_[[i_rep]]$test_ids[[1]]
+        }
+        values = matrix(psi[ids, , i_rep, drop = FALSE], nrow = length(ids))
+        result[, i_rep] = sqrt(colSums(values^2)) / length(ids)
+      }
+      result
+    },
+    aggregate_bounds = function(all_theta, all_se) {
+      theta = apply(all_theta, 1, median)
+      n_obs = dim(self$psi)[1]
+      se = sqrt(apply(
+        n_obs * all_se^2 + (all_theta - theta)^2,
+        1, median
+      ) / n_obs)
+      names(theta) = names(se) = names(self$coef)
+      list(theta = theta, se = se)
+    },
+    robustness_value = function(null_hypothesis, level, rho, i_coef, quantity) {
+      bound = if (null_hypothesis > self$coef[i_coef]) "upper" else "lower"
+      value_at = function(strength) {
+        private$calculate_sensitivity(strength, strength, rho, level)[[quantity]][[bound]][i_coef]
+      }
+      reached = function(value) {
+        if (bound == "upper") value >= null_hypothesis else value <= null_hypothesis
+      }
+      if (reached(value_at(0))) return(0)
+      upper = 1 - 1e-12
+      if (!reached(value_at(upper))) return(1)
+      root = uniroot(
+        function(strength) value_at(strength) - null_hypothesis,
+        lower = 0, upper = upper, tol = 1e-10
+      )$root
+      min(1, max(0, root))
+    },
+    format_sensitivity_summary = function() {
+      header = "================== Sensitivity Analysis =================="
+      if (is.null(private$sensitivity_params_)) {
+        return(paste(header, "Apply sensitivity_analysis() to generate sensitivity_summary.",
+          sep = "\n"
+        ))
+      }
+      params = private$sensitivity_params_
+      bounds = data.frame(
+        `CI lower` = params$ci$lower,
+        `theta lower` = params$theta$lower,
+        theta = self$coef,
+        `theta upper` = params$theta$upper,
+        `CI upper` = params$ci$upper,
+        check.names = FALSE
+      )
+      robustness = data.frame(
+        H_0 = params$input$null_hypothesis,
+        `RV (%)` = 100 * params$rv,
+        `RVa (%)` = 100 * params$rva,
+        check.names = FALSE
+      )
+      paste(c(
+        header,
+        "", "------------------ Scenario          ------------------",
+        paste0("Significance Level: level=", params$input$level),
+        paste0(
+          "Sensitivity parameters: cf_y=", params$input$cf_y,
+          "; cf_d=", params$input$cf_d, "; rho=", params$input$rho
+        ),
+        "", "------------------ Bounds with CI    ------------------",
+        capture.output(print(bounds)),
+        "", "------------------ Robustness Values ------------------",
+        capture.output(print(robustness))
+      ), collapse = "\n")
+    },
+    concat_sensitivity_elements = function(left, right) {
+      scalar_keys = c("sigma2", "nu2", "max_bias")
+      array_keys = c("psi_sigma2", "psi_nu2", "riesz_rep", "psi_max_bias")
+      result = vector("list", 7L)
+      names(result) = c(
+        "sigma2", "nu2", "psi_sigma2", "psi_nu2", "riesz_rep",
+        "max_bias", "psi_max_bias"
+      )
+      for (key in scalar_keys) result[[key]] = rbind(left[[key]], right[[key]])
+      for (key in array_keys) {
+        value = array(0, c(
+          dim(left[[key]])[1],
+          dim(left[[key]])[2] + dim(right[[key]])[2],
+          dim(left[[key]])[3]
+        ))
+        left_ids = seq_len(dim(left[[key]])[2])
+        right_ids = length(left_ids) + seq_len(dim(right[[key]])[2])
+        value[, left_ids, ] = left[[key]]
+        value[, right_ids, ] = right[[key]]
+        result[[key]] = value
+      }
+      result
     }
   )
 )

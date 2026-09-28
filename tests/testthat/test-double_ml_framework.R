@@ -305,7 +305,8 @@ test_that("empty, nonnumeric and zero-row inputs fail before inference", {
   obj = do.call(DoubleMLFramework$new, args)
   for (field in c(
     "se", "t_stat", "pval", "all_coef", "all_se", "psi",
-    "all_cov", "boot_coef", "boot_t_stat"
+    "all_cov", "boot_coef", "boot_t_stat", "sensitivity_elements",
+    "sensitivity_params", "sensitivity_summary"
   )) {
     expect_error(
       {
