@@ -51,8 +51,19 @@
 #' Groups must be fixed baseline partitions, not post-treatment, overlapping,
 #' soft or learned from this estimation sample. Rare support warns; singleton
 #' groups and nonpositive marginal standard errors fail. DML1, no-cross-fitting,
-#' clusters, instruments and survey weights are unsupported. Sensitivity analysis
-#' remains pending its separate reviewed memo gate.
+#' clusters, instruments and survey weights are unsupported. GATE sensitivity is
+#' not implemented because conditional group prevalence requires a separate
+#' influence derivation.
+#'
+#' Fully cross-fitted DML2 fits expose marginal sensitivity bounds for each APO
+#' and arbitrary nonzero linear contrasts. For contrast weights \eqn{c_j}, the
+#' Riesz representer is \eqn{\alpha_c=\sum_j c_jT_j/p_j(X)} and, because nominal
+#' treatments are mutually exclusive, \eqn{\nu_c^2=\sum_jc_j^2\nu_j^2}.
+#' Contrast sensitivity is rebuilt from these primitive elements; marginal APO
+#' bounds are never added or subtracted. A nonzero-sum row is a linear functional
+#' of potential-outcome levels, not a treatment effect. These are marginal bounds,
+#' not a simultaneous sensitivity region. DML1, no-cross-fitting, clustered data,
+#' GAPO/GATE, plotting and benchmarking are outside the initial sensitivity API.
 #' @examples
 #' \donttest{
 #' set.seed(42)
@@ -68,6 +79,8 @@
 #' )
 #' apos$fit()
 #' apos$summary()
+#' apos$sensitivity_analysis(cf_y = 0.05, cf_d = 0.05)
+#' cat(apos$sensitivity_summary)
 #' apos$bootstrap(n_rep_boot = 199)
 #' apos$confint(joint = TRUE)
 #' effects = apos$causal_contrast(reference = "control")
@@ -243,8 +256,9 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' @param store_predictions (logical) Store nuisance predictions, default FALSE.
     #' @param store_models (logical) Store nuisance models, default FALSE.
     #' @param external_predictions (named list or NULL) When supplied, exactly one
-    #' entry for every requested display label, each containing ml_g and ml_m
-    #' numeric observation-by-repetition matrices. Entries cannot be NULL.
+    #' entry for every requested display label, each containing `ml_g` and `ml_m`
+    #' numeric observation-by-repetition matrices and optionally
+    #' `ml_g_complement` to enable sensitivity. Entries cannot be NULL.
     #' All entries must be finite; propensities must lie in `[0, 1]` and be strictly
     #' positive when trimming_threshold is zero. NULL fits all nuisance learners.
     #' @return Invisibly returns the coordinator after every component succeeds.
@@ -274,9 +288,12 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     },
     #' @description Evaluate omitted-confounding sensitivity bounds jointly for
     #' the fitted potential-outcome family.
-    #' @param cf_y (numeric) Residual outcome variation share in `[0, 1)`.
-    #' @param cf_d (numeric) Riesz variation gain share in `[0, 1)`.
-    #' @param rho (numeric) Alignment in `[-1, 1]`.
+    #' @param cf_y (numeric) Share of residual outcome variation explained by
+    #' omitted confounding, in `[0, 1)`.
+    #' @param cf_d (numeric) Proportional gain in Riesz variation due to omitted
+    #' confounding, in `[0, 1)`.
+    #' @param rho (numeric) Alignment in `[-1, 1]`; its absolute value sets
+    #' adversarial strength.
     #' @param level (numeric) One-sided confidence level in `(0, 1)`.
     #' @param null_hypothesis (numeric) One null per level, or one shared null.
     #' @return Invisibly returns the coordinator.
@@ -300,6 +317,8 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' ..., contrastK. Supply exactly one of reference and contrast.
     #' @return A new [DoubleMLFramework] retaining joint influence contributions
     #' and covariance. Bootstrap this returned framework for joint inference.
+    #' Sensitivity elements are rebuilt for every nonzero row. Rows that do not
+    #' sum to zero are linear potential-outcome functionals, not treatment effects.
     causal_contrast = function(reference = NULL, contrast = NULL) {
       private$require_fit()
       prepared = private$validate_contrast(private$prepare_contrast(reference, contrast))
@@ -324,6 +343,7 @@ DoubleMLAPOS = R6Class("DoubleMLAPOS",
     #' matrix. Every nonzero row must sum to zero within numerical tolerance.
     #' Supply exactly one of reference and contrast.
     #' @return A new [DoubleMLFramework] ordered group-major, contrast-minor.
+    #' Sensitivity analysis on the returned object is explicitly unavailable.
     gate = function(groups, reference = NULL, contrast = NULL) {
       private$require_fit()
       validated = private$validate_contrast(private$prepare_contrast(reference, contrast))

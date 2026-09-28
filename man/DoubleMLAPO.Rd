@@ -63,7 +63,19 @@ marginal and joint inference. Groups of two through five rows warn; singleton
 groups, nonpositive standard errors, DML1 and no-cross-fitting are rejected.
 Group rules learned from this estimation sample, post-treatment groups,
 overlapping/soft membership, clusters, instruments and survey weights are
-outside this API. Sensitivity analysis remains pending its reviewed memo gate.
+outside this API. GAPO sensitivity is not implemented because its conditional
+prevalence denominator requires a separate influence derivation.
+
+For sensitivity analysis, a fully cross-fitted DML2 fit also estimates the
+observed-treatment regression \eqn{g(D,X)} on complement rows. The residual
+target is \eqn{\sigma^2=E\{(Y-g(D,X))^2\}}; the APO Riesz representer is
+\eqn{\alpha_d=T_d/p_d(X)} with \eqn{\nu_d^2=E\{\alpha_d^2\}} and maximum bias
+\eqn{B_d=\sqrt{\sigma^2\nu_d^2}}. The complement outcome learner receives
+treatment as a categorical feature, so numeric labels never become doses.
+Sensitivity is available only for the built-in APO score, independent data,
+fully cross-fitted DML2, positive residual and Riesz variation, and an \code{ml_g}
+learner that supports factor predictors. DML1, no-cross-fitting, clusters,
+GAPO, and simultaneous sensitivity regions are not supported.
 }
 \examples{
 set.seed(42)
@@ -79,6 +91,8 @@ apo = DoubleMLAPO$new(data, mlr3::lrn("regr.lm"),
 apo$fit()
 apo$summary()
 apo$confint()
+apo$sensitivity_analysis(cf_y = 0.05, cf_d = 0.05)
+cat(apo$sensitivity_summary)
 apo$propensity_diagnostics[[1]]$fold_class_counts
 groups = ifelse(x <= 0, "lower x", "higher x")
 gapo = apo$gapo(groups)
@@ -109,6 +123,18 @@ Whether inverse propensity weights should be normalized to mean one.}
 One treatment-specific entry per fitted repetition, containing raw minimum
 and quartiles, fraction trimmed, raw/effective propensities, effective
 weights and selected/complement class counts for each train/test fold.}
+
+\item{\code{framework}}{(\link{DoubleMLFramework} or \code{NULL}) \cr
+Joint-inference representation of the fitted APO estimate.}
+
+\item{\code{sensitivity_elements}}{(\code{list()} or \code{NULL}) \cr
+Canonical sensitivity components when available.}
+
+\item{\code{sensitivity_params}}{(\code{list()} or \code{NULL}) \cr
+Most recently evaluated sensitivity scenario.}
+
+\item{\code{sensitivity_summary}}{(\code{character(1)} or \code{NULL}) \cr
+Formatted results for the most recent sensitivity scenario.}
 }
 \if{html}{\out{</div>}}
 }
@@ -117,6 +143,7 @@ weights and selected/complement class counts for each train/test fold.}
 \itemize{
 \item \href{#method-DoubleMLAPO-new}{\code{DoubleMLAPO$new()}}
 \item \href{#method-DoubleMLAPO-fit}{\code{DoubleMLAPO$fit()}}
+\item \href{#method-DoubleMLAPO-sensitivity_analysis}{\code{DoubleMLAPO$sensitivity_analysis()}}
 \item \href{#method-DoubleMLAPO-gapo}{\code{DoubleMLAPO$gapo()}}
 \item \href{#method-DoubleMLAPO-clone}{\code{DoubleMLAPO$clone()}}
 }
@@ -238,13 +265,52 @@ predictions, the stored fold entries remain \code{NULL}.}
 
 \item{\code{external_predictions}}{(\code{list()}, \code{NULL}) \cr
 Named list with \code{ml_g} and \code{ml_m} numeric observation-by-repetition
-matrices. All values must be finite and raw \code{ml_m} probabilities must
+matrices, and optionally \code{ml_g_complement} to enable sensitivity
+analysis. \code{ml_g_complement} predicts the outcome under each row's observed
+non-selected treatment. All values must be finite and raw \code{ml_m} probabilities must
 lie in \verb{[0, 1]}. With \code{trimming_threshold = 0}, probabilities must be
 strictly positive on every observation. Predictions should be obtained
 out of fold. Matrices cover all rows, even for held-out estimation.
 Stored predictions retain raw propensities and have dimensions observation
 by repetition by one treatment; diagnostics expose effective values.
 \code{NULL} fits the nuisance learners with the model's sample splits.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly returns the fitted model.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DoubleMLAPO-sensitivity_analysis"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLAPO-sensitivity_analysis}{}}}
+\subsection{Method \code{sensitivity_analysis()}}{
+Evaluate omitted-confounding sensitivity bounds for the APO.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLAPO$sensitivity_analysis(
+  cf_y = 0.03,
+  cf_d = 0.03,
+  rho = 1,
+  level = 0.95,
+  null_hypothesis = 0
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{cf_y}}{(\code{numeric(1)}) Share of residual outcome variation explained
+by omitted confounding, in \verb{[0, 1)}.}
+
+\item{\code{cf_d}}{(\code{numeric(1)}) Proportional gain in Riesz variation due to
+omitted confounding, in \verb{[0, 1)}.}
+
+\item{\code{rho}}{(\code{numeric(1)}) Alignment in \verb{[-1, 1]}; its absolute value sets
+adversarial strength.}
+
+\item{\code{level}}{(\code{numeric(1)}) One-sided confidence level in \verb{(0, 1)}.}
+
+\item{\code{null_hypothesis}}{(\code{numeric(1)}) Null value for robustness values.}
 }
 \if{html}{\out{</div>}}
 }
@@ -273,6 +339,8 @@ A categorical group label for every observation, in data-row order.}
 }
 \subsection{Returns}{
 A fitted \link{DoubleMLFramework} with one GAPO per observed group.
+Calling its \code{sensitivity_analysis()} method reports that GAPO/GATE
+sensitivity requires a separate conditional-prevalence derivation.
 }
 }
 \if{html}{\out{<hr>}}

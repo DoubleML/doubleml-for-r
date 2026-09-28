@@ -56,8 +56,19 @@ bootstrapped separately for joint intervals or Romano-Wolf adjustment.
 Groups must be fixed baseline partitions, not post-treatment, overlapping,
 soft or learned from this estimation sample. Rare support warns; singleton
 groups and nonpositive marginal standard errors fail. DML1, no-cross-fitting,
-clusters, instruments and survey weights are unsupported. Sensitivity analysis
-remains pending its separate reviewed memo gate.
+clusters, instruments and survey weights are unsupported. GATE sensitivity is
+not implemented because conditional group prevalence requires a separate
+influence derivation.
+
+Fully cross-fitted DML2 fits expose marginal sensitivity bounds for each APO
+and arbitrary nonzero linear contrasts. For contrast weights \eqn{c_j}, the
+Riesz representer is \eqn{\alpha_c=\sum_j c_jT_j/p_j(X)} and, because nominal
+treatments are mutually exclusive, \eqn{\nu_c^2=\sum_jc_j^2\nu_j^2}.
+Contrast sensitivity is rebuilt from these primitive elements; marginal APO
+bounds are never added or subtracted. A nonzero-sum row is a linear functional
+of potential-outcome levels, not a treatment effect. These are marginal bounds,
+not a simultaneous sensitivity region. DML1, no-cross-fitting, clustered data,
+GAPO/GATE, plotting and benchmarking are outside the initial sensitivity API.
 }
 \examples{
 \donttest{
@@ -74,6 +85,8 @@ apos = DoubleMLAPOS$new(data, mlr3::lrn("regr.lm"),
 )
 apos$fit()
 apos$summary()
+apos$sensitivity_analysis(cf_y = 0.05, cf_d = 0.05)
+cat(apos$sensitivity_summary)
 apos$bootstrap(n_rep_boot = 199)
 apos$confint(joint = TRUE)
 effects = apos$causal_contrast(reference = "control")
@@ -99,6 +112,14 @@ treatment display label. Components exist before fitting.}
 
 \item{\code{framework}}{(\link{DoubleMLFramework} or NULL) Joint inference object.
 NULL until a complete successful fit is available.}
+
+\item{\code{sensitivity_elements}}{(\code{list()} or \code{NULL}) Canonical sensitivity
+components for the fitted potential-outcome family, when available.}
+
+\item{\code{sensitivity_params}}{(\code{list()} or \code{NULL}) Most recently evaluated
+sensitivity scenario.}
+
+\item{\code{sensitivity_summary}}{(\code{character(1)}) Formatted sensitivity results.}
 
 \item{\code{coef}}{(numeric vector) Named average potential outcomes after fit().}
 
@@ -129,6 +150,7 @@ NULL when splitting was deferred and has not yet been supplied.}
 \item \href{#method-DoubleMLAPOS-new}{\code{DoubleMLAPOS$new()}}
 \item \href{#method-DoubleMLAPOS-set_sample_splitting}{\code{DoubleMLAPOS$set_sample_splitting()}}
 \item \href{#method-DoubleMLAPOS-fit}{\code{DoubleMLAPOS$fit()}}
+\item \href{#method-DoubleMLAPOS-sensitivity_analysis}{\code{DoubleMLAPOS$sensitivity_analysis()}}
 \item \href{#method-DoubleMLAPOS-causal_contrast}{\code{DoubleMLAPOS$causal_contrast()}}
 \item \href{#method-DoubleMLAPOS-gate}{\code{DoubleMLAPOS$gate()}}
 \item \href{#method-DoubleMLAPOS-bootstrap}{\code{DoubleMLAPOS$bootstrap()}}
@@ -248,8 +270,9 @@ Fit all components and assemble joint inference atomically.
 \item{\code{store_models}}{(logical) Store nuisance models, default FALSE.}
 
 \item{\code{external_predictions}}{(named list or NULL) When supplied, exactly one
-entry for every requested display label, each containing ml_g and ml_m
-numeric observation-by-repetition matrices. Entries cannot be NULL.
+entry for every requested display label, each containing \code{ml_g} and \code{ml_m}
+numeric observation-by-repetition matrices and optionally
+\code{ml_g_complement} to enable sensitivity. Entries cannot be NULL.
 All entries must be finite; propensities must lie in \verb{[0, 1]} and be strictly
 positive when trimming_threshold is zero. NULL fits all nuisance learners.}
 }
@@ -257,6 +280,44 @@ positive when trimming_threshold is zero. NULL fits all nuisance learners.}
 }
 \subsection{Returns}{
 Invisibly returns the coordinator after every component succeeds.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DoubleMLAPOS-sensitivity_analysis"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLAPOS-sensitivity_analysis}{}}}
+\subsection{Method \code{sensitivity_analysis()}}{
+Evaluate omitted-confounding sensitivity bounds jointly for
+the fitted potential-outcome family.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLAPOS$sensitivity_analysis(
+  cf_y = 0.03,
+  cf_d = 0.03,
+  rho = 1,
+  level = 0.95,
+  null_hypothesis = 0
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{cf_y}}{(numeric) Share of residual outcome variation explained by
+omitted confounding, in \verb{[0, 1)}.}
+
+\item{\code{cf_d}}{(numeric) Proportional gain in Riesz variation due to omitted
+confounding, in \verb{[0, 1)}.}
+
+\item{\code{rho}}{(numeric) Alignment in \verb{[-1, 1]}; its absolute value sets
+adversarial strength.}
+
+\item{\code{level}}{(numeric) One-sided confidence level in \verb{(0, 1)}.}
+
+\item{\code{null_hypothesis}}{(numeric) One null per level, or one shared null.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly returns the coordinator.
 }
 }
 \if{html}{\out{<hr>}}
@@ -286,6 +347,8 @@ Row names must be unique and nonblank; unnamed rows receive contrast1,
 \subsection{Returns}{
 A new \link{DoubleMLFramework} retaining joint influence contributions
 and covariance. Bootstrap this returned framework for joint inference.
+Sensitivity elements are rebuilt for every nonzero row. Rows that do not
+sum to zero are linear potential-outcome functionals, not treatment effects.
 }
 }
 \if{html}{\out{<hr>}}
@@ -316,6 +379,7 @@ Supply exactly one of reference and contrast.}
 }
 \subsection{Returns}{
 A new \link{DoubleMLFramework} ordered group-major, contrast-minor.
+Sensitivity analysis on the returned object is explicitly unavailable.
 }
 }
 \if{html}{\out{<hr>}}

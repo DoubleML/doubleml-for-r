@@ -59,7 +59,19 @@
 #' groups, nonpositive standard errors, DML1 and no-cross-fitting are rejected.
 #' Group rules learned from this estimation sample, post-treatment groups,
 #' overlapping/soft membership, clusters, instruments and survey weights are
-#' outside this API. Sensitivity analysis remains pending its reviewed memo gate.
+#' outside this API. GAPO sensitivity is not implemented because its conditional
+#' prevalence denominator requires a separate influence derivation.
+#'
+#' For sensitivity analysis, a fully cross-fitted DML2 fit also estimates the
+#' observed-treatment regression \eqn{g(D,X)} on complement rows. The residual
+#' target is \eqn{\sigma^2=E\{(Y-g(D,X))^2\}}; the APO Riesz representer is
+#' \eqn{\alpha_d=T_d/p_d(X)} with \eqn{\nu_d^2=E\{\alpha_d^2\}} and maximum bias
+#' \eqn{B_d=\sqrt{\sigma^2\nu_d^2}}. The complement outcome learner receives
+#' treatment as a categorical feature, so numeric labels never become doses.
+#' Sensitivity is available only for the built-in APO score, independent data,
+#' fully cross-fitted DML2, positive residual and Riesz variation, and an `ml_g`
+#' learner that supports factor predictors. DML1, no-cross-fitting, clusters,
+#' GAPO, and simultaneous sensitivity regions are not supported.
 #' @examples
 #' set.seed(42)
 #' n = 120
@@ -74,6 +86,8 @@
 #' apo$fit()
 #' apo$summary()
 #' apo$confint()
+#' apo$sensitivity_analysis(cf_y = 0.05, cf_d = 0.05)
+#' cat(apo$sensitivity_summary)
 #' apo$propensity_diagnostics[[1]]$fold_class_counts
 #' groups = ifelse(x <= 0, "lower x", "higher x")
 #' gapo = apo$gapo(groups)
@@ -223,7 +237,8 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' @param external_predictions (`list()`, `NULL`) \cr
     #' Named list with `ml_g` and `ml_m` numeric observation-by-repetition
     #' matrices, and optionally `ml_g_complement` to enable sensitivity
-    #' analysis. All values must be finite and raw `ml_m` probabilities must
+    #' analysis. `ml_g_complement` predicts the outcome under each row's observed
+    #' non-selected treatment. All values must be finite and raw `ml_m` probabilities must
     #' lie in `[0, 1]`. With `trimming_threshold = 0`, probabilities must be
     #' strictly positive on every observation. Predictions should be obtained
     #' out of fold. Matrices cover all rows, even for held-out estimation.
@@ -269,9 +284,12 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       invisible(self)
     },
     #' @description Evaluate omitted-confounding sensitivity bounds for the APO.
-    #' @param cf_y (`numeric(1)`) Residual outcome variation share in `[0, 1)`.
-    #' @param cf_d (`numeric(1)`) Riesz variation gain share in `[0, 1)`.
-    #' @param rho (`numeric(1)`) Alignment in `[-1, 1]`.
+    #' @param cf_y (`numeric(1)`) Share of residual outcome variation explained
+    #' by omitted confounding, in `[0, 1)`.
+    #' @param cf_d (`numeric(1)`) Proportional gain in Riesz variation due to
+    #' omitted confounding, in `[0, 1)`.
+    #' @param rho (`numeric(1)`) Alignment in `[-1, 1]`; its absolute value sets
+    #' adversarial strength.
     #' @param level (`numeric(1)`) One-sided confidence level in `(0, 1)`.
     #' @param null_hypothesis (`numeric(1)`) Null value for robustness values.
     #' @return Invisibly returns the fitted model.
@@ -293,6 +311,8 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' @param groups (`factor`, `character`, `logical`, `numeric`) \cr
     #' A categorical group label for every observation, in data-row order.
     #' @return A fitted [DoubleMLFramework] with one GAPO per observed group.
+    #' Calling its `sensitivity_analysis()` method reports that GAPO/GATE
+    #' sensitivity requires a separate conditional-prevalence derivation.
     gapo = function(groups) {
       if (any(!is.finite(self$all_coef))) {
         stop("Fit the DoubleMLAPO object before calling gapo().")
@@ -340,9 +360,16 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         supports_nominal = "factor" %in% self$learner$ml_g$feature_types
         if (sensitivity_supported && supports_nominal) {
           treatment = original_data_model[[self$data$treat_col]]
-          original_data_model[[self$data$treat_col]] = factor(
+          treatment_factor = factor(
             as.character(treatment), levels = as.character(get_apo_levels(treatment))
           )
+          # Selected-row complement predictions are never used. Recode only
+          # those rows so learners that drop absent factor levels can predict.
+          complement_level = levels(treatment_factor)[
+            levels(treatment_factor) != as.character(self$treatment_level)
+          ][1L]
+          treatment_factor[indicator == 1L] = complement_level
+          original_data_model[[self$data$treat_col]] = treatment_factor
           complement_result = private$predict_nuisance(
             "ml_g", self$data$y_col, original_data_model, cond_smpls$smpls_0,
             feature_cols = c(self$data$x_cols, self$data$treat_col),

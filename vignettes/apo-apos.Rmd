@@ -116,6 +116,45 @@ comparison = matrix(c(0, -1, 0.5, 0.5),
 apos$causal_contrast(contrast = comparison)$summary()
 ```
 
+Rows that sum to zero are treatment contrasts. Nonzero rows are also supported,
+but they are linear functionals of potential-outcome levels rather than treatment
+effects. Every row must be nonzero.
+
+## Sensitivity to omitted confounding
+
+For a fully cross-fitted DML2 fit, the outcome learner also estimates the
+observed-treatment regression on complement rows. Treatment enters that learner
+as a categorical feature, including when the original labels are numeric. This
+provides the residual outcome variation and the treatment-specific Riesz
+variation required for omitted-confounding bounds.
+
+`cf_y` is the share of residual outcome variation explained by omitted
+confounding; `cf_d` is the proportional gain in Riesz variation; and `rho`
+controls their alignment. The reported confidence limits are one-sided bounds.
+`RV` is the smallest common value `cf_y = cf_d` at which the adverse point bound
+reaches the null; `RVa` is the corresponding confidence-bound value.
+
+```{r sensitivity}
+apos$sensitivity_analysis(cf_y = 0.05, cf_d = 0.05, rho = 1,
+  level = 0.95, null_hypothesis = 0
+)
+cat(apos$sensitivity_summary)
+
+sensitive_comparison = apos$causal_contrast(contrast = comparison)
+sensitive_comparison$sensitivity_analysis(
+  cf_y = 0.05, cf_d = 0.05, rho = 1,
+  level = 0.95, null_hypothesis = 0
+)
+cat(sensitive_comparison$sensitivity_summary)
+```
+
+Contrast sensitivity is rebuilt from the contrast's Riesz representer; it does
+not add or subtract marginal APO bounds. The API supplies marginal sensitivity
+bounds, not a simultaneous sensitivity region. It requires the built-in APO
+score, independent observations, fully cross-fitted DML2, and positive residual
+and Riesz variation. DML1, no-cross-fitting, clustered data, plotting and
+benchmarking are not supported by this initial sensitivity API.
+
 ## Group-specific outcomes and treatment contrasts
 
 Suppose the two groups below were specified before estimation from the baseline
@@ -144,6 +183,17 @@ group-major and contrast-minor, and all rows form one covariance-aware inference
 family. A named contrast matrix is also accepted, but every nonzero row must sum
 to zero within numerical tolerance. Bootstrap the returned framework itself;
 draws from the global APOS object are not inherited.
+
+Sensitivity analysis is deliberately unavailable for GAPO and GATE. Conditional
+group prevalence enters these ratio estimands and needs a separate influence
+derivation. The returned framework reports this limitation directly:
+
+```{r group-sensitivity-limitation}
+tryCatch(
+  gates$sensitivity_analysis(),
+  error = function(condition) conditionMessage(condition)
+)
+```
 
 These methods consume the fitted APO orthogonal signals. They do not refit
 nuisance learners or redo trimming within a group. The initial implementation
@@ -182,8 +232,11 @@ set; the inherited full-sample one-fold convention requires external nuisance
 predictions. Those predictions must be obtained out of sample by the caller.
 External predictions use one named entry per requested label, containing finite
 `ml_g` and `ml_m` matrices with dimensions observation by repetition, covering
-every row. Propensities must be in $[0,1]$ and strictly positive if truncation
-is disabled. Both learner arguments are still required.
+every row. An optional `ml_g_complement` matrix supplies the observed-treatment
+outcome prediction for non-selected rows and enables sensitivity analysis.
+Legacy two-key inputs still estimate APOs, but sensitivity then reports the
+missing complement prediction. Propensities must be in $[0,1]$ and strictly
+positive if truncation is disabled. Both learner arguments are still required.
 
 APOS fits and tunes cloned components. A failed first fit leaves it unfitted;
 a failed refit preserves the previous complete result. Successful tuning or
@@ -202,5 +255,6 @@ The core assumes independent observations and rejects `DoubleMLClusterData`
 and instruments. Valid inference also requires overlap, suitable moments and
 sufficient nuisance accuracy; cross-fitting alone does not establish causality.
 GAPO and GATE inference additionally require fixed baseline groups with positive
-limiting prevalence and suitable within-group overlap. Sensitivity analysis
-remains pending its separate reviewed memo gate and is not part of this release.
+limiting prevalence and suitable within-group overlap. Sensitivity analysis is
+available for APOs, APOS families and nonzero APO linear contrasts under the
+restrictions above, but not for GAPO or GATE.

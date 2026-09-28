@@ -39,8 +39,23 @@ names are absent. Both return fresh, unbootstrapped objects. Bootstrap
 multipliers are common to all estimands within each repetition. Joint
 intervals use the quantile of the maximum absolute bootstrap statistic over
 the full estimand family, pooling columns across repetitions.
-No cluster-robust inference, GATE or sensitivity methods are provided; GATE
-and sensitivity extensions remain pending separate reviewed memo gates.
+
+With canonical sensitivity elements, \code{sensitivity_analysis()} evaluates
+omitted-confounding bounds. For residual outcome variation \eqn{\sigma^2},
+Riesz variation \eqn{\nu^2}, and maximum bias
+\eqn{B = \sqrt{\sigma^2\nu^2}}, the confounding strength is
+\eqn{\kappa=|\rho|\sqrt{C_Y C_D/(1-C_D)}} and the repetition-specific point
+bounds are \eqn{\widehat\theta_r \mathbin{\pm} \kappa\widehat B_r}.
+The bound influence contributions are \code{psi} plus or minus \eqn{\kappa} times
+\code{psi_max_bias}. Point bounds and their standard errors use the framework's
+repeated-split aggregation; confidence bounds are medians of the
+repetition-specific one-sided limits. \code{rv} is the smallest common value
+\eqn{C_Y=C_D} whose adverse point bound reaches the null, and \code{rva} is its
+confidence-bound analogue. Values of one mean that the null is not reached
+below one. Bounds are marginal, not simultaneous sensitivity regions.
+Generic linear transforms discard sensitivity unless independently derived
+elements are supplied. Cluster-robust and group-conditional sensitivity are
+not implemented.
 }
 \examples{
 set.seed(42)
@@ -87,6 +102,14 @@ influence contributions, already scaled by the score derivative.}
 \item{\code{boot_coef}}{(\code{matrix()} or \code{NULL}) Bootstrap perturbations, initially unset.}
 
 \item{\code{boot_t_stat}}{(\code{matrix()} or \code{NULL}) Bootstrap t-statistics, initially unset.}
+
+\item{\code{sensitivity_elements}}{(\code{list()} or \code{NULL}) Canonical sensitivity
+components, when available.}
+
+\item{\code{sensitivity_params}}{(\code{list()} or \code{NULL}) Most recently evaluated
+sensitivity scenario.}
+
+\item{\code{sensitivity_summary}}{(\code{character(1)}) Formatted sensitivity results.}
 }
 \if{html}{\out{</div>}}
 }
@@ -99,6 +122,7 @@ influence contributions, already scaled by the score derivative.}
 \item \href{#method-DoubleMLFramework-bootstrap}{\code{DoubleMLFramework$bootstrap()}}
 \item \href{#method-DoubleMLFramework-confint}{\code{DoubleMLFramework$confint()}}
 \item \href{#method-DoubleMLFramework-p_adjust}{\code{DoubleMLFramework$p_adjust()}}
+\item \href{#method-DoubleMLFramework-sensitivity_analysis}{\code{DoubleMLFramework$sensitivity_analysis()}}
 \item \href{#method-DoubleMLFramework-linear_transform}{\code{DoubleMLFramework$linear_transform()}}
 \item \href{#method-DoubleMLFramework-concat}{\code{DoubleMLFramework$concat()}}
 \item \href{#method-DoubleMLFramework-clone}{\code{DoubleMLFramework$clone()}}
@@ -116,7 +140,9 @@ Create a joint inference object.
   psi,
   coef_names,
   smpls = NULL,
-  apply_cross_fitting = TRUE
+  apply_cross_fitting = TRUE,
+  sensitivity_elements = NULL,
+  sensitivity_unavailable_reason = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -140,6 +166,13 @@ repetition, each containing lists \code{train_ids} and \code{test_ids}.}
 \item{\code{apply_cross_fitting}}{(\code{logical(1)}) Whether all observations are
 evaluation observations. Without cross-fitting, splits are required and
 each repetition must have exactly one evaluation set.}
+
+\item{\code{sensitivity_elements}}{(\code{list()}, \code{NULL}) Optional canonical list
+containing \code{sigma2}, \code{nu2}, \code{psi_sigma2}, \code{psi_nu2}, \code{riesz_rep},
+\code{max_bias}, and \code{psi_max_bias} with dimensions matching the framework.}
+
+\item{\code{sensitivity_unavailable_reason}}{(\code{character(1)}, \code{NULL}) Optional
+concrete error message used when sensitivity elements are unavailable.}
 }
 \if{html}{\out{</div>}}
 }
@@ -256,12 +289,55 @@ matrix with columns \code{"Estimate."} and \code{"pval"}.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DoubleMLFramework-sensitivity_analysis"></a>}}
+\if{latex}{\out{\hypertarget{method-DoubleMLFramework-sensitivity_analysis}{}}}
+\subsection{Method \code{sensitivity_analysis()}}{
+Evaluate omitted-confounding sensitivity bounds.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLFramework$sensitivity_analysis(
+  cf_y = 0.03,
+  cf_d = 0.03,
+  rho = 1,
+  level = 0.95,
+  null_hypothesis = 0
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{cf_y}}{(\code{numeric(1)}) Share of residual outcome variation explained
+by omitted confounding, in \verb{[0, 1)}.}
+
+\item{\code{cf_d}}{(\code{numeric(1)}) Proportional gain in Riesz-representer
+variation due to omitted confounding, in \verb{[0, 1)}.}
+
+\item{\code{rho}}{(\code{numeric(1)}) Alignment between outcome and Riesz nuisance
+errors, in \verb{[-1, 1]}; only its absolute value changes two-sided bounds.}
+
+\item{\code{level}}{(\code{numeric(1)}) One-sided confidence level in \verb{(0, 1)}.}
+
+\item{\code{null_hypothesis}}{(\code{numeric()}) One null per estimand, or one shared null.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly returns the framework and stores results in
+\code{sensitivity_params}.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DoubleMLFramework-linear_transform"></a>}}
 \if{latex}{\out{\hypertarget{method-DoubleMLFramework-linear_transform}{}}}
 \subsection{Method \code{linear_transform()}}{
 Apply linear contrasts jointly to each repetition.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DoubleMLFramework$linear_transform(contrast, coef_names = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DoubleMLFramework$linear_transform(
+  contrast,
+  coef_names = NULL,
+  sensitivity_elements = NULL,
+  sensitivity_unavailable_reason = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -272,6 +348,12 @@ are reordered to match the framework's estimand names.}
 
 \item{\code{coef_names}}{(\code{character()}) Optional output names. Defaults to
 contrast row names, or \code{contrast1}, ..., \code{contrastK}.}
+
+\item{\code{sensitivity_elements}}{(\code{list()}, \code{NULL}) Optional independently
+derived canonical sensitivity elements for the transformed estimands.}
+
+\item{\code{sensitivity_unavailable_reason}}{(\code{character(1)}, \code{NULL}) Optional
+concrete reason that sensitivity is unavailable after the transform.}
 }
 \if{html}{\out{</div>}}
 }

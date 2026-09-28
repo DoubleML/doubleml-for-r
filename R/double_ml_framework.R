@@ -35,8 +35,23 @@
 #' multipliers are common to all estimands within each repetition. Joint
 #' intervals use the quantile of the maximum absolute bootstrap statistic over
 #' the full estimand family, pooling columns across repetitions.
-#' No cluster-robust inference, GATE or sensitivity methods are provided; GATE
-#' and sensitivity extensions remain pending separate reviewed memo gates.
+#'
+#' With canonical sensitivity elements, `sensitivity_analysis()` evaluates
+#' omitted-confounding bounds. For residual outcome variation \eqn{\sigma^2},
+#' Riesz variation \eqn{\nu^2}, and maximum bias
+#' \eqn{B = \sqrt{\sigma^2\nu^2}}, the confounding strength is
+#' \eqn{\kappa=|\rho|\sqrt{C_Y C_D/(1-C_D)}} and the repetition-specific point
+#' bounds are \eqn{\widehat\theta_r \mathbin{\pm} \kappa\widehat B_r}.
+#' The bound influence contributions are `psi` plus or minus \eqn{\kappa} times
+#' `psi_max_bias`. Point bounds and their standard errors use the framework's
+#' repeated-split aggregation; confidence bounds are medians of the
+#' repetition-specific one-sided limits. `rv` is the smallest common value
+#' \eqn{C_Y=C_D} whose adverse point bound reaches the null, and `rva` is its
+#' confidence-bound analogue. Values of one mean that the null is not reached
+#' below one. Bounds are marginal, not simultaneous sensitivity regions.
+#' Generic linear transforms discard sensitivity unless independently derived
+#' elements are supplied. Cluster-robust and group-conditional sensitivity are
+#' not implemented.
 #' @usage NULL
 #' @examples
 #' set.seed(42)
@@ -162,6 +177,11 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
     #' @param apply_cross_fitting (`logical(1)`) Whether all observations are
     #' evaluation observations. Without cross-fitting, splits are required and
     #' each repetition must have exactly one evaluation set.
+    #' @param sensitivity_elements (`list()`, `NULL`) Optional canonical list
+    #' containing `sigma2`, `nu2`, `psi_sigma2`, `psi_nu2`, `riesz_rep`,
+    #' `max_bias`, and `psi_max_bias` with dimensions matching the framework.
+    #' @param sensitivity_unavailable_reason (`character(1)`, `NULL`) Optional
+    #' concrete error message used when sensitivity elements are unavailable.
     #' @return A new `DoubleMLFramework` object.
     initialize = function(all_coef, all_se, psi, coef_names, smpls = NULL,
                           apply_cross_fitting = TRUE, sensitivity_elements = NULL,
@@ -353,9 +373,12 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
       }
     },
     #' @description Evaluate omitted-confounding sensitivity bounds.
-    #' @param cf_y (`numeric(1)`) Residual outcome variation share in `[0, 1)`.
-    #' @param cf_d (`numeric(1)`) Riesz variation gain share in `[0, 1)`.
-    #' @param rho (`numeric(1)`) Alignment in `[-1, 1]`.
+    #' @param cf_y (`numeric(1)`) Share of residual outcome variation explained
+    #' by omitted confounding, in `[0, 1)`.
+    #' @param cf_d (`numeric(1)`) Proportional gain in Riesz-representer
+    #' variation due to omitted confounding, in `[0, 1)`.
+    #' @param rho (`numeric(1)`) Alignment between outcome and Riesz nuisance
+    #' errors, in `[-1, 1]`; only its absolute value changes two-sided bounds.
     #' @param level (`numeric(1)`) One-sided confidence level in `(0, 1)`.
     #' @param null_hypothesis (`numeric()`) One null per estimand, or one shared null.
     #' @return Invisibly returns the framework and stores results in
@@ -400,6 +423,10 @@ DoubleMLFramework = R6Class("DoubleMLFramework",
     #' are reordered to match the framework's estimand names.
     #' @param coef_names (`character()`) Optional output names. Defaults to
     #' contrast row names, or `contrast1`, ..., `contrastK`.
+    #' @param sensitivity_elements (`list()`, `NULL`) Optional independently
+    #' derived canonical sensitivity elements for the transformed estimands.
+    #' @param sensitivity_unavailable_reason (`character(1)`, `NULL`) Optional
+    #' concrete reason that sensitivity is unavailable after the transform.
     #' @return A new `DoubleMLFramework` with transformed influence contributions
     #' and standard errors recomputed from their joint covariance.
     linear_transform = function(contrast, coef_names = NULL,

@@ -83,6 +83,20 @@ test_that("learned complement outcome regression is nominal and out of fold", {
   expect_equal(sensitivity_sigma, rep(sensitivity_sigma[1], 3))
 })
 
+test_that("learned complement does not require selected-level predictions", {
+  fixture = make_apo_data(
+    30, c("control", "filter", "boiling"), seed = 722
+  )
+  obj = DoubleMLAPO$new(
+    fixture$dml_data, mlr3::lrn("regr.lm"),
+    mlr3::lrn("classif.featureless"), "filter",
+    n_folds = 2, draw_sample_splitting = FALSE
+  )
+  obj$set_sample_splitting(fixture$smpls)
+  expect_no_error(obj$fit())
+  expect_false(is.null(obj$sensitivity_elements))
+})
+
 test_that("legacy APO external predictions remain valid without sensitivity", {
   setup = make_external_apo_sensitivity()
   legacy = setup$predictions[c("ml_g", "ml_m")]
