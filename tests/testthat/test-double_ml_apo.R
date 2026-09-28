@@ -35,6 +35,9 @@ test_that("fixed APO scores and inference match hand calculations", {
     expect_equal(as.vector(obj$predictions[[key]]), as.vector(fixture$predictions[[key]]))
     expect_true(all(vapply(obj$models[[key]]$d[[1]], is.null, logical(1))))
   }
+  expect_identical(names(obj$predictions), c("ml_g", "ml_m"))
+  expect_identical(names(obj$models), c("ml_g", "ml_m"))
+  expect_setequal(obj$learner_names(), c("ml_g", "ml_m"))
   expect_equal(fixture$data$data$d, c("a", "b", "c", "a", "b", "a"))
   expect_setequal(obj$params_names(), c("ml_g", "ml_m"))
 })

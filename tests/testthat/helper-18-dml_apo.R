@@ -71,6 +71,86 @@ apo_score_from_predictions = function(
 }
 # nolint end: object_usage_linter.
 
+# Independent sensitivity oracle. It deliberately does not call production
+# sensitivity helpers, so sign, normalization and centering errors are visible.
+# nolint start: object_length_linter.
+apo_sensitivity_from_predictions = function(
+  y, indicator, g_selected, g_complement, p,
+  trimming_threshold = 0, normalize_ipw = FALSE
+) {
+  p = pmin(pmax(p, trimming_threshold), 1 - trimming_threshold)
+  normalization = 1
+  if (normalize_ipw) normalization = mean(indicator / p)
+  effective_p = p * normalization
+  riesz_rep = indicator / effective_p
+  observed_g = indicator * g_selected + (1 - indicator) * g_complement
+  sigma_score = (y - observed_g)^2
+  sigma2 = mean(sigma_score)
+  psi_sigma2 = sigma_score - sigma2
+  nu_score = 2 / effective_p - riesz_rep^2
+  nu2 = mean(nu_score)
+  psi_nu2 = nu_score - nu2
+  max_bias = sqrt(sigma2 * nu2)
+  psi_max_bias = (sigma2 * psi_nu2 + nu2 * psi_sigma2) / (2 * max_bias)
+  list(
+    sigma2 = sigma2, nu2 = nu2,
+    psi_sigma2 = psi_sigma2, psi_nu2 = psi_nu2,
+    riesz_rep = riesz_rep, max_bias = max_bias,
+    psi_max_bias = psi_max_bias
+  )
+}
+# nolint end: object_length_linter.
+
+ApoSensitivityRegr = R6::R6Class("ApoSensitivityRegr",
+  inherit = mlr3::LearnerRegr,
+  public = list(
+    selected_level = NULL,
+    expected_levels = NULL,
+    initialize = function(selected_level, expected_levels) {
+      self$selected_level = as.character(selected_level)
+      self$expected_levels = as.character(expected_levels)
+      super$initialize(id = "regr.apo_sensitivity",
+        feature_types = c("numeric", "integer", "factor"),
+        predict_types = "response")
+    }
+  ),
+  private = list(
+    .train = function(task) {
+      complement = "d" %in% task$feature_names
+      if (complement) {
+        d = task$data(cols = "d")$d
+        if (!is.factor(d)) stop("Complement treatment feature must be a factor.")
+        if (!identical(levels(d), self$expected_levels)) {
+          stop("Complement treatment factor must retain all observed levels.")
+        }
+        if (any(as.character(d) == self$selected_level)) {
+          stop("Selected rows leaked into complement outcome training.")
+        }
+      }
+      list(
+        train_ids = task$row_ids, complement = complement,
+        expected_levels = self$expected_levels
+      )
+    },
+    .predict = function(task) {
+      if (any(task$row_ids %in% self$model$train_ids)) {
+        stop("In-sample sensitivity outcome prediction.")
+      }
+      x = task$data(cols = "x")$x
+      response = if (self$model$complement) {
+        d = task$data(cols = "d")$d
+        if (!is.factor(d) || !identical(levels(d), self$model$expected_levels)) {
+          stop("Complement prediction lost nominal treatment levels.")
+        }
+        match(as.character(d), self$model$expected_levels) + x / 1000
+      } else {
+        .5 + x / 1000
+      }
+      list(response = response)
+    }
+  )
+)
+
 # Small mlr3 learners expose APO's training/prediction boundary without fitting noise.
 ApoLeakageRegr = R6::R6Class("ApoLeakageRegr",
   inherit = mlr3::LearnerRegr,

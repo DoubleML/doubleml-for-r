@@ -25,6 +25,7 @@ test_that("APO tunes both nuisances globally and on folds without mutating nomin
       "reference_g", grid$ml_g, reference_settings, reference_settings$measure$ml_g, "regr")
     set.seed(619)
     expect_identical(obj$tune(grid, settings, tune_on_folds = on_folds), obj)
+    expect_setequal(obj$params_names(), c("ml_g", "ml_m"))
     results = if (on_folds) obj$tuning_res$d else list(obj$tuning_res$d)
     expect_length(results, if (on_folds) 2 else 1)
     for (key in c("ml_g", "ml_m")) {

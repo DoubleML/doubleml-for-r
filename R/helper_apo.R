@@ -86,11 +86,18 @@ validate_apo_external_predictions = function(external_predictions, n_obs, n_rep)
   if (is.null(external_predictions)) {
     return(NULL)
   }
-  keys = c("ml_g", "ml_m")
+  base_keys = c("ml_g", "ml_m")
+  sensitivity_keys = c(base_keys, "ml_g_complement")
+  supplied_keys = names(external_predictions)
   if (!is.list(external_predictions) || is.null(names(external_predictions)) ||
-    !setequal(names(external_predictions), keys) || anyDuplicated(names(external_predictions))) {
-    stop("external_predictions must be a named list with keys ml_g and ml_m.")
+    anyDuplicated(names(external_predictions)) ||
+    !(setequal(supplied_keys, base_keys) || setequal(supplied_keys, sensitivity_keys))) {
+    stop(
+      "external_predictions must be a named list with keys ml_g and ml_m, ",
+      "and optionally ml_g_complement."
+    )
   }
+  keys = if ("ml_g_complement" %in% supplied_keys) sensitivity_keys else base_keys
   for (key in keys) {
     predictions = external_predictions[[key]]
     if (!is.matrix(predictions) || !is.numeric(predictions) ||
@@ -104,6 +111,6 @@ validate_apo_external_predictions = function(external_predictions, n_obs, n_rep)
   if (any(external_predictions$ml_m < 0 | external_predictions$ml_m > 1)) {
     stop("ml_m external probabilities must lie in [0, 1].")
   }
-  external_predictions
+  external_predictions[keys]
 }
 # nolint end: object_length_linter.

@@ -114,6 +114,39 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     propensity_diagnostics = function(value) {
       if (missing(value)) return(private$propensity_diagnostics_)
       stop("can't set field propensity_diagnostics")
+    },
+    #' @field framework ([DoubleMLFramework] or `NULL`) \cr
+    #' Joint-inference representation of the fitted APO estimate.
+    framework = function(value) {
+      if (missing(value)) return(private$framework_)
+      stop("can't set field framework")
+    },
+    #' @field sensitivity_elements (`list()` or `NULL`) \cr
+    #' Canonical sensitivity components when available.
+    sensitivity_elements = function(value) {
+      if (missing(value)) {
+        if (is.null(private$framework_)) return(NULL)
+        return(private$framework_$sensitivity_elements)
+      }
+      stop("can't set field sensitivity_elements")
+    },
+    #' @field sensitivity_params (`list()` or `NULL`) \cr
+    #' Most recently evaluated sensitivity scenario.
+    sensitivity_params = function(value) {
+      if (missing(value)) {
+        if (is.null(private$framework_)) return(NULL)
+        return(private$framework_$sensitivity_params)
+      }
+      stop("can't set field sensitivity_params")
+    },
+    #' @field sensitivity_summary (`character(1)` or `NULL`) \cr
+    #' Formatted results for the most recent sensitivity scenario.
+    sensitivity_summary = function(value) {
+      if (missing(value)) {
+        if (is.null(private$framework_)) return(NULL)
+        return(private$framework_$sensitivity_summary)
+      }
+      stop("can't set field sensitivity_summary")
     }
   ),
   public = list(
@@ -189,7 +222,8 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     #' predictions, the stored fold entries remain `NULL`.
     #' @param external_predictions (`list()`, `NULL`) \cr
     #' Named list with `ml_g` and `ml_m` numeric observation-by-repetition
-    #' matrices. All values must be finite and raw `ml_m` probabilities must
+    #' matrices, and optionally `ml_g_complement` to enable sensitivity
+    #' analysis. All values must be finite and raw `ml_m` probabilities must
     #' lie in `[0, 1]`. With `trimming_threshold = 0`, probabilities must be
     #' strictly positive on every observation. Predictions should be obtained
     #' out of fold. Matrices cover all rows, even for held-out estimation.
@@ -221,9 +255,35 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         add = TRUE
       )
       private$propensity_diagnostics_ = vector("list", self$n_rep)
+      private$sensitivity_by_rep_work_ = vector("list", self$n_rep)
+      private$sensitivity_unavailable_reason_work_ = NULL
+      if (!identical(self$dml_procedure, "dml2") || !self$apply_cross_fitting) {
+        private$sensitivity_unavailable_reason_work_ = paste(
+          "APO sensitivity analysis initially requires a fully cross-fitted DML2 fit."
+        )
+      }
       super$fit(store_predictions = store_predictions, store_models = store_models)
       names(private$coef_) = names(private$se_) = names(private$t_stat_) =
         names(private$pval_) = as.character(self$treatment_level)
+      private$publish_framework()
+      invisible(self)
+    },
+    #' @description Evaluate omitted-confounding sensitivity bounds for the APO.
+    #' @param cf_y (`numeric(1)`) Residual outcome variation share in `[0, 1)`.
+    #' @param cf_d (`numeric(1)`) Riesz variation gain share in `[0, 1)`.
+    #' @param rho (`numeric(1)`) Alignment in `[-1, 1]`.
+    #' @param level (`numeric(1)`) One-sided confidence level in `(0, 1)`.
+    #' @param null_hypothesis (`numeric(1)`) Null value for robustness values.
+    #' @return Invisibly returns the fitted model.
+    sensitivity_analysis = function(cf_y = 0.03, cf_d = 0.03, rho = 1,
+                                    level = 0.95, null_hypothesis = 0) {
+      if (is.null(private$framework_)) {
+        stop("Fit the DoubleMLAPO object before calling sensitivity_analysis().")
+      }
+      private$framework_$sensitivity_analysis(
+        cf_y = cf_y, cf_d = cf_d, rho = rho, level = level,
+        null_hypothesis = null_hypothesis
+      )
       invisible(self)
     },
     #' @description
@@ -249,6 +309,9 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
     normalize_ipw_ = NULL,
     propensity_diagnostics_ = NULL,
     external_predictions_ = NULL,
+    framework_ = NULL,
+    sensitivity_by_rep_work_ = NULL,
+    sensitivity_unavailable_reason_work_ = NULL,
     n_nuisance = 2,
     initialize_ml_nuisance_params = function() {
       nuisance = vector("list", self$data$n_treat)
@@ -260,15 +323,38 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       indicator = make_apo_indicator(
         self$data$data_model[[self$data$treat_col]], self$treatment_level
       )
+      sensitivity_supported = identical(self$dml_procedure, "dml2") &&
+        self$apply_cross_fitting
+      g_complement_hat = NULL
       if (is.null(private$external_predictions_)) {
-        # The local target preserves every nominal level in the complement.
+        original_data_model = data.table::copy(self$data$data_model)
         data_model = data.table::copy(self$data$data_model)
         data_model[[self$data$treat_col]] = indicator
-        cond_smpls = get_cond_samples(smpls, indicator)$smpls_1
+        cond_smpls = get_cond_samples(smpls, indicator)
         m_result = private$predict_nuisance("ml_m", self$data$treat_col, data_model, smpls)
-        g_result = private$predict_nuisance("ml_g", self$data$y_col, data_model, cond_smpls)
+        g_result = private$predict_nuisance(
+          "ml_g", self$data$y_col, data_model, cond_smpls$smpls_1
+        )
         g_hat = g_result$preds
         m_hat = m_result$preds
+        supports_nominal = "factor" %in% self$learner$ml_g$feature_types
+        if (sensitivity_supported && supports_nominal) {
+          treatment = original_data_model[[self$data$treat_col]]
+          original_data_model[[self$data$treat_col]] = factor(
+            as.character(treatment), levels = as.character(get_apo_levels(treatment))
+          )
+          complement_result = private$predict_nuisance(
+            "ml_g", self$data$y_col, original_data_model, cond_smpls$smpls_0,
+            feature_cols = c(self$data$x_cols, self$data$treat_col),
+            nuisance_id = "nuis_g_complement"
+          )
+          g_complement_hat = complement_result$preds
+        } else if (sensitivity_supported) {
+          private$sensitivity_unavailable_reason_work_ = paste(
+            "APO sensitivity analysis requires an ml_g learner that supports",
+            "factor treatment features."
+          )
+        }
         models = list(ml_g = g_result$models, ml_m = m_result$models)
         if (self$trimming_threshold == 0 && any(m_hat == 0, na.rm = TRUE)) {
           stop(paste(
@@ -281,21 +367,38 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
       } else {
         g_hat = private$external_predictions_$ml_g[, private$i_rep]
         m_hat = private$external_predictions_$ml_m[, private$i_rep]
+        if ("ml_g_complement" %in% names(private$external_predictions_)) {
+          g_complement_hat = private$external_predictions_$ml_g_complement[, private$i_rep]
+        } else if (sensitivity_supported) {
+          private$sensitivity_unavailable_reason_work_ = paste(
+            "APO sensitivity analysis with external predictions requires",
+            "ml_g_complement."
+          )
+        }
         models = list(ml_g = NULL, ml_m = NULL)
       }
       y = self$data$data_model[[self$data$y_col]]
       res = private$score_elements(y, indicator, g_hat, m_hat, smpls)
+      if (sensitivity_supported && !is.null(g_complement_hat) &&
+        is.null(private$sensitivity_unavailable_reason_work_)) {
+        private$record_sensitivity(
+          y, indicator, g_hat, g_complement_hat,
+          res$effective_propensity, res$effective_weight
+        )
+      }
       res$preds = list(ml_g = g_hat, ml_m = m_hat)
       res$models = models
       res
     },
-    predict_nuisance = function(key, target, data_model, smpls) {
+    predict_nuisance = function(key, target, data_model, smpls,
+                                feature_cols = self$data$x_cols,
+                                nuisance_id = paste0("nuis_", substring(key, 4))) {
       params = self$get_params(key)
       predict_fold = function(split, est_params) {
         # The shared helper shallow-clones ParamSet; isolate it for APO only.
         dml_cv_predict(self$learner[[key]]$clone(deep = TRUE),
-          self$data$x_cols, target, data_model,
-          nuisance_id = paste0("nuis_", substring(key, 4)), smpls = split,
+          feature_cols, target, data_model,
+          nuisance_id = nuisance_id, smpls = split,
           est_params = est_params, return_train_preds = FALSE,
           task_type = private$task_type[[key]], fold_specific_params = FALSE
         )
@@ -347,16 +450,17 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
         m_hat = pmin(pmax(m_hat, self$trimming_threshold), 1 - self$trimming_threshold)
       }
       weights = indicator / m_hat
+      normalization = 1
       if (self$normalize_ipw) {
         evaluation_ids = unique(unlist(smpls$test_ids, use.names = FALSE))
-        denominator = mean(weights[evaluation_ids], na.rm = TRUE)
-        if (!is.finite(denominator) || denominator <= 0) {
+        normalization = mean(weights[evaluation_ids], na.rm = TRUE)
+        if (!is.finite(normalization) || normalization <= 0) {
           stop(paste(
             "APO weight normalization requires a positive finite mean for treatment",
             as.character(self$treatment_level), "in repetition", private$i_rep
           ))
         }
-        weights = weights / denominator
+        weights = weights / normalization
       }
       fraction_trimmed = mean(raw_m_hat != m_hat, na.rm = TRUE)
       fold_counts = lapply(seq_along(smpls$train_ids), function(i_fold) {
@@ -385,7 +489,106 @@ DoubleMLAPO = R6Class("DoubleMLAPO",
           call. = FALSE
         )
       }
-      list(psi_a = rep(-1, length(y)), psi_b = g_hat + weights * (y - g_hat))
+      list(
+        psi_a = rep(-1, length(y)),
+        psi_b = g_hat + weights * (y - g_hat),
+        effective_propensity = m_hat * normalization,
+        effective_weight = weights
+      )
+    },
+    record_sensitivity = function(y, indicator, g_hat, g_complement_hat,
+                                  effective_propensity, effective_weight) {
+      observed_g = indicator * g_hat + (1 - indicator) * g_complement_hat
+      sigma_score = (y - observed_g)^2
+      sigma2 = mean(sigma_score)
+      if (!is.finite(sigma2) || sigma2 <= 0) {
+        private$sensitivity_unavailable_reason_work_ = paste(
+          "APO sensitivity analysis requires positive residual outcome variance."
+        )
+        return(invisible(NULL))
+      }
+      nu_score = 2 / effective_propensity - effective_weight^2
+      nu2 = mean(nu_score)
+      if (!is.finite(nu2) || nu2 <= 0) {
+        private$sensitivity_unavailable_reason_work_ = paste(
+          "APO sensitivity analysis requires positive Riesz representer variation."
+        )
+        return(invisible(NULL))
+      }
+      private$sensitivity_by_rep_work_[[private$i_rep]] = list(
+        sigma2 = sigma2,
+        nu2 = nu2,
+        psi_sigma2 = sigma_score - sigma2,
+        psi_nu2 = nu_score - nu2,
+        riesz_rep = effective_weight
+      )
+      invisible(NULL)
+    },
+    assemble_sensitivity_elements = function() {
+      n_obs = self$data$n_obs
+      n_rep = self$n_rep
+      scalar = function(key) {
+        matrix(vapply(
+          private$sensitivity_by_rep_work_, `[[`, numeric(1), key
+        ), nrow = 1L)
+      }
+      influence = function(key) {
+        array(unlist(lapply(
+          private$sensitivity_by_rep_work_, `[[`, key
+        ), use.names = FALSE), dim = c(n_obs, 1L, n_rep))
+      }
+      sigma2 = scalar("sigma2")
+      nu2 = scalar("nu2")
+      psi_sigma2 = influence("psi_sigma2")
+      psi_nu2 = influence("psi_nu2")
+      bias = compute_sensitivity_bias(sigma2, nu2, psi_sigma2, psi_nu2)
+      list(
+        sigma2 = sigma2,
+        nu2 = nu2,
+        psi_sigma2 = psi_sigma2,
+        psi_nu2 = psi_nu2,
+        riesz_rep = influence("riesz_rep"),
+        max_bias = bias$max_bias,
+        psi_max_bias = bias$psi_max_bias
+      )
+    },
+    publish_framework = function() {
+      if (any(!is.finite(c(self$all_coef, self$all_se, self$psi)))) {
+        private$framework_ = NULL
+        return(invisible(NULL))
+      }
+      reason = private$sensitivity_unavailable_reason_work_
+      elements = NULL
+      if (is.null(reason)) {
+        complete = length(private$sensitivity_by_rep_work_) == self$n_rep &&
+          all(!vapply(private$sensitivity_by_rep_work_, is.null, logical(1)))
+        if (complete) {
+          elements = private$assemble_sensitivity_elements()
+        } else {
+          reason = "APO sensitivity elements were not available for every repetition."
+        }
+      }
+      coef_name = as.character(self$treatment_level)
+      all_coef = self$all_coef
+      all_se = self$all_se
+      psi = aperm(self$psi, c(1, 3, 2))
+      rownames(all_coef) = rownames(all_se) = coef_name
+      dimnames(psi)[[2]] = coef_name
+      new_framework = if (is.null(elements)) {
+        DoubleMLFramework$new(
+          all_coef, all_se, psi, coef_name,
+          smpls = self$smpls, apply_cross_fitting = self$apply_cross_fitting,
+          sensitivity_unavailable_reason = reason
+        )
+      } else {
+        DoubleMLFramework$new(
+          all_coef, all_se, psi, coef_name,
+          smpls = self$smpls, apply_cross_fitting = self$apply_cross_fitting,
+          sensitivity_elements = elements
+        )
+      }
+      private$framework_ = new_framework
+      invisible(NULL)
     }
   )
 )
