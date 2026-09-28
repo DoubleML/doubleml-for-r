@@ -18,7 +18,8 @@ make_gapo_fixture = function(n_rep = 2L, dml_procedure = "dml2",
   }
   predictions = list(
     ml_g = matrix(fixture$conditional_means[, "a"], 14L, n_rep),
-    ml_m = matrix(fixture$propensity[, "a"], 14L, n_rep)
+    ml_m = matrix(fixture$propensity[, "a"], 14L, n_rep),
+    ml_g_complement = matrix(fixture$conditional_means[, "b"], 14L, n_rep)
   )
   if (n_rep > 1L) {
     predictions$ml_g[, 2L] = predictions$ml_g[, 2L] + seq_len(14L) / 50
@@ -79,6 +80,20 @@ test_that("gapo returns exact group APO estimates and reusable inference", {
   expect_identical(result$bootstrap(n_rep_boot = 20L), result)
   expect_equal(dim(result$confint(joint = TRUE)), c(2L, 2L))
   expect_equal(length(result$p_adjust(return_matrix = FALSE)), 2L)
+
+  reason = paste(
+    "Sensitivity analysis for GAPO/GATE is not implemented; conditional group",
+    "prevalence requires a separate sensitivity influence derivation."
+  )
+  group_inference = list(
+    coef = result$coef, all_coef = result$all_coef, se = result$se,
+    all_se = result$all_se, psi = result$psi, all_cov = result$all_cov
+  )
+  expect_error(result$sensitivity_analysis(), paste0("^", reason, "$"))
+  expect_identical(list(
+    coef = result$coef, all_coef = result$all_coef, se = result$se,
+    all_se = result$all_se, psi = result$psi, all_cov = result$all_cov
+  ), group_inference)
 
   after = list(
     data = setup$model$data$data,

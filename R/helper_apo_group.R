@@ -2,6 +2,13 @@ encode_apo_group_label = function(x) {
   utils::URLencode(as.character(x), reserved = TRUE, repeated = TRUE)
 }
 
+apo_group_sensitivity_reason = function() {
+  paste(
+    "Sensitivity analysis for GAPO/GATE is not implemented; conditional group",
+    "prevalence requires a separate sensitivity influence derivation."
+  )
+}
+
 prepare_apo_groups = function(groups, n_obs) {
   checkmate::assert_count(n_obs, positive = TRUE)
   if (!(is.factor(groups) || is.character(groups) || is.logical(groups) ||
@@ -154,7 +161,8 @@ make_apo_group_framework = function(apo_models, groups) {
   }
 
   DoubleMLFramework$new(all_coef, all_se, psi, coef_names,
-    smpls = reference$smpls, apply_cross_fitting = TRUE
+    smpls = reference$smpls, apply_cross_fitting = TRUE,
+    sensitivity_unavailable_reason = apo_group_sensitivity_reason()
   )
 }
 # nolint end: object_usage_linter.

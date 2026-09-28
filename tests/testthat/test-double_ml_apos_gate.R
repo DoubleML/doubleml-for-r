@@ -11,12 +11,15 @@ fitted_gate_apos = function(labels = c("control", "chlorine", "filter", "boiling
   model$set_sample_splitting(rep(fixture$smpls, n_rep))
   predictions = setNames(lapply(seq_along(labels), function(j) {
     g = matrix(fixture$conditional_means[, j], 72L, n_rep)
+    observed_level = match(as.character(fixture$df$d), as.character(labels))
+    g_complement = fixture$conditional_means[cbind(seq_len(72L), observed_level)]
     for (i_rep in seq_len(n_rep)) {
       g[, i_rep] = g[, i_rep] + (i_rep - 1L) * j * fixture$df$x / 10
     }
     list(
       ml_g = g,
-      ml_m = matrix(fixture$propensity[, j], 72L, n_rep)
+      ml_m = matrix(fixture$propensity[, j], 72L, n_rep),
+      ml_g_complement = matrix(g_complement, 72L, n_rep)
     )
   }), as.character(labels))
   model$fit(
@@ -85,6 +88,20 @@ test_that("reference GATEs are group-major joint signal contrasts", {
     smpls = setup$model$smpls
   )
   expect_identical(after, before)
+
+  reason = paste(
+    "Sensitivity analysis for GAPO/GATE is not implemented; conditional group",
+    "prevalence requires a separate sensitivity influence derivation."
+  )
+  group_inference = list(
+    coef = result$coef, all_coef = result$all_coef, se = result$se,
+    all_se = result$all_se, psi = result$psi, all_cov = result$all_cov
+  )
+  expect_error(result$sensitivity_analysis(), paste0("^", reason, "$"))
+  expect_identical(list(
+    coef = result$coef, all_coef = result$all_coef, se = result$se,
+    all_se = result$all_se, psi = result$psi, all_cov = result$all_cov
+  ), group_inference)
 })
 
 test_that("GATE reference matching remains nominal and type safe", {
