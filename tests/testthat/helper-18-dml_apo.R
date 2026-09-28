@@ -101,6 +101,27 @@ apo_sensitivity_from_predictions = function(
 }
 # nolint end: object_length_linter.
 
+# Independent binary IRM oracle used only to verify the APO contrast reduction.
+irm_sensitivity_oracle = function(y, d, g0, g1, p, threshold = 0) {
+  p = pmin(pmax(p, threshold), 1 - threshold)
+  observed_g = d * g1 + (1 - d) * g0
+  sigma_score = (y - observed_g)^2
+  sigma2 = mean(sigma_score)
+  psi_sigma2 = sigma_score - sigma2
+  riesz_rep = d / p - (1 - d) / (1 - p)
+  nu_score = 2 / (p * (1 - p)) - riesz_rep^2
+  nu2 = mean(nu_score)
+  psi_nu2 = nu_score - nu2
+  max_bias = sqrt(sigma2 * nu2)
+  psi_max_bias = (sigma2 * psi_nu2 + nu2 * psi_sigma2) / (2 * max_bias)
+  list(
+    sigma2 = sigma2, nu2 = nu2,
+    psi_sigma2 = psi_sigma2, psi_nu2 = psi_nu2,
+    riesz_rep = riesz_rep, max_bias = max_bias,
+    psi_max_bias = psi_max_bias
+  )
+}
+
 ApoSensitivityRegr = R6::R6Class("ApoSensitivityRegr",
   inherit = mlr3::LearnerRegr,
   public = list(
@@ -210,14 +231,19 @@ apo_irm_equivalence_fixture = function(threshold) {
     inherit = mlr3::LearnerRegr,
     public = list(
       initialize = function() {
-        super$initialize(id = "regr.apo_irm_equivalence", feature_types = c("numeric", "integer"),
+        super$initialize(id = "regr.apo_irm_equivalence",
+          feature_types = c("numeric", "integer", "factor"),
           predict_types = "response")
       }
     ),
     private = list(
       .train = function(task) {
         x = task$data(cols = "x")$x
-        level = unique((x - 1) %% 2)
+        level = if ("d" %in% task$feature_names) {
+          unique(as.numeric(as.character(task$data(cols = "d")$d)))
+        } else {
+          unique((x - 1) %% 2)
+        }
         if (length(level) != 1L) stop("Outcome training must be conditional on treatment.")
         list(level = level, offset = mean(x) / 100, train_ids = x)
       },
@@ -280,6 +306,28 @@ apo_irm_equivalence_fixture = function(threshold) {
     obj$set_sample_splitting(smpls)
     obj$fit(store_predictions = TRUE)
   }
-  list(irm = irm, apo0 = apos[[1]], apo1 = apos[[2]], smpls = smpls)
+  family = DoubleMLAPOS$new(
+    data, ml_g$clone(deep = TRUE), ml_m$clone(deep = TRUE),
+    treatment_levels = 0:1, n_folds = 2, n_rep = 2,
+    trimming_threshold = threshold, draw_sample_splitting = FALSE
+  )
+  family$set_sample_splitting(smpls)
+  external = list(
+    `0` = list(
+      ml_g = irm$predictions$ml_g0[, , 1],
+      ml_m = 1 - irm$predictions$ml_m[, , 1],
+      ml_g_complement = irm$predictions$ml_g1[, , 1]
+    ),
+    `1` = list(
+      ml_g = irm$predictions$ml_g1[, , 1],
+      ml_m = irm$predictions$ml_m[, , 1],
+      ml_g_complement = irm$predictions$ml_g0[, , 1]
+    )
+  )
+  family$fit(external_predictions = external)
+  list(
+    irm = irm, apo0 = apos[[1]], apo1 = apos[[2]],
+    apos = family, smpls = smpls
+  )
 }
 # nolint end: object_usage_linter.
