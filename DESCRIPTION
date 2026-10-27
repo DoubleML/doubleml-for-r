@@ -5,7 +5,7 @@ Version: 1.0.1.9000
 Authors@R: c(
     person("Philipp", "Bach", email = "philipp.bach@fu-berlin.de", role=c("aut", "cre"),
            comment = c(ORCID = "0000-0002-7183-9239")),
-    person("Victor", "Chernozhukov", role="aut",
+    person("Victor", "Chernozhukov", email = "vchern@mit.edu", role="aut",
            comment = c(ORCID = "0000-0002-3250-6714")),
     person("Malte S.", "Kurz", email = "mkurz-software@gmx.de", role="aut"),
     person("Martin", "Spindler", email="martin.spindler@uni-hamburg.de", role="aut",
