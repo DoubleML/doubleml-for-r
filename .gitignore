@@ -36,3 +36,7 @@ docs/
 docs
 doc
 inst/doc
+
+# Test-Files
+test_optimization_report.md
+walkthrough.md

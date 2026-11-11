@@ -7,13 +7,13 @@ logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 tune_settings = list(
-  rsmp_tune = rsmp("cv", folds = 3),
+  rsmp_tune = rsmp("cv", folds = 2),
   measure = list(
     "ml_m" = "classif.ce",
     "ml_g" = "regr.mse",
     "ml_r" = "classif.ce"
   ),
-  terminator = mlr3tuning::trm("evals", n_evals = 5),
+  terminator = mlr3tuning::trm("evals", n_evals = 2),
   algorithm = tnr("random_search")
 )
 

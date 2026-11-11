@@ -19,9 +19,9 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
       )
 
       params = list(
-        params_l = list(num.trees = 60),
-        params_m = list(num.trees = 120),
-        params_g = list(num.trees = 100)
+        params_l = list(num.trees = 10, max.depth = 2),
+        params_m = list(num.trees = 10, max.depth = 2),
+        params_g = list(num.trees = 10, max.depth = 2)
       )
     } else if (learner == "regr.rpart") {
       mlmethod = list(
@@ -55,15 +55,21 @@ get_default_mlmethod_plr = function(learner, default = FALSE) {
       params = list(
         params_l = list(
           s = "lambda.min",
-          family = "gaussian"
+          family = "gaussian",
+          nfolds = 3,
+          nlambda = 10
         ),
         params_m = list(
           s = "lambda.min",
-          family = "gaussian"
+          family = "gaussian",
+          nfolds = 3,
+          nlambda = 10
         ),
         params_g = list(
           s = "lambda.min",
-          family = "gaussian"
+          family = "gaussian",
+          nfolds = 3,
+          nlambda = 10
         )
       )
     }
@@ -137,10 +143,10 @@ get_default_mlmethod_pliv = function(learner) {
     )
 
     params = list(
-      params_l = list(num.trees = 100),
-      params_m = list(num.trees = 120),
-      params_r = list(num.trees = 100),
-      params_g = list(num.trees = 100)
+      params_l = list(num.trees = 10, max.depth = 2),
+      params_m = list(num.trees = 10, max.depth = 2),
+      params_r = list(num.trees = 10, max.depth = 2),
+      params_g = list(num.trees = 10, max.depth = 2)
     )
   } else if (learner == "regr.rpart") {
     mlmethod = list(
@@ -167,19 +173,27 @@ get_default_mlmethod_pliv = function(learner) {
     params = list(
       params_l = list(
         s = "lambda.min",
-        family = "gaussian"
+        family = "gaussian",
+        nfolds = 3,
+        nlambda = 10
       ),
       params_m = list(
         s = "lambda.min",
-        family = "gaussian"
+        family = "gaussian",
+        nfolds = 3,
+        nlambda = 10
       ),
       params_r = list(
         s = "lambda.min",
-        family = "gaussian"
+        family = "gaussian",
+        nfolds = 3,
+        nlambda = 10
       ),
       params_g = list(
         s = "lambda.min",
-        family = "gaussian"
+        family = "gaussian",
+        nfolds = 3,
+        nlambda = 10
       )
     )
   } else if (learner == "regr.glmnet") {
@@ -260,8 +274,8 @@ get_default_mlmethod_irm = function(learner) {
     family = "gaussian"
 
     params = list(
-      params_m = list(s = slambda),
-      params_g = list(s = slambda, family = family)
+      params_m = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_g = list(s = slambda, family = family, nfolds = 3, nlambda = 10)
     )
   } else if (learner == "rpart") {
     mlmethod = list(
@@ -270,8 +284,8 @@ get_default_mlmethod_irm = function(learner) {
     )
 
     params = list(
-      params_g = list(cp = 0.01, minsplit = 20),
-      params_m = list(cp = 0.01, minsplit = 20)
+      params_g = list(cp = 0.01, minsplit = 20, maxdepth = 2),
+      params_m = list(cp = 0.01, minsplit = 20, maxdepth = 2)
     )
   }
 
@@ -279,13 +293,13 @@ get_default_mlmethod_irm = function(learner) {
     # pipeline learner
     pipe_learner = mlr3pipelines::po("learner",
       lrn("regr.rpart"),
-      cp = 0.01, minsplit = 20
+      cp = 0.01, minsplit = 20, maxdepth = 2
     )
     pipe_learner_classif = mlr3pipelines::po("learner",
       lrn("classif.rpart",
         predict_type = "prob"
       ),
-      cp = 0.01, minsplit = 20
+      cp = 0.01, minsplit = 20, maxdepth = 2
     )
     mlmethod = list(
       mlmethod_m = "graph_learner",
@@ -320,9 +334,9 @@ get_default_mlmethod_iivm = function(learner) {
     family = "gaussian"
 
     params = list(
-      params_m = list(s = slambda),
-      params_g = list(s = slambda, family = family),
-      params_r = list(s = slambda)
+      params_m = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_g = list(s = slambda, family = family, nfolds = 3, nlambda = 10),
+      params_r = list(s = slambda, nfolds = 3, nlambda = 10)
     )
   } else if (learner == "rpart") {
     mlmethod = list(
@@ -387,8 +401,8 @@ get_default_mlmethod_irm_bin = function(learner) {
     slambda = "lambda.min"
 
     params = list(
-      params_m = list(s = slambda),
-      params_g = list(s = slambda)
+      params_m = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_g = list(s = slambda, nfolds = 3, nlambda = 10)
     )
   } else if (learner == "rpart") {
     mlmethod = list(
@@ -397,8 +411,8 @@ get_default_mlmethod_irm_bin = function(learner) {
     )
 
     params = list(
-      params_g = list(cp = 0.01, minsplit = 20),
-      params_m = list(cp = 0.01, minsplit = 20)
+      params_g = list(cp = 0.01, minsplit = 20, maxdepth = 2),
+      params_m = list(cp = 0.01, minsplit = 20, maxdepth = 2)
     )
   }
 
@@ -408,7 +422,7 @@ get_default_mlmethod_irm_bin = function(learner) {
       lrn("classif.rpart",
         predict_type = "prob"
       ),
-      cp = 0.01, minsplit = 20
+      cp = 0.01, minsplit = 20, maxdepth = 2
     )
     mlmethod = list(
       mlmethod_m = "graph_learner",
@@ -442,9 +456,9 @@ get_default_mlmethod_iivm_bin = function(learner) {
     slambda = "lambda.min"
 
     params = list(
-      params_m = list(s = slambda),
-      params_g = list(s = slambda),
-      params_r = list(s = slambda)
+      params_m = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_g = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_r = list(s = slambda, nfolds = 3, nlambda = 10)
     )
   } else if (learner == "rpart") {
     mlmethod = list(
@@ -517,20 +531,20 @@ get_default_mlmethod_ssm = function(learner) {
     slambda = "lambda.min"
 
     params = list(
-      params_pi = list(s = slambda),
-      params_m = list(s = slambda),
-      params_g = list(s = slambda)
+      params_pi = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_m = list(s = slambda, nfolds = 3, nlambda = 10),
+      params_g = list(s = slambda, nfolds = 3, nlambda = 10)
     )
   }
 
   if (learner == "graph_learner") {
     # pipeline learner
     pipe_learner_classif = mlr3pipelines::po("learner",
-      lrn("classif.cv_glmnet", predict_type = "prob"),
+      lrn("classif.cv_glmnet", predict_type = "prob", nfolds = 3, nlambda = 10),
       s = "lambda.min"
     )
     pipe_learner = mlr3pipelines::po("learner",
-      lrn("regr.cv_glmnet"),
+      lrn("regr.cv_glmnet", nfolds = 3, nlambda = 10),
       s = "lambda.min"
     )
     mlmethod = list(
