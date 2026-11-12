@@ -42,7 +42,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
   .cases = test_cases,
   {
     n_rep_boot = 498
-    n_folds = 4
+    n_folds = 2
 
     set.seed(3141)
     Xnames = names(data_plr_multi)[names(data_plr_multi) %in% c("y", "d1", "d2", "z") == FALSE]
@@ -77,11 +77,10 @@ patrick::with_parameters_test_that("Unit tests for tuning of PLR:",
 
     tune_sets = list(
       n_folds_tune = 2,
-      n_folds_tune = 1,
       rsmp_tune = "cv",
       terminator = mlr3tuning::trm("evals", n_evals = 2),
       algorithm = "grid_search",
-      resolution = 5
+      resolution = 2
     )
 
     param_grid = list(

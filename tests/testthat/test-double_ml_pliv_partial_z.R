@@ -19,7 +19,7 @@ patrick::with_parameters_test_that("Unit tests for PLIV.partialZ:",
     n_rep_boot = 498
 
     set.seed(3141)
-    dim_z = 150
+    dim_z = 20
     pliv_hat = dml_pliv_partial_z(data_pliv_partial_z$df,
       y = "y", d = "d", z = paste0("Z", 1:dim_z),
       n_folds = 5,

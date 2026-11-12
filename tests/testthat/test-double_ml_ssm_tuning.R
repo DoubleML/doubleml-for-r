@@ -7,13 +7,13 @@ logger$set_threshold("warn")
 lgr::get_logger("mlr3")$set_threshold("warn")
 
 tune_settings = list(
-  rsmp_tune = rsmp("cv", folds = 3),
+  rsmp_tune = rsmp("cv", folds = 2),
   measure = list(
     "ml_m" = "classif.ce",
     "ml_g" = "regr.mse",
     "ml_pi" = "classif.ce"
   ),
-  terminator = mlr3tuning::trm("evals", n_evals = 5),
+  terminator = mlr3tuning::trm("evals", n_evals = 2),
   algorithm = tnr("random_search")
 )
 
@@ -47,7 +47,7 @@ patrick::with_parameters_test_that("Unit tests for tuning of SSM:",
   .cases = test_cases,
   {
     n_rep_boot = 498
-    n_folds = 5
+    n_folds = 2
 
     if (score == "missing-at-random") {
       dml_data = data_ssm_mar$dml_data

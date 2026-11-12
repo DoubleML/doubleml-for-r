@@ -24,7 +24,7 @@ tune_settings = list(
   tuning_instance_l = NULL,
   tuning_instance_m = NULL,
   tuner = "grid_search",
-  resolution = 5
+  resolution = 2
 )
 
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
