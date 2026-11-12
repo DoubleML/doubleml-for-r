@@ -1,11 +1,11 @@
 # simulate data sets
-setting = list(theta = 0.5, n = 1000, p = 20)
+setting = list(theta = 0.5, n = 500, p = 20)
 
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
 if (on_cran) {
-  setting_irm = list(theta = 0.5, n = 1000, p = 20)
+  setting_irm = list(theta = 0.5, n = 500, p = 20)
 } else {
-  setting_irm = list(theta = 0.5, n = 5000, p = 20)
+  setting_irm = list(theta = 0.5, n = 500, p = 20)
 }
 
 setting_pliv_partial = list(theta = 1.0, n = 500)
@@ -113,7 +113,7 @@ data_plr_multi = dgp1_toeplitz(
 )
 
 set.seed(1282)
-dim_z = 150
+dim_z = 20
 df = make_pliv_CHS2015(
   setting$n,
   alpha = setting$theta,
@@ -149,11 +149,12 @@ data_pliv_partial_x = list(
 )
 
 set.seed(1282)
-dim_z = 150
+dim_z = 20
 df = make_data_pliv_partialZ(
   setting$n,
   alpha = setting$theta,
-  dim_x = 5
+  dim_x = 5,
+  dim_z = dim_z
 )
 Xnames = names(df)[names(df) %in% c("y", "d", paste0("Z", 1:dim_z)) == FALSE]
 dml_data = double_ml_data_from_data_frame(df,

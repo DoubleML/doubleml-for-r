@@ -23,8 +23,9 @@ learner_list = list("mlmethod_m" = learner, "mlmethod_g" = learner)
 
 # only minimum amount of input for tuning
 tune_settings = list(
-  terminator = mlr3tuning::trm("evals", n_evals = 5),
-  resolution = 5
+  n_folds_tune = 2,
+  terminator = mlr3tuning::trm("evals", n_evals = 2),
+  resolution = 2
 )
 
 on_cran = !identical(Sys.getenv("NOT_CRAN"), "true")
