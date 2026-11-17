@@ -439,6 +439,17 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           train_inds = smpls$train_ids[[i_fold]]
           test_inds = smpls$test_ids[[i_fold]]
 
+          if (!private$fold_specific_params) {
+            params_pi = self$get_params("ml_pi")
+            params_m = self$get_params("ml_m")
+            params_g_d0 = self$get_params("ml_g_d0")
+            params_g_d1 = self$get_params("ml_g_d1")
+          } else {
+            params_pi = self$get_params("ml_pi")[[i_fold]]
+            params_m = self$get_params("ml_m")[[i_fold]]
+            params_g_d0 = self$get_params("ml_g_d0")[[i_fold]]
+            params_g_d1 = self$get_params("ml_g_d1")[[i_fold]]
+          }
 
           # split train_inds into 2 sets
           dummy_train_task = Task$new("dummy", "regr", self$data$data)
@@ -464,7 +475,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           ml_learner_pi_hat = initiate_learner(
             learner = self$learner$ml_pi,
             task_type = private$task_type$ml_pi,
-            params = self$get_params("ml_pi"),
+            params = params_pi,
             return_train_preds = FALSE
           )
 
@@ -500,8 +511,8 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
 
           ml_learner_m_hat = initiate_learner(
             learner = self$learner$ml_m,
-            task_type = private$task_type$ml_pi,
-            params = self$get_params("ml_m"),
+            task_type = private$task_type$ml_m,
+            params = params_m,
             return_train_preds = FALSE
           )
 
@@ -538,7 +549,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           ml_learner_g_hat_d0 = initiate_learner(
             learner = self$learner$ml_g,
             task_type = private$task_type$ml_g,
-            params = self$get_params("ml_g_d0"),
+            params = params_g_d0,
             return_train_preds = FALSE
           )
 
@@ -572,7 +583,7 @@ DoubleMLSSM = R6Class("DoubleMLSSM",
           ml_learner_g_hat_d1 = initiate_learner(
             learner = self$learner$ml_g,
             task_type = private$task_type$ml_g,
-            params = self$get_params("ml_g_d1"),
+            params = params_g_d1,
             return_train_preds = FALSE
           )
 
