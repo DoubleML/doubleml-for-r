@@ -86,17 +86,12 @@ patrick::with_parameters_test_that("Unit tests for tuning of SSM:",
       param_set = param_grid, tune_on_folds = tune_on_folds, tune_settings = tune_settings
     )
 
-    # skip if tune_on_folds = TRUE & score == "nonignorable"
-    if (tune_on_folds && score == "nonignorable") {
-      skip("Skipping test for tuning on folds with nonignorable score")
-    } else {
-      double_mlssm_obj_tuned$fit()
+    double_mlssm_obj_tuned$fit()
 
-      theta_obj_tuned = double_mlssm_obj_tuned$coef
-      se_obj_tuned = double_mlssm_obj_tuned$se
+    theta_obj_tuned = double_mlssm_obj_tuned$coef
+    se_obj_tuned = double_mlssm_obj_tuned$se
 
-      expect_is(theta_obj_tuned, "numeric")
-      expect_is(se_obj_tuned, "numeric")
-    }
+    expect_is(theta_obj_tuned, "numeric")
+    expect_is(se_obj_tuned, "numeric")
   }
 )
