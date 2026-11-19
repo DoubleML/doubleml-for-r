@@ -27,6 +27,10 @@ repos:
         -    mlr3learners
         -    mlr3misc
         -    mlr3pipelines
+        -    SuperLearner
+        -    tedwestling/survSuperLearner
+        -    fdrtool
+        -    foreach
     # codemeta must be above use-tidy-description when both are used
     # -   id: codemeta-description-updated
     -   id: use-tidy-description
@@ -86,6 +90,11 @@ repos:
         -    AER
         -    rpart
         -    bbotk
+        -    SuperLearner
+        -    tedwestling/survSuperLearner
+        -    fdrtool
+        -    foreach
+        -    doParallel
     -   id: readme-rmd-rendered
     -   id: parsable-R
     -   id: no-browser-statement

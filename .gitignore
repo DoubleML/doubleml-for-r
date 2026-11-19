@@ -36,3 +36,9 @@ docs/
 docs
 doc
 inst/doc
+
+# Claude Code guidance (local only)
+CLAUDE.md
+
+# Original research scripts (local only)
+original/

@@ -60,6 +60,14 @@ reference:
       - DoubleMLIRM
       - DoubleMLIIVM
       - DoubleMLSSM
+  - title: Double machine learning models for survival and competing risks
+    contents:
+      - DoubleMLSurvival
+      - DoubleMLSurvivalProb
+      - DoubleMLRMST
+      - DoubleMLCompeting
+      - DoubleMLCIFJ
+      - DoubleMLRMTLJ
   - title: Datasets module
     contents:
       - fetch_401k
@@ -73,3 +81,5 @@ reference:
       - make_plr_turrell2018
       - make_pliv_multiway_cluster_CKMS2021
       - make_ssm_data
+      - make_survival_data
+      - make_competing_data
