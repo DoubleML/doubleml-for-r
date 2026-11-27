@@ -1627,9 +1627,9 @@ DoubleML = R6Class("DoubleML",
       } else {
         J = mean(private$get__psi_a()[test_index])
         boot_coef = weights %*% private$get__psi()[test_index] /
-          (n_obs * private$get__all_se() * J)
-        boot_t_stat = weights %*% private$get__psi()[test_index] /
           (n_obs * J)
+        boot_t_stat = weights %*% private$get__psi()[test_index] /
+          (n_obs * private$get__all_se() * J)
       }
 
       res = list(boot_coef = boot_coef, boot_t_stat = boot_t_stat)
